@@ -36,7 +36,7 @@ final class StaffChangePasswordController extends Controller
      */
     public function __invoke(ChangePasswordRequest $request, ChangePasswordAction $action): ApiResponseInterface
     {
-        /** @var Staff $staff */
+        /** @var ?Staff $staff */
         $staff = auth('staff')->user();
 
         abort_unless($staff !== null, 404);

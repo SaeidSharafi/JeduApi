@@ -24,7 +24,7 @@ final class ProductTeacherController extends Controller
      *
      * @responseFile resources/responses/shop/products/teachers.json
      */
-    public function __invoke(Product $product)
+    public function __invoke(Product $product): \App\Contracts\ApiResponseInterface
     {
 
         $product->load('productDeliveryOptions.teachers');

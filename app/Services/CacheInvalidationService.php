@@ -37,6 +37,9 @@ final class CacheInvalidationService
      * ]
      * ```
      */
+    /**
+     * @param  array<string, mixed>  $invalidationConfig
+     */
     public function invalidateForModel(string|Model $model, array $invalidationConfig): void
     {
         // Separate direct keys from patterns for batch processing

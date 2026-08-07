@@ -70,16 +70,17 @@ use Spatie\Permission\Models\Role;
 
 final class AuthServiceProvider extends ServiceProvider
 {
-    public function register(): void {
+    public function register(): void
+    {
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
     }
 
     public function boot(): void
     {
-        Auth::provider('cached', function ($app, array $config) {
+        Auth::provider('cached', function (array $app, array $config): CachedUserProvider {
             return new CachedUserProvider($app['hash'], $config['model']);
         });
-        Gate::before(function (Staff|User $user, mixed $ability, mixed $arguments) {
+        Gate::before(function (Staff|User $user, mixed $ability, mixed $arguments): ?true {
             // if doing operaion on Super Admin handle authorization in AdminPolciy
             if (count($arguments) === 1 && $arguments[0] instanceof Staff) {
                 return null;

@@ -14,6 +14,9 @@ use Illuminate\Http\Client\ConnectionException;
 
 final class SkyroomService extends AbstractIntegrationService
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function findOrCreateUser(User $user): array
     {
         $this->assertConfigured();
@@ -82,6 +85,9 @@ final class SkyroomService extends AbstractIntegrationService
         return ! empty($this->config['api_key']);
     }
 
+    /**
+     * @param  array<string, mixed>  $params
+     */
     private function request(string $action, array $params = []): mixed
     {
         $endpoint = ($this->config['base_url'] ?? '').'/'.$this->config['api_key'];

@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum AvailabilityStatusEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case PAST     = 'past';

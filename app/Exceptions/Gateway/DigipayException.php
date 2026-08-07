@@ -12,6 +12,7 @@ final class DigipayException extends BankException
     public function __construct(
         string $message,
         private readonly int $digipayCode = 0,
+        /** @var array<string, mixed> */
         private readonly array $context = [],
         ?Throwable $previous = null,
     ) {
@@ -23,6 +24,9 @@ final class DigipayException extends BankException
         return $this->digipayCode;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getContext(): array
     {
         return $this->context;
@@ -63,6 +67,9 @@ final class DigipayException extends BankException
         return $this->getUserMessage();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
         return $this->context;

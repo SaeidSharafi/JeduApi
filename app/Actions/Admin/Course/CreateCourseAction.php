@@ -21,9 +21,9 @@ final readonly class CreateCourseAction
     public function handle(CreateCourseData $data): void
     {
         DB::transaction(function () use ($data): void {
-            $mediaToAttach       = $data->media          ?? [];
-            $categoriesToAttach  = $data->categories     ?? [];
-            $digitalAssetsAttach = $data->digital_assets ?? [];
+            $mediaToAttach       = $data->media         ;
+            $categoriesToAttach  = $data->categories    ;
+            $digitalAssetsAttach = $data->digital_assets;
 
             $valdiatedData                  = $data->except('media', 'categories', 'digital_assets')->all();
             $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($mediaToAttach);

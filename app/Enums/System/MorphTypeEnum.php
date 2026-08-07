@@ -29,6 +29,7 @@ use App\Traits\AdvanceEnum;
 
 enum MorphTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case CATEGORY      = 'category';
@@ -55,6 +56,9 @@ enum MorphTypeEnum: string
     case COLLABORATION_REQUEST = 'collaboration_request';
     case DEPOSIT               = 'deposit';
 
+    /**
+     * @return array<string, class-string>
+     */
     public static function forMorphMap(): array
     {
         $map = [];
@@ -80,7 +84,7 @@ enum MorphTypeEnum: string
      * Get categorizable types.
      *
      * @param  bool  $onlyWithGoodStartAllowed  If true, only return types that support 'good_for_start' flag.
-     * @return array List of categorizable type aliases.
+     * @return array<int, self> List of categorizable type aliases.
      *
      * @codeCoverageIgnore
      */

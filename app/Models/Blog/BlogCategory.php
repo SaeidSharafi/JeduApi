@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Plank\Mediable\Mediable;
+use Database\Factories\Blog\BlogCategoryFactory;
 
 final class BlogCategory extends Model
 {
+    /** @use HasFactory<\Database\Factories\Blog\BlogCategoryFactory> */
     use HasFactory;
     use HasMedia;
     use Mediable;
@@ -31,16 +33,25 @@ final class BlogCategory extends Model
         'meta_keywords',
     ];
 
+    /**
+     * @return BelongsTo<self, $this>
+     */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id');
     }
 
+    /**
+     * @return HasMany<self, $this>
+     */
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
     }
 
+    /**
+     * @return BelongsToMany<BlogPost, $this>
+     */
     public function posts(): BelongsToMany
     {
         return $this->belongsToMany(BlogPost::class, 'blog_post_category', 'blog_category_id', 'blog_post_id');

@@ -23,7 +23,7 @@ interface PaymentProcessorContract
      * Only required for multi-step processors.
      *
      * @param  Payment  $payment  The pending payment to verify
-     * @param  array  $callbackData  Data from gateway callback
+     * @param  array<string, mixed>  $callbackData  Data from gateway callback
      * @return Payment Updated payment with final status
      */
     public function verify(Payment $payment, array $callbackData): Payment;

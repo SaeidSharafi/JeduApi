@@ -42,7 +42,7 @@ final class ProvisionMoodleEnrollmentJob extends AbstractProvisioningJob
             return;
         }
 
-        $details  = $enrollment->productDeliveryOption?->details_json ?? [];
+        $details  = $enrollment->productDeliveryOption->details_json ?? [];
         $courseId = data_get($details, 'moodle_course_id');
 
         // A non-numeric course_id in the DB will never fix itself on retry.

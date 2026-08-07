@@ -37,6 +37,7 @@ final class CartValueCondition implements DiscountConditionContract
             MathOperatorEnum::LESS_THAN_OR_EQUAL    => $comparisonValue <= $configuration->value,
             MathOperatorEnum::LESS_THAN             => $comparisonValue < $configuration->value,
             MathOperatorEnum::EQUAL                 => $comparisonValue === $configuration->value,
+            MathOperatorEnum::NOT_EQUAL             => $comparisonValue !== $configuration->value,
         };
     }
 }

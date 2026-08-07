@@ -11,6 +11,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\User\ShowUserData;
 use App\Data\Admin\User\UserCreateData;
 use App\Data\Admin\User\UserListItemData;
+use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,7 +47,7 @@ final class UserController extends Controller
      * @responseFile 200 resources/responses/admin/user/index.json
      * @responseFile 403 resources/responses/403.json
      */
-    public function index()
+    public function index(): ApiResponseInterface
     {
         Gate::authorize('viewAny', User::class);
         $user = QueryBuilder::for(User::class)
@@ -93,7 +94,7 @@ final class UserController extends Controller
      * @responseFile 403 resources/responses/403.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function store(UserCreateData $data, CreateUserAction $action)
+    public function store(UserCreateData $data, CreateUserAction $action): ApiResponseInterface
     {
         Gate::authorize('create', User::class);
         $user = $action->handle($data);
@@ -115,7 +116,7 @@ final class UserController extends Controller
      * @responseFile 404 resources/responses/404.json
      * @responseFile 422 resources/responses/422.json
      * */
-    public function show(User $user)
+    public function show(User $user): ApiResponseInterface
     {
         Gate::authorize('view', $user);
         $user->load('media');
@@ -138,7 +139,7 @@ final class UserController extends Controller
      * @responseFile 404 resources/responses/404.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function update(UserCreateData $data, User $user, UpdateUserAction $action)
+    public function update(UserCreateData $data, User $user, UpdateUserAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $user);
         $user = $action->handle($data, $user);

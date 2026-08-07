@@ -12,9 +12,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
+use Database\Factories\PartnerFactory;
 
 final class Partner extends Model
 {
+    /** @use HasFactory<PartnerFactory> */
     use HasFactory, Mediable;
 
     protected $fillable
@@ -30,8 +32,12 @@ final class Partner extends Model
             'is_active',
         ];
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     #[Scope]
-    public function active(Builder $query): Builder
+    protected function active(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }

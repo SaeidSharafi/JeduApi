@@ -66,6 +66,9 @@ final readonly class GetEnrollmentDetailAction
         );
     }
 
+    /**
+     * @return DataCollection<int, TeacherDetailData>
+     */
     private function buildTeachers(Enrollment $enrollment): DataCollection
     {
         $teachers = $enrollment->productDeliveryOption->teachers ?? collect();
@@ -109,7 +112,7 @@ final readonly class GetEnrollmentDetailAction
         );
     }
 
-    private function buildCertificateInfo(Enrollment $enrollment): ?EnrollmentCertificateInfoData
+    private function buildCertificateInfo(Enrollment $enrollment): EnrollmentCertificateInfoData
     {
         $productable = $enrollment->productDeliveryOption->product->productable;
 
@@ -130,7 +133,7 @@ final readonly class GetEnrollmentDetailAction
         );
     }
 
-    private function buildSurveyBlock(Enrollment $enrollment): ?EnrollmentSurveyBlockData
+    private function buildSurveyBlock(Enrollment $enrollment): EnrollmentSurveyBlockData
     {
         // TODO: integrate with survey provider (Rouyesh or similar) to supply url and message
         return new EnrollmentSurveyBlockData(
@@ -139,6 +142,9 @@ final readonly class GetEnrollmentDetailAction
         );
     }
 
+    /**
+     * @return DataCollection<int, DigitalAssetFileData>
+     */
     private function buildFiles(Enrollment $enrollment): DataCollection
     {
         $productable = $enrollment->productDeliveryOption->product->productable;
@@ -167,6 +173,9 @@ final readonly class GetEnrollmentDetailAction
         return new DataCollection(DigitalAssetFileData::class, $items);
     }
 
+    /**
+     * @return DataCollection<int, EnrollmentQuizData>
+     */
     private function buildQuizzes(Enrollment $enrollment): DataCollection
     {
         $provisioning = $enrollment->provisioning_data['providers'] ?? [];
@@ -205,11 +214,7 @@ final readonly class GetEnrollmentDetailAction
         $provisioning   = $enrollment->provisioning_data['providers'] ?? [];
 
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LIVE_SESSION_BBB => new DeliveryAccessData(
-                type: $deliveryMethod->value,
-                session_label: 'کلاس آنلاین',
-                join_url_path: '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
-            ),
+            DeliveryMethodEnum::LIVE_SESSION_BBB,
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 session_label: 'کلاس آنلاین',

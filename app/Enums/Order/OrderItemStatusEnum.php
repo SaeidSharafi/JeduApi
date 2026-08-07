@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum OrderItemStatusEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case PENDING   = 'pending';

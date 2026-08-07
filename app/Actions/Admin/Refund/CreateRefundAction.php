@@ -46,7 +46,7 @@ final class CreateRefundAction
             $refundAmount      = max(0, $amountPaidForItem - $deductionAmount);
 
             $payment       = $this->resolvePayment($orderItem);
-            $paymentMethod = $payment?->method?->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
+            $paymentMethod = $payment?->method->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
             $processor     = $this->processorFactory->make($paymentMethod);
 
             $isImmediateCompletion = $data->status                                                     === RefundStatusEnum::COMPLETED->value;

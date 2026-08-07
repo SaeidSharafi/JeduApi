@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum PublicationStatusEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case DRAFT     = 'draft';

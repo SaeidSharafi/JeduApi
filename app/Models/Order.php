@@ -62,31 +62,49 @@ final class Order extends Model implements WalletTransactionSourceableContract
         return app(OrderIncrementIdService::class)->generate();
     }
 
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * @return HasMany<Payment, $this>
+     */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
+    /**
+     * @return HasOne<Payment, $this>
+     */
     public function firstPayment(): HasOne
     {
         return $this->hasOne(Payment::class)->oldestOfMany();
     }
 
+    /**
+     * @return HasMany<Enrollment, $this>
+     */
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class, 'order_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_id');
     }
 
+    /**
+     * @return HasMany<Refund, $this>
+     */
     public function refunds(): HasMany
     {
         return $this->hasMany(Refund::class, 'order_id');
@@ -94,6 +112,8 @@ final class Order extends Model implements WalletTransactionSourceableContract
 
     /**
      * Accessor to get the live payment status of the order.
+     *
+     * @return Attribute<string, never>
      */
     public function paymentStatus(): Attribute
     {
@@ -119,6 +139,9 @@ final class Order extends Model implements WalletTransactionSourceableContract
         );
     }
 
+    /**
+     * @return Attribute<string, never>
+     */
     public function overallPaymentStatus(): Attribute
     {
         return Attribute::make(
@@ -162,6 +185,9 @@ final class Order extends Model implements WalletTransactionSourceableContract
         ];
     }
 
+    /**
+     * @return Attribute<int, never>
+     */
     protected function totalPaid(): Attribute
     {
         return Attribute::make(
@@ -189,14 +215,19 @@ final class Order extends Model implements WalletTransactionSourceableContract
      * not yet enabled. This accessor exists for future installment / online
      * rest-payment features. When installments ship, revisit retry-payment
      * flows and the provisioning trigger config.
+     *
+     * @return Attribute<int, never>
      */
     protected function balanceDue(): Attribute
     {
         return Attribute::make(
-            get: fn (): int|float => $this->full_value_grand_total - $this->total_paid,
+            get: fn (): int => $this->full_value_grand_total - $this->total_paid,
         );
     }
 
+    /**
+     * @return Attribute<int, never>
+     */
     protected function netRevenue(): Attribute
     {
         return Attribute::make(
@@ -207,17 +238,21 @@ final class Order extends Model implements WalletTransactionSourceableContract
     /**
      * Accessor to get total product-level discount (featured price + auto-promotions).
      * Sums product_discount_amount from all order items.
+     *
+     * @return Attribute<int, never>
      */
     protected function totalProductDiscount(): Attribute
     {
         return Attribute::make(
-            get: fn (): int => $this->items->sum->product_discount_amount,
+            get: fn (): int => (int) $this->items->sum('product_discount_amount'),
         );
     }
 
     /**
      * Accessor to get total cart-level discount (coupons).
      * This is an alias for discount_amount for clarity.
+     *
+     * @return Attribute<int, never>
      */
     protected function totalCartDiscount(): Attribute
     {
@@ -228,6 +263,8 @@ final class Order extends Model implements WalletTransactionSourceableContract
 
     /**
      * Accessor to get total of all discounts (product + cart).
+     *
+     * @return Attribute<int, never>
      */
     protected function totalDiscount(): Attribute
     {

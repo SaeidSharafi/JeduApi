@@ -128,6 +128,9 @@ final class AdminAuditMiddleware
     /**
      * Extract resource information from the request.
      */
+    /**
+     * @return array<string, mixed>
+     */
     private function extractResourceInfo(Request $request): array
     {
         $route      = $request->route();
@@ -202,6 +205,9 @@ final class AdminAuditMiddleware
     /**
      * Assess risk level of the action.
      */
+    /**
+     * @param  array<string, mixed>  $resourceInfo
+     */
     private function assessRiskLevel(Request $request, Response $response, array $resourceInfo): string
     {
         // High risk conditions
@@ -246,6 +252,9 @@ final class AdminAuditMiddleware
     /**
      * Extract wallet amount from request data.
      */
+    /**
+     * @param  array<string, mixed>  $requestData
+     */
     private function extractWalletAmount(array $requestData): int
     {
         return (int) ($requestData['amount'] ?? 0);
@@ -263,6 +272,10 @@ final class AdminAuditMiddleware
 
     /**
      * Sanitize request data to remove sensitive information.
+     */
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
      */
     private function sanitizeRequestData(array $data): array
     {

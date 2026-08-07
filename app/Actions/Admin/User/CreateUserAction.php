@@ -7,6 +7,7 @@ namespace App\Actions\Admin\User;
 use App\Data\Admin\User\UserCreateData;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Plank\Mediable\Media;
 
 final readonly class CreateUserAction
 {

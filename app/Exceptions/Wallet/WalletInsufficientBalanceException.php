@@ -53,6 +53,9 @@ final class WalletInsufficientBalanceException extends PaymentException
         return 'INSUFFICIENT_WALLET_BALANCE';
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
 

@@ -11,6 +11,7 @@ use App\Traits\AdvanceEnum;
 
 enum PaymentMethodEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case BANK_TRANSFER  = 'bank_transfer';
@@ -40,6 +41,9 @@ enum PaymentMethodEnum: string
         };
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function defaultConfig(): array
     {
         return match ($this) {

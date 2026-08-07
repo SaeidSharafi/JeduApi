@@ -12,6 +12,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 final class UniqueCivilIdRule implements DataAwareRule, ValidationRule
 {
+    /** @var array<string, mixed> */
     private array $data = [];
 
     public function __construct(private readonly ?int $userId = null) {}
@@ -20,7 +21,10 @@ final class UniqueCivilIdRule implements DataAwareRule, ValidationRule
      * Set the data under validation.
      * This method is automatically called by Laravel.
      */
-    public function setData(array $data): static
+    /**
+     * @param  array<string, mixed>  $data
+     */
+        public function setData(array $data): static
     {
         $this->data = $data;
 
@@ -54,7 +58,7 @@ final class UniqueCivilIdRule implements DataAwareRule, ValidationRule
             $userId = $this->userId;
         }
 
-        if (! $userId && $user = request()?->route()?->parameter('user')) {
+        if (! $userId && $user = request()->route()?->parameter('user')) {
             $userId = $user->id;
         }
 

@@ -27,7 +27,7 @@ final class InvalidJalaliDateException extends Exception
     /**
      * Convert this exception to a ValidationException for a 422 response.
      */
-    public function render(Request $request): void
+    public function render(Request $request): never
     {
         throw ValidationException::withMessages([
             $this->property => [$this->getMessage()],

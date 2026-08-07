@@ -8,7 +8,6 @@ use App\Actions\Admin\WalletCampaign\BulkCampaignAllocationAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\WalletCampaign\BulkCampaignAllocationData;
 use App\Http\Controllers\Controller;
-use App\Http\Responses\ApiSuccessResponse;
 use App\Models\WalletCampaign;
 use Illuminate\Support\Facades\Gate;
 
@@ -50,6 +49,6 @@ final class BulkCampaignAllocationController extends Controller
 
         $status = $result['failure_count'] === 0 ? 200 : 207; // 207 Multi-Status for partial success
 
-        return new ApiSuccessResponse($message, $result, $status);
+        return apiResponse()->success($result, $message, $status);
     }
 }

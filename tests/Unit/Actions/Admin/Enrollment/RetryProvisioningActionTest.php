@@ -100,7 +100,7 @@ describe('RetryProvisioningAction', function (): void {
         expect($result['message'])->toBe('Retry dispatched for 1 provider(s)')
             ->and($result['providers'])->toBe(['ims']);
 
-        Queue::assertPushed(ProvisionImsEnrollmentJob::class, function ($job) use ($enrollment) {
+        Queue::assertPushed(ProvisionImsEnrollmentJob::class, function ($job) use ($enrollment): bool {
             return $job->enrollmentId === $enrollment->id;
         });
     });

@@ -10,6 +10,7 @@ final class SmsMessage
 
     public ?string $pattern = null;
 
+    /** @var array<string, mixed> */
     public array $parameters = [];
 
     public string $type = 'custom';
@@ -26,6 +27,9 @@ final class SmsMessage
 
     /**
      * Set the pattern code for a pattern-based SMS.
+     */
+    /**
+     * @param  array<string, mixed>  $parameters
      */
     public function pattern(string $pattern, array $parameters = []): self
     {

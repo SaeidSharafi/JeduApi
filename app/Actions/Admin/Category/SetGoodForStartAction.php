@@ -16,7 +16,7 @@ final readonly class SetGoodForStartAction
         private CacheInvalidationService $cacheInvalidator
     ) {}
 
-    public function handle(Category $category, SetGoodForStartData $data): bool|int
+    public function handle(Category $category, SetGoodForStartData $data): int
     {
         $count = Categorizable::query()
             ->where('category_id', $category->id)

@@ -82,7 +82,7 @@ final class TeacherController extends Controller
         $teacher->load('user');
         $media = $teacher->getAllMediaByTag()
             ->map(function ($item, $tag) {
-                return $item->map(function ($mediaItem) use ($tag) {
+                return $item->map(function (\Plank\Mediable\Media $mediaItem) use ($tag): MediaData {
                     return MediaData::fromModel($mediaItem, $tag);
                 });
             })->toArray();

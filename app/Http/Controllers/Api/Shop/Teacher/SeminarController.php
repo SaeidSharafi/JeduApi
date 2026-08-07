@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop\Teacher;
 
 use App\Data\Shop\Teacher\TeacherSeminarData;
@@ -13,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
  *
  * @authenticated user
  */
-class SeminarController extends Controller
+final class SeminarController extends Controller
 {
     /**
      * List Teacher Seminars
@@ -23,15 +25,16 @@ class SeminarController extends Controller
      * @queryParam per_page int Optional. Number of items per page. Default is the app's page size.
      *
      * @responseFile 200 resources/responses/shop/teacher/seminars.json
+     *
      * @response 403 {"message": "Access Denied"}
      */
-    public function __invoke()
+    public function __invoke(): \App\Contracts\ApiResponseInterface
     {
         /** @var Teacher|null $teacher */
         $teacher = Auth::user()?->teacherData;
         abort_unless((bool) $teacher, 403);
 
-        $seminars  = $teacher->products()
+        $seminars = $teacher->products()
             ->with('product')
             ->whereIn('delivery_method', DeliveryMethodEnum::getSeminars())
             ->paginate(request()->integer('per_page', config('app.page_size')))

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Search\SearchSuggestRequestData;
 use App\Http\Controllers\Controller;
 use App\Services\GlobalSearchService;
+use Illuminate\Http\JsonResponse;
 
 /**
  * @group Shop - Search
@@ -25,9 +27,9 @@ final class SuggestSearchController extends Controller
      *
      * @responseFile 200 resources/responses/shop/suggest-search.json
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function __invoke(SearchSuggestRequestData $requestData, GlobalSearchService $service)
+    public function __invoke(SearchSuggestRequestData $requestData, GlobalSearchService $service): ApiResponseInterface
     {
         $suggestions = $service->suggest($requestData->q, $requestData->limit);
 

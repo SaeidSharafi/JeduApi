@@ -42,7 +42,7 @@ final class Staff extends Authenticatable implements MustVerifyEmail, WalletTran
         return ! is_null($this->password);
     }
 
-    public function routeNotificationForSms($notification): string
+    public function routeNotificationForSms(mixed $notification): string
     {
         return $this->phone;
     }

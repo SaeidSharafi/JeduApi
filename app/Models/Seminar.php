@@ -20,6 +20,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Plank\Mediable\Mediable;
 
+/**
+ * @implements ProductableContract<Seminar>
+ * @implements ReviewableContract<Seminar>
+ */
 final class Seminar extends Model implements ProductableContract, ReviewableContract
 {
     use HasAssets;
@@ -58,6 +62,9 @@ final class Seminar extends Model implements ProductableContract, ReviewableCont
         'meta_keywords',
     ];
 
+    /**
+     * @return MorphToMany<BlogPost, $this>
+     */
     public function blogPosts(): MorphToMany
     {
         return $this->morphToMany(BlogPost::class, 'productable', 'blog_post_productables');

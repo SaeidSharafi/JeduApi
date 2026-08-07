@@ -98,6 +98,9 @@ final class DigipayClient
         return $response;
     }
 
+    /**
+     * @param  array<int, array<string, mixed>>  $products
+     */
     public function deliver(
         string $trackingCode,
         string $invoiceNumber,
@@ -161,6 +164,10 @@ final class DigipayClient
         return $response;
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
     private function post(string $path, array $data): array
     {
         $token = $this->authenticator->getAccessToken();
@@ -195,6 +202,10 @@ final class DigipayClient
         return $response->json() ?? [];
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
     private function maskSensitive(array $data): array
     {
         $sensitiveFields = config('payments.digipay.logging.sensitive_fields', []);

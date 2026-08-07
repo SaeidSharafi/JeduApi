@@ -131,6 +131,9 @@ final class OrderStatusService
         $this->updateEnrollmentStatus($item);
     }
 
+    /**
+     * @param  Collection<int, OrderItem>  $items
+     */
     private function determineOrderStatus(Collection $items): OrderStatusEnum
     {
         if ($items->isEmpty()) {

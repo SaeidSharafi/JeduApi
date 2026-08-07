@@ -8,18 +8,30 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\AvailabilityStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\TermStatusEnum;
+use App\Models\Product;
+use App\Models\ProductDeliveryOption;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 
 final class ProductAvailabilityFilter
 {
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyPublishedAndVisible(Builder $query): Builder
     {
         return $query->where('products.status', PublicationStatusEnum::PUBLISHED)
             ->where('products.is_visible', true);
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyHasPublishedDeliveryOption(Builder $query): Builder
     {
         if (config('products.availability.use_denormalized')) {
@@ -30,6 +42,11 @@ final class ProductAvailabilityFilter
             ->where('status', PublicationStatusEnum::PUBLISHED));
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyPublishedProductable(Builder $query): Builder
     {
         if (config('products.availability.use_denormalized')) {
@@ -40,6 +57,11 @@ final class ProductAvailabilityFilter
             ->where('status', PublicationStatusEnum::PUBLISHED));
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyActiveTerm(Builder $query): Builder
     {
         if (config('products.availability.use_denormalized')) {
@@ -53,12 +75,18 @@ final class ProductAvailabilityFilter
         });
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyAvailableNow(Builder $query): Builder
     {
         $today = today();
 
         if (! config('products.availability.use_denormalized')) {
             return $query->whereHas('productDeliveryOptions', function (Builder $optionQuery) use ($today): void {
+                /** @var Builder<ProductDeliveryOption> $optionQuery */
                 self::applyOptionDateWindow($optionQuery, 'registration_start_date', 'registration_end_date', $today);
                 self::applyOptionDateWindow($optionQuery, 'available_from', 'available_to', $today);
             });
@@ -79,6 +107,11 @@ final class ProductAvailabilityFilter
                 ->orWhere('latest_availability_end', '>=', $today));
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyContentAvailableNow(Builder $query): Builder
     {
         $today = today();
@@ -94,20 +127,36 @@ final class ProductAvailabilityFilter
         }
 
         return $query->whereHas('productDeliveryOptions', function (Builder $optionQuery) use ($today): void {
+            /** @var Builder<ProductDeliveryOption> $optionQuery */
             self::applyOptionDateWindow($optionQuery, 'available_from', 'available_to', $today);
         });
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyEventStatus(Builder $query, AvailabilityStatusEnum $status): Builder
     {
         return $query->availabilityStatus($status);
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyEventNotEnded(Builder $query): Builder
     {
         return $query->eventNotEnded();
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyRegistrationWindow(Builder $query, ?Carbon $from, ?Carbon $to): Builder
     {
         if ($from === null && $to === null) {
@@ -118,15 +167,23 @@ final class ProductAvailabilityFilter
             return self::applySnapshotWindow($query, 'earliest_registration_start', 'latest_registration_end', $from, $to);
         }
 
-        return $query->whereHas('productDeliveryOptions', fn (Builder $optionQuery): Builder => self::applyRelationshipWindow(
-            $optionQuery,
-            'registration_start_date',
-            'registration_end_date',
-            $from,
-            $to,
-        ));
+        return $query->whereHas('productDeliveryOptions', function (Builder $optionQuery) use ($from, $to): Builder {
+            /** @var Builder<ProductDeliveryOption> $optionQuery */
+            return self::applyRelationshipWindow(
+                $optionQuery,
+                'registration_start_date',
+                'registration_end_date',
+                $from,
+                $to,
+            );
+        });
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyAvailabilityWindow(Builder $query, ?Carbon $from, ?Carbon $to): Builder
     {
         if ($from === null && $to === null) {
@@ -137,15 +194,23 @@ final class ProductAvailabilityFilter
             return self::applySnapshotWindow($query, 'earliest_availability_start', 'latest_availability_end', $from, $to);
         }
 
-        return $query->whereHas('productDeliveryOptions', fn (Builder $optionQuery): Builder => self::applyRelationshipWindow(
-            $optionQuery,
-            'available_from',
-            'available_to',
-            $from,
-            $to,
-        ));
+        return $query->whereHas('productDeliveryOptions', function (Builder $optionQuery) use ($from, $to): Builder {
+            /** @var Builder<ProductDeliveryOption> $optionQuery */
+            return self::applyRelationshipWindow(
+                $optionQuery,
+                'available_from',
+                'available_to',
+                $from,
+                $to,
+            );
+        });
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public static function applyNearCapacity(Builder $query, float $threshold = 0.8): Builder
     {
         $threshold = max(0.0, min(1.0, $threshold));
@@ -160,6 +225,9 @@ final class ProductAvailabilityFilter
             ->whereRaw('(((enrolled_count + reserved_count) * 1.0) / NULLIF(capacity, 0)) >= ?', [$threshold]));
     }
 
+    /**
+     * @param Builder<ProductDeliveryOption> $query
+     */
     private static function applyOptionDateWindow(Builder $query, string $startColumn, string $endColumn, CarbonInterface $date): void
     {
         $query->where(fn (Builder $dateQuery): Builder => $dateQuery
@@ -170,6 +238,11 @@ final class ProductAvailabilityFilter
                 ->orWhere($endColumn, '>=', $date->endOfDay()));
     }
 
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     private static function applySnapshotWindow(Builder $query, string $startColumn, string $endColumn, ?Carbon $from, ?Carbon $to): Builder
     {
         if ($from !== null) {
@@ -187,6 +260,11 @@ final class ProductAvailabilityFilter
         return $query;
     }
 
+    /**
+     * @param Builder<ProductDeliveryOption> $query
+     *
+     * @return Builder<ProductDeliveryOption>
+     */
     private static function applyRelationshipWindow(Builder $query, string $startColumn, string $endColumn, ?Carbon $from, ?Carbon $to): Builder
     {
         return $query->where(function (Builder $dateQuery) use ($startColumn, $endColumn, $from, $to): void {

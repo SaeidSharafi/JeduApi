@@ -51,7 +51,7 @@ final class DigitalAssetController extends Controller
         $requestData->type = ProductableEnum::DIGITAL_ASSET->value;
         $courses           = ProductQueryService::make()
             ->getDigitalAssetList($requestData)
-            ->through(function (Product $product) {
+            ->through(function (Product $product): ProductCardData {
                 $priceData = $this->priceService->getPriceDataForProduct($product);
 
                 return ProductCardData::fromModel($product, $priceData);

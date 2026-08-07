@@ -26,9 +26,9 @@ final readonly class UpdateCourseAction
             $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
             $course->update($valdiatedData);
             $course->products()->update(['slug' => $data->slug]);
-            $mediaInput    = $data->media          ?? [];
-            $categories    = $data->categories     ?? [];
-            $digitalAssets = $data->digital_assets ?? [];
+            $mediaInput    = $data->media         ;
+            $categories    = $data->categories    ;
+            $digitalAssets = $data->digital_assets;
             $course->categories()->sync($categories);
             $course->digitalAssets()->sync($digitalAssets);
 

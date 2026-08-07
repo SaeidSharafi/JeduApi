@@ -7,6 +7,7 @@ use App\Services\Payment\Digipay\DigipayAuthenticator;
 use App\Services\Payment\Digipay\DigipayClient;
 use App\Services\Payment\Digipay\DigipayConfigRepository;
 use Illuminate\Support\Facades\Http;
+use \Illuminate\Http\Client\Request;
 
 beforeEach(function (): void {
     config()->set('payments.digipay.base_url', 'https://api.digipay.test');
@@ -53,13 +54,13 @@ it('successfully creates a Digipay payment ticket', function (): void {
         ->and($response->ticket)->toBe('v2:test-ticket-abc')
         ->and($response->redirectUrl)->toContain('gateway.digipay.test');
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), 'tickets/business?type=11')
-            && $request['amount']      === 500_000
-            && $request['cellNumber']  === '09121234567'
-            && $request['providerId']  === 'ORDER-1001'
-            && $request['callbackUrl'] === 'https://shop.test/digipay/callback'
-            && $request['additionalInfo']['description'] === 'Order #1001 payment';
+            && $request->data()['amount']                        === 500_000
+            && $request->data()['cellNumber']                    === '09121234567'
+            && $request->data()['providerId']                    === 'ORDER-1001'
+            && $request->data()['callbackUrl']                   === 'https://shop.test/digipay/callback'
+            && $request->data()['additionalInfo']['description'] === 'Order #1001 payment';
     });
 });
 
@@ -106,10 +107,10 @@ it('successfully verifies a Digipay payment', function (): void {
         ->and($response->amount)->toBe(500_000)
         ->and($response->paymentGateway)->toBe(2);
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), 'purchases/verify?type=2')
-            && $request['trackingCode'] === 'TRK-SUCCESS-999'
-            && $request['providerId']   === 'ORDER-1001';
+            && $request->data()['trackingCode'] === 'TRK-SUCCESS-999'
+            && $request->data()['providerId']   === 'ORDER-1001';
     });
 });
 
@@ -149,8 +150,8 @@ it('masks configured sensitive fields in request data', function (): void {
 
     // The HTTP request itself must carry the unmasked value.
     // maskSensitive() only affects log output, not the actual request.
-    Http::assertSent(function ($request) {
-        return $request['cellNumber'] === '09121111111';
+    Http::assertSent(function (Request $request): bool {
+        return $request->data()['cellNumber'] === '09121111111';
     });
 
     expect($response->statusCode)->toBe(0);
@@ -181,11 +182,11 @@ it('successfully refunds a payment via Digipay API', function (): void {
         ->and($response->message)->toBe('Refund successful')
         ->and($response->trackingCode)->toBe('DGP-REF-SUCCESS');
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return $request->url()              === 'https://api.digipay.test/digipay/api/refunds?type=0'
-            && $request['providerId']       === 'PROV-123'
-            && $request['amount']           === 500000
-            && $request['saleTrackingCode'] === 'DGP-SALE-123';
+            && $request->data()['providerId']       === 'PROV-123'
+            && $request->data()['amount']           === 500000
+            && $request->data()['saleTrackingCode'] === 'DGP-SALE-123';
     });
 });
 
@@ -240,10 +241,10 @@ it('successfully reverses a payment via Digipay API', function (): void {
         ->and($response->amount)->toBe(500000)
         ->and($response->statusCode)->toBe(0);
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), 'reverse')
-            && $request['purchaseTrackingCode'] === 'DGP-SALE-123'
-            && $request['providerId']           === 'PROV-123';
+            && $request->data()['purchaseTrackingCode'] === 'DGP-SALE-123'
+            && $request->data()['providerId']           === 'PROV-123';
     });
 });
 
@@ -281,10 +282,10 @@ it('successfully confirms delivery for BNPL/CREDIT payments', function (): void 
     expect($response->statusCode)->toBe(0)
         ->and($response->message)->toBe('Delivery confirmed');
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), 'deliver?type=5')
-            && $request['trackingCode']  === 'DGP-SALE-123'
-            && $request['invoiceNumber'] === 'INV-123';
+            && $request->data()['trackingCode']  === 'DGP-SALE-123'
+            && $request->data()['invoiceNumber'] === 'INV-123';
     });
 });
 
@@ -329,7 +330,7 @@ it('successfully inquires refund status', function (): void {
         ->and($response->trackingCode)->toBe('DGP-REF-INQUIRY')
         ->and($response->destination)->toBe('6037********1234');
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         return str_contains($request->url(), 'refunds/REFUND-123?type=0');
     });
 });

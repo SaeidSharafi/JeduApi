@@ -11,6 +11,9 @@ final readonly class GetDeliveryDetailsValidationRulesAction
 {
     /**
      * Execute the action.
+     *
+     * @param  array<string, mixed>|null  $detailsData
+     * @return array<string, mixed>
      */
     public function handle(
         ?string $fulfillmentType,

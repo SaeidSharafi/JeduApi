@@ -19,8 +19,8 @@ final class UpdateHeaderSettingAction
         $header = $data->toArray();
 
         $links = $header['navigation_links'] ?? [];
-        usort($links, fn ($a, $b): int => ($a['order'] ?? 0) <=> ($b['order'] ?? 0));
-        $header['navigation_links'] = array_values($links);
+        usort($links, fn (array $a, array $b): int => ($a['order'] ?? 0) <=> ($b['order'] ?? 0));
+        $header['navigation_links'] = $links;
 
         $logo               = $data->logo ? Media::find($data->logo) : null;
         $header['logo_url'] = $logo?->getUrl();

@@ -11,6 +11,7 @@ use App\Traits\AdvanceEnum;
 
 enum ProductableEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
     case COURSE        = 'course';
     case SEMINAR       = 'seminar';

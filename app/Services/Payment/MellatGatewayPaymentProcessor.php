@@ -17,9 +17,9 @@ use App\Exceptions\Payment\PaymentTransactionNotFoundException;
 use App\Models\Payment;
 use App\Services\PaymentTransactionReferenceService;
 use App\Services\SettingsService;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use SoapFault;
-use Exception;
 
 /**
  * Payment processor for Mellat Gateway online payments.
@@ -29,7 +29,8 @@ use Exception;
  */
 final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 {
-    private array $config = [];
+    /** @var array<string, mixed> */
+    private array $config;
 
     public function __construct(
         public readonly SoapClientFactory $soapClientFactory,
@@ -97,7 +98,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         Log::info('Mellat payment initiated', [
             'payment_id'      => $payment->id,
             'payment_uuid'    => $payment->uuid,
-            'order_reference' => $payment->order?->increment_id ?? 'topup',
+            'order_reference' => $payment->order->increment_id ?? 'topup',
             'transaction_ref' => $transactionReference,
             'ref_id'          => $refId,
         ]);
@@ -112,6 +113,9 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $callbackData
+     */
     public function verify(Payment $payment, array $callbackData): Payment
     {
         // Gatekeeper: prevent double-verification if already completed
@@ -323,6 +327,9 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
     /**
      * get RefId from Mellat Gateway
      */
+    /**
+     * @param  array<string, mixed>  $params
+     */
     private function sendPayRequest(array $params): string
     {
         try {
@@ -462,7 +469,10 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         return $isTest ? config('payments.mellat.test_gateway_url') : config('payments.mellat.gateway_url');
     }
 
-    private function getConfig(string $key, $default = null)
+    /**
+     * @return mixed
+     */
+    private function getConfig(string $key, mixed $default = null)
     {
         return data_get($this->config, $key, $default);
     }

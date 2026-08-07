@@ -35,7 +35,7 @@ final readonly class CartService
 
     public function findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart
     {
-        $userId = $user?->id ?? $this->identifier->userId();
+        $userId = $user->id ?? $this->identifier->userId();
 
         if ($userId !== null) {
             return $this->resolveCart('user_id', $userId, $lockForUpdate);
@@ -163,8 +163,8 @@ final readonly class CartService
         }
 
         // Build order context from current cart items to check conditions
-        $userId   = $cart->user_id ?? Auth::guard('user')->id();
-        $items    = $cart->items->map(fn (CartItem $item): OrderItemCreateData => new OrderItemCreateData(
+        $userId = $cart->user_id ?? Auth::guard('user')->id();
+        $items  = $cart->items->map(fn (CartItem $item): OrderItemCreateData => new OrderItemCreateData(
             product_delivery_option_id: $item->product_delivery_option_id,
             payment_type: $item->payment_type instanceof OrderItemPaymentTypeEnum
                 ? $item->payment_type->value

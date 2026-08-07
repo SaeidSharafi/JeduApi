@@ -19,7 +19,7 @@ final class GetNextPaymentDetailsAction
      * Calculates and describes the next logical payment for an order.
      * This is a READ-ONLY action used to inform the admin.
      *
-     * @throws Exception
+     * @throws OrderFullyPaidException
      */
     public function handle(Order $order): NextPaymentDetailsData
     {
@@ -61,6 +61,10 @@ final class GetNextPaymentDetailsAction
 
     /**
      * Builds the details for the very first payment on an order.
+     */
+    /**
+     * @param  Collection<int, OrderItem>  $fullPaymentItems
+     * @param  Collection<int, OrderItem>  $prePaymentItems
      */
     private function buildInitialPaymentDetails(
         Collection $fullPaymentItems,
@@ -104,6 +108,9 @@ final class GetNextPaymentDetailsAction
     /**
      * Builds the details for the final balance payment.
      */
+    /**
+     * @param  Collection<int, OrderItem>  $prePaymentItems
+     */
     private function buildFinalBalancePaymentDetails(
         Order $order,
         Collection $prePaymentItems
@@ -127,6 +134,10 @@ final class GetNextPaymentDetailsAction
     /**
      * Generates a clear summary string for the initial payment scenario.
      */
+    /**
+     * @param  Collection<int, OrderItem>  $fullPaymentItems
+     * @param  Collection<int, OrderItem>  $prePaymentItems
+     */
     private function generateInitialSummary(Collection $fullPaymentItems, Collection $prePaymentItems): string
     {
         $hasFull = $fullPaymentItems->isNotEmpty();
@@ -148,6 +159,9 @@ final class GetNextPaymentDetailsAction
 
     /**
      * Helper to format a collection of order items into a simple array of names.
+     *
+     * @param  Collection<int, OrderItem>  $items
+     * @return array<int, string>
      */
     private function formatItemList(Collection $items): array
     {

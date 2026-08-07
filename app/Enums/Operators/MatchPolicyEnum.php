@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum MatchPolicyEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
     case ANY = 'any';
     case ALL = 'all';

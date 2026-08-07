@@ -36,7 +36,7 @@ test('InitiateAuthAction returns correct action for user without password', func
     $mockGenerateOtp->shouldReceive('execute')
         ->once()
         ->with(
-            Mockery::on(function (User $argumentUser) use ($user) {
+            Mockery::on(function (User $argumentUser) use ($user): bool {
                 return $argumentUser instanceof User && $argumentUser->is($user);
             }),
             OtpType::SIGNIN

@@ -40,7 +40,7 @@ final class ProvisionBbbEnrollmentJob extends AbstractProvisioningJob
             return;
         }
 
-        $details   = $enrollment->productDeliveryOption?->details_json ?? [];
+        $details   = $enrollment->productDeliveryOption->details_json ?? [];
         $meetingId = data_get($details, 'meeting_id');
 
         // A missing meeting_id in the DB will never fix itself on retry.
@@ -57,7 +57,7 @@ final class ProvisionBbbEnrollmentJob extends AbstractProvisioningJob
         if ($autoCreate) {
             $service->createMeeting(
                 meetingId: $meetingId,
-                name: $enrollment->productDeliveryOption?->name ?? "meeting-{$meetingId}",
+                name: $enrollment->productDeliveryOption->name ?? "meeting-{$meetingId}",
                 attendeePw: is_string($attendeePassword) ? $attendeePassword : null,
                 moderatorPw: is_string($moderatorPassword) ? $moderatorPassword : null,
             );

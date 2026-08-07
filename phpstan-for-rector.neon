@@ -1,0 +1,13 @@
+# phpstan-for-rector.neon
+includes:
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+    paths:
+        - app/
+
+    level: 6
+
+    excludePaths:
+        - 'app/Data/'
+        - 'app/Scribe/'

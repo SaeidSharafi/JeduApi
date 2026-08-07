@@ -15,7 +15,7 @@ final readonly class UpdateWalletCampaignAction
      */
     public function execute(WalletCampaign $campaign, WalletCampaignCreateData $data): WalletCampaign
     {
-        return DB::transaction(function () use ($campaign, $data) {
+        return DB::transaction(function () use ($campaign, $data): WalletCampaign {
             $campaign->update([
                 'name'                 => $data->name,
                 'description'          => $data->description,

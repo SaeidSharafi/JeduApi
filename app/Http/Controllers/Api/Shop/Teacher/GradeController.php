@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Teacher;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Teacher\StoreBulkGradeData;
 use App\Data\Shop\Teacher\StoreGradeData;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Http\Controllers\Controller;
 use App\Models\Teacher;
 use App\Services\Integrations\ImsService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -34,7 +37,7 @@ final class GradeController extends Controller
      *
      * @responseFile 200 resources/responses/shop/teacher/grade/index.json
      */
-    public function index(Request $request, string $courseCode)
+    public function index(Request $request, string $courseCode): JsonResponse
     {
         /** @var Teacher|null $teacher */
         $teacher = Auth::user()?->teacherData;
@@ -58,7 +61,7 @@ final class GradeController extends Controller
      * @responseFile 200 resources/responses/shop/teacher/grade/store.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function store(StoreGradeData $data, string $courseCode)
+    public function store(StoreGradeData $data, string $courseCode): JsonResponse
     {        /** @var Teacher|null $teacher */
         $teacher = Auth::user()?->teacherData;
         abort_unless((bool) $teacher, 403);
@@ -81,7 +84,7 @@ final class GradeController extends Controller
      * @responseFile 200 resources/responses/shop/teacher/grade/bulk.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function storeBulk(StoreBulkGradeData $data, string $courseCode)
+    public function storeBulk(StoreBulkGradeData $data, string $courseCode): ApiResponseInterface
     {
         /** @var Teacher|null $teacher */
         $teacher = Auth::user()?->teacherData;
@@ -98,7 +101,7 @@ final class GradeController extends Controller
             );
         }
 
-        return response()->json($response);
+        return apiResponse()->success($response);
     }
 
     /**
@@ -107,7 +110,8 @@ final class GradeController extends Controller
      * <aside class="notice">NOT IMPLEMENTED YET</aside>
      *
      */
-    public function destroy(int $gradeId){
+    public function destroy(int $gradeId): Response
+    {
         //TODO implement the grade delete
         return response()->noContent();
     }

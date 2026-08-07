@@ -85,6 +85,9 @@ final class DigipayPaymentProcessor implements PaymentProcessorContract
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $callbackData
+     */
     public function verify(Payment $payment, array $callbackData): Payment
     {
         // Gatekeeper: prevent double-verification

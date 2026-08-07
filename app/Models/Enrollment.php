@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Str;
+use Database\Factories\EnrollmentFactory;
 
 final class Enrollment extends Model
 {
+    /** @use HasFactory<EnrollmentFactory> */
     use HasFactory;
 
     protected $fillable
@@ -30,26 +32,41 @@ final class Enrollment extends Model
             'notes',
         ];
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<OrderItem, $this>
+     */
     public function orderItem(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_id');
     }
 
+    /**
+     * @return BelongsTo<ProductDeliveryOption, $this>
+     */
     public function productDeliveryOption(): BelongsTo
     {
         return $this->belongsTo(ProductDeliveryOption::class, 'product_delivery_option_id');
     }
 
+    /**
+     * @return HasOneThrough<Product, ProductDeliveryOption, $this>
+     */
     public function product(): HasOneThrough
     {
         return $this->hasOneThrough(

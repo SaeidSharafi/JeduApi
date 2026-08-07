@@ -26,7 +26,7 @@ final class ApplyPercentageDiscountToItemsAction implements DiscountActionContra
         }
 
         $discountRate  = $configuration->percentage / 100;
-        $promotionName = $context->evaluating_promotion?->name ?? 'Discount';
+        $promotionName = $context->evaluating_promotion->name ?? 'Discount';
 
         foreach ($context->items as $item) {
             // HERE IS THE CRITICAL LOGIC FOR PREPAYMENTS

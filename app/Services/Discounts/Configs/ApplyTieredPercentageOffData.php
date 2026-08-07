@@ -8,7 +8,9 @@ use Spatie\LaravelData\Data;
 
 final class ApplyTieredPercentageOffData extends Data
 {
-    /** @var TierData[] */
+    /**
+     * @param  array<int, TierData>  $tiers
+     */
     public function __construct(
         public array $tiers
     ) {}

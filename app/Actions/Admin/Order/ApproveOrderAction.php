@@ -36,7 +36,6 @@ final readonly class ApproveOrderAction
      * @param  Order  $order  The order to approve
      * @return Order The approved order
      *
-     * @throws ValidationException If order cannot be approved
      */
     public function handle(Order $order): Order
     {

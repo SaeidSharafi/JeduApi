@@ -34,6 +34,9 @@ final readonly class GetJoinUrlAction
         };
     }
 
+    /**
+     * @param  array<string, mixed>  $provisioning
+     */
     private function buildBbbJoinUrl(Enrollment $enrollment, array $provisioning): JoinUrlData
     {
         $meetingId = data_get($provisioning, 'bbb.data.meeting_id');
@@ -50,6 +53,9 @@ final readonly class GetJoinUrlAction
         return new JoinUrlData(url: $joinUrl, type: 'bbb');
     }
 
+    /**
+     * @param  array<string, mixed>  $provisioning
+     */
     private function buildSkyroomJoinUrl(Enrollment $enrollment, array $provisioning): JoinUrlData
     {
         $roomId = data_get($provisioning, 'skyroom.data.room_id');
@@ -62,7 +68,7 @@ final readonly class GetJoinUrlAction
         $joinUrl  = $this->skyroomService->createLoginUrl(
             roomId: (int) $roomId,
             userId: 'user-'.$enrollment->customer_id,
-            nickname: $customer?->full_name ?? 'دانشجو',
+            nickname: $customer->full_name ?? 'دانشجو',
         );
 
         return new JoinUrlData(url: $joinUrl, type: 'skyroom');

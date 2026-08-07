@@ -13,7 +13,7 @@ final class UpdateHomePageBlockAction
 {
     public function handle(HomePageBlock $block, HomePageBlockCreateData $data): HomePageBlock
     {
-        return DB::transaction(function () use ($data, $block) {
+        return DB::transaction(function () use ($data, $block): HomePageBlock {
 
             if (isset($data->content['image_id'])) {
                 $media                      = Media::findOrFail($data->content['image_id']);

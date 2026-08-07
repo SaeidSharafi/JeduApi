@@ -30,7 +30,7 @@ final class GatewayCallbackController extends Controller
      * @responseFile 200 resources/responses/shop/payment/verify.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function handle(Request $request, Payment $payment, GatewayCallbackData $data, VerifyPaymentAction $action)
+    public function handle(Request $request, Payment $payment, GatewayCallbackData $data, VerifyPaymentAction $action): \Illuminate\Http\RedirectResponse
     {
         $callbackPayload = $data->gateway_response ?? $request->all();
 

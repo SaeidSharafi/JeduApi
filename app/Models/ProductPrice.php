@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -28,6 +29,9 @@ final class ProductPrice extends Model
     /**
      * The product this price data belongs to.
      */
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
@@ -51,6 +55,9 @@ final class ProductPrice extends Model
 
     /**
      * Get the price range if there's a difference between min and max.
+     */
+    /**
+     * @return array{min: int, max: int}
      */
     public function getPriceRange(): array
     {
@@ -78,27 +85,36 @@ final class ProductPrice extends Model
 
     /**
      * Scope for products with discounts.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
      */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
-    protected function withDiscount($query)
+    protected function withDiscount(Builder $query): Builder
     {
         return $query->where('has_discount', true);
     }
 
     /**
      * Scope for products with featured prices.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
      */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
-    protected function withFeaturedPrice($query)
+    protected function withFeaturedPrice(Builder $query): Builder
     {
         return $query->where('has_featured_price', true);
     }
 
     /**
      * Scope for products within a price range.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
      */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
-    protected function priceRange($query, ?int $minPrice = null, ?int $maxPrice = null)
+    protected function priceRange(Builder $query, ?int $minPrice = null, ?int $maxPrice = null): Builder
     {
         if ($minPrice !== null) {
             $query->where('min_price', '>=', $minPrice);

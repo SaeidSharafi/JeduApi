@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum EducationLevelEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
     case STUDENT       = 'student';
     case UNDER_DIPLOMA = 'under_diploma';

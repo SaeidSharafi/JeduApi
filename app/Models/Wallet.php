@@ -26,12 +26,17 @@ final class Wallet extends Model
         'status',
     ];
 
-    // Relationships
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return HasMany<WalletTransaction, $this>
+     */
     public function transactions(): HasMany
     {
         return $this->hasMany(WalletTransaction::class);

@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum MathOperatorEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
     case EQUAL                 = '==';
     case LESS_THAN             = '<';

@@ -78,6 +78,9 @@ final class SyncMoodleProgressJob implements ShouldQueue
         ])->saveQuietly();
     }
 
+    /**
+     * @return array<int, int>
+     */
     public function backoff(): array
     {
         return [60, 180];

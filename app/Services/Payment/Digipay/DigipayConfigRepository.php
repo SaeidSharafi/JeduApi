@@ -10,6 +10,7 @@ use App\Services\SettingsService;
 
 final class DigipayConfigRepository
 {
+    /** @var array<string, mixed> */
     private array $settings;
 
     public function __construct(SettingsService $settingsService)

@@ -37,7 +37,7 @@ final class Category extends Model
     ];
 
     /**
-     * @return MorphToMany<Course,$this>
+     * @return MorphToMany<Course, $this>
      */
     public function courses(): MorphToMany
     {
@@ -45,7 +45,7 @@ final class Category extends Model
     }
 
     /**
-     * @return MorphToMany<DigitalAsset,$this>
+     * @return MorphToMany<DigitalAsset, $this>
      */
     public function digitalAssets(): MorphToMany
     {
@@ -53,20 +53,23 @@ final class Category extends Model
     }
 
     /**
-     * @return MorphToMany<Seminar,$this>
+     * @return MorphToMany<Seminar, $this>
      */
     public function seminars(): MorphToMany
     {
         return $this->morphedByMany(Seminar::class, 'categorizable');
     }
 
+    /**
+     * @return HasMany<Categorizable, $this>
+     */
     public function categorizable(): HasMany
     {
         return $this->hasMany(Categorizable::class);
     }
 
     /**
-     * @return MorphToMany<Product,$this>
+     * @return MorphToMany<Product, $this>
      */
     public function products(): MorphToMany
     {
@@ -74,7 +77,7 @@ final class Category extends Model
     }
 
     /**
-     * @return BelongsTo<Category>
+     * @return BelongsTo<Category, $this>
      */
     public function parent(): BelongsTo
     {
@@ -82,7 +85,7 @@ final class Category extends Model
     }
 
     /**
-     * @return HasMany<Category>
+     * @return HasMany<Category, $this>
      */
     public function children(): HasMany
     {

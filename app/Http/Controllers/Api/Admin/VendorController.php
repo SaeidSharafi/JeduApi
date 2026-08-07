@@ -15,7 +15,9 @@ use App\Data\Admin\Vendor\VendorListItemData;
 use App\Http\Controllers\Controller;
 use App\Models\Vendor;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Plank\Mediable\Media;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -75,9 +77,10 @@ final class VendorController extends Controller
     public function show(Vendor $vendor): ApiResponseInterface
     {
         Gate::authorize('view', $vendor);
+
         $media = $vendor->getAllMediaByTag()
-            ->map(function ($item, $tag) {
-                return $item->map(function ($mediaItem) use ($tag) {
+            ->map(function (Collection $item, string $tag) {
+                return $item->map(function (Media $mediaItem) use ($tag): MediaData {
                     return MediaData::fromModel($mediaItem, $tag);
                 });
             })->toArray();
@@ -103,8 +106,8 @@ final class VendorController extends Controller
         $action->handle($data, $vendor);
         $vendor->refresh();
         $media = $vendor->getAllMediaByTag()
-            ->map(function ($item, $tag) {
-                return $item->map(function ($mediaItem) use ($tag) {
+            ->map(function (Collection $item, string $tag) {
+                return $item->map(function (Media $mediaItem) use ($tag): MediaData {
                     return MediaData::fromModel($mediaItem, $tag);
                 });
             })->toArray();

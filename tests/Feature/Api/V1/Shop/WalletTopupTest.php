@@ -143,7 +143,7 @@ describe('authenticated wallet topup', function (): void {
         $mockProcessor = m::mock(PaymentProcessorContract::class);
         $mockProcessor->shouldReceive('process')
             ->once()
-            ->andReturnUsing(function ($payment) use (&$capturedPayment) {
+            ->andReturnUsing(function (Payment $payment) use (&$capturedPayment): PaymentProcessResultData {
                 $capturedPayment = $payment;
 
                 return PaymentProcessResultData::pendingWithRedirect(

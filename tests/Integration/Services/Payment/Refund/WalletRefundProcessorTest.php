@@ -24,7 +24,7 @@ it('processes wallet refund by recording a wallet transaction', function (): voi
     $this->mock(RecordWalletTransactionAction::class, function (MockInterface $mock) use ($order, $refund): void {
         $mock->shouldReceive('execute')
             ->once()
-            ->withArgs(function (RecordTransactionData $data) use ($order, $refund) {
+            ->withArgs(function (RecordTransactionData $data) use ($order, $refund): bool {
                 return $data->user_id         === $order->customer_id
                     && $data->amount          === 250000
                     && $data->type            === TransactionTypeEnum::REFUND

@@ -59,6 +59,9 @@ abstract class BaseDeploymentJob implements ShouldQueue
      *
      * @throws RuntimeException If the process fails.
      */
+    /**
+     * @param  array<string, string>  $env
+     */
     protected function runProcess(string $command, string $path, int $timeout = 240, array $env = []): string
     {
         Log::channel('deployment')->info("Executing: {$command}", ['path' => $path, 'timeout' => $timeout]);

@@ -8,9 +8,11 @@ use App\Enums\Payment\PaymentTransactionStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Database\Factories\PaymentTransactionFactory;
 
 final class PaymentTransaction extends Model
 {
+    /** @use HasFactory<PaymentTransactionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -28,6 +30,9 @@ final class PaymentTransaction extends Model
         'user_agent',
     ];
 
+    /**
+     * @return BelongsTo<Payment, $this>
+     */
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);

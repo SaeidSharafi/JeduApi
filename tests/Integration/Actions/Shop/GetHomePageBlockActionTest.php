@@ -281,7 +281,7 @@ describe('GetHomePageBlockAction', function (): void {
                 ->take(3)->get(),
         };
 
-        $resultProductIds   = array_map(fn ($item) => $item['slug'], $result->content['items']);
+        $resultProductIds   = array_map(fn (array $item) => $item['slug'], $result->content['items']);
         $expectedProductIds = $sortedProducts->pluck('slug')->toArray();
 
         expect($resultProductIds)->toBe($expectedProductIds)
@@ -343,8 +343,8 @@ describe('GetHomePageBlockAction', function (): void {
     });
     it('can handle dynamic list blocks with category filter', function (): void {
         // Create test data
-        $category1          = Category::factory()->create();
-        $category2          = Category::factory()->create();
+        $category1           = Category::factory()->create();
+        $category2           = Category::factory()->create();
         $productsInCategory1 = Product::factory()
             ->withDeliveryOptions()
             ->count(3)

@@ -80,7 +80,7 @@ describe('TriggerCampaignAllocationAction', function (): void {
         expect($result)->toBe($mockTransaction);
         expect($this->campaign->fresh()->total_usage_count)->toBe(1);
 
-        Event::assertDispatched(WalletCampaignAllocationTriggeredEvent::class, function ($event) {
+        Event::assertDispatched(WalletCampaignAllocationTriggeredEvent::class, function ($event): bool {
             return $event->triggerType === 'manual';
         });
     });
@@ -118,7 +118,7 @@ describe('TriggerCampaignAllocationAction', function (): void {
         expect($result)->toBe($mockTransaction);
         expect($this->campaign->fresh()->total_usage_count)->toBe(1);
 
-        Event::assertDispatched(WalletCampaignAllocationTriggeredEvent::class, function ($event) {
+        Event::assertDispatched(WalletCampaignAllocationTriggeredEvent::class, function ($event): bool {
             return $event->triggerType === 'event';
         });
     });

@@ -6,6 +6,7 @@ namespace App\Listeners;
 
 use App\Events\CustomerAuthenticatedEvent;
 use App\Services\CartService;
+use Illuminate\Support\Facades\Log;
 
 final class MergeGuestCartAfterLogin
 {
@@ -25,12 +26,12 @@ final class MergeGuestCartAfterLogin
     {
         $guestToken = $event->request->header('X-Guest-Token');
 
-        if ($guestToken && $event->user) {
+        if ($guestToken) {
             try {
                 $this->cartService->mergeGuestCart($guestToken, $event->user->id);
             }
             // @codeCoverageIgnoreStart
-            catch (Exception $e) {
+            catch (\Exception $e) {
                 // Log error but don't fail the login
                 Log::warning('Failed to merge guest cart after login', [
                     'user_id'     => $event->user->id,

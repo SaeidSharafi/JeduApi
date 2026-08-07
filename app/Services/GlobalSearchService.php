@@ -13,21 +13,22 @@ use App\Models\Blog\BlogPost;
 use App\Models\Product;
 use App\Query\ProductQueryService;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Laravel\Scout\EngineManager;
+use Typesense\Client;
 
 final class GlobalSearchService
 {
     /**
-     * @var \Laravel\Scout\Engines\TypesenseEngine
+     * @var Client
      */
-    private $typesenseEngine;
+    private Client $typesenseClient;
 
-    public function __construct(EngineManager $engineManager)
+    public function __construct()
     {
-        $this->typesenseEngine = $engineManager->engine();
+        $this->typesenseClient = new Client(config('scout.typesense.client-settings'));
     }
 
     /**
@@ -35,6 +36,9 @@ final class GlobalSearchService
      * Uses Typesense if available, falls back to database search.
      *
      * @param  SearchData  $searchData  The search request containing query, pagination, and filters.
+     */
+    /**
+     * @return LengthAwarePaginator<int, Model>
      */
     public function search(SearchData $searchData): LengthAwarePaginator
     {
@@ -64,6 +68,9 @@ final class GlobalSearchService
      *
      * @codeCoverageIgnore we cannot reliably test caching behavior; tested via integration tests
      */
+    /**
+     * @return array<int, string>
+     */
     public function suggest(string $query, int $limit = 5): array
     {
         if (! $this->isTypesenseAvailable()) {
@@ -80,7 +87,7 @@ final class GlobalSearchService
                     ->take($limit * 2)->get();
 
                 return $results
-                    ?->pluck('name')
+                    ->pluck('name')
                     ->unique()
                     ->take($limit)
                     ->values()
@@ -103,12 +110,15 @@ final class GlobalSearchService
      *
      * @codeCoverageIgnore Requires real Typesense instance; tested via integration tests
      */
+    /**
+     * @return LengthAwarePaginator<int, Model>
+     */
     private function searchWithTypesense(SearchData $searchData): LengthAwarePaginator
     {
         $page     = LengthAwarePaginator::resolveCurrentPage();
         $cacheKey = 'search:'.md5($searchData->q.json_encode($searchData->toArray()).$searchData->per_page.$page);
 
-        return SWRCacheService::remember($cacheKey, function () use ($searchData, $page) {
+        return SWRCacheService::remember($cacheKey, function () use ($searchData, $page): LengthAwarePaginator {
             $productFilters = $this->buildProductFilters($searchData);
             $blogFilters    = $this->buildBlogFilters($searchData);
 
@@ -157,7 +167,7 @@ final class GlobalSearchService
                 'searches' => $searches,
             ];
 
-            $multiSearch = $this->typesenseEngine->getMultiSearch();
+            $multiSearch = $this->typesenseClient->getMultiSearch();
             $rawResults  = $multiSearch->perform($searchRequests);
 
             // Check for errors
@@ -189,6 +199,8 @@ final class GlobalSearchService
 
     /**
      * Perform database-based search as fallback.
+     *
+     * @return LengthAwarePaginator<int, Model>
      */
     private function searchWithDatabase(SearchData $searchData): LengthAwarePaginator
     {
@@ -247,6 +259,9 @@ final class GlobalSearchService
      * @param  array  $hits  Array of hits from Typesense union search
      *
      * @codeCoverageIgnore Called only by searchWithTypesense; tested via integration tests
+     *
+     * @param  array<int, array<string, mixed>>  $hits
+     * @return Collection<int, Model>
      */
     private function hydrateModels(array $hits): Collection
     {

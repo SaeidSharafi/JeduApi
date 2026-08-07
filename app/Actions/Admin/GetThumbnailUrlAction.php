@@ -8,6 +8,9 @@ use App\Enums\MediaTagEnum;
 
 final class GetThumbnailUrlAction
 {
+    /**
+     * @param  array<string, mixed>  $media
+     */
     public function handle(array $media): ?string
     {
         $thumbnail = data_get($media, MediaTagEnum::COVER->value.'.0');

@@ -23,7 +23,7 @@ final class CollaborationRequestController extends Controller
      * @responseFile 201 resources/responses/shop/forms/collaboration-request.json
      * @responseFile 429 resources/responses/422.json
      */
-    public function __invoke(CreateCollaborationRequestData $data, CreateCollaborationRequestAction $action)
+    public function __invoke(CreateCollaborationRequestData $data, CreateCollaborationRequestAction $action): \App\Contracts\ApiResponseInterface
     {
         $action->handle($data);
 

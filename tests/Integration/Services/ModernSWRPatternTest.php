@@ -18,7 +18,7 @@ describe('Modern SWR Pattern - Homepage Content', function (): void {
         $data     = ['sliders' => [1, 2, 3]];
 
         // Act - First call should compute
-        $result1 = SWRCacheService::rememberHomepageContent($cacheKey, function () use ($data) {
+        $result1 = SWRCacheService::rememberHomepageContent($cacheKey, function () use ($data): array {
             return $data;
         });
 
@@ -27,7 +27,7 @@ describe('Modern SWR Pattern - Homepage Content', function (): void {
         expect(SmartCache::has($cacheKey))->toBeTrue();
 
         // Act - Second call within fresh window (5 min)
-        $result2 = SWRCacheService::rememberHomepageContent($cacheKey, function () {
+        $result2 = SWRCacheService::rememberHomepageContent($cacheKey, function (): array {
             return ['modified' => true]; // This shouldn't be called
         });
 
@@ -44,7 +44,7 @@ describe('Modern SWR Pattern - Homepage Content', function (): void {
         $cacheKey  = 'test.swr.data';
         $callCount = 0;
 
-        $callback = function () use (&$callCount) {
+        $callback = function () use (&$callCount): array {
             $callCount++;
 
             return ['call' => $callCount];
@@ -67,7 +67,7 @@ describe('Modern SWR Pattern - Homepage Content', function (): void {
         $data     = ['suggestions' => ['test1', 'test2']];
 
         // Act
-        $result = SWRCacheService::rememberSearchSuggestions($cacheKey, function () use ($data) {
+        $result = SWRCacheService::rememberSearchSuggestions($cacheKey, function () use ($data): array {
             return $data;
         });
 
@@ -82,7 +82,7 @@ describe('Modern SWR Pattern - Homepage Content', function (): void {
         $data     = ['trending' => [1, 2, 3, 4, 5]];
 
         // Trending content: 10min fresh, 30min stale
-        $result = SWRCacheService::rememberTrendingContent($cacheKey, function () use ($data) {
+        $result = SWRCacheService::rememberTrendingContent($cacheKey, function () use ($data): array {
             return $data;
         });
 
@@ -98,7 +98,7 @@ describe('Modern SWR Pattern - Homepage Content', function (): void {
         $controller = new SliderController();
 
         // Since __invoke requires request context, we test the cache pattern directly
-        $result = SWRCacheService::rememberHomepageContent('shop.sliders', function () use ($slider) {
+        $result = SWRCacheService::rememberHomepageContent('shop.sliders', function () use ($slider): Illuminate\Support\Collection {
             return collect([$slider]); // Simulating SliderData collection
         });
 
@@ -130,7 +130,7 @@ describe('Modern SWR Pattern - Homepage Content', function (): void {
         $data     = ['courses' => [1, 2, 3]];
 
         // Act - Cache the data
-        $cached = SWRCacheService::rememberHomepageContent($cacheKey, function () use ($data) {
+        $cached = SWRCacheService::rememberHomepageContent($cacheKey, function () use ($data): array {
             return $data;
         });
 
@@ -151,7 +151,7 @@ describe('Modern SWR Pattern - Search Suggestions', function (): void {
         $suggestions = ['Laravel 5 Basics', 'Laravel 5 Advanced', 'Laravel 5 Patterns'];
 
         // Act
-        $result = SWRCacheService::rememberSearchSuggestions($cacheKey, function () use ($suggestions) {
+        $result = SWRCacheService::rememberSearchSuggestions($cacheKey, function () use ($suggestions): array {
             return $suggestions;
         });
 
@@ -219,7 +219,7 @@ describe('Modern SWR - No Cache Tags Used', function (): void {
         $data     = ['slider1', 'slider2'];
 
         // SWR approach: Pattern-based invalidation
-        $result = SWRCacheService::rememberHomepageContent($cacheKey, function () use ($data) {
+        $result = SWRCacheService::rememberHomepageContent($cacheKey, function () use ($data): array {
             return $data;
         });
 
@@ -242,7 +242,7 @@ describe('Modern SWR - No Cache Tags Used', function (): void {
         $data     = ['compatible' => true];
 
         // Works whether driver is Redis, Database, File, or Array
-        $result = SWRCacheService::rememberHomepageContent($cacheKey, function () use ($data) {
+        $result = SWRCacheService::rememberHomepageContent($cacheKey, function () use ($data): array {
             return $data;
         });
 

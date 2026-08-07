@@ -22,7 +22,6 @@ use function Pest\Laravel\getJson;
  * - result_types filter: Filtering results by type
  * - Response transformation: Adding 'type' field to results
  */
-
 beforeEach(function (): void {
     // Force the database driver for all API search tests
     Config::set('scout.driver', 'database');
@@ -410,7 +409,7 @@ describe('filters tests', function (): void {
         $category2 = App\Models\Category::factory()->create(['name' => 'Category Two']);
         $category3 = App\Models\Category::factory()->create(['name' => 'Category Three']);
 
-        $product1  = Product::factory()
+        $product1 = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse()
             ->create(['name' => 'Multi-category Course']);
@@ -437,7 +436,7 @@ describe('filters tests', function (): void {
         $json = $response->json();
 
         expect($json['data']['total'])->toBe(2);
-        $names = array_map(fn ($item): mixed => $item['name'], $json['data']['data']);
+        $names = array_map(fn (array $item): mixed => $item['name'], $json['data']['data']);
         expect($names)->toContain('Multi-category Course')
             ->and($names)->toContain('Single-category Course')
             ->and($names)->not->toContain('No-category Course');

@@ -23,9 +23,11 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
 use Laravel\Scout\Searchable;
 use Plank\Mediable\Mediable;
+use Database\Factories\Blog\BlogPostFactory;
 
 final class BlogPost extends Model
 {
+    /** @use HasFactory<\Database\Factories\Blog\BlogPostFactory> */
     use HasFactory;
     use HasMedia;
     use HasReview;
@@ -55,6 +57,8 @@ final class BlogPost extends Model
 
     /**
      * @codeCoverageIgnore
+     *
+     * @return array<string, mixed>
      */
     public function toSearchableArray(): array
     {
@@ -78,11 +82,17 @@ final class BlogPost extends Model
         return 'blog_posts';
     }
 
+    /**
+     * @return BelongsTo<Staff, $this>
+     */
     public function author(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'author_id');
     }
 
+    /**
+     * @return BelongsToMany<BlogCategory, $this>
+     */
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(BlogCategory::class, 'blog_post_category', 'blog_post_id', 'blog_category_id');
@@ -90,6 +100,9 @@ final class BlogPost extends Model
 
     /**
      * @return MorphToMany<Course,$this>
+     */
+    /**
+     * @return MorphToMany<Course, $this>
      */
     public function courses(): MorphToMany
     {
@@ -99,6 +112,9 @@ final class BlogPost extends Model
     /**
      * @return MorphToMany<Seminar,$this>
      */
+    /**
+     * @return MorphToMany<Seminar, $this>
+     */
     public function seminars(): MorphToMany
     {
         return $this->morphedByMany(Seminar::class, 'productable', 'blog_post_productables');
@@ -106,6 +122,9 @@ final class BlogPost extends Model
 
     /**
      * @return MorphToMany<DigitalAsset,$this>
+     */
+    /**
+     * @return MorphToMany<DigitalAsset, $this>
      */
     public function digitalAssets(): MorphToMany
     {
@@ -122,11 +141,17 @@ final class BlogPost extends Model
     /**
      * The single, featured productable for this post.
      */
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function mainProductable(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /**
+     * @param  array<int, array{id: int, type: string}>|null  $productables
+     */
     public function syncRelatedProductables(?array $productables): void
     {
         // If the array is empty, detach everything and stop.
@@ -151,11 +176,15 @@ final class BlogPost extends Model
     }
 
     // Reviews relation
+    /**
+     * @return MorphMany<Review, $this>
+     */
     public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'reviewable');
     }
 
+    /** @return Attribute<Collection<int, mixed>, never> */
     protected function relatedProductables(): Attribute
     {
         return Attribute::make(

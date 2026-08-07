@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum DiscountTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case PRODUCT_SPECIFIC = 'product_specific';

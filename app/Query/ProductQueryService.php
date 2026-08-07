@@ -31,6 +31,7 @@ final class ProductQueryService
     /** @deprecated Use ProductSortFieldEnum::ALLOWED. */
     public const array allowedSortFields = ProductSortFieldEnum::ALLOWED;
 
+    /** @var Builder<Product> */
     private Builder $query;
 
     /**
@@ -39,16 +40,14 @@ final class ProductQueryService
     private array $appliedJoins = [];
 
     /**
-     * @var Closure Collects relationship constraints to be applied later.
+     * @var array<string, list<Closure>> Collects relationship constraints to be applied later.
      */
     private array $relationshipConstraints = [];
 
     /**
      * @var string[] The morphable types for the 'productable' relationship query.
      */
-    private array $productableTypes = [];
-
-    private bool $includeFullProducts = true;
+    private array $productableTypes;
 
     private bool $checkTermStatus = true;
 
@@ -66,9 +65,12 @@ final class ProductQueryService
         return app(self::class);
     }
 
+    /**
+     * @param Builder<Product> $query
+     */
     public function setQuery(Builder $query): self
     {
-        if ($query->getModel() instanceof Product === false) {
+        if ($query->getModel() instanceof Product === false) { // defensive runtime guard
             throw new InvalidArgumentException('The provided query builder must be for the Product model.');
         }
         $this->query = $query;
@@ -80,6 +82,8 @@ final class ProductQueryService
 
     /**
      * Get a paginated list of courses based on filter criteria.
+     *
+     * @return LengthAwarePaginator<int, Product>
      */
     public function getCourseList(ProductListRequestData $requestData): LengthAwarePaginator
     {
@@ -90,6 +94,8 @@ final class ProductQueryService
 
     /**
      * Get a paginated list of seminars based on filter criteria.
+     *
+     * @return LengthAwarePaginator<int, Product>
      */
     public function getSeminarList(ProductListRequestData $requestData): LengthAwarePaginator
     {
@@ -100,6 +106,8 @@ final class ProductQueryService
 
     /**
      * Get a paginated list of digital assets based on filter criteria.
+     *
+     * @return LengthAwarePaginator<int, Product>
      */
     public function getDigitalAssetList(ProductListRequestData $requestData): LengthAwarePaginator
     {
@@ -110,6 +118,8 @@ final class ProductQueryService
 
     /**
      * Perform a global search across all available product types.
+     *
+     * @return LengthAwarePaginator<int, Product>
      */
     public function globalSearchProductsDatabase(ProductListRequestData $requestData): LengthAwarePaginator
     {
@@ -119,6 +129,8 @@ final class ProductQueryService
     /**
      * Smart search with automatic fallback.
      * Uses Typesense if available, falls back to database search.
+     *
+     * @return LengthAwarePaginator<int, Product>
      */
     public function globalSearch(ProductListRequestData $requestData): LengthAwarePaginator
     {
@@ -127,6 +139,8 @@ final class ProductQueryService
 
     /**
      * @codeCoverageIgnore
+     *
+     * @return LengthAwarePaginator<int, Product>
      */
     public function globalSearchProductsScout(ProductListRequestData $requestData): LengthAwarePaginator
     {
@@ -242,7 +256,6 @@ final class ProductQueryService
      */
     public function withoutFullProducts(): self
     {
-        $this->includeFullProducts = false;
         $this->query->whereHas('productDeliveryOptions', function (Builder $optionQuery): void {
             $optionQuery->where('status', PublicationStatusEnum::PUBLISHED)
                 ->where(function (Builder $capacityQuery): void {
@@ -281,7 +294,7 @@ final class ProductQueryService
      */
     public function ofTypes(array $types): self
     {
-        $this->productableTypes = array_map(fn ($type) => $type->value, $types);
+        $this->productableTypes = array_map(fn (ProductableEnum $type) => $type->value, $types);
 
         return $this;
     }
@@ -304,6 +317,9 @@ final class ProductQueryService
         });
     }
 
+    /**
+     * @param int[] $categoryIds
+     */
     public function inCategoryIds(array $categoryIds): self
     {
         if (empty($categoryIds)) {
@@ -315,6 +331,9 @@ final class ProductQueryService
         });
     }
 
+    /**
+     * @param string[] $categorySlugs
+     */
     public function goodForStart(array $categorySlugs): self
     {
         if (empty($categorySlugs)) {
@@ -353,6 +372,8 @@ final class ProductQueryService
 
     /**
      * Filter by fulfillment type. (Applies to 'productable')
+     *
+     * @param string[] $fulfillmentTypes
      */
     public function byFulfillmentTypes(array $fulfillmentTypes): self
     {
@@ -459,6 +480,8 @@ final class ProductQueryService
 
     /**
      * Get paginated results. This is a terminal method that executes the query.
+     *
+     * @return LengthAwarePaginator<int, Product>
      */
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
@@ -469,6 +492,8 @@ final class ProductQueryService
 
     /**
      * Get a collection of results. This is a terminal method.
+     *
+     * @return Collection<int, Product>
      */
     public function get(): Collection
     {
@@ -510,7 +535,10 @@ final class ProductQueryService
         return $this;
     }
 
-    public function getQuery()
+    /**
+     * @return Builder<Product>
+     */
+    public function getQuery(): Builder
     {
         $this->applyDeferredConstraints();
 

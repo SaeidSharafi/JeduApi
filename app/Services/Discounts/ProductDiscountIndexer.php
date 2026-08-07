@@ -85,6 +85,9 @@ final class ProductDiscountIndexer
      * Re-index discount prices for specific product delivery options.
      * This is useful when products are updated or when cleaning up after a disabled promotion.
      */
+    /**
+     * @param  Collection<int, int>  $deliveryOptionIds
+     */
     public function reIndexProductsByDeliveryOptionIds(Collection $deliveryOptionIds): void
     {
         // Get all active promotions for layered calculation
@@ -127,18 +130,25 @@ final class ProductDiscountIndexer
     /**
      * Main method to index product discount prices using the layered promotion system.
      */
+    /**
+     * @param  Collection<int, DiscountPromotion>  $promotions
+     */
     private function indexProductDiscountPrices(Collection $promotions): void
     {
         ProductDeliveryOption::query()
             ->where('status', 'published')
             ->with(['product'])
-            ->chunk(1000, function ($deliveryOptions) use ($promotions): void {
+            ->chunk(1000, function (Collection $deliveryOptions) use ($promotions): void {
                 $this->processProductChunk($deliveryOptions, $promotions);
             });
     }
 
     /**
      * Process a chunk of product delivery options with layered promotion support.
+     */
+    /**
+     * @param  Collection<int, ProductDeliveryOption>  $productDeliveryOptions
+     * @param  Collection<int, DiscountPromotion>  $applicablePromotions
      */
     private function processProductChunk(Collection $productDeliveryOptions, Collection $applicablePromotions): void
     {
@@ -185,6 +195,9 @@ final class ProductDiscountIndexer
      * Find the best applicable promotion for a product delivery option.
      * Returns the highest priority promotion that actually applies to the product.
      */
+    /**
+     * @param  Collection<int, DiscountPromotion>  $promotions
+     */
     private function findBestApplicablePromotion(
         ProductDeliveryOption $productDeliveryOption,
         Collection $promotions
@@ -210,6 +223,9 @@ final class ProductDiscountIndexer
 
     /**
      * Get all active product-specific promotions ordered by priority.
+     */
+    /**
+     * @return Collection<int, DiscountPromotion>
      */
     private function getActivePromotions(): Collection
     {
@@ -283,6 +299,9 @@ final class ProductDiscountIndexer
         return true;
     }
 
+    /**
+     * @param  Collection<int, ProductDeliveryOption>  $deliveryOptions
+     */
     private function dispatchCacheUpdatesForOptions(Collection $deliveryOptions): void
     {
         $productIdsToUpdate = $deliveryOptions->pluck('product_id')->unique();

@@ -24,6 +24,8 @@ final class CartItem extends Model
 
     /**
      * Get the cart that owns the cart item.
+     *
+     * @return BelongsTo<Cart, $this>
      */
     public function cart(): BelongsTo
     {
@@ -32,6 +34,8 @@ final class CartItem extends Model
 
     /**
      * Get the product delivery option for the cart item.
+     *
+     * @return BelongsTo<ProductDeliveryOption, $this>
      */
     public function productDeliveryOption(): BelongsTo
     {

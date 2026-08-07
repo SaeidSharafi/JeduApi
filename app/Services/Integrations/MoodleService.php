@@ -85,6 +85,9 @@ final class MoodleService extends AbstractIntegrationService
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getActivityCompletionStatus(int $moodleCourseId, int $moodleUserId): array
     {
         $params = [
@@ -259,7 +262,7 @@ final class MoodleService extends AbstractIntegrationService
         }
 
         // Filter only the visible quizzes
-        $visibleQuizes = array_values(array_filter($quizzes, function ($quiz) {
+        $visibleQuizes = array_values(array_filter($quizzes, function ($quiz): bool {
             return is_array($quiz) && (bool) data_get($quiz, 'visible', true);
         }));
 
@@ -301,7 +304,7 @@ final class MoodleService extends AbstractIntegrationService
                 ]
             )->toArray();
         }
-        $coursesData = array_filter($coursesData, function ($course) {
+        $coursesData = array_filter($coursesData, function (LmsMoodleBlockData $course): bool {
             return ! empty($course->activities);
         });
 
@@ -365,6 +368,9 @@ final class MoodleService extends AbstractIntegrationService
 
     /**
      * @return array<mixed>|bool|string|int|float|null
+     */
+    /**
+     * @param  array<string, mixed>  $params
      */
     private function call(string $function, array $params, ?string $token = null): mixed
     {

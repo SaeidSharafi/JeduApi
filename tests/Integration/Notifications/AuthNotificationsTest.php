@@ -65,7 +65,7 @@ test('user email is set to use phone plus @example.com if email is null and use_
     Notification::assertSentTo($user, OtpEmailNotification::class);
     Notification::assertSentTo($user,
         OtpSmsNotification::class,
-        function ($notification, $channels) {
+        function ($notification, $channels): bool {
             if (is_array($channels)) {
                 return in_array(App\Notifications\SmsChannel::class, $channels);
             }

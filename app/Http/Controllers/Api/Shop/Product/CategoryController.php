@@ -27,7 +27,7 @@ final class CategoryController extends Controller
      *
      * @responseFile resources/responses/shop/products/categories/index.json
      */
-    public function index()
+    public function index(): \App\Contracts\ApiResponseInterface
     {
         $categories = Category::query()
             ->with('children')
@@ -53,7 +53,7 @@ final class CategoryController extends Controller
      *
      * @responseFile resources/responses/shop/products/categories/show.json
      */
-    public function show(PaginationRequestData $data, Category $category, CategoryQueryService $service)
+    public function show(PaginationRequestData $data, Category $category, CategoryQueryService $service): \App\Contracts\ApiResponseInterface
     {
 
         $courses       = $service->getProductsForCategory($category, ProductableEnum::COURSE, $data->per_page);

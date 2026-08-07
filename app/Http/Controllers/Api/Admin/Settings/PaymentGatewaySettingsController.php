@@ -50,7 +50,7 @@ final class PaymentGatewaySettingsController extends Controller
 
         $gateways = collect(PaymentMethodEnum::cases())
             ->filter(fn (PaymentMethodEnum $gateway): bool => $gateway->settingKey() !== null)
-            ->map(function (PaymentMethodEnum $gateway) {
+            ->map(function (PaymentMethodEnum $gateway): array {
                 $stored = $this->settingsService->get($gateway->settingKey(), config('payments.'.$gateway->settingKey()->value));
 
                 if (isset($stored['icon']) && is_array($stored['icon'])) {

@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Plank\Mediable\Mediable;
+use Database\Factories\StudentStoryFactory;
 
 final class StudentStory extends Model
 {
+    /** @use HasFactory<StudentStoryFactory> */
     use HasCategories, HasFactory, Mediable;
 
     protected $fillable
@@ -28,18 +30,29 @@ final class StudentStory extends Model
             'display_order',
         ];
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     #[Scope]
-    public function visible(Builder $query): Builder
+    protected function visible(Builder $query): Builder
     {
         return $query->where('is_visible', true);
     }
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     #[Scope]
-    public function featured(Builder $query): Builder
+    protected function featured(Builder $query): Builder
     {
         return $query->where('is_featured', true);
     }
 
+    /**
+     * @return BelongsToMany<Course, $this>
+     */
     public function courses(): BelongsToMany
     {
         return $this->belongsToMany(Course::class);

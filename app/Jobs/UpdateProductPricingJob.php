@@ -15,6 +15,9 @@ final class UpdateProductPricingJob implements ShouldQueue
 {
     use \Illuminate\Foundation\Queue\Queueable;
 
+    /**
+     * @param  array<int, int>  $productIds
+     */
     public function __construct(
         public array $productIds,
     ) {}

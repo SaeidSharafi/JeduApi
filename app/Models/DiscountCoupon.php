@@ -7,9 +7,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Database\Factories\DiscountCouponFactory;
 
 final class DiscountCoupon extends Model
 {
+    /** @use HasFactory<DiscountCouponFactory> */
     use HasFactory;
 
     /**
@@ -19,6 +21,9 @@ final class DiscountCoupon extends Model
 
     /**
      * Each coupon belongs to a parent promotion.
+     */
+    /**
+     * @return BelongsTo<DiscountPromotion, $this>
      */
     public function promotion(): BelongsTo
     {

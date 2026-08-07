@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum CivilIdTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
     /**
      * For Iranian citizens (کد ملی).

@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum TransactionSourceEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case ORDER     = 'order';

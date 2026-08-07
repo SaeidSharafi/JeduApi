@@ -29,7 +29,7 @@ describe('UpdateStatusesAfterPaymentListener', function (): void {
             // with an Order object that has the same ID as the one we created.
             $mock->shouldReceive('handlePaymentCompletion')
                 ->once()
-                ->withArgs(function ($argOrder) use ($order) {
+                ->withArgs(function ($argOrder) use ($order): bool {
                     return $argOrder instanceof Order && $argOrder->id === $order->id;
                 });
         });
@@ -51,7 +51,7 @@ describe('UpdateStatusesAfterPaymentListener', function (): void {
         $paymentWithoutOrder = Payment::factory()->create([
             'order_id' => null,
         ]);
-        $event               = new PaymentCompletedEvent($paymentWithoutOrder);
+        $event = new PaymentCompletedEvent($paymentWithoutOrder);
 
         // Mock the service but expect it to NEVER be called.
         $this->mock(OrderStatusService::class, function (MockInterface $mock): void {

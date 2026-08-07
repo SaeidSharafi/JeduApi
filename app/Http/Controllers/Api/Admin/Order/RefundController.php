@@ -93,7 +93,7 @@ final class RefundController extends Controller
      * @responseFile 403 resources/responses/403.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function show(Refund $refund)
+    public function show(Refund $refund): ApiResponseInterface
     {
         Gate::authorize('view', $refund);
         $refund->load('order');

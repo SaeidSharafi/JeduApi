@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum ProductDeliveryStatusEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case ONLINE    = 'online';

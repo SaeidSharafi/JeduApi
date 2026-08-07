@@ -154,6 +154,9 @@ final class SettingsService
      * Retrieves the entire collection of settings.
      * If not in the cache, it loads from the DB and caches it forever.
      */
+    /**
+     * @return Collection<int, Setting>
+     */
     private function getAll(): Collection
     {
         return SmartCache::rememberForever(CacheKeysEnum::Settings->value, function () {

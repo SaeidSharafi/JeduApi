@@ -12,11 +12,18 @@ use Plank\Mediable\Media;
 
 trait IsProductable
 {
+    /**
+     * @return MorphMany<Product, $this>
+     */
     public function products(): MorphMany
     {
         return $this->morphMany(Product::class, 'productable');
     }
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     public function scopeWithProductableCategories(Builder $query): Builder
     {
         $query->with('categories');
@@ -24,6 +31,10 @@ trait IsProductable
         return $query;
     }
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     public function scopeWithProductableAssets(Builder $query): Builder
     {
         if (method_exists($this, 'digitalAssets')) {
@@ -33,6 +44,9 @@ trait IsProductable
         return $query;
     }
 
+    /**
+     * @return array<string, PrivateFileData|null>
+     */
     public function getProductableAttachment(): array
     {
         if ($this->relationLoaded('media')) {

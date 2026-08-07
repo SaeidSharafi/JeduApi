@@ -25,6 +25,9 @@ final class WalletNotFoundException extends WalletException
         return $this->getMessage();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
         return ['user_id' => $this->userId];

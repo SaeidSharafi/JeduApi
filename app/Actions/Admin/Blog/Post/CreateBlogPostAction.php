@@ -38,7 +38,7 @@ final readonly class CreateBlogPostAction
                 'status'            => $data->status,
                 'published_at'      => $data->published_at,
                 'read_time_minutes' => $readTime,
-                'is_featured'       => $data->is_featured ?? false,
+                'is_featured'       => $data->is_featured,
                 'thumbnail_url'     => $coverImageUrl,
                 'meta_title'        => $data->meta_title,
                 'meta_description'  => $data->meta_description,

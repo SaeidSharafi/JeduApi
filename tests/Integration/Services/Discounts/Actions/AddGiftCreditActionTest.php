@@ -55,7 +55,7 @@ it('applies fixed amount gift credit without expiration', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return $transactionData->user_id                  === $this->user->id
                 && $transactionData->type                     === TransactionTypeEnum::GIFT
                 && $transactionData->amount                   === 5000
@@ -88,7 +88,7 @@ it('applies fixed amount gift credit with expiration', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return $transactionData->user_id     === $this->user->id
                 && $transactionData->type        === TransactionTypeEnum::GIFT
                 && $transactionData->amount      === 7500
@@ -140,7 +140,7 @@ it('applies per-item gift credit', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return $transactionData->amount                   === 5000 // (2 + 3) * 1000
                 && $transactionData->type                     === TransactionTypeEnum::GIFT
                 && $transactionData->metadata['expires_days'] === 15;
@@ -187,7 +187,7 @@ it('excludes prepayment items from per-item calculation', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return $transactionData->amount === 2000; // Only 2 items * 1000
         });
 
@@ -259,7 +259,7 @@ it('uses localized description when none provided', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return str_contains($transactionData->description, 'Test Promotion');
         });
 
@@ -332,7 +332,7 @@ it('includes correct metadata in gift transaction', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             $metadata = $transactionData->metadata;
 
             return $metadata['promotion_name'] === 'Test Promotion'
@@ -365,7 +365,7 @@ it('handles zero expiration days correctly', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return $transactionData->expires_at !== null // Should set expiration even for 0 days
                 && $transactionData->metadata['expires_days'] === 0;
         });

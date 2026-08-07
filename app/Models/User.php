@@ -27,6 +27,7 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use HasMedia;
     use Mediable;
     use Notifiable;
@@ -60,29 +61,44 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     public function hasSetPassword(): bool
     {
-        return !is_null($this->password);
+        return ! is_null($this->password);
     }
 
+    /**
+     * @return HasOne<Teacher, $this>
+     */
     public function teacherData(): HasOne
     {
         return $this->hasOne(Teacher::class);
     }
 
+    /**
+     * @return HasMany<Enrollment, $this>
+     */
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class, 'customer_id');
     }
 
+    /**
+     * @return HasOne<Wallet, $this>
+     */
     public function wallet(): HasOne
     {
         return $this->hasOne(Wallet::class);
     }
 
+    /**
+     * @return HasOne<Cart, $this>
+     */
     public function cart(): HasOne
     {
         return $this->hasOne(Cart::class);
     }
 
+    /**
+     * @return HasMany<Order, $this>
+     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'customer_id');
@@ -90,16 +106,15 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     public function profileCompleted(): bool
     {
-        return $this->first_name !== null
-            && $this->last_name !== null
-            && $this->email !== null
-            && $this->phone !== null
-            && $this->civil_id !== null
+        return $this->first_name    !== null
+            && $this->last_name     !== null
+            && $this->email         !== null
+            && $this->civil_id      !== null
             && $this->date_of_birth !== null
-            && $this->father_name !== null;
+            && $this->father_name   !== null;
     }
 
-    public function routeNotificationForSms($notification): string
+    public function routeNotificationForSms(mixed $notification): string
     {
         return $this->phone;
     }
@@ -137,10 +152,11 @@ final class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    /** @return Attribute<bool, never> */
     protected function isProfileCompleted(): Attribute
     {
         return Attribute::make(
-            get: fn(): bool => $this->profileCompleted(),
+            get: fn (): bool => $this->profileCompleted(),
         );
     }
 }

@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum TransactionTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case DEPOSIT    = 'deposit';

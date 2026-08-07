@@ -20,7 +20,7 @@ final class UpdatePartnerAction
             }
             $partnerData = [
                 ...$data->except('image')->toArray(),
-                'image_url' => $image ? $image?->getUrl() : null,
+                'image_url' => $image ? $image->getUrl() : null,
                 'image_alt' => $image ? $data->title : null,
             ];
             $partner->update($partnerData);

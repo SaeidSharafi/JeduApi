@@ -25,7 +25,7 @@ final class ValidateNoDuplicatePurchasesAction
     public function handle(User $customer, Collection $deliveryOptions): void
     {
         // Get all productable_id and productable_type pairs from cart items
-        $cartProductables = $deliveryOptions->map(function ($deliveryOption) {
+        $cartProductables = $deliveryOptions->map(function ($deliveryOption): array {
             $product = $deliveryOption->product;
 
             return [

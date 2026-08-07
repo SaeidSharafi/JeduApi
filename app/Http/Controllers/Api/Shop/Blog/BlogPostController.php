@@ -29,7 +29,7 @@ final class BlogPostController extends Controller
      *
      * @responseFile resources/responses/shop/blog/post/index.json
      */
-    public function index(BlogPostListRequestData $requestData)
+    public function index(BlogPostListRequestData $requestData): \App\Contracts\ApiResponseInterface
     {
         $posts = BlogPost::query()
             ->where('status', PublicationStatusEnum::PUBLISHED)
@@ -69,7 +69,7 @@ final class BlogPostController extends Controller
      * @responseFile 200 resources/responses/shop/blog/post/show.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function show(string $slug, ProductPriceService $productPriceService)
+    public function show(string $slug, ProductPriceService $productPriceService): \App\Contracts\ApiResponseInterface
     {
         $post = BlogPost::query()
             ->where('slug', $slug)
@@ -99,7 +99,7 @@ final class BlogPostController extends Controller
             })
             ->limit(10)
             ->get()
-            ->map(function (Product $product) use ($productPriceService) {
+            ->map(function (Product $product) use ($productPriceService): ProductCardData {
                 $priceData = $productPriceService->getPriceDataForProduct($product);
 
                 return ProductCardData::fromModel($product, $priceData);

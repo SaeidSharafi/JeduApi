@@ -47,7 +47,7 @@ describe('User with permissions', function (): void {
             ->assertJsonCount(3, 'data');
         $actualDataItems = collect($response->json('data'));
         foreach ($deliveryOptions as $expectedDeliveryOption) {
-            $match = $actualDataItems->first(function ($actualItem) use ($expectedDeliveryOption) {
+            $match = $actualDataItems->first(function (array $actualItem) use ($expectedDeliveryOption): bool {
                 return $actualItem['id'] === $expectedDeliveryOption->id;
             });
             expect($match)->not->toBeNull("Expected PDO with id '{$expectedDeliveryOption->id}' not found or properties mismatch.");

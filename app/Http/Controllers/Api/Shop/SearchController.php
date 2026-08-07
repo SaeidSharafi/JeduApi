@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Blog\BlogPostCardData;
 use App\Data\Shop\Product\ProductCardData;
 use App\Data\Shop\Search\SearchData;
 use App\Http\Controllers\Controller;
+use App\Models\Blog\BlogPost;
+use App\Models\Product;
 use App\Services\GlobalSearchService;
 use App\Services\ProductPriceService;
 
@@ -25,21 +28,20 @@ final class SearchController extends Controller
      *
      * @responseFile 200 resources/responses/shop/search.json
      *
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function __invoke(SearchData $searchData, GlobalSearchService $service, ProductPriceService $priceService)
+    public function __invoke(SearchData $searchData, GlobalSearchService $service, ProductPriceService $priceService): ApiResponseInterface
     {
         // Pass SearchData DTO directly to service - no intermediate transformation needed!
         $results = $service->search($searchData);
 
-        $data = $results->through(function ($item) use ($priceService) {
-            if ($item instanceof \App\Models\Product) {
+        $data = $results->through(function ($item) use ($priceService): ProductCardData|BlogPostCardData|null {
+            if ($item instanceof Product) {
                 $priceData = $priceService->getPriceDataForProduct($item);
 
                 return ProductCardData::fromModel($item, $priceData, withFullPriceData: false)
                     ->additional(['type' => 'product']);
             }
-            if ($item instanceof \App\Models\Blog\BlogPost) {
+            if ($item instanceof BlogPost) {
                 return BlogPostCardData::from($item)
                     ->additional(['type' => 'blog_post']);
             }

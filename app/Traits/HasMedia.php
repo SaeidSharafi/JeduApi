@@ -11,8 +11,19 @@ use Plank\Mediable\Media;
 
 trait HasMedia
 {
+    /** @var array<int, MediaTagEnum|string> */
     public array $exceptTags = [];
 
+    /**
+     * @param  Builder<$this>  $query
+     * @param  array<int, string>  $tags
+     * @return Builder<$this>
+     */
+    /**
+     * @param  Builder<self>  $query
+     * @param  array<int, string>  $tags
+     * @return Builder<self>
+     */
     public function scopeWithProductableMedia(Builder $query, array $tags = []): Builder
     {
         $query->withMediaAndVariantsMatchAll($tags);
@@ -20,9 +31,16 @@ trait HasMedia
         return $query;
     }
 
+    /**
+     * @param  array<int, MediaTagEnum|string>  $onlyTags
+     * @return array<string, mixed>
+     */
     public function getAllMedia(bool $urlOnly = false, array $onlyTags = []): array
     {
-        $tags = $onlyTags ?: array_diff(MediaTagEnum::cases(), $this->exceptTags);
+        $tags = $onlyTags ?: array_diff(
+            array_map(static fn (MediaTagEnum $tag): string => $tag->value, MediaTagEnum::cases()),
+            array_map(static fn (MediaTagEnum|string $tag): string => $tag instanceof MediaTagEnum ? $tag->value : $tag, $this->exceptTags),
+        );
         if ($this->relationLoaded('media')) {
             $media = [];
             foreach ($tags as $tag) {
@@ -42,6 +60,9 @@ trait HasMedia
         return [];
     }
 
+    /**
+     * @return array<int, MediaData>|MediaData|null
+     */
     public function getCoverMedia(bool $first = false): null|MediaData|array
     {
         if (! $this->relationLoaded('media')) {
@@ -58,9 +79,12 @@ trait HasMedia
             ->toArray();
     }
 
+    /**
+     * @param  array<int, string>  $tags
+     */
     public function loadMediaWitVariant(array $tags = []): void
     {
-        if (method_exists($this, 'loadMediaWithVariantsMatchAll')) {
+        if (method_exists($this, 'loadMediaWithVariantsMatchAll')) { // @phpstan-ignore function.alreadyNarrowedType (defensive guard for non-Mediable consumers)
             $this->loadMediaWithVariantsMatchAll($tags);
         }
     }

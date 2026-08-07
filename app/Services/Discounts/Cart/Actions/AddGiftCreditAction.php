@@ -56,7 +56,7 @@ final class AddGiftCreditAction implements DiscountActionContract
 
         // Prepare description
         $description = $configuration->description ?? __('wallet.promotion.gift_from_order', [
-            'promotion' => $context->evaluating_promotion?->name ?? __('wallet.promotion.discount'),
+            'promotion' => $context->evaluating_promotion->name ?? __('wallet.promotion.discount'),
         ]);
 
         // Record gift transaction

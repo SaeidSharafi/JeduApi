@@ -35,6 +35,9 @@ final class RequestDataCacheService
         return $this->products->get($id);
     }
 
+    /**
+     * @param  Collection<int, Product>  $products
+     */
     public function storeProducts(Collection $products): void
     {
         // Use `union` to add new products without replacing existing ones.

@@ -52,7 +52,7 @@ final class CourseController extends Controller
         $courses           = ProductQueryService::make()
             ->ofType(ProductableEnum::COURSE)
             ->getCourseList($requestData)
-            ->through(function (Product $product) {
+            ->through(function (Product $product): ProductCardData {
                 $priceData = $this->priceService->getPriceDataForProduct($product);
 
                 return ProductCardData::fromModel($product, $priceData);

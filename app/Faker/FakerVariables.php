@@ -19,7 +19,10 @@ final class FakerVariables
         ],
     ];
 
-    public function variable($name)
+    /**
+     * @return array<int, string>|string|null
+     */
+    public function variable(string $name)
     {
 
         if (array_key_exists($name, self::VARIABLES)) {

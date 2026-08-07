@@ -45,7 +45,7 @@ it('storeStudent succeeds on 200', function (): void {
         ->and($response['message'])->toBe('ok')
         ->and(data_get($response, 'data.student_id'))->toBe(1001);
 
-    Http::assertSent(function ($request) use ($payload) {
+    Http::assertSent(function ($request) use ($payload): bool {
         return $request->url() === 'https://ims.test/api/v2/student'
             && $request->hasHeader('Authorization', 'Bearer ims-key')
             && $request->data() === $payload;
@@ -215,11 +215,10 @@ it('throws when service used before configuration', function (): void {
         ->toThrow(UnrecoverableProvisioningException::class);
 });
 
-
 it('getAttendance succeeds and returns array', function (): void {
     Http::fake([
         'https://ims.test/api/v2/teacher/course/IMS-1/attendance*' => Http::response([
-            'data' => ['course_name' => 'Excel', 'enrolments' => []]
+            'data' => ['course_name' => 'Excel', 'enrolments' => []],
         ], 200),
     ]);
 
@@ -228,7 +227,7 @@ it('getAttendance succeeds and returns array', function (): void {
     expect($response)->toBeArray()
         ->and($response['data']['course_name'])->toBe('Excel');
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         return str_contains($request->url(), '/api/v2/teacher/course/IMS-1/attendance')
             && $request->hasHeader('X-Teacher-Civil-Id', '1234567890')
             && $request->method() === 'GET';
@@ -268,7 +267,7 @@ it('destroyAttendance succeeds', function (): void {
         'https://ims.test/api/v2/teacher/course/IMS-1/attendance' => Http::response(['message' => 'deleted'], 200),
     ]);
 
-    $response = $this->imsService->destroyAttendance('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE , ['attendance_date' => '2024-01-01']);
+    $response = $this->imsService->destroyAttendance('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE, ['attendance_date' => '2024-01-01']);
     expect($response['message'])->toBe('deleted');
     Http::assertSent(fn ($request): bool => $request->method() === 'DELETE');
 });
@@ -276,7 +275,7 @@ it('destroyAttendance succeeds', function (): void {
 it('getGrades and storeBulkGrades succeed', function (): void {
     Http::fake([
         'https://ims.test/api/v2/teacher/course/IMS-1/grade/bulk' => Http::response(['message' => 'ok'], 200),
-        'https://ims.test/api/v2/teacher/course/IMS-1/grade*' => Http::response(['data' => []], 200),
+        'https://ims.test/api/v2/teacher/course/IMS-1/grade*'     => Http::response(['data' => []], 200),
     ]);
 
     $getRes = $this->imsService->getGrades('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE);
@@ -300,7 +299,7 @@ it('getTeacherCourses returns course list', function (): void {
     expect($response)->toHaveKey('data')
         ->and($response['data'][0]['code'])->toBe('IMS-1');
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         return str_contains($request->url(), '/api/v2/teacher/courses')
             && $request->hasHeader('X-Teacher-Civil-Id', '1234567890')
             && $request->method() === 'GET';

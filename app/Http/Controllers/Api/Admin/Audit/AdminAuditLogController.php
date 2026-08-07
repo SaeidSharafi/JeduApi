@@ -51,7 +51,6 @@ final class AdminAuditLogController extends Controller
         Gate::authorize('view-any', AdminActionLog::class);
 
         $logs = QueryBuilder::for(AdminActionLog::class)
-            ->with(['admin'])
             ->allowedFilters([
                 AllowedFilter::exact('admin_id'),
                 AllowedFilter::exact('action_type'),
@@ -84,6 +83,7 @@ final class AdminAuditLogController extends Controller
                 'response_status',
             ])
             ->defaultSort('-created_at')
+            ->with(['admin'])
             ->paginate(request()->integer('per_page', config('app.page_size')));
 
         return apiResponse()->success(

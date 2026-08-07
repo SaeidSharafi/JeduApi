@@ -19,6 +19,9 @@ final readonly class VerifyResponse
         public string $message,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $response
+     */
     public static function fromResponse(array $response): self
     {
         return new self(
@@ -40,6 +43,9 @@ final readonly class VerifyResponse
         return $this->statusCode === 0;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toTransactionData(): array
     {
         return [

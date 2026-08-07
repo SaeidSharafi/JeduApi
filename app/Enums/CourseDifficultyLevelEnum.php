@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum CourseDifficultyLevelEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case BEGINNER     = 'beginner';

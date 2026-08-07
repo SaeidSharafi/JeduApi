@@ -14,10 +14,10 @@ final class CreateDiscountPromotionAction
 {
     public function execute(DiscountPromotionCreateData $data): DiscountPromotion
     {
-        $promotion = DB::transaction(function () use ($data) {
+        $promotion = DB::transaction(function () use ($data): DiscountPromotion {
             // Create the main promotion
-            $isCartSpecific = $data->type === DiscountTypeEnum::CART_CHECKOUT->value;
-            $promotion = DiscountPromotion::create([
+            $isCartSpecific = $data->type === DiscountTypeEnum::CART_CHECKOUT;
+            $promotion      = DiscountPromotion::create([
                 'name'                             => $data->name,
                 'description'                      => $data->description,
                 'type'                             => $data->type,
@@ -29,7 +29,7 @@ final class CreateDiscountPromotionAction
                 'usage_limit_total'                => $data->usage_limit_total,
                 'usage_limit_per_customer'         => $data->usage_limit_per_customer,
                 'total_usage_count'                => 0,
-                'requires_coupon'                  => !$isCartSpecific && !empty($data->coupons)
+                'requires_coupon'                  => ! $isCartSpecific && ! empty($data->coupons),
             ]);
 
             // Create rules
@@ -41,7 +41,7 @@ final class CreateDiscountPromotionAction
                 ]);
             }
 
-            if ($isCartSpecific){
+            if ($isCartSpecific) {
                 foreach ($data->coupons as $couponData) {
                     $promotion->coupons()->create([
                         'code'        => $couponData->code,
@@ -51,7 +51,6 @@ final class CreateDiscountPromotionAction
                     ]);
                 }
             }
-
 
             return $promotion->load(['rules', 'coupons']);
         });

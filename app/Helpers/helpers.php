@@ -8,7 +8,9 @@ if (! function_exists('get_model_label')) {
     /**
      * Get the class name from a fully qualified class name or object.
      *
-     * @param  mixed  $class
+     * @param  string|object  $class
+     *
+     * @return string
      */
     function get_model_label(string|object $class): string
     {
@@ -20,7 +22,7 @@ if (! function_exists('get_model_label')) {
     }
 }
 if (! function_exists('randomNumber')) {
-    function randomNumber($length = 20, $int = false): string|int
+    function randomNumber(int $length = 20, bool $int = false): string|int
     {
         $numbers = '0123456789';
 

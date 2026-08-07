@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum ProductRegistrationStatusEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case IN_PROGRESS = 'in_progress';

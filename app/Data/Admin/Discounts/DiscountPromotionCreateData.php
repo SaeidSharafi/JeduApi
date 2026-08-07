@@ -18,7 +18,7 @@ final class DiscountPromotionCreateData extends Data
 {
     public function __construct(
         public string $name,
-        public string $type,
+        public DiscountTypeEnum $type,
         #[DataCollectionOf(DiscountPromotionRuleCreateData::class)]
         public array $rules,
         public bool $is_active,

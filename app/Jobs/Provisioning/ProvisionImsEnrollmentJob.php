@@ -59,9 +59,9 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
 
         $this->resolvePaymentOrFail($enrollment);
 
-        $deliveryDetails = $enrollment->productDeliveryOption?->details_json ?? [];
+        $deliveryDetails = $enrollment->productDeliveryOption->details_json ?? [];
 
-        $imsCourseCode = data_get($enrollment->productDeliveryOption?->details_json ?? [], 'ims_course_code');
+        $imsCourseCode = data_get($enrollment->productDeliveryOption->details_json ?? [], 'ims_course_code');
         if (empty($imsCourseCode)) {
             throw new UnrecoverableProvisioningException(__('messages.provisioning.ims_course_code_missing'));
         }
@@ -125,6 +125,9 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
         ], $externalEnrollmentId);
     }
 
+    /**
+     * @param  array<string, mixed>  $metaData
+     */
     protected function onFailed(Enrollment $enrollment, Throwable $exception, array $metaData): void
     {
         // Compute a static sanitized error message — never leak raw exception text into admin logs.

@@ -23,6 +23,8 @@ final class Cart extends Model
 
     /**
      * Get the user that owns the cart.
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -31,6 +33,8 @@ final class Cart extends Model
 
     /**
      * Get the items for the cart.
+     *
+     * @return HasMany<CartItem, $this>
      */
     public function items(): HasMany
     {

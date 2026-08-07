@@ -7,14 +7,12 @@ namespace App\Exceptions;
 use App\Contracts\ApiResponseInterface;
 use Exception;
 use Illuminate\Http\Request;
-use JetBrains\PhpStorm\Pure;
 use Throwable;
 
 final class ModelHasRelationshipDataException extends Exception
 {
     protected string $relatedModel;
 
-    #[Pure]
     public function __construct(string $relatedModel, string $message = '', ?Throwable $previous = null)
     {
         $this->relatedModel = $relatedModel;

@@ -26,6 +26,9 @@ abstract class PaymentException extends Exception implements PaymentExceptionCon
         return null;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
         return [];

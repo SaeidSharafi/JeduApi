@@ -53,7 +53,7 @@ final class CancelOrderByCustomerAction
             ]);
         }
 
-        return DB::transaction(function () use ($order) {
+        return DB::transaction(function () use ($order): Order {
             // Update order status to CANCELLED
             $order->status = OrderStatusEnum::CANCELLED;
             $order->save();

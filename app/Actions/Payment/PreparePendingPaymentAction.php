@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class PreparePendingPaymentAction
 {
+    /**
+     * @param  array<string, mixed>|null  $data
+     */
     public function handle(
         Authenticatable $actor,
         int $customerId,

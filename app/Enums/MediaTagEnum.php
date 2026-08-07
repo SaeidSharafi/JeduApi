@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum MediaTagEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case GALLERY     = 'gallery';

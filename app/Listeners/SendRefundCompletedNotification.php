@@ -8,9 +8,6 @@ use App\Events\RefundCompletedEvent;
 use App\Notifications\Order\RefundCompletedNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Events\Attributes\AsEventListener;
-
-#[AsEventListener(RefundCompletedEvent::class)]
 final class SendRefundCompletedNotification implements ShouldQueue
 {
     use Queueable;

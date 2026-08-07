@@ -21,6 +21,7 @@ use App\Services\Integrations\ImsService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Client\Request;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
@@ -84,9 +85,9 @@ it('sends configured IMS bank account number in payload', function (): void {
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
     $job->handle();
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), '/api/v2/enrollment/')
-            && ($request['payment']['bank_account_number'] ?? null) === 'IMS-ACC-001';
+            && ($request->data()['payment']['bank_account_number'] ?? null) === 'IMS-ACC-001';
     });
 });
 
@@ -113,10 +114,10 @@ it('sends null IMS bank account number when gateway config is missing', function
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
     $job->handle();
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), '/api/v2/enrollment/')
-            && array_key_exists('bank_account_number', $request['payment'])
-            && $request['payment']['bank_account_number'] === null;
+            && array_key_exists('bank_account_number', $request->data()['payment'])
+            && $request->data()['payment']['bank_account_number'] === null;
     });
 });
 
@@ -256,9 +257,9 @@ it('uses explicit payment id to resolve bill from transaction id fallback', func
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
     $job->handle();
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), '/api/v2/enrollment/')
-            && ($request['payment']['tracking_code'] ?? null) === 'TX-777';
+            && ($request->data()['payment']['tracking_code'] ?? null) === 'TX-777';
     });
 });
 
@@ -283,9 +284,9 @@ it('falls back to payment created at when transaction date is invalid', function
 
     $expectedDate = $payment->created_at?->toDateString();
 
-    Http::assertSent(function ($request) use ($expectedDate) {
+    Http::assertSent(function (Request $request) use ($expectedDate): bool {
         return str_contains($request->url(), '/api/v2/enrollment/')
-            && ($request['payment']['date'] ?? null) === $expectedDate;
+            && ($request->data()['payment']['date'] ?? null) === $expectedDate;
     });
 });
 
@@ -309,9 +310,9 @@ it('sends bank transfer ims account number when payment method is bank transfer'
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
     $job->handle();
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), '/api/v2/enrollment/')
-            && ($request['payment']['bank_account_number'] ?? null) === 'IMS-ACC-BANK';
+            && ($request->data()['payment']['bank_account_number'] ?? null) === 'IMS-ACC-BANK';
     });
 });
 
@@ -335,9 +336,9 @@ it('sends wallet ims account number when payment method is wallet', function ():
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
     $job->handle();
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), '/api/v2/enrollment/')
-            && ($request['payment']['bank_account_number'] ?? null) === 'IMS-ACC-WALLET';
+            && ($request->data()['payment']['bank_account_number'] ?? null) === 'IMS-ACC-WALLET';
     });
 });
 

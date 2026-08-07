@@ -42,7 +42,7 @@ it('returns teacher courses from IMS enriched with local product image', functio
                     'start_date'             => '2026-03-21',
                     'end_date'               => '2026-06-21',
                     'is_current'             => true,
-                    'has_grade_enabled'     => true,
+                    'has_grade_enabled'      => true,
                     'has_attendance_enabled' => true,
                 ],
                 [
@@ -51,7 +51,7 @@ it('returns teacher courses from IMS enriched with local product image', functio
                     'start_date'             => '2026-01-01',
                     'end_date'               => '2026-03-01',
                     'is_current'             => false,
-                    'has_grade_enabled'     => false,
+                    'has_grade_enabled'      => false,
                     'has_attendance_enabled' => true,
                 ],
             ],
@@ -107,7 +107,7 @@ it('filters courses by current period', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getTeacherCourses')
         ->once()
-        ->with('1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function ($params) {
+        ->with('1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function (array $params): bool {
             return ($params['period'] ?? null) === 'current';
         }))
         ->andReturn(['data' => []]);
@@ -120,7 +120,7 @@ it('filters courses by past period', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getTeacherCourses')
         ->once()
-        ->with('1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function ($params) {
+        ->with('1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function (array $params): bool {
             return ($params['period'] ?? null) === 'past';
         }))
         ->andReturn(['data' => []]);
@@ -133,7 +133,7 @@ it('forwards arbitrary query params to IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getTeacherCourses')
         ->once()
-        ->with('1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function ($params) {
+        ->with('1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function (array $params): bool {
             return ($params['status'] ?? null) === 'current';
         }))
         ->andReturn(['data' => []]);

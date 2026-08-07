@@ -12,10 +12,12 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Database\Factories\WalletCampaignFactory;
 
 final class WalletCampaign extends Model implements WalletTransactionSourceableContract
 {
     use HasAuditor;
+    /** @use HasFactory<WalletCampaignFactory> */
     use HasFactory;
 
     protected $fillable
@@ -36,6 +38,9 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
 
     /**
      * All wallet transactions related to this campaign
+     */
+    /**
+     * @return HasMany<WalletTransaction, $this>
      */
     public function transactions(): HasMany
     {
@@ -145,6 +150,7 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
         ];
     }
 
+    /** @return Attribute<bool, never> */
     protected function isWithinDateRange(): Attribute
     {
         return Attribute::make(
@@ -164,6 +170,7 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
         );
     }
 
+    /** @return Attribute<int|null, never> */
     protected function remainingUsageCount(): Attribute
     {
         return Attribute::make(

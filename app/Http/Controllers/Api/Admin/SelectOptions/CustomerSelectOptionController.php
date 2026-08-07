@@ -25,10 +25,10 @@ final class CustomerSelectOptionController extends Controller
      *
      * @responseFile 200 resources/responses/admin/select-options/customer.json
      */
-    public function __invoke()
+    public function __invoke(): \App\Contracts\ApiResponseInterface
     {
         $queryString = request()->string('q', '');
-        $limit = request()->integer('limit', 10);
+        $limit       = request()->integer('limit', 10);
 
         $customers = User::query()
             ->when($queryString, function ($query) use ($queryString): void {

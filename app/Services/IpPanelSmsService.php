@@ -33,6 +33,9 @@ final class IpPanelSmsService
         $this->from = $from;
     }
 
+    /**
+     * @param  array<int, string>  $to
+     */
     public function send(array $to, string $message, string $type = 'custom'): void
     {
         $this->validateConfig();
@@ -88,7 +91,10 @@ final class IpPanelSmsService
         }
     }
 
-    public function sendPattern(string $pattern, array $parameters, string $to, $message = '', $type = 'pattern'): void
+    /**
+     * @param  array<string, mixed>  $parameters
+     */
+    public function sendPattern(string $pattern, array $parameters, string $to, string $message = '', string $type = 'pattern'): void
     {
         $this->validateConfig();
         if (config('services.ippanel.sand_box')) {

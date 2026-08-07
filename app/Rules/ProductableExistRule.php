@@ -13,6 +13,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 final class ProductableExistRule implements DataAwareRule, ValidationRule
 {
+    /** @var array<string, mixed> */
     private array $data = [];
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -49,7 +50,10 @@ final class ProductableExistRule implements DataAwareRule, ValidationRule
         }
     }
 
-    public function setData(array $data): self
+    /**
+     * @param  array<string, mixed>  $data
+     */
+        public function setData(array $data): self
     {
         $this->data = $data;
 

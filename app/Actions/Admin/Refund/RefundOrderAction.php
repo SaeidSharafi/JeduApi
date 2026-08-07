@@ -13,6 +13,7 @@ use App\Events\RefundCompletedEvent;
 use App\Exceptions\RefundGatewayException;
 use App\Exceptions\RefundValidationException;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\OrderStatusService;
@@ -21,6 +22,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use LogicException;
 
 final class RefundOrderAction
 {
@@ -30,6 +32,9 @@ final class RefundOrderAction
         private readonly UpdateOrderRefundedAmountAction $updateOrderRefundedAmount,
     ) {}
 
+    /**
+     * @return Collection<int, Refund>
+     */
     public function handle(Order $order, RefundOrderData $data): Collection
     {
         $state = DB::transaction(function () use ($order, $data) {
@@ -38,7 +43,7 @@ final class RefundOrderAction
 
             $refundableItems = $this->getRefundableItems($order);
             $payment         = $this->resolvePayment($order);
-            $paymentMethod   = $payment?->method?->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
+            $paymentMethod   = $payment?->method->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
             $processor       = $this->processorFactory->make($paymentMethod);
             $requiresGateway = $paymentMethod === PaymentMethodEnum::DIGIPAY->value && ! $data->skip_gateway;
 
@@ -61,6 +66,7 @@ final class RefundOrderAction
                 $this->validateGatewayLimits($payment, $totalRefundAmount);
             }
 
+            /** @var Collection<int, Refund> $processingRefunds */
             $processingRefunds = new Collection();
             foreach ($itemAmounts as $itemData) {
                 $processingRefunds->push(Refund::create([
@@ -128,13 +134,17 @@ final class RefundOrderAction
                     $refundAmount = $itemData['refund_amount'];
                     $refund       = $state->processingRefunds->firstWhere('order_item_id', $item->id);
 
+                    if (! $refund instanceof Refund) {
+                        throw new LogicException("Refund record missing for order item {$item->id}");
+                    }
+
                     if ($state->paymentMethod === PaymentMethodEnum::WALLET->value && ! $data->skip_gateway) {
                         $state->processor->process($refund, $order, $refundAmount);
                     }
 
                     $adminNotes = $refund->admin_notes;
                     if ($data->skip_gateway) {
-                        $adminNotes = mb_trim(($adminNotes ?? '')."\n".__('messages.admin.gateway_skipped_note', ['datetime' => now()]));
+                        $adminNotes = mb_trim(($adminNotes ?? '')."\n".__('messages.admin.gateway_skipped_note', ['datetime' => now()->toDateTimeString()]));
                     }
 
                     $transactionDetails = $refund->transaction_details ?? [];
@@ -187,6 +197,9 @@ final class RefundOrderAction
 
     }
 
+    /**
+     * @return Collection<int, OrderItem>
+     */
     private function getRefundableItems(Order $order): Collection
     {
         $refundableItems = $order->items()
@@ -220,7 +233,7 @@ final class RefundOrderAction
         }
     }
 
-    private function calculateAmountPaidForItem($orderItem): int
+    private function calculateAmountPaidForItem(OrderItem $orderItem): int
     {
         $order = $orderItem->order;
 

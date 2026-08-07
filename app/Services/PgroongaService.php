@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\QueryException;
 
 final class PgroongaService
 {
@@ -18,7 +18,7 @@ final class PgroongaService
      */
     public static function isPgroongaEnabled(): bool
     {
-        return Cache::rememberForever('database.pgroonga_enabled', function () {
+        return Cache::rememberForever('database.pgroonga_enabled', function (): bool {
             try {
                 // This query is very fast and checks the system catalog.
                 $result = DB::selectOne("SELECT 1 FROM pg_extension WHERE extname = 'pgroonga'");

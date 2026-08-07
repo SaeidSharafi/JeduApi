@@ -30,7 +30,7 @@ final class GoodForStartCoursesController extends Controller
      *
      * @responseFile 200 resources/responses/shop/products/categories/good-for-start.json
      */
-    public function __invoke(Category $category, ProductPriceService $priceService)
+    public function __invoke(Category $category, ProductPriceService $priceService): \App\Contracts\ApiResponseInterface
     {
 
         $courses = SmartCache::remember(
@@ -44,7 +44,7 @@ final class GoodForStartCoursesController extends Controller
                     ->forListing()
                     ->limit(request()->integer('limit', 10))
                     ->get()
-                    ->map(function (Product $product) use ($priceService) {
+                    ->map(function (Product $product) use ($priceService): ProductCardData {
                         $priceData = $priceService->getPriceDataForProduct($product);
 
                         return ProductCardData::fromModel($product, $priceData);

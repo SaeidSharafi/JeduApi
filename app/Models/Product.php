@@ -29,6 +29,7 @@ use Laravel\Scout\Searchable;
 final class Product extends Model
 {
     use HasCategories;
+    /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
     use HasProductListingPresets;
     use Searchable {
@@ -67,6 +68,8 @@ final class Product extends Model
 
     /**
      * @codeCoverageIgnore
+     *
+     * @return array<string, mixed>
      */
     public function toSearchableArray(): array
     {
@@ -96,11 +99,11 @@ final class Product extends Model
             'earliest_availability_start_ts' => $this->earliest_availability_start?->startOfDay()->timestamp ?? 0,
             'latest_availability_end_ts'     => $this->latest_availability_end?->endOfDay()->timestamp       ?? self::OPEN_END_TIMESTAMP,
 
-            'earliest_event_start_ts' => $this->event_start_at?->timestamp             ?? 0,
+            'earliest_event_start_ts' => $this->event_start_at->timestamp             ?? 0,
             'latest_event_ended_ts'   => $this->event_ended_at?->endOfDay()->timestamp ?? self::OPEN_END_TIMESTAMP,
 
-            'price'             => (int) ($this->productPrice?->min_price ?? ($this->price_data_cache['min_price'] ?? 0)),
-            'has_discount'      => (bool) ($this->productPrice?->has_discount ?? ($this->price_data_cache['has_discount'] ?? false)),
+            'price'             => (int) ($this->productPrice->min_price ?? ($this->price_data_cache['min_price'] ?? 0)),
+            'has_discount'      => (bool) ($this->productPrice->has_discount ?? ($this->price_data_cache['has_discount'] ?? false)),
             'category_ids'      => $this->categories->pluck('id')->map(static fn (mixed $id): int => (int) $id)->all(),
             'fulfillment_types' => $publishedOptions
                 ->pluck('fulfillment_type')
@@ -110,11 +113,11 @@ final class Product extends Model
                 ->all(),
             'category_slugs'   => $this->categories->pluck('slug')->map(static fn (mixed $slug): string => (string) $slug)->all(),
             'productable_type' => (string) $this->productable_type,
-            'difficulty_level' => $this->productable?->difficulty_level?->value,
 
             'productable_full_name'   => $this->productable?->full_name,
             'productable_short_name'  => $this->productable?->short_name,
             'productable_description' => $this->productable?->description,
+            'difficulty_level'        => $this->productable?->difficulty_level?->value,
         ];
 
         return $searchableData;
@@ -122,6 +125,10 @@ final class Product extends Model
 
     /**
      * @codeCoverageIgnore
+     *
+     * @param Collection<int, self> $models
+     *
+     * @return Collection<int, self>
      */
     public function makeSearchableUsing(Collection $models): Collection
     {
@@ -153,16 +160,25 @@ final class Product extends Model
                 ->exists();
     }
 
+    /**
+     * @return BelongsTo<Term, $this>
+     */
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
     }
 
+    /**
+     * @return MorphTo<Course|Seminar|DigitalAsset, $this>
+     */
     public function productable(): MorphTo
     {
-        return $this->morphTo();
+        return $this->morphTo(); // @phpstan-ignore return.type (larastan types morphTo() as MorphTo<Model>)
     }
 
+    /**
+     * @return MorphTo<Course|Seminar|DigitalAsset, $this>
+     */
     public function productableWithAllRelations(): MorphTo
     {
         return $this->productable()
@@ -187,6 +203,9 @@ final class Product extends Model
         return $this->hasMany(ProductDeliveryOption::class);
     }
 
+    /**
+     * @return HasManyThrough<OrderItem, ProductDeliveryOption, $this>
+     */
     public function orderItems(): HasManyThrough
     {
         return $this->hasManyThrough(OrderItem::class, ProductDeliveryOption::class);
@@ -249,6 +268,11 @@ final class Product extends Model
             ->wherePivot('relation_type', RelationTypeEnum::UPSELL->value);
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function eventEnded(Builder $query): Builder
     {
@@ -256,6 +280,11 @@ final class Product extends Model
             ->where('event_ended_at', '<', today()->startOfDay());
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function eventNotStarted(Builder $query): Builder
     {
@@ -263,6 +292,11 @@ final class Product extends Model
             ->where('event_start_at', '>', today()->startOfDay());
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function eventOngoing(Builder $query): Builder
     {
@@ -272,6 +306,11 @@ final class Product extends Model
             ->where('event_ended_at', '>=', today()->startOfDay());
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function eventNotEnded(Builder $query): Builder
     {
@@ -281,6 +320,11 @@ final class Product extends Model
         });
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function publishedAndVisible(Builder $query): Builder
     {
@@ -288,6 +332,11 @@ final class Product extends Model
             ->where('products.is_visible', true);
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function hasPublishedDeliveryOption(Builder $query): Builder
     {
@@ -299,6 +348,11 @@ final class Product extends Model
             ->where('status', PublicationStatusEnum::PUBLISHED));
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function publishedProductable(Builder $query): Builder
     {
@@ -310,6 +364,11 @@ final class Product extends Model
             ->where('status', PublicationStatusEnum::PUBLISHED));
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function activeTerm(Builder $query): Builder
     {
@@ -324,6 +383,11 @@ final class Product extends Model
         });
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function availabilityStatus(Builder $query, AvailabilityStatusEnum $status): Builder
     {
@@ -368,6 +432,11 @@ final class Product extends Model
         });
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function sortByCapacityUtilization(Builder $query, float $threshold = 0.8): Builder
     {
@@ -397,12 +466,22 @@ final class Product extends Model
             ->orderByRaw('pdo_cap_stats.max_ratio DESC');
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function ofType(Builder $query, ProductableEnum $type): Builder
     {
         return $query->where('products.productable_type', $type->value);
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function inCategory(Builder $query, int $categoryId): Builder
     {
@@ -410,6 +489,11 @@ final class Product extends Model
             ->where('categories.id', $categoryId));
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
     protected function search(Builder $query, ?string $searchTerm): Builder
     {

@@ -45,6 +45,7 @@ final class OrderContextData extends Data
          */
         public ?DiscountPromotion $evaluating_promotion = null,
         public ?string $triggered_by_coupon_code = null,
+        public ?int $order_id = null,
     ) {}
 
     /**

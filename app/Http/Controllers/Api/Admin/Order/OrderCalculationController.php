@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\Order;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderPreviewData;
 use App\Http\Controllers\Controller;
-use App\Http\Responses\ApiSuccessResponse;
 use App\Models\Order;
 use App\Services\Discounts\OrderCalculationService;
 use Illuminate\Support\Facades\Gate;
@@ -25,7 +25,7 @@ final class OrderCalculationController extends Controller
      *
      * @responseFile 200 resources/responses/admin/order/preview.json
      */
-    public function __invoke(OrderCreateData $data, OrderCalculationService $orderCalculationService): ApiSuccessResponse
+    public function __invoke(OrderCreateData $data, OrderCalculationService $orderCalculationService): ApiResponseInterface
     {
         Gate::authorize('create', Order::class);
 

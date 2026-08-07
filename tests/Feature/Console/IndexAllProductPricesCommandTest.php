@@ -22,7 +22,7 @@ it('processes all published products into a single chunk without --missing-only 
     Queue::assertPushed(UpdateProductPricingJob::class, 1);
 
     // Assert (more specifically): Check that the single job contains all 5 product IDs
-    Queue::assertPushed(UpdateProductPricingJob::class, function ($job) use ($products) {
+    Queue::assertPushed(UpdateProductPricingJob::class, function ($job) use ($products): bool {
         // The job's payload should be an array of IDs.
         // We sort both arrays to ensure the comparison is order-independent and accurate.
         return count($job->productIds) === 5

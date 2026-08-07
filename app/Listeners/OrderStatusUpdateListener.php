@@ -23,7 +23,7 @@ final class OrderStatusUpdateListener implements ShouldQueue
 
     public function handle(OrderStatusUpdatedEvent $event): void
     {
-        /** @var Order $order */
+        /** @var ?Order $order */
         $order = $event->order->fresh();
         if (! $order) {
             return;

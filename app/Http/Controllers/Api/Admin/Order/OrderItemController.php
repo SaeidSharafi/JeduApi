@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\Order;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Order\OrderItemData;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -23,9 +25,8 @@ final class OrderItemController extends Controller
     /**
      * Display a listing of the order items for a specific order.
      *
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Order $order)
+    public function index(Order $order): ApiResponseInterface
     {
         Gate::authorize('view', $order);
 
@@ -37,12 +38,10 @@ final class OrderItemController extends Controller
     /**
      * Display the specified order item.
      *
-     * @return \Illuminate\Http\JsonResponse
-     *
      * @responseFile 200 resources/responses/admin/order-item/show.json
      * @responseFile 403 resources/responses/403.json
      */
-    public function show(Order $order, OrderItem $orderItem)
+    public function show(Order $order, OrderItem $orderItem): ApiResponseInterface
     {
         Gate::authorize('view', $order);
 

@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum AllocationStatusEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case ERROR_INACTIVE            = 'error_inactive';

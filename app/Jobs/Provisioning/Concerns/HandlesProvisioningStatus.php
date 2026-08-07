@@ -16,6 +16,9 @@ use App\Services\SettingsService;
 
 trait HandlesProvisioningStatus
 {
+    /**
+     * @param  array<string, mixed>  $data
+     */
     protected function markProvisioningSuccess(
         Enrollment $enrollment,
         string $provider,
@@ -49,6 +52,9 @@ trait HandlesProvisioningStatus
         $enrollment->save();
     }
 
+    /**
+     * @param  array<string, mixed>  $metadata
+     */
     private function markProvisioningFailure(Enrollment $enrollment, string $provider, string $error, array $metadata = []): void
     {
         $provisioningData = $enrollment->provisioning_data ?? [];
@@ -93,7 +99,7 @@ trait HandlesProvisioningStatus
             $providers[] = 'skyroom';
         }
 
-        $details = $enrollment->productDeliveryOption?->details_json ?? [];
+        $details = $enrollment->productDeliveryOption->details_json ?? [];
 
         if ($deliveryMethod !== DeliveryMethodEnum::LMS_MOODLE
             && isset($details['moodle_quiz_course_id'])

@@ -41,26 +41,41 @@ final class OrderItem extends Model
             'status',
         ];
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<Vendor, $this>
+     */
     public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
     }
 
+    /**
+     * @return HasOne<Enrollment, $this>
+     */
     public function enrollment(): HasOne
     {
         return $this->hasOne(Enrollment::class, 'order_item_id');
     }
 
+    /**
+     * @return BelongsTo<ProductDeliveryOption, $this>
+     */
     public function productDeliveryOption(): BelongsTo
     {
         return $this->belongsTo(ProductDeliveryOption::class);
     }
 
+    /**
+     * @return HasMany<Refund, $this>
+     */
     public function refunds(): HasMany
     {
         return $this->hasMany(Refund::class, 'order_item_id');
@@ -81,6 +96,8 @@ final class OrderItem extends Model
 
     /**
      * Accessor to get original price before product-level discounts.
+     *
+     * @return Attribute<int, never>
      */
     protected function originalPrice(): Attribute
     {
@@ -91,6 +108,8 @@ final class OrderItem extends Model
 
     /**
      * Accessor to get product-level discount amount from pricing_metadata.
+     *
+     * @return Attribute<int, never>
      */
     protected function productDiscountAmount(): Attribute
     {
@@ -101,6 +120,8 @@ final class OrderItem extends Model
 
     /**
      * Accessor to get total discount (product + cart discounts combined).
+     *
+     * @return Attribute<int, never>
      */
     protected function totalDiscountAmount(): Attribute
     {

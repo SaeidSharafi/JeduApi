@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
 
 final class ProductDeliveryOption extends Model
 {
+    /** @use HasFactory<\Database\Factories\ProductDeliveryOptionFactory> */
     use HasFactory;
 
     protected $fillable
@@ -54,32 +55,47 @@ final class ProductDeliveryOption extends Model
             'productDeliveryOptionDiscountPrice',
         ];
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /**
+     * @return BelongsToMany<Teacher, $this>
+     */
     public function teachers(): BelongsToMany
     {
         return $this->belongsToMany(Teacher::class);
     }
 
+    /**
+     * @return HasMany<Enrollment, $this>
+     */
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class, 'product_delivery_option_id');
     }
 
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class, 'product_delivery_option_id');
     }
 
+    /**
+     * @return HasOne<ProductDeliveryOptionDiscountPrice, $this>
+     */
     public function productDeliveryOptionDiscountPrice(): HasOne
     {
         return $this->hasOne(ProductDeliveryOptionDiscountPrice::class, 'product_delivery_option_id');
     }
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
@@ -88,8 +104,13 @@ final class ProductDeliveryOption extends Model
         });
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
-    protected function available($query)
+    protected function available(Builder $query): Builder
     {
         // available_from and available_to are optional, if they are null, it means the product is always available
         return $query->where('status', PublicationStatusEnum::PUBLISHED)
@@ -129,47 +150,75 @@ final class ProductDeliveryOption extends Model
             });
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
-    protected function availableWithCapacity($query)
+    protected function availableWithCapacity(Builder $query): Builder
     {
         return $query->available() // Use the query builder method, not scope method directly
             ->where(function (Builder $q): void {
                 $q->whereNull('capacity')
                     // enrolled_count + reserved_count = committed seats (sold OR held
                     // by an unpaid order). Capacity must exceed both.
-                    ->orWhereColumn('capacity', '>', DB::raw('(enrolled_count + reserved_count)'));
+                    ->orWhereColumn('capacity', '>', DB::raw('(enrolled_count + reserved_count)')); // @phpstan-ignore argument.type
             });
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
-    protected function withCapacityInfo($query)
+    protected function withCapacityInfo(Builder $query): Builder
     {
         // enrolled_count is now a database column, no need for withCount
         // This scope is kept for backward compatibility but does nothing now
         return $query;
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
-    protected function featured($query)
+    protected function featured(Builder $query): Builder
     {
         return $query->where('is_featured', true)
             ->where('featured_price_start_date', '<=', now())
             ->where('featured_price_end_date', '>=', now());
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
-    protected function prepaymentAvailable($query)
+    protected function prepaymentAvailable(Builder $query): Builder
     {
         return $query->where('is_prepayment_available', true);
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[Scope]
-    protected function registrationOpen($query)
+    protected function registrationOpen(Builder $query): Builder
     {
         return $query->where('registration_start_date', '<=', now())
             ->where('registration_end_date', '>=', now());
     }
 
+    /**
+     * @return Attribute<int, int>
+     */
     protected function discountPrice(): Attribute
     {
         return Attribute::make(

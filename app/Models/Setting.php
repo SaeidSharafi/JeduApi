@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
+use Database\Factories\SettingFactory;
 
 final class Setting extends Model
 {
+    /** @use HasFactory<SettingFactory> */
     use HasFactory;
     use Mediable;
 
@@ -61,8 +63,8 @@ final class Setting extends Model
      * Recursively finds keys related to media, fetches the corresponding Media
      * models, and replaces the IDs with MediaData DTOs.
      *
-     * @param  array  $settingData  The array to process.
-     * @return array The processed array with DTOs.
+     * @param  array<string, mixed>  $settingData  The array to process.
+     * @return array<string, mixed> The processed array with DTOs.
      */
     public static function witImages(array $settingData): array
     {

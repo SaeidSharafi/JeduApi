@@ -62,7 +62,7 @@ final class UpdateRefundStatusAction
                 ->oldest()
                 ->first();
 
-            $paymentMethod = $payment?->method?->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
+            $paymentMethod = $payment?->method->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
             $processor     = $this->processorFactory->make($paymentMethod);
 
             return (object) [
@@ -71,7 +71,7 @@ final class UpdateRefundStatusAction
                 'order'           => $order,
                 'paymentMethod'   => $paymentMethod,
                 'processor'       => $processor,
-                'requiresGateway' => $paymentMethod === PaymentMethodEnum::DIGIPAY->value && ! ($data->skip_gateway ?? false),
+                'requiresGateway' => $paymentMethod === PaymentMethodEnum::DIGIPAY->value && ! $data->skip_gateway,
             ];
         });
 
@@ -130,7 +130,7 @@ final class UpdateRefundStatusAction
                 ->oldest()
                 ->first();
 
-            $paymentMethod = $payment?->method?->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
+            $paymentMethod = $payment?->method->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
             $processor     = $this->processorFactory->make($paymentMethod);
 
             $details = $lockedRefund->transaction_details ?? [];
@@ -142,8 +142,8 @@ final class UpdateRefundStatusAction
             }
 
             $adminNotes = $data->admin_notes ?? $lockedRefund->admin_notes;
-            if (($data->skip_gateway ?? false)) {
-                $adminNotes = mb_trim(($adminNotes ?? '')."\n".__('messages.admin.gateway_skipped_note', ['datetime' => now()]));
+            if ($data->skip_gateway) {
+                $adminNotes = mb_trim(($adminNotes ?? '')."\n".__('messages.admin.gateway_skipped_note', ['datetime' => now()->toDateTimeString()]));
             }
 
             $lockedRefund->status              = RefundStatusEnum::COMPLETED;
@@ -157,7 +157,7 @@ final class UpdateRefundStatusAction
             $orderItem->status         = OrderItemStatusEnum::REFUNDED;
             $orderItem->saveQuietly();
 
-            if ($paymentMethod === PaymentMethodEnum::WALLET->value && ! ($data->skip_gateway ?? false)) {
+            if ($paymentMethod === PaymentMethodEnum::WALLET->value && ! $data->skip_gateway) {
                 $processor->process($lockedRefund, $order, $lockedRefund->amount);
             }
 

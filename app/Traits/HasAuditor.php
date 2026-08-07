@@ -16,6 +16,9 @@ trait HasAuditor
         });
     }
 
+    /**
+     * @return BelongsTo<Staff, $this>
+     */
     public function auditor(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'created_by');

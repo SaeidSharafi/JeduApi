@@ -42,7 +42,7 @@ final class ProvisionSkyroomEnrollmentJob extends AbstractProvisioningJob
             return;
         }
 
-        $details = $enrollment->productDeliveryOption?->details_json ?? [];
+        $details = $enrollment->productDeliveryOption->details_json ?? [];
         $roomId  = data_get($details, 'room_id');
 
         // A non-numeric room_id in the DB will never fix itself on retry.

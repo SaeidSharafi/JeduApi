@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum DynamicListEntityTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case COURSE_PRODUCTS        = 'course_products';        // Products where productable_type = Course

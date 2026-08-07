@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Http;
 
 final class SpotPlayerService extends AbstractIntegrationService
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function issueLicense(string $spotId, User $user): array
     {
         $this->assertConfigured();

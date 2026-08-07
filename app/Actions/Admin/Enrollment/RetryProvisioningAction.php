@@ -92,7 +92,7 @@ final readonly class RetryProvisioningAction
     {
         $dispatched     = [];
         $deliveryMethod = $enrollment->productDeliveryOption?->delivery_method;
-        $detailsJson    = $enrollment->productDeliveryOption?->details_json ?? [];
+        $detailsJson    = $enrollment->productDeliveryOption->details_json ?? [];
 
         foreach ($failedProviders as $provider) {
             if ($provider === 'ims') {
@@ -154,7 +154,7 @@ final readonly class RetryProvisioningAction
     {
         $dispatched     = [];
         $deliveryMethod = $enrollment->productDeliveryOption?->delivery_method;
-        $detailsJson    = $enrollment->productDeliveryOption?->details_json ?? [];
+        $detailsJson    = $enrollment->productDeliveryOption->details_json ?? [];
 
         // IMS - if ims_course_code exists
         $imsCourseCode = data_get($detailsJson, 'ims_course_code');

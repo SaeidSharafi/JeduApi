@@ -23,6 +23,9 @@ final class InvalidPaymentPurposeException extends PaymentException
         return __('validation.custom.checkout.payment_method_not_supported');
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
         return [

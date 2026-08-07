@@ -22,9 +22,9 @@ final class UpdateSeminarAction
             $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
             $seminar->update($valdiatedData);
             $seminar->products()->update(['slug' => $data->slug]);
-            $mediaToAttach       = $data->media          ?? [];
-            $categoriesToAttach  = $data->categories     ?? [];
-            $digitalAssetsAttach = $data->digital_assets ?? [];
+            $mediaToAttach       = $data->media;
+            $categoriesToAttach  = $data->categories;
+            $digitalAssetsAttach = $data->digital_assets;
             $seminar->categories()->sync($categoriesToAttach);
             $seminar->digitalAssets()->sync($digitalAssetsAttach);
             foreach (['gallery', 'video', 'cover'] as $tag) {

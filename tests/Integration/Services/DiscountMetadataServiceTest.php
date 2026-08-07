@@ -190,7 +190,7 @@ describe('DiscountMetadataService', function (): void {
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
         $mockHandler = new class
         {
-            public static function getConfigClass()
+            public static function getConfigClass(): never
             {
                 throw new Exception('fail');
             }

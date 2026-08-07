@@ -61,6 +61,9 @@ final class DetectSuspiciousActivityAction
         );
     }
 
+    /**
+     * @return Collection<int, SuspiciousActivityData>
+     */
     private function detectLargeTransactions(SuspiciousActivityRequestData $data): Collection
     {
         $query = WalletTransaction::query()
@@ -72,7 +75,7 @@ final class DetectSuspiciousActivityAction
             $query->whereIn('user_id', $data->user_ids);
         }
 
-        return $query->get()->map(function ($transaction) {
+        return $query->get()->map(function (WalletTransaction $transaction): SuspiciousActivityData {
             return new SuspiciousActivityData(
                 transaction_id: $transaction->id,
                 user_id: $transaction->user_id,
@@ -88,6 +91,9 @@ final class DetectSuspiciousActivityAction
         });
     }
 
+    /**
+     * @return Collection<int, SuspiciousActivityData>
+     */
     private function detectOffHoursTransactions(SuspiciousActivityRequestData $data): Collection
     {
         $query = WalletTransaction::query()
@@ -103,7 +109,7 @@ final class DetectSuspiciousActivityAction
             $query->whereIn('user_id', $data->user_ids);
         }
 
-        return $query->get()->map(function ($transaction) {
+        return $query->get()->map(function ($transaction): SuspiciousActivityData {
             return new SuspiciousActivityData(
                 transaction_id: $transaction->id,
                 user_id: $transaction->user_id,
@@ -119,6 +125,9 @@ final class DetectSuspiciousActivityAction
         });
     }
 
+    /**
+     * @return Collection<int, SuspiciousActivityData>
+     */
     private function detectHighFrequencyUsers(SuspiciousActivityRequestData $data): Collection
     {
         $query = WalletTransaction::query()
@@ -140,7 +149,8 @@ final class DetectSuspiciousActivityAction
             $query->whereIn('user_id', $data->user_ids);
         }
 
-        return $query->get()->map(function ($result) {
+        return $query->get()->map(function ($result): SuspiciousActivityData {
+            /** @var object{user_id: int, transaction_count: int|string, total_volume: int|string, first_transaction: string|null, last_transaction: string|null, user: \App\Models\User} $result */
             $user = $result->user;
 
             return new SuspiciousActivityData(
@@ -163,6 +173,9 @@ final class DetectSuspiciousActivityAction
         });
     }
 
+    /**
+     * @return Collection<int, SuspiciousActivityData>
+     */
     private function detectRoundNumberPatterns(SuspiciousActivityRequestData $data): Collection
     {
         $query = WalletTransaction::query()
@@ -175,7 +188,7 @@ final class DetectSuspiciousActivityAction
             $query->whereIn('user_id', $data->user_ids);
         }
 
-        return $query->get()->map(function ($transaction) {
+        return $query->get()->map(function ($transaction): SuspiciousActivityData {
             return new SuspiciousActivityData(
                 transaction_id: $transaction->id,
                 user_id: $transaction->user_id,
@@ -191,6 +204,9 @@ final class DetectSuspiciousActivityAction
         });
     }
 
+    /**
+     * @return Collection<int, SuspiciousActivityData>
+     */
     private function detectRapidSuccessionTransactions(SuspiciousActivityRequestData $data): Collection
     {
         // Detect multiple large transactions within 5 minutes using Laravel collections
@@ -203,7 +219,7 @@ final class DetectSuspiciousActivityAction
             ->orderBy('created_at')
             ->get()
             ->groupBy('user_id')
-            ->flatMap(function ($userTransactions) {
+            ->flatMap(function ($userTransactions) { // @phpstan-ignore argument.templateType, argument.templateType (reduce accumulator typing is a PHPStan template-resolution limitation)
                 // Split transactions into rapid succession sequences using Laravel collection methods
                 return $userTransactions->values() // Reset keys for proper indexing
                     ->reduce(function ($sequences, $transaction) {
@@ -222,7 +238,7 @@ final class DetectSuspiciousActivityAction
                     ->filter(fn ($sequence): bool => $sequence->count() >= 2) // Only sequences with 2+ transactions
                     ->flatten(); // Flatten all sequences into individual transactions
             })
-            ->map(function ($transaction) {
+            ->map(function ($transaction): SuspiciousActivityData {
                 return new SuspiciousActivityData(
                     transaction_id: $transaction->id,
                     user_id: $transaction->user_id,
@@ -239,6 +255,9 @@ final class DetectSuspiciousActivityAction
             });
     }
 
+    /**
+     * @return Collection<int, SuspiciousActivityData>
+     */
     private function detectUnusualAdminActivity(SuspiciousActivityRequestData $data): Collection
     {
         // Detect high-volume admin-initiated transactions
@@ -248,7 +267,7 @@ final class DetectSuspiciousActivityAction
             ->whereJsonContains('metadata->audit->is_admin_initiated', true)
             ->where(DB::raw('ABS(amount)'), '>=', 20000000) // 20M IRR threshold for admin actions
             ->get()
-            ->map(function ($transaction) {
+            ->map(function ($transaction): SuspiciousActivityData {
                 return new SuspiciousActivityData(
                     transaction_id: $transaction->id,
                     user_id: $transaction->user_id,
@@ -265,13 +284,17 @@ final class DetectSuspiciousActivityAction
             });
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function generateSuspiciousActivitySummary(SuspiciousActivityCollectionData $activities): array
     {
         // Use collection methods to make the summary generation more concise
         $activitiesCollection = collect($activities->toArray());
 
-        $typeCountsAndUsers = $activitiesCollection->mapWithKeys(function ($items, $type) {
-            $count   = is_countable($items) ? count($items) : 0;
+        $typeCountsAndUsers = $activitiesCollection->mapWithKeys(function ($items, $type): array {
+            /** @var ?array<int, array<string, mixed>> $items */
+            $count   = count($items ?? []);
             $userIds = collect($items)->pluck('user_id')->filter();
 
             return [$type => ['count' => $count, 'user_ids' => $userIds]];

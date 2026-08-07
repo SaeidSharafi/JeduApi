@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Teacher\TeacherDetailData;
 use App\Http\Controllers\Controller;
-use App\Http\Responses\ApiSuccessResponse;
 use App\Models\Teacher;
 
 /**
@@ -26,7 +26,7 @@ final class TeacherController extends Controller
      * @responseFile resources/responses/shop/teacher/show.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function show(Teacher $teacher): ApiSuccessResponse
+    public function show(Teacher $teacher): ApiResponseInterface
     {
         return apiResponse()->success(TeacherDetailData::from($teacher));
     }

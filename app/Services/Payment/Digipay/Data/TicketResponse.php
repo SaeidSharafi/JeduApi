@@ -13,6 +13,9 @@ final readonly class TicketResponse
         public string $message,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $response
+     */
     public static function fromResponse(array $response): self
     {
         return new self(

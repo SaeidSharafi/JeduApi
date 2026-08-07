@@ -244,7 +244,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         // Verify request should use transaction reference as orderId
         $verifyClient->shouldReceive('bpVerifyRequest')
             ->once()
-            ->with(Mockery::on(function ($params) use ($transactionRef) {
+            ->with(Mockery::on(function (array $params) use ($transactionRef): bool {
                 return $params['orderId']         === $transactionRef
                     && $params['saleOrderId']     === $transactionRef
                     && $params['saleReferenceId'] === 'SALE-REF-123';
@@ -253,7 +253,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
 
         $settleClient->shouldReceive('bpSettleRequest')
             ->once()
-            ->with(Mockery::on(function ($params) use ($transactionRef) {
+            ->with(Mockery::on(function (array $params) use ($transactionRef): bool {
                 return $params['orderId']         === $transactionRef
                     && $params['saleOrderId']     === $transactionRef
                     && $params['saleReferenceId'] === 'SALE-REF-123';

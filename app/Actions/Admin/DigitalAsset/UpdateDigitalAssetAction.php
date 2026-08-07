@@ -21,9 +21,9 @@ final readonly class UpdateDigitalAssetAction
     public function handle(CreateDigitalAssetData $data, DigitalAsset $digitalAsset): void
     {
         DB::transaction(function () use ($digitalAsset, $data): void {
-            $mediaToAttach                  = $data->media ?? [];
-            $attachments                    = $data->attachments ?: [];
-            $categoriesToAttach             = $data->categories ?? [];
+            $mediaToAttach                  = $data->media;
+            $attachments                    = $data->attachments;
+            $categoriesToAttach             = $data->categories;
             $valdiatedData                  = $data->except('media', 'attachments', 'categories')->toArray();
             $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
 

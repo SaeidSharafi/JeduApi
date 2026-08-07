@@ -45,26 +45,41 @@ final class Payment extends Model implements WalletTransactionSourceableContract
     /**
      * Get the columns that should receive a unique identifier.
      */
+    /**
+     * @return array<int, string>
+     */
     public function uniqueIds(): array
     {
         return ['uuid'];
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_id');
     }
 
+    /**
+     * @return HasMany<PaymentTransaction, $this>
+     */
     public function transactions(): HasMany
     {
         return $this->hasMany(PaymentTransaction::class);
     }
 
+    /**
+     * @return HasOne<PaymentTransaction, $this>
+     */
     public function latestTransaction(): HasOne
     {
         return $this->hasOne(PaymentTransaction::class)->latestOfMany();

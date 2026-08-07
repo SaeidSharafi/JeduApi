@@ -7,10 +7,11 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 final class EnsureAdminNumericIdsMiddleware
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         $route = $request->route();
 

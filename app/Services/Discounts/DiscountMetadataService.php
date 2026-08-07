@@ -20,6 +20,9 @@ final class DiscountMetadataService
         private readonly DiscountHandlerRegistry $handlerRegistry
     ) {}
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getMetadata(): array
     {
         $conditions = $this->getConditions();
@@ -37,6 +40,9 @@ final class DiscountMetadataService
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getConditions(): array
     {
         $conditions       = ['cart' => [], 'product' => []];
@@ -52,6 +58,9 @@ final class DiscountMetadataService
         return $conditions;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getActions(): array
     {
         $actions          = ['cart' => [], 'product' => []];
@@ -67,6 +76,9 @@ final class DiscountMetadataService
         return $actions;
     }
 
+    /**
+     * @return array<int, array{value: string, label: string, symbol: string}>
+     */
     public function getOperators(): array
     {
         return collect([
@@ -82,6 +94,9 @@ final class DiscountMetadataService
         ])->values()->all();
     }
 
+    /**
+     * @return array<int, array{value: string, label: string, description: string}>
+     */
     public function getTypes(): array
     {
         return collect(['product_specific', 'cart_checkout'])
@@ -108,6 +123,7 @@ final class DiscountMetadataService
      * without out-of-band knowledge of each handler.
      *
      * @param  list<class-string>  $visited  recursion guard for nested Data
+     * @return array<string, mixed>
      */
     public function extractConfigSchema(string $configClass, string $key, array $visited = []): array
     {
@@ -227,6 +243,9 @@ final class DiscountMetadataService
      * included for both conditions and actions (previously only conditions
      * had it — worth confirming that asymmetry wasn't intentional on the
      * frontend before shipping this).
+     *
+     * @param  array<string, mixed>  $handlerConfigMap
+     * @return array<string, mixed>
      */
     private function buildEntry(string $key, string $handlerClass, array $handlerConfigMap): array
     {
@@ -255,7 +274,7 @@ final class DiscountMetadataService
         }
 
         try {
-            /** @var array<string, mixed> $rules */
+            /** @var mixed $rules */
             $rules = $configClass::rules();
 
             return is_array($rules) ? $rules : [];
@@ -271,6 +290,7 @@ final class DiscountMetadataService
      * @param  array<string, mixed>  $fieldEntry
      * @param  array<string, mixed>  $rules
      * @param  array<string, array<string, mixed>>  $fieldMeta
+     * @param  list<string>  $visited
      */
     private function enrichWithArrayItemMetadata(
         array &$fieldEntry,
@@ -353,6 +373,9 @@ final class DiscountMetadataService
         }
     }
 
+    /**
+     * @param  array<string, mixed>  $rules
+     */
     private function detectArrayTypeItemType(string $paramName, array $rules): string
     {
         if ($this->detectArrayEnumClass($paramName, $rules)) {
@@ -371,6 +394,9 @@ final class DiscountMetadataService
         return 'mixed';
     }
 
+    /**
+     * @param  array<string, mixed>  $rules
+     */
     private function detectArrayEnumClass(string $paramName, array $rules): ?string
     {
         $starKey    = "{$paramName}.*";
@@ -388,7 +414,6 @@ final class DiscountMetadataService
                     $prop = $reflection->getProperty('type');
                     $prop->setAccessible(true);
 
-                    /** @var string $enumClass */
                     $enumClass = $prop->getValue($rule);
                     if (is_string($enumClass) && class_exists($enumClass)) {
                         return $enumClass;
@@ -401,6 +426,7 @@ final class DiscountMetadataService
     }
 
     /**
+     * @param  array<string, mixed>  $rules
      * @return array<string, string>|null
      */
     private function detectArrayModelReference(string $paramName, array $rules): ?array
@@ -426,6 +452,7 @@ final class DiscountMetadataService
     }
 
     /**
+     * @param  array<string, mixed>  $rules
      * @return array<string, string>|null
      */
     private function detectScalarModelReference(string $paramName, array $rules): ?array
@@ -449,6 +476,9 @@ final class DiscountMetadataService
         return null;
     }
 
+    /**
+     * @param  array<string, mixed>  $rules
+     */
     private function detectArrayScalarType(string $paramName, array $rules): ?string
     {
         $starKey    = "{$paramName}.*";
@@ -498,7 +528,7 @@ final class DiscountMetadataService
         }
 
         $parts  = explode(',', mb_substr($rule, mb_strlen('exists:')));
-        $table  = mb_trim($parts[0] ?? '');
+        $table  = mb_trim($parts[0]);
         $column = mb_trim($parts[1] ?? 'id');
 
         if ($table === '') {
@@ -526,7 +556,7 @@ final class DiscountMetadataService
         $traits     = $reflection->getTraitNames() ?: [];
 
         if (in_array(AdvanceEnum::class, $traits, true)) {
-            $fieldEntry[$targetKey] = $enumClass::getValueLabel();
+            $fieldEntry[$targetKey] = $enumClass::getValueLabel(); // @phpstan-ignore staticMethod.notFound (guarded by AdvanceEnum trait check above)
 
             return;
         }

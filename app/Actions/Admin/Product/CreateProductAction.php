@@ -24,7 +24,6 @@ final readonly class CreateProductAction
         // hard DB backstop; the lock prevents the 23505 error in the happy path.
         $lockKey = "publish_productable_{$data->productable_type}_{$data->productable_id}";
 
-        /** @var array{0: Product, 1: int[]} $result */
         [$product, $archivedProductIds] = SmartCache::lock($lockKey, 15)->block(5, function () use ($data): array {
             return DB::transaction(function () use ($data): array {
                 $forceCreate      = $data->force_create ?? false;

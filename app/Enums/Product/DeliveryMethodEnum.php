@@ -14,6 +14,7 @@ use App\Traits\AdvanceEnum;
 
 enum DeliveryMethodEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case LMS_MOODLE                = 'lms_moodle';
@@ -58,6 +59,9 @@ enum DeliveryMethodEnum: string
         };
     }
 
+    /**
+     * @return array<int, self|string>
+     */
     public static function getSeminars(bool $asString = false): array
     {
         if ($asString){

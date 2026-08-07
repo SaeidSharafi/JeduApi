@@ -59,7 +59,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         include_once __DIR__.'/../Helpers/helpers.php';
 
-        RateLimiter::for('otp-initiate', function (Request $request) {
+        RateLimiter::for('otp-initiate', function (Request $request): array {
             $maxAttempts  = (int) config('otp.rate_limiting.initiate.max_attempts', 30);
             $decayMinutes = (int) config('otp.rate_limiting.initiate.decay_minutes', 1);
             $identifier   = mb_strtolower(mb_trim((string) $request->input('identifier')));
@@ -72,7 +72,7 @@ final class AppServiceProvider extends ServiceProvider
             ];
         });
 
-        RateLimiter::for('otp-resend', function (Request $request) {
+        RateLimiter::for('otp-resend', function (Request $request): array {
             $maxAttempts  = (int) config('otp.rate_limiting.resend.max_attempts', 20);
             $decayMinutes = (int) config('otp.rate_limiting.resend.decay_minutes', 1);
             $identifier   = mb_strtolower(mb_trim((string) $request->input('identifier')));
@@ -85,7 +85,7 @@ final class AppServiceProvider extends ServiceProvider
             ];
         });
 
-        RateLimiter::for('otp-verify', function (Request $request) {
+        RateLimiter::for('otp-verify', function (Request $request): array {
             $maxAttempts  = (int) config('otp.rate_limiting.verify.max_attempts', 60);
             $decayMinutes = (int) config('otp.rate_limiting.verify.decay_minutes', 1);
             $identifier   = mb_strtolower(mb_trim((string) $request->input('identifier')));

@@ -35,7 +35,7 @@ final class RoleController extends Controller
      *
      * @responseFile 200 resources/responses/admin/role/index.json
      */
-    public function index()
+    public function index(): \App\Contracts\ApiResponseInterface
     {
         Gate::authorize('viewAny', Role::class);
         $roles = QueryBuilder::for(Role::class)
@@ -53,7 +53,7 @@ final class RoleController extends Controller
      * @response 201
      * @response 403
      */
-    public function store(CreateRoleData $data, CreateRoleAction $action)
+    public function store(CreateRoleData $data, CreateRoleAction $action): \App\Contracts\ApiResponseInterface
     {
         Gate::authorize('create', Role::class);
         $action->handle($data);
@@ -69,7 +69,7 @@ final class RoleController extends Controller
      * @response 403
      * @response 404
      */
-    public function show(Role $role)
+    public function show(Role $role): \App\Contracts\ApiResponseInterface
     {
         Gate::authorize('view', $role);
         $role->load('permissions');
@@ -85,7 +85,7 @@ final class RoleController extends Controller
      * @response 403
      * @response 404
      */
-    public function update(UpdateRoleData $data, Role $role, UpdateRoleAction $action)
+    public function update(UpdateRoleData $data, Role $role, UpdateRoleAction $action): \App\Contracts\ApiResponseInterface
     {
         Gate::authorize('update', $role);
         $role->load('permissions');
@@ -99,7 +99,7 @@ final class RoleController extends Controller
      *
      * @response 204
      */
-    public function destroy(Role $role, DeleteRoleAction $action)
+    public function destroy(Role $role, DeleteRoleAction $action): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('delete', $role);
         $action->handle($role);

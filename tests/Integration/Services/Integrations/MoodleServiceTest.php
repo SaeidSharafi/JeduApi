@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Integrations\MoodleService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
+use \Illuminate\Http\Client\Request;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
@@ -91,7 +92,7 @@ it('enrolls user with optional start and end times', function (): void {
 
     $this->moodleService->enrollUser(55, 101, 1700000000, 1700003600);
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request): bool {
         $payload = $request->data();
 
         return $request->url()                      === 'https://moodle.test/webservice/rest/server.php'
@@ -114,10 +115,10 @@ it('creates moodle user key', function (): void {
 
     expect($url)->toBe('https://moodle.test?key=testkey');
 
-    Http::assertSent(function ($request) {
-        return $request['wstoken']          === 'AUTH_USER_KEY'
-            && $request['wsfunction']       === 'auth_userkey_request_login_url'
-            && $request['user']['username'] === '1122334';
+    Http::assertSent(function (Request $request): bool {
+        return $request->data()['wstoken']          === 'AUTH_USER_KEY'
+            && $request->data()['wsfunction']       === 'auth_userkey_request_login_url'
+            && $request->data()['user']['username'] === '1122334';
     });
 });
 
@@ -176,7 +177,7 @@ it('returns true when moodle course is completed', function (): void {
 
     expect($result)->toBeTrue();
 
-    Http::assertSent(fn ($r): bool => $r['wsfunction'] === 'core_completion_get_course_completion_status');
+    Http::assertSent(fn (Request $r): bool => $r->data()['wsfunction'] === 'core_completion_get_course_completion_status');
 });
 
 it('returns false when moodle course is not completed', function (): void {
@@ -209,16 +210,16 @@ it('returns activity completion statuses for a course', function (): void {
         'https://moodle.test/*' => Http::response([
             'statuses' => [
                 [
-                    'cmid'           => 10,
-                    'hascompletion'  => true,
-                    'state'          => 1,
-                    'timecompleted'  => 1700000000,
+                    'cmid'          => 10,
+                    'hascompletion' => true,
+                    'state'         => 1,
+                    'timecompleted' => 1700000000,
                 ],
                 [
-                    'cmid'           => 11,
-                    'hascompletion'  => false,
-                    'state'          => 0,
-                    'timecompleted'  => null,
+                    'cmid'          => 11,
+                    'hascompletion' => false,
+                    'state'         => 0,
+                    'timecompleted' => null,
                 ],
             ],
         ], 200),

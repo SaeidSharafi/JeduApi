@@ -7,9 +7,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Database\Factories\DiscountPromotionRuleFactory;
 
 final class DiscountPromotionRule extends Model
 {
+    /** @use HasFactory<DiscountPromotionRuleFactory> */
     use HasFactory;
 
     /**
@@ -19,6 +21,9 @@ final class DiscountPromotionRule extends Model
 
     /**
      * Each rule belongs to exactly one promotion.
+     */
+    /**
+     * @return BelongsTo<DiscountPromotion, $this>
      */
     public function promotion(): BelongsTo
     {

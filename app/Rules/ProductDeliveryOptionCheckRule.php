@@ -11,6 +11,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 final class ProductDeliveryOptionCheckRule implements DataAwareRule, ValidationRule
 {
+    /** @var array<string, mixed> */
     private array $data = [];
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -32,7 +33,10 @@ final class ProductDeliveryOptionCheckRule implements DataAwareRule, ValidationR
         ]));
     }
 
-    public function setData(array $data): self
+    /**
+     * @param  array<string, mixed>  $data
+     */
+        public function setData(array $data): self
     {
         $this->data = $data;
 

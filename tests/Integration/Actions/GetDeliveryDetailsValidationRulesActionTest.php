@@ -41,7 +41,7 @@ $fulfillmentDeliveryPairs = [
     [FulfillmentTypeEnum::IN_PERSON_SERVICE->value, DeliveryMethodEnum::IN_PERSON->value],
 ];
 
-it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with empty details', function ($fulfillmentType, $deliveryMethod): void {
+it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with empty details', function (?string $fulfillmentType, ?string $deliveryMethod): void {
     $detailsData = [];
     $action      = new GetDeliveryDetailsValidationRulesAction();
     $rules       = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
@@ -136,7 +136,7 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
 ];
 
-it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with sample details', function ($fulfillmentType, $deliveryMethod, $detailsData): void {
+it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with sample details', function (?string $fulfillmentType, ?string $deliveryMethod, ?array $detailsData): void {
     $action = new GetDeliveryDetailsValidationRulesAction();
     $rules  = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray();

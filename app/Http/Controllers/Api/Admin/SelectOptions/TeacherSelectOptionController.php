@@ -24,7 +24,7 @@ final class TeacherSelectOptionController extends Controller
      *
      * @responseFile 200 resources/responses/admin/select-options/teacher.json
      */
-    public function __invoke()
+    public function __invoke(): \App\Contracts\ApiResponseInterface
     {
         $query = request()->string('q', '');
         $limit = request()->integer('limit', 10);

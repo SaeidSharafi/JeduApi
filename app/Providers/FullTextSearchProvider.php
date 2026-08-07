@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Services\PgroongaService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,10 +27,11 @@ final class FullTextSearchProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Builder::macro('withPgroonga', function () {
+        Builder::macro('withPgroonga', function (): object {
             if ($this->getConnection()->getDriverName() === 'pgsql') {
                 $this->whereRaw('use_pgroonga()');
             }
+
             return $this;
         });
 
@@ -45,8 +47,8 @@ final class FullTextSearchProvider extends ServiceProvider
          * @param  string  $value  Search term
          * @param  string|null  $scoreAs  Optional alias for the score column (enables scoring)
          */
-        Builder::macro('fullTextSearch', function (array|string $columns, string $value, ?string $scoreAs = null) {
-            /** @var Builder $this */
+        Builder::macro('fullTextSearch', function (array|string $columns, string $value, ?string $scoreAs = null): object {
+            /** @var Builder<Model> $this */
             $driver           = config('database.default');
             $connectionConfig = config("database.connections.{$driver}");
             $dbDriver         = $connectionConfig['driver'] ?? 'mysql';
@@ -115,7 +117,7 @@ final class FullTextSearchProvider extends ServiceProvider
          *   ->orFullTextSearch('name', 'Laravel')
          */
         Builder::macro('orFullTextSearch', function (array|string $columns, string $value) {
-            /** @var Builder $this */
+            /** @var Builder<Model> $this */
             return $this->orWhere(function ($query) use ($columns, $value): void {
                 $query->fullTextSearch($columns, $value);
             });
@@ -134,7 +136,7 @@ final class FullTextSearchProvider extends ServiceProvider
          * @param  string  $direction  'asc' or 'desc'
          */
         Builder::macro('orderByScore', function (string $scoreColumn = 'score', string $direction = 'desc') {
-            /** @var Builder $this */
+            /** @var Builder<Model> $this */
             $driver           = config('database.default');
             $connectionConfig = config("database.connections.{$driver}");
             $dbDriver         = $connectionConfig['driver'] ?? 'mysql';
@@ -146,7 +148,7 @@ final class FullTextSearchProvider extends ServiceProvider
             return $this;
         });
         Builder::macro('selectScore', function (string $scoreColumn = 'score', string $table = '') {
-            /** @var Builder $this */
+            /** @var Builder<Model> $this */
             $driver           = config('database.default');
             $connectionConfig = config("database.connections.{$driver}");
             $dbDriver         = $connectionConfig['driver'] ?? 'mysql';

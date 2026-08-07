@@ -30,7 +30,7 @@ final class HomePageBlockController
      * @responseFile 200 resources/responses/admin/settings/home-page-block/index.json
      * @responseFile 403 resources/responses/403.json
      */
-    public function index()
+    public function index(): ApiResponseInterface
     {
         Gate::authorize('view-any', HomePageBlock::class);
 

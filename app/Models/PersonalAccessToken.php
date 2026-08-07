@@ -35,7 +35,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     /**
      * Cache the polymorphic User/Staff retrieval.
      *
-     * @return Attribute
+     * @return Attribute<\Illuminate\Database\Eloquent\Model|null, never>
      */
     public function tokenable(): Attribute
     {
@@ -50,7 +50,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     /**
      * Limit saving of records to avoid database writes when only "last_used_at" updates.
      *
-     * @param  array  $options
+     * @param  array<string, mixed>  $options
      * @return bool
      */
     public function save(array $options = []): bool

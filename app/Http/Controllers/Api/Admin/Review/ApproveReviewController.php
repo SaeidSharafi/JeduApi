@@ -25,7 +25,7 @@ final class ApproveReviewController extends Controller
      * @responseFile 200 resources/responses/admin/review/approve.json
      * @responseFile 403 resources/responses/403.json
      */
-    public function __invoke(Review $review, UpdateReviewStatusAction $action)
+    public function __invoke(Review $review, UpdateReviewStatusAction $action): \App\Contracts\ApiResponseInterface
     {
         Gate::authorize('update', $review);
         $action->handle($review, ReviewStatusEnum::APPROVED);

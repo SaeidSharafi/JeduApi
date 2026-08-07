@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum EnrollmentStatusEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
     case AWAITING_PAYMENT     = 'awaiting_payment';            // Order created, awaiting payment
     case PENDING_PROVISIONING = 'pending_provisioning';        // Order paid, access being set up
@@ -20,6 +21,9 @@ enum EnrollmentStatusEnum: string
     /**
      * @codeCoverageIgnore
      */
+    /**
+     * @return array<int, self>
+     */
     public static function occupyingStatuses(): array
     {
         return [
@@ -31,6 +35,9 @@ enum EnrollmentStatusEnum: string
 
     /**
      * @codeCoverageIgnore
+     */
+    /**
+     * @return array<int, self>
      */
     public static function nonOccupyingStatuses(): array
     {

@@ -27,7 +27,7 @@ final class RelatedProductController extends Controller
      *
      * @responseFile resources/responses/shop/products/related_products.json
      */
-    public function __invoke(Product $product, RelationTypeEnum $relation_type)
+    public function __invoke(Product $product, RelationTypeEnum $relation_type): \App\Contracts\ApiResponseInterface
     {
         $relatedProducts = $product
             ->relatedProducts()
@@ -46,7 +46,7 @@ final class RelatedProductController extends Controller
             ->forListing()
             ->whereIn('id', $relatedProducts->pluck('related_product_id'))
             ->get()
-            ->map(function (Product $product) {
+            ->map(function (Product $product): ProductCardData {
                 $priceData = $this->priceService->getPriceDataForProduct($product);
 
                 return ProductCardData::fromModel($product, $priceData);

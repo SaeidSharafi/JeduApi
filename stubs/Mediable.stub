@@ -1,0 +1,15 @@
+<?php
+
+namespace Plank\Mediable;
+
+use Illuminate\Support\Collection;
+
+trait Mediable
+{
+    /**
+     * @return Collection<string, Collection<int, Media>>
+     */
+    public function getAllMediaByTag(): Collection
+    {
+    }
+}

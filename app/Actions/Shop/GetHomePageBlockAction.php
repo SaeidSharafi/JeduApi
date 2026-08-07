@@ -52,6 +52,9 @@ final readonly class GetHomePageBlockAction
         );
     }
 
+    /**
+     * @return array{products: \Illuminate\Support\Collection<int, Product>, categories: \Illuminate\Support\Collection<int, Category>}
+     */
     private function preloadRequiredDataForBlock(HomePageBlock $block): array
     {
         $productIds  = collect();
@@ -66,7 +69,7 @@ final readonly class GetHomePageBlockAction
         };
 
         $uniqueProductIds = $productIds->unique()->values();
-        $idsToFetch       = $uniqueProductIds->reject(fn ($id): bool => $this->requestCache->hasProduct($id));
+        $idsToFetch       = $uniqueProductIds->reject(fn (int $id): bool => $this->requestCache->hasProduct($id));
 
         // Pre-load products with relationships to avoid N+1
         if ($idsToFetch->isNotEmpty()) {
@@ -81,7 +84,7 @@ final readonly class GetHomePageBlockAction
                 ->keyBy('id');
             $this->requestCache->storeProducts($fetchedProducts);
         }
-        $products = $uniqueProductIds->map(fn ($id): ?\App\Models\Product => $this->requestCache->getProduct($id))
+        $products = $uniqueProductIds->map(fn (int $id): ?\App\Models\Product => $this->requestCache->getProduct($id))
             ->filter()->keyBy('id');
 
         // Pre-load categories with media
@@ -98,8 +101,13 @@ final readonly class GetHomePageBlockAction
         ];
     }
 
+    /**
+     * @param  array{products: \Illuminate\Support\Collection<int, Product>, categories: \Illuminate\Support\Collection<int, Category>}  $preloadedData
+     * @return array{items: array<int, array<string, mixed>>, preset: mixed}
+     */
     private function hydrateCuratedList(HomePageBlock $block, array $preloadedData): array
     {
+        /** @var array<int, int|string> $itemsIds */
         $itemsIds = $block->content['items'] ?? [];
 
         if ($block->type === HomePageBlockTypeEnum::MAIN_CATEGORIES) {
@@ -113,7 +121,7 @@ final readonly class GetHomePageBlockAction
             $items = collect($itemsIds)
                 ->map(fn ($id) => $preloadedData['products']->get($id))
                 ->filter()
-                ->map(function ($product): array {
+                ->map(function (Product $product): array {
                     $priceData = $this->priceService->getPriceDataForProduct($product);
 
                     return ProductCardData::fromModel($product, $priceData)->toArray();
@@ -128,6 +136,9 @@ final readonly class GetHomePageBlockAction
         ];
     }
 
+    /**
+     * @return array{preset: mixed, items: array<int, array<string, mixed>>}
+     */
     private function hydrateDynamicList(HomePageBlock $block): array
     {
         $entityType  = DynamicListEntityTypeEnum::from($block->content['entity_type']);
@@ -144,14 +155,14 @@ final readonly class GetHomePageBlockAction
         } else {
             // For products, get the IDs first
             $productIds = $query->pluck('id');
-            $idsToFetch = $productIds->reject(fn ($id): bool => $this->requestCache->hasProduct($id));
+            $idsToFetch = $productIds->reject(fn (int $id): bool => $this->requestCache->hasProduct($id));
             if ($idsToFetch->isNotEmpty()) {
                 $fetchedProducts = $query
                     ->whereIn('id', $idsToFetch)
                     ->get();
                 $this->requestCache->storeProducts($fetchedProducts);
             }
-            $entities = $productIds->map(fn ($id): ?\App\Models\Product => $this->requestCache->getProduct($id))
+            $entities = $productIds->map(fn (int $id): ?\App\Models\Product => $this->requestCache->getProduct($id))
                 ->filter();
         }
 
@@ -170,6 +181,10 @@ final readonly class GetHomePageBlockAction
         ];
     }
 
+    /**
+     * @param  array<int, int|string>|null  $categoryIds
+     * @return Builder<Product>|Builder<BlogPost>
+     */
     private function buildQuery(
         DynamicListEntityTypeEnum $entityType,
         DynamicListSortByEnum $sortBy,
@@ -242,11 +257,17 @@ final readonly class GetHomePageBlockAction
         return $query->limit($limit);
     }
 
+    /**
+     * @param  Builder<*>  $query
+     */
     private function applySorting(Builder $query, string $field, string $direction): void
     {
         $query->orderBy($field, $direction);
     }
 
+    /**
+     * @param  Builder<*>  $query
+     */
     private function applyPopularSorting(Builder $query, DynamicListEntityTypeEnum $entityType): void
     {
         if ($entityType === DynamicListEntityTypeEnum::BLOG_POST) {
@@ -257,16 +278,26 @@ final readonly class GetHomePageBlockAction
         }
     }
 
+    /**
+     * @param  Builder<*>  $query
+     */
     private function applyFeaturedSorting(Builder $query, DynamicListEntityTypeEnum $entityType): void
     {
         $query->where('is_featured', true)->orderByDesc('created_at');
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function hydrateBanner(HomePageBlock $block): array
     {
         return BannerData::from($block->content)->toArray();
     }
 
+    /**
+     * @param  array{products: \Illuminate\Support\Collection<int, Product>, categories: \Illuminate\Support\Collection<int, Category>}  $preloadedData
+     * @return array<string, mixed>
+     */
     private function hydrateWebinarBanner(HomePageBlock $block, array $preloadedData): array
     {
         $productId = $block->content['product_id'] ?? null;

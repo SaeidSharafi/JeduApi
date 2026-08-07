@@ -8,9 +8,11 @@ use App\Enums\Order\DiscountTypeEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Database\Factories\DiscountPromotionFactory;
 
 final class DiscountPromotion extends Model
 {
+    /** @use HasFactory<DiscountPromotionFactory> */
     use HasFactory;
 
     /**
@@ -23,6 +25,9 @@ final class DiscountPromotion extends Model
     /**
      * A promotion consists of multiple rules (conditions and actions).
      */
+    /**
+     * @return HasMany<DiscountPromotionRule, $this>
+     */
     public function rules(): HasMany
     {
         return $this->hasMany(DiscountPromotionRule::class);
@@ -31,6 +36,9 @@ final class DiscountPromotion extends Model
     /**
      * A promotion can have many associated coupon codes.
      */
+    /**
+     * @return HasMany<DiscountCoupon, $this>
+     */
     public function coupons(): HasMany
     {
         return $this->hasMany(DiscountCoupon::class);
@@ -38,6 +46,9 @@ final class DiscountPromotion extends Model
 
     /**
      * A promotion can have many pre-calculated prices associated with it.
+     */
+    /**
+     * @return HasMany<ProductDeliveryOptionDiscountPrice, $this>
      */
     public function discountedPrices(): HasMany
     {

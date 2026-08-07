@@ -11,13 +11,17 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 final class CivilIdRule implements DataAwareRule, ValidationRule
 {
+    /** @var array<string, mixed> */
     private array $data = [];
 
     /**
      * Set the data under validation.
      * This method is automatically called by Laravel.
      */
-    public function setData(array $data): static
+    /**
+     * @param  array<string, mixed>  $data
+     */
+        public function setData(array $data): static
     {
         $this->data = $data;
 
@@ -58,7 +62,7 @@ final class CivilIdRule implements DataAwareRule, ValidationRule
 
     }
 
-    private function validateNationalCode($value): bool
+    private function validateNationalCode(string $value): bool
     {
         if (preg_match('/^\d{10}$/', $value) !== 1) {
             return false;

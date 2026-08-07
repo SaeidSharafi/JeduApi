@@ -8,9 +8,11 @@ use App\Enums\AdviceRequestStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Database\Factories\AdviceRequestFactory;
 
 final class AdviceRequest extends Model
 {
+    /** @use HasFactory<AdviceRequestFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -20,6 +22,9 @@ final class AdviceRequest extends Model
         'handled_by_id',
     ];
 
+    /**
+     * @return BelongsTo<Staff, $this>
+     */
     public function handler(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'handled_by_id');

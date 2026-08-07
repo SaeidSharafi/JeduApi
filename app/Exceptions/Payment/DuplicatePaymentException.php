@@ -18,6 +18,9 @@ final class DuplicatePaymentException extends PaymentException
         return 'DUPLICATE_PAYMENT';
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
         return array_filter([

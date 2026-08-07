@@ -42,6 +42,9 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
         return PaymentProcessResultData::completed($payment->fresh());
     }
 
+    /**
+     * @param  array<string, mixed>  $callbackData
+     */
     public function verify(Payment $payment, array $callbackData): Payment
     {
         // Not needed for single-step payments

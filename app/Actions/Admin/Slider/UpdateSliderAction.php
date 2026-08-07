@@ -20,7 +20,7 @@ final class UpdateSliderAction
             }
             $sliderData = [
                 ...$data->except('image')->toArray(),
-                'image_url' => $image ? $image?->getUrl() : null,
+                'image_url' => $image ? $image->getUrl() : null,
                 'image_alt' => $image ? $data->title : null,
             ];
             $slider->update($sliderData);

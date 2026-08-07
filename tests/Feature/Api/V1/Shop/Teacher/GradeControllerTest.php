@@ -43,7 +43,7 @@ it('index passes query parameters to IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getGrades')
         ->once()
-        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function ($params) {
+        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function (array $params): bool {
             return ($params['occurrence_id'] ?? null) === '42';
         }))
         ->andReturn(['data' => []]);
@@ -90,14 +90,14 @@ it('storeBulk creates bulk grades via IMS', function (): void {
         ],
     ])
         ->assertOk()
-        ->assertJsonPath('message', 'Grades stored');
+        ->assertJsonPath('data.message', 'Grades stored');
 });
 
 it('storeBulk strips underscore-prefixed grade keys', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('storeBulkGrades')
         ->once()
-        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function ($payload) {
+        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function (array $payload): bool {
             $grades = $payload['enrolments'][0]['grades'];
 
             return ! isset($grades['_internal']) && isset($grades['math']);
@@ -116,14 +116,14 @@ it('storeBulk strips underscore-prefixed grade keys', function (): void {
         ],
     ])
         ->assertOk()
-        ->assertJsonPath('message', 'Grades stored');
+        ->assertJsonPath('data.message', 'Grades stored');
 });
 
 it('storeBulk returns 422 when IMS validation fails', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('storeBulkGrades')
         ->once()
-        ->andThrow(new \App\Exceptions\Integrations\UnrecoverableProvisioningException(
+        ->andThrow(new App\Exceptions\Integrations\UnrecoverableProvisioningException(
             'Validation failed',
             422,
             null,

@@ -42,6 +42,10 @@ final readonly class ProductPriceService
      * @param  Collection<Product>  $products
      * @return Collection A collection of ProductPriceData keyed by product ID.
      */
+    /**
+     * @param  Collection<int, Product>  $products
+     * @return Collection<int, ProductPriceData>
+     */
     public function getPriceDataForProducts(Collection $products): Collection
     {
         return $products->keyBy('id')->map(
@@ -71,7 +75,7 @@ final readonly class ProductPriceService
             return ProductPriceData::make([]);
         }
         $prices = [];
-        $deliveryOptions->each(function ($deliveryOption) use (&$prices): void {
+        $deliveryOptions->each(function (ProductDeliveryOption $deliveryOption) use (&$prices): void {
             $priceData = $this->getPriceDataForOption($deliveryOption);
             $prices[]  = $priceData;
         });
@@ -115,9 +119,7 @@ final readonly class ProductPriceService
         }
 
         // Check if the promotional discount price is a candidate
-        if ($discountPrice !== null) {
-            $finalPrice = min($finalPrice, $discountPrice);
-        }
+        $finalPrice = min($finalPrice, $discountPrice);
 
         // 3. Determine the type of discount that resulted in the final price
         $discountAmount = null;
@@ -126,7 +128,7 @@ final readonly class ProductPriceService
         if ($finalPrice < $standardPrice) {
             $discountAmount = $standardPrice - $finalPrice;
 
-            if ($featuredPrice !== null && $featuredPrice <= ($discountPrice ?? PHP_INT_MAX)) {
+            if ($featuredPrice !== null && $featuredPrice <= $discountPrice) {
                 $discountType = 'featured';
             } else {
                 $discountType = 'promotion';
@@ -158,6 +160,9 @@ final readonly class ProductPriceService
 
     /**
      * Get the price range for a product (if it has multiple delivery options).
+     */
+    /**
+     * @return array{min: int, max: int}
      */
     public function getPriceRangeForProduct(Product $product): array
     {
@@ -219,6 +224,9 @@ final readonly class ProductPriceService
     /**
      * Update price index for multiple products efficiently.
      */
+    /**
+     * @param  Collection<int, Product>  $products
+     */
     public function updatePriceIndexForProducts(Collection $products): void
     {
         $priceIndexPayloads    = [];
@@ -262,6 +270,9 @@ final readonly class ProductPriceService
         }
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     private function buildPriceIndexPayload(Product $product, ProductPriceData $priceData): ?array
     {
         $prices = collect($priceData->prices);
@@ -288,6 +299,9 @@ final readonly class ProductPriceService
 
     /**
      * Get the appropriate delivery option for pricing.
+     */
+    /**
+     * @return Collection<int, ProductDeliveryOption>
      */
     private function findDeliveryOptionsForProduct(
         Product $product,

@@ -12,6 +12,9 @@ final readonly class DeliverResponse
         public ?string $level = null,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $response
+     */
     public static function fromResponse(array $response): self
     {
         $result = $response['result'] ?? [];

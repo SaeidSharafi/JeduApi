@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum PaymentTransactionStatusEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case INITIATED = 'initiated';

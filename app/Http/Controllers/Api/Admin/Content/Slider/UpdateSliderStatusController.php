@@ -28,7 +28,7 @@ final class UpdateSliderStatusController extends Controller
      * @responseFile 404 resources/responses/404.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function __invoke(ChangeStatusData $data, Slider $slider, UpdateSliderStatusAction $action)
+    public function __invoke(ChangeStatusData $data, Slider $slider, UpdateSliderStatusAction $action): \App\Contracts\ApiResponseInterface
     {
         Gate::authorize('update', $slider);
         $updatedSlider = $action->handle($data, $slider);

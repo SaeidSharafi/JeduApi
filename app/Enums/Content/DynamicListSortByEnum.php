@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum DynamicListSortByEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case CREATED_AT_DESC = 'created_at:desc';

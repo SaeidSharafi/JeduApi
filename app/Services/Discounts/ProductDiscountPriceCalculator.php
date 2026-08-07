@@ -24,13 +24,16 @@ final class ProductDiscountPriceCalculator
      * Calculate the final discounted price for a product by applying all matching promotions sequentially.
      * This is the core of the layered promotion system inspired by Bagisto's catalog rules.
      */
+    /**
+     * @param  Collection<int, DiscountPromotion>  $promotions
+     */
     public function calculateFinalDiscountedPrice(ProductDeliveryOption $option, Collection $promotions): int
     {
         // Start with the original price
         $currentPrice = $option->price;
 
         // Find all promotions that match this product
-        $matchingPromotions = $promotions->filter(function (DiscountPromotion $promotion) use ($option) {
+        $matchingPromotions = $promotions->filter(function (DiscountPromotion $promotion) use ($option): bool {
             return $this->allConditionsPass($promotion, $option);
         });
 
@@ -116,6 +119,10 @@ final class ProductDiscountPriceCalculator
      *
      * @codeCoverageIgnore
      */
+    /**
+     * @param  Collection<int, DiscountPromotion>  $promotions
+     * @return Collection<int, DiscountPromotion>
+     */
     public function findAppliedPromotionsForPrice(
         ProductDeliveryOption $option,
         Collection $promotions,
@@ -124,7 +131,7 @@ final class ProductDiscountPriceCalculator
         $appliedPromotions = collect();
         $currentPrice      = $option->price;
 
-        $matchingPromotions = $promotions->filter(function (DiscountPromotion $promotion) use ($option) {
+        $matchingPromotions = $promotions->filter(function (DiscountPromotion $promotion) use ($option): bool {
             return $this->allConditionsPass($promotion, $option);
         })->sortBy('priority');
 

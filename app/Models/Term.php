@@ -8,9 +8,11 @@ use App\Enums\TermStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Database\Factories\TermFactory;
 
 final class Term extends Model
 {
+    /** @use HasFactory<TermFactory> */
     use HasFactory;
 
     protected $fillable
@@ -22,6 +24,9 @@ final class Term extends Model
             'end_date',
         ];
 
+    /**
+     * @return HasMany<Product, $this>
+     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

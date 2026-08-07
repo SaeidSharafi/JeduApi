@@ -42,9 +42,9 @@ enum CacheKeysEnum: string
     /**
      * Defines the Time-To-Live (TTL) for each cache key.
      *
-     * @return int|DateInterval The cache duration in seconds or a DateInterval object.
+     * @return int The cache duration in seconds.
      */
-    public function ttl(): int|DateInterval
+    public function ttl(): int
     {
         return match ($this) {
             self::HomePageContent => 3600,

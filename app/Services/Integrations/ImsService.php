@@ -48,6 +48,10 @@ final class ImsService extends AbstractIntegrationService
 
         return (array) ($response->json() ?? []);
     }
+    /**
+     * @param  array<string, mixed>  $queryParams
+     * @return array<string, mixed>
+     */
     public function getAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum, array $queryParams = []): array
     {
         $this->assertConfigured();
@@ -65,6 +69,10 @@ final class ImsService extends AbstractIntegrationService
         return (array) ($response->json() ?? []);
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     public function storeAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum, array $payload): array
     {
         $this->assertConfigured();
@@ -82,6 +90,10 @@ final class ImsService extends AbstractIntegrationService
         return (array) ($response->json() ?? []);
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     public function updateAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum, array $payload): array
     {
         $this->assertConfigured();
@@ -99,6 +111,10 @@ final class ImsService extends AbstractIntegrationService
         return (array) ($response->json() ?? []);
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     public function destroyAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum, array $payload): array
     {
         $this->assertConfigured();
@@ -116,6 +132,10 @@ final class ImsService extends AbstractIntegrationService
         return (array) ($response->json() ?? []);
     }
 
+    /**
+     * @param  array<string, mixed>  $queryParams
+     * @return array<string, mixed>
+     */
     public function getTeacherCourses(string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum, array $queryParams = []): array
     {
         $this->assertConfigured();
@@ -137,6 +157,10 @@ final class ImsService extends AbstractIntegrationService
         return (array) ($response->json() ?? []);
     }
 
+    /**
+     * @param  array<string, mixed>  $queryParams
+     * @return array<string, mixed>
+     */
     public function getGrades(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum, array $queryParams = []): array
     {
         $this->assertConfigured();
@@ -154,6 +178,10 @@ final class ImsService extends AbstractIntegrationService
         return (array) ($response->json() ?? []);
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     public function storeGrade(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum, array $payload): array
     {
         $this->assertConfigured();
@@ -171,6 +199,10 @@ final class ImsService extends AbstractIntegrationService
         return (array) ($response->json() ?? []);
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
     public function storeBulkGrades(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum, array $payload): array
     {
         $this->assertConfigured();

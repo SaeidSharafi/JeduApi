@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum NextPaymentTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
     case INITIAL_PAYMENT = 'initial_payment';
     case FINAL_BALANCE   = 'final_balance';

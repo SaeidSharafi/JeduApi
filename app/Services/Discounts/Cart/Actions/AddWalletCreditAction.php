@@ -50,7 +50,7 @@ final class AddWalletCreditAction implements DiscountActionContract
 
         // Prepare description
         $description = $configuration->description ?? __('wallet.promotion.credit_from_order', [
-            'promotion' => $context->evaluating_promotion?->name ?? __('wallet.promotion.discount'),
+            'promotion' => $context->evaluating_promotion->name ?? __('wallet.promotion.discount'),
         ]);
 
         // Record wallet transaction

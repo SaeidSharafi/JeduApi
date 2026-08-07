@@ -11,6 +11,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Course\CourseListItemData;
 use App\Data\Admin\Course\CreateCourseData;
 use App\Data\Admin\Course\ShowCourseData;
+use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;

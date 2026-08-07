@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Teacher;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Teacher\DeleteAttendanceData;
 use App\Data\Shop\Teacher\ShowAttendanceData;
 use App\Data\Shop\Teacher\StoreAttendanceData;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Http\Controllers\Controller;
 use App\Services\Integrations\ImsService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,17 +36,17 @@ final class AttendanceController extends Controller
      *
      * @responseFile 200 resources/responses/shop/teacher/attendance/index.json
      */
-    public function index(ShowAttendanceData $request, string $courseCode)
+    public function index(ShowAttendanceData $request, string $courseCode): ApiResponseInterface
     {
         $teacher = Auth::user()?->teacherData;
-        abort_unless($teacher, 403);
+        abort_unless((bool) $teacher, 403);
 
         $teacherCivilId = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
         $data = $this->imsService->getAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $request->all());
 
-        return response()->json($data);
+        return apiResponse()->success($data);
     }
 
     /**
@@ -57,10 +59,10 @@ final class AttendanceController extends Controller
      * @responseFile 200 resources/responses/shop/teacher/attendance/store.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function store(StoreAttendanceData $data, string $courseCode)
+    public function store(StoreAttendanceData $data, string $courseCode): ApiResponseInterface
     {
         $teacher = Auth::user()?->teacherData;
-        abort_unless($teacher, 403);
+        abort_unless((bool) $teacher, 403);
 
         $teacherCivilId = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
@@ -73,7 +75,7 @@ final class AttendanceController extends Controller
             );
         }
 
-        return response()->json($response);
+        return apiResponse()->success($response);
     }
 
     /**
@@ -86,10 +88,10 @@ final class AttendanceController extends Controller
      * @responseFile 200 resources/responses/shop/teacher/attendance/update.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function update(StoreAttendanceData $data, string $courseCode)
+    public function update(StoreAttendanceData $data, string $courseCode): ApiResponseInterface
     {
         $teacher = Auth::user()?->teacherData;
-        abort_unless($teacher, 403);
+        abort_unless((bool) $teacher, 403);
 
         $teacherCivilId = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
@@ -102,7 +104,7 @@ final class AttendanceController extends Controller
             );
         }
 
-        return response()->json($response);
+        return apiResponse()->success($response);
     }
 
     /**
@@ -112,16 +114,16 @@ final class AttendanceController extends Controller
      *
      * @urlParam courseCode string required The IMS course code. Example: IMS-100
      */
-    public function destroy(DeleteAttendanceData $attendanceData, string $courseCode)
+    public function destroy(DeleteAttendanceData $attendanceData, string $courseCode): ApiResponseInterface
     {
         $teacher = Auth::user()?->teacherData;
-        abort_unless($teacher, 403);
+        abort_unless((bool) $teacher, 403);
 
         $teacherCivilId = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
         $response = $this->imsService->destroyAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $attendanceData->toArray());
 
-        return response()->json($response);
+        return apiResponse()->success($response);
     }
 }

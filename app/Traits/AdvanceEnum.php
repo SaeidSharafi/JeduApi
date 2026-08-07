@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
+/**
+ * @template TValue of int|string
+ */
 trait AdvanceEnum
 {
     /**
      * Get all status values as an array.
      *
-     * @return array<int,string>
+     * @return array<int, TValue>
      */
     public static function getAllValues(): array
     {
@@ -29,7 +32,7 @@ trait AdvanceEnum
     /**
      * Get Key-Value Pairs for Enum
      *
-     * @return array<string,string>
+     * @return array<TValue, string>
      */
     public static function getKeyValuePairs(): array
     {
@@ -44,7 +47,7 @@ trait AdvanceEnum
     /**
      * get Value Label array
      *
-     * @return array<int, array<string, string>>
+     * @return array<int, array{value: TValue, label: string}>
      */
     public static function getValueLabel(): array
     {

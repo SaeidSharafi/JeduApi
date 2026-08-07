@@ -14,13 +14,23 @@ final readonly class ChangeEnrollmentStatusAction
 {
     private const array ALLOWED_TRANSITIONS
         = [
-            'awaiting_payment'     => ['pending_provisioning', 'cancelled'],
-            'pending_provisioning' => ['active', 'provisioning_failed', 'cancelled'],
-            'active'               => ['suspended', 'expired', 'cancelled'],
-            'suspended'            => ['active', 'cancelled'],
-            'provisioning_failed'  => ['pending_provisioning', 'cancelled'],
-            'expired'              => [],
-            'cancelled'            => [],
+            EnrollmentStatusEnum::AWAITING_PAYMENT->value => [
+                EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::CANCELLED
+            ],
+            EnrollmentStatusEnum::PENDING_PROVISIONING->value => [
+                EnrollmentStatusEnum::ACTIVE, EnrollmentStatusEnum::PROVISIONING_FAILED, EnrollmentStatusEnum::CANCELLED
+            ],
+            EnrollmentStatusEnum::ACTIVE->value => [
+                EnrollmentStatusEnum::SUSPENDED, EnrollmentStatusEnum::EXPIRED, EnrollmentStatusEnum::CANCELLED
+            ],
+            EnrollmentStatusEnum::SUSPENDED->value => [
+                EnrollmentStatusEnum::ACTIVE, EnrollmentStatusEnum::CANCELLED
+            ],
+            EnrollmentStatusEnum::PROVISIONING_FAILED->value => [
+                EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::CANCELLED
+            ],
+            EnrollmentStatusEnum::EXPIRED->value => [],
+            EnrollmentStatusEnum::CANCELLED->value => [],
         ];
 
     /**
@@ -37,8 +47,8 @@ final readonly class ChangeEnrollmentStatusAction
             ]);
 
             if ($data->reason !== null && $data->reason !== '') {
-                $timestamp   = now()->format('Y-m-d H:i:s');
-                $newNote     = "[{$timestamp}] Status changed to {$newStatus->value}: {$data->reason}";
+                $timestamp = now()->format('Y-m-d H:i:s');
+                $newNote = "[{$timestamp}] Status changed to {$newStatus->value}: {$data->reason}";
                 $currentNote = $enrollment->notes ?? '';
                 $updatedNote = $currentNote === '' ? $newNote : $currentNote.PHP_EOL.$newNote;
 
@@ -56,9 +66,9 @@ final readonly class ChangeEnrollmentStatusAction
      */
     private function validateTransition(EnrollmentStatusEnum $currentStatus, EnrollmentStatusEnum $newStatus): void
     {
-        $allowedStatuses = self::ALLOWED_TRANSITIONS[$currentStatus->value] ?? [];
+        $allowedStatuses = self::ALLOWED_TRANSITIONS[$currentStatus->value];
 
-        if (! in_array($newStatus->value, $allowedStatuses, true)) {
+        if (!in_array($newStatus, $allowedStatuses, true)) {
             throw ValidationException::withMessages([
                 'enrollment_status' => __('messages.enrollments.invalid_status_transition',
                     ['from' => $currentStatus->translate(), 'to' => $newStatus->translate()]),

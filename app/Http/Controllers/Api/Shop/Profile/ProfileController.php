@@ -8,7 +8,7 @@ use App\Actions\Shop\UpdateProfileAction;
 use App\Data\Shop\Customer\CustomerData;
 use App\Data\Shop\Customer\UpdateProfileData;
 use App\Http\Controllers\Controller;
-use App\Http\Responses\ApiSuccessResponse;
+use App\Contracts\ApiResponseInterface;
 
 /**
  * @group Shop - Profile
@@ -24,7 +24,7 @@ final class ProfileController extends Controller
      *
      * @responseFile 200 resources/responses/shop/profile/show.json
      */
-    public function show(): ApiSuccessResponse
+    public function show(): ApiResponseInterface
     {
         return apiResponse()->success(CustomerData::from(auth()->user()));
     }
@@ -34,7 +34,7 @@ final class ProfileController extends Controller
      *
      * @responseFile 200 resources/responses/shop/profile/show.json
      */
-    public function update(UpdateProfileData $data, UpdateProfileAction $action): ApiSuccessResponse
+    public function update(UpdateProfileData $data, UpdateProfileAction $action): ApiResponseInterface
     {
         $user = $action->handle($data, auth()->user());
 

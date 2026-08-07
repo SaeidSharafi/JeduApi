@@ -12,6 +12,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 final class CheckDiscountConfigurationRule implements DataAwareRule, ValidationRule
 {
+    /** @var array<string, mixed> */
     private array $data = [];
 
     public function __construct(private readonly DiscountMetadataService $service) {}
@@ -82,7 +83,10 @@ final class CheckDiscountConfigurationRule implements DataAwareRule, ValidationR
 
     }
 
-    public function setData(array $data)
+    /**
+     * @param  array<string, mixed>  $data
+     */
+        public function setData(array $data): void
     {
         $this->data = $data;
     }

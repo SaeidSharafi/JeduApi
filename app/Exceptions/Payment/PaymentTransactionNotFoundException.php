@@ -22,6 +22,9 @@ final class PaymentTransactionNotFoundException extends PaymentException
         return __('validation.custom.checkout.transaction_not_found');
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
         return ['reference' => $this->reference];

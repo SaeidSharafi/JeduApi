@@ -12,6 +12,7 @@ use App\Notifications\SmsMessage;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use \Illuminate\Http\Client\Request;
 
 describe('SmsChannel Sending Logic', function (): void {
     beforeEach(function (): void {
@@ -73,7 +74,7 @@ describe('SmsChannel Sending Logic', function (): void {
         ]);
         Log::shouldReceive('error')->once()->with(
             'SMS sending failed',
-            Mockery::on(function ($data) use ($errorResponse) {
+            Mockery::on(function (array $data) use ($errorResponse): bool {
                 return $data['status'] === 422 && $data['message'] === $errorResponse;
             })
         );
@@ -182,7 +183,7 @@ describe('SmsChannel Sending Logic', function (): void {
                 return SmsChannel::class;
             }
 
-            public function toSms($notifiable)
+            public function toSms($notifiable): SmsMessage
             {
                 return (new SmsMessage)
                     ->content('Hello world')
@@ -196,9 +197,9 @@ describe('SmsChannel Sending Logic', function (): void {
 
         $this->user->notify($standardSmsNotification);
 
-        Http::assertSent(function ($request) {
+        Http::assertSent(function (Request $request): bool {
             return $request->url()     === 'https://api2.ippanel.com/api/v1/sms/send/webservice/single'
-                && $request['message'] === 'Hello world';
+                && $request->data()['message'] === 'Hello world';
         });
 
         $smsLog = SmsLog::latest()->first();
@@ -214,7 +215,7 @@ describe('SmsChannel Sending Logic', function (): void {
 
         $staff->notify($this->notification);
 
-        Http::assertSent(function ($request) use ($staff) {
+        Http::assertSent(function (Request $request) use ($staff): bool {
             return $request['recipient'] === $staff->phone;
         });
 

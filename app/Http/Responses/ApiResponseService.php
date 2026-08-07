@@ -16,6 +16,9 @@ final class ApiResponseService
     /**
      * Get guest token headers if applicable.
      */
+    /**
+     * @return array<string, mixed>
+     */
     public function getGuestHeaders(): array
     {
         /** @var CartIdentifier $identifier */
@@ -35,11 +38,11 @@ final class ApiResponseService
     /**
      * Standard success response (200 OK)
      */
-    public function success(mixed $data = null, ?string $message = null): ApiResponseInterface
+    public function success(mixed $data = null, ?string $message = null, int $code = HttpStatus::HTTP_OK): ApiResponseInterface
     {
         $message ??= __('messages.success');
 
-        return new ApiSuccessResponse($message, $data, HttpStatus::HTTP_OK, [], $this->getGuestHeaders());
+        return new ApiSuccessResponse($message, $data, $code, [], $this->getGuestHeaders());
     }
 
     /**
@@ -104,6 +107,9 @@ final class ApiResponseService
 
     /**
      * Validation errors response with payload (422 Unprocessable Entity)
+     */
+    /**
+     * @param  array<string, mixed>|null  $metadata
      */
     public function validationErrors(mixed $errors, ?string $message = null, ?array $metadata = []): ApiResponseInterface
     {

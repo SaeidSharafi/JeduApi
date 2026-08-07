@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum CampaignTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case REGISTRATION_BONUS = 'registration_bonus';

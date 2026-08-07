@@ -24,6 +24,7 @@ final class DiscountHandlerRegistry
 {
     public const CACHE_KEY = 'discounts.handler_registry.cache';
 
+    /** @var array<class-string, string> */
     private array $discoveryMap = [
         DiscountConditionContract::class        => 'cartConditionHandlers',
         DiscountActionContract::class           => 'cartActionHandlers',
@@ -31,14 +32,19 @@ final class DiscountHandlerRegistry
         ProductDiscountActionContract::class    => 'productActionHandlers',
     ];
 
+    /** @var array<string, class-string> */
     private array $cartConditionHandlers = [];
 
+    /** @var array<string, class-string> */
     private array $cartActionHandlers = [];
 
+    /** @var array<string, class-string> */
     private array $productConditionHandlers = [];
 
+    /** @var array<string, class-string> */
     private array $productActionHandlers = [];
 
+    /** @var array<class-string, class-string> */
     private array $handlerConfigMap = [];
 
     public function __construct(
@@ -83,27 +89,42 @@ final class DiscountHandlerRegistry
     }
 
     // Getters for cart handlers
+    /**
+     * @return array<string, class-string>
+     */
     public function getCartConditionHandlers(): array
     {
         return $this->cartConditionHandlers;
     }
 
+    /**
+     * @return array<string, class-string>
+     */
     public function getCartActionHandlers(): array
     {
         return $this->cartActionHandlers;
     }
 
     // Getters for product handlers
+    /**
+     * @return array<string, class-string>
+     */
     public function getProductConditionHandlers(): array
     {
         return $this->productConditionHandlers;
     }
 
+    /**
+     * @return array<string, class-string>
+     */
     public function getProductActionHandlers(): array
     {
         return $this->productActionHandlers;
     }
 
+    /**
+     * @return array<class-string, class-string>
+     */
     public function getHandlerConfigMap(): array
     {
         return $this->handlerConfigMap;
@@ -137,6 +158,8 @@ final class DiscountHandlerRegistry
 
     /**
      * Populates the registry properties from a cached array.
+     *
+     * @param  array{cartConditions?: array<string, class-string>, cartActions?: array<string, class-string>, productConditions?: array<string, class-string>, productActions?: array<string, class-string>, configMap?: array<class-string, class-string>}  $cachedData
      */
     private function loadHandlersFromCache(array $cachedData): void
     {
@@ -229,6 +252,9 @@ final class DiscountHandlerRegistry
         }
     }
 
+    /**
+     * @param  ReflectionClass<object>  $reflection
+     */
     private function registerHandlerIfApplicable(ReflectionClass $reflection, string $className): void
     {
         $attributes = $reflection->getAttributes(DiscountHandlerKey::class);
@@ -272,7 +298,7 @@ final class DiscountHandlerRegistry
     /**
      * Get the fully qualified class name from a file.
      */
-    private function getClassNameFromFile(string $filePath, string $basePath, string $baseNamespace): ?string
+    private function getClassNameFromFile(string $filePath, string $basePath, string $baseNamespace): string
     {
         $relativePath   = mb_ltrim(Str::after($filePath, $basePath), DIRECTORY_SEPARATOR);
         $classPath      = Str::beforeLast($relativePath, '.php');

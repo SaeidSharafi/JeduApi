@@ -17,6 +17,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Plank\Mediable\Mediable;
 
+/**
+ * @implements ProductableContract<Course>
+ * @implements ReviewableContract<Course>
+ */
 final class Course extends Model implements ProductableContract, ReviewableContract
 {
     /** @use HasFactory<\Database\Factories\CourseFactory> */
@@ -52,7 +56,7 @@ final class Course extends Model implements ProductableContract, ReviewableContr
         ];
 
     /**
-     * @return MorphToMany<Category,$this>
+     * @return MorphToMany<Category, $this>
      */
     public function categories(): MorphToMany
     {
@@ -60,13 +64,16 @@ final class Course extends Model implements ProductableContract, ReviewableContr
     }
 
     /**
-     * @return MorphToMany<DigitalAsset,$this>
+     * @return MorphToMany<DigitalAsset, $this>
      */
     public function digitalAssets(): MorphToMany
     {
         return $this->morphToMany(DigitalAsset::class, 'assetable');
     }
 
+    /**
+     * @return MorphToMany<BlogPost, $this>
+     */
     public function blogPosts(): MorphToMany
     {
         return $this->morphToMany(BlogPost::class, 'productable', 'blog_post_productables');

@@ -56,7 +56,7 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
         $ipAddress   = request()->ip();
         $userAgent   = request()->userAgent();
 
-        return DB::transaction(function () use ($amountToPay, $userAgent, $ipAddress, $payment, $order, $user) {
+        return DB::transaction(function () use ($amountToPay, $userAgent, $ipAddress, $payment, $order, $user): PaymentProcessResultData {
             $alreadyPaid = $order->payments()
                 ->where('status', PaymentStatusEnum::COMPLETED)
                 ->where('id', '!=', $payment->id)
@@ -131,6 +131,9 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
 
     }
 
+    /**
+     * @param  array<string, mixed>  $callbackData
+     */
     public function verify(Payment $payment, array $callbackData): Payment
     {
         // Not needed for single-step payments

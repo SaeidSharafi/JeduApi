@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\AdminActionLogFactory;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -34,11 +36,17 @@ final class AdminActionLog extends Model
         ];
 
     // Relationships
+    /**
+     * @return BelongsTo<Staff, $this>
+     */
     public function admin(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'admin_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function resource(): MorphTo
     {
         return $this->morphTo('resource', 'resource_type', 'resource_id');
@@ -74,41 +82,68 @@ final class AdminActionLog extends Model
     public function getActionSummary(): string
     {
         $action   = ucfirst($this->action_type);
-        $resource = class_basename($this->resource_type) ?? 'Resource';
+        $resource = $this->resource_type ? class_basename($this->resource_type) : 'Resource';
 
         return "{$action} {$resource}".($this->resource_id ? " #{$this->resource_id}" : '');
     }
 
     // Scopes
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
-    protected function highRisk($query)
+    protected function highRisk(Builder $query): Builder
     {
         return $query->where('risk_level', 'high');
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
-    protected function walletActions($query)
+    protected function walletActions(Builder $query): Builder
     {
-        return $query->where(function ($q): void {
+        return $query->where(function (Builder $q): void {
             $q->whereLike('route_name', '%wallet%')
                 ->orWhereLike('resource_type', '%Wallet%');
         });
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
-    protected function byAdmin($query, int $adminId)
+    protected function byAdmin(Builder $query, int $adminId): Builder
     {
         return $query->where('admin_id', $adminId);
     }
 
+    /**
+     * @param Builder<self>                          $query
+     * @param string|CarbonInterface                 $startDate
+     * @param string|CarbonInterface                 $endDate
+     *
+     * @return Builder<self>
+     */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
-    protected function byDateRange($query, $startDate, $endDate)
+    protected function byDateRange(Builder $query, string|CarbonInterface $startDate, string|CarbonInterface $endDate): Builder
     {
         return $query->whereBetween('created_at', [$startDate, $endDate]);
     }
 
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
-    protected function byRiskLevel($query, string $riskLevel)
+    protected function byRiskLevel(Builder $query, string $riskLevel): Builder
     {
         return $query->where('risk_level', $riskLevel);
     }
@@ -125,6 +160,9 @@ final class AdminActionLog extends Model
         ];
     }
 
+    /**
+     * @return Attribute<string, string>
+     */
     protected function actionSummery(): Attribute
     {
         return Attribute::make(

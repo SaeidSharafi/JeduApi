@@ -9,10 +9,13 @@ use InvalidArgumentException;
 
 final class PersianFakesProvider extends \Faker\Provider\Lorem
 {
+    /** @var array<int, string>|null */
     protected static ?array $persianWordList = null;
 
+    /** @var array<int, string>|null */
     protected static ?array $mobileList = null;
 
+    /** @var array<int, string>|null */
     protected static ?array $phoneList = null;
 
     public function __construct(Generator $faker)
@@ -39,7 +42,7 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
      *
      * @param  int  $nb  how many words to return
      * @param  bool  $asText  if true the sentences are returned as one string
-     * @return array|string
+     * @return array<int, string>|string
      *
      * @example array('باغ', 'آب', 'کتاب')
      */
@@ -60,11 +63,10 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
      * @param  int  $nbWords  around how many words the sentence should contain
      * @param  bool  $variableNbWords  set to false if you want exactly $nbWords returned,
      *                                 otherwise $nbWords may vary by +/-40% with a minimum of 1
-     * @return string
      *
      * @example 'باغ کتاب آب'
      */
-    public static function persianSentence($nbWords = 6, $variableNbWords = true)
+    public static function persianSentence($nbWords = 6, $variableNbWords = true): string
     {
         if ($nbWords <= 0) {
             return '';
@@ -85,7 +87,7 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
      *
      * @param  int  $nb  how many sentences to return
      * @param  bool  $asText  if true the sentences are returned as one string
-     * @return array|string
+     * @return array<int, string>|string
      *
      * @example array('آب ابزار صندلی', 'باغ آب کتاب')
      */
@@ -106,11 +108,10 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
      * @param  int  $nbSentences  around how many sentences the paragraph should contain
      * @param  bool  $variableNbSentences  set to false if you want exactly $nbSentences returned,
      *                                     otherwise $nbSentences may vary by +/-40% with a minimum of 1
-     * @return string
      *
      * @example 'کتاب ابزار پل مشک. مشک کتاب صندلی میز'
      */
-    public static function persianParagraph($nbSentences = 3, $variableNbSentences = true)
+    public static function persianParagraph($nbSentences = 3, $variableNbSentences = true): string
     {
         if ($nbSentences <= 0) {
             return '';
@@ -128,7 +129,7 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
      *
      * @param  int  $nb  how many paragraphs to return
      * @param  bool  $asText  if true the paragraphs are returned as one string, separated by two newlines
-     * @return array|string
+     * @return array<int, string>|string
      *
      * @example array($pargraph1, $paragraph2)
      */
@@ -148,11 +149,10 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
      * Depending on the $maxNbChars, returns a string made of persian words, persian sentences, or persian paragraphs.
      *
      * @param  int  $maxNbChars  Maximum number of characters the text should contain (minimum 5)
-     * @return string
      *
      * @example 'میز کتاب صندلی'
      */
-    public static function persianText($maxNbChars = 200)
+    public static function persianText(int $maxNbChars = 200): string
     {
         if ($maxNbChars < 5) {
             throw new InvalidArgumentException('persianText() faghat mitavanad motoone balaye 5 character ra tolid konad');
@@ -161,26 +161,23 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
         $type = ($maxNbChars < 25) ? 'persianWord' : (($maxNbChars < 100) ? 'persianSentence' : 'persianParagraph');
 
         $text = [];
+        $size = 0;
 
-        while (empty($text)) {
-            $size = 0;
+        // Keep adding elements until max length is reached
+        while ($size < $maxNbChars) {
+            $word   = ($size ? ' ' : '').self::$type();
+            $text[] = $word;
 
-            // until $maxNbChars is reached
-            while ($size < $maxNbChars) {
-                $word   = ($size ? ' ' : '').self::$type();
-                $text[] = $word;
+            $size += mb_strlen($word);
+        }
 
-                $size += mb_strlen($word);
-            }
-
+        if (count($text) > 1) {
             array_pop($text);
         }
 
-        if ($type === 'word') {
-            // capitalize first letter
+        if ($type === 'persianWord') {
             $text[0] = ucwords($text[0]);
 
-            // end sentence with full stop
             $text[count($text) - 1] .= '.';
         }
 

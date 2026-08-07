@@ -40,6 +40,9 @@ final readonly class GatewayService
         return $gateways;
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function getShopActiveGateways(): array
     {
         $gateways = [];

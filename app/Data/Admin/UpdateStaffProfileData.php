@@ -15,7 +15,8 @@ final class UpdateStaffProfileData extends Data
     public function __construct(
         public string $name,
         public string $email,
-        public string $phone
+        public string $phone,
+        public ?string $password = null
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
@@ -32,7 +33,8 @@ final class UpdateStaffProfileData extends Data
                         Rule::unique('staff', 'phone')->ignore(
                             auth('staff')->user()
                         ),
-            ]
+            ],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
     }
 

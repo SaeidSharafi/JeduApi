@@ -43,6 +43,9 @@ final class Teacher extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsToMany<ProductDeliveryOption, $this>
+     */
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(ProductDeliveryOption::class);

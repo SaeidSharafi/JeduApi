@@ -133,6 +133,8 @@ final readonly class TriggerCampaignAllocationAction
 
     /**
      * Build transaction metadata
+     *
+     * @return array<string, mixed>
      */
     private function buildTransactionMetadata(WalletCampaign $campaign, TriggerCampaignAllocationData $data): array
     {

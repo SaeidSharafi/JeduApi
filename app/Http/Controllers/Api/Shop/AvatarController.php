@@ -54,7 +54,7 @@ final class AvatarController extends Controller
             if ($media->aggregate_type === Media::TYPE_IMAGE) {
                 CreateImageVariants::dispatch($media, 'thumb');
             }
-            $user = auth('user')?->user();
+            $user = auth('user')->user();
             $user->syncMedia($media, 'avatar');
         });
 
@@ -74,9 +74,9 @@ final class AvatarController extends Controller
     public function destroy(Request $request): JsonResponse
     {
 
-        DB::transaction(function () use ($request, &$media): void {
+        DB::transaction(function () use (&$media): void {
 
-            $user = auth('user')?->user();
+            $user = auth('user')->user();
             $user->load('media');
             $avatars = $user->getMediaMatchAll(['avatar']);
             foreach ($avatars as $avatar) {

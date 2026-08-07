@@ -206,7 +206,7 @@ describe('CRUD Autherized', function (): void {
         $actualDataItems = collect($response->json('data.data'));
 
         foreach ($users as $expectedUser) {
-            $match = $actualDataItems->first(function ($actualItem) use ($expectedUser) {
+            $match = $actualDataItems->first(function (array $actualItem) use ($expectedUser): bool {
                 return $actualItem['civil_id'] === $expectedUser->civil_id;
             });
 

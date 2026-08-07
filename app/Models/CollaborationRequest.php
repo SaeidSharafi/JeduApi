@@ -7,9 +7,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Mediable;
+use Database\Factories\CollaborationRequestFactory;
 
 final class CollaborationRequest extends Model
 {
+    /** @use HasFactory<CollaborationRequestFactory> */
     use HasFactory;
     use Mediable;
 

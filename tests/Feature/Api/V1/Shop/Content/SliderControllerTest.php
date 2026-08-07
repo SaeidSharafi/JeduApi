@@ -42,7 +42,7 @@ describe('SliderController', function (): void {
         $response->assertStatus(200)
             ->assertJsonCount($sliders->count(), 'data')
             ->assertJson([
-                'data' => $sliders->map(function ($slider) {
+                'data' => $sliders->map(function ($slider): array {
                     return [
                         'title'     => $slider->title,
                         'caption'   => $slider->caption,

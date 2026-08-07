@@ -58,9 +58,9 @@ final class AdminWalletCampaignController extends Controller
                 'ends_at',
             ])
             ->allowedIncludes(['creator', 'transactions'])
+            ->defaultSort('-created_at')
             ->with(['auditor'])
             ->withCount('transactions')
-            ->defaultSort('-created_at')
             ->paginate(request()->integer('per_page', config('app.page_size')));
 
         return apiResponse()->success(WalletCampaignData::collect($campaigns));

@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 trait HasAssets
 {
+    /**
+     * @return MorphToMany<DigitalAsset, $this>
+     */
     public function digitalAssets(): MorphToMany
     {
         return $this->morphToMany(DigitalAsset::class, 'assetable');

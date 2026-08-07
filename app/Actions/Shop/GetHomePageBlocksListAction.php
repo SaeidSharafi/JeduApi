@@ -10,6 +10,9 @@ use Illuminate\Support\Collection;
 
 final readonly class GetHomePageBlocksListAction
 {
+    /**
+     * @return Collection<int, HomePageBlockListData>
+     */
     public function handle(): Collection
     {
         return HomePageBlock::query()
@@ -17,7 +20,7 @@ final readonly class GetHomePageBlocksListAction
             ->orderBy('location')
             ->orderBy('order')
             ->get()
-            ->map(function (HomePageBlock $block) {
+            ->map(function (HomePageBlock $block): HomePageBlockListData {
                 return new HomePageBlockListData(
                     id: $block->id,
                     type: $block->type,

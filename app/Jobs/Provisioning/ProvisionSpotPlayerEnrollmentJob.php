@@ -42,7 +42,7 @@ final class ProvisionSpotPlayerEnrollmentJob extends AbstractProvisioningJob
             return;
         }
 
-        $details = $enrollment->productDeliveryOption?->details_json ?? [];
+        $details = $enrollment->productDeliveryOption->details_json ?? [];
         $spotId  = data_get($details, 'spot_id');
 
         // A missing spot_id in the DB will never fix itself on retry.

@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 trait HasProductListingPresets
 {
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     #[Scope]
     protected function forListing(Builder $query): Builder
     {
@@ -27,6 +31,10 @@ trait HasProductListingPresets
         ]);
     }
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     #[Scope]
     protected function forDetail(Builder $query): Builder
     {

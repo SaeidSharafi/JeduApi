@@ -33,7 +33,7 @@ it('creates meeting with expected query payload', function (): void {
 
     $this->service->createMeeting('MEET-100', 'Physics 101', 'ap', 'mp');
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $payload = $request->data();
 
         return str_contains($request->url(), 'https://bbb.test/bigbluebutton/api/create')

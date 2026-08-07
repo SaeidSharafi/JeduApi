@@ -12,6 +12,9 @@ final readonly class OutputPermissionsAction
     /**
      * Execute the action.
      */
+    /**
+     * @return array<array<string, mixed>>
+     */
     public function handle(string $guard = 'staff'): array
     {
         $permissions = Permission::query()
@@ -19,7 +22,7 @@ final readonly class OutputPermissionsAction
 
         return collect(PermissionData::collect($permissions)->toArray())
             ->groupBy('resourceKey')
-            ->mapWithKeys(function ($group) {
+            ->mapWithKeys(function ($group): array {
                 $key = $group[0]['resourceKey'];
 
                 return [

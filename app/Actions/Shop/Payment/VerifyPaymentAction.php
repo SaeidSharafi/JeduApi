@@ -19,6 +19,9 @@ final readonly class VerifyPaymentAction
     /**
      * Verify a pending payment after gateway callback.
      */
+    /**
+     * @param  array<string, mixed>  $gatewayResponse
+     */
     public function handle(Payment $payment, array $gatewayResponse): Payment
     {
         return DB::transaction(function () use ($payment, $gatewayResponse): Payment {

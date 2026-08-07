@@ -35,18 +35,26 @@ final class WalletTransaction extends Model
         'idempotency_key',
     ];
 
-    // Relationships
+    /**
+     * @return BelongsTo<Wallet, $this>
+     */
     public function wallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     // Polymorphic relationship for the source
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function source(): MorphTo
     {
         return $this->morphTo('source', 'source_type', 'source_id');

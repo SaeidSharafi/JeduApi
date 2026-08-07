@@ -8,6 +8,8 @@ use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use App\Services\ProductPriceService;
 
 final class CategoryQueryService
@@ -16,7 +18,10 @@ final class CategoryQueryService
         private ProductPriceService $priceService,
     ) {}
 
-    public function getProductsForCategory(Category $category, ProductableEnum $type, int $limit, bool $paginate = false)
+    /**
+     * @return LengthAwarePaginator<ProductCardData>|Collection<int, ProductCardData>
+     */
+    public function getProductsForCategory(Category $category, ProductableEnum $type, int $limit, bool $paginate = false): LengthAwarePaginator|Collection
     {
         $query = Product::query()
             ->ofType($type)

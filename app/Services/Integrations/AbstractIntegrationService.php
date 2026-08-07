@@ -12,6 +12,7 @@ use Illuminate\Http\Client\Response;
 
 abstract class AbstractIntegrationService
 {
+    /** @var array<string, mixed> */
     protected array $config = [];
 
     public function __construct(protected readonly SettingsService $settings)
@@ -108,6 +109,9 @@ abstract class AbstractIntegrationService
     /**
      * Formats 422 validation errors into a human-readable string for log messages.
      * Preserves the same detail level as the original ImsService::buildException().
+     */
+    /**
+     * @param  array<string, mixed>  $rawErrors
      */
     private function formatValidationErrors(array $rawErrors): string
     {

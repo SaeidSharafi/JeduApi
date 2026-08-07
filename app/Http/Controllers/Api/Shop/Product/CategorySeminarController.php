@@ -29,7 +29,7 @@ final class CategorySeminarController extends Controller
      *
      * @responseFile resources/responses/shop/products/categories/seminars.json
      */
-    public function __invoke(PaginationRequestData $data, Category $category, CategoryQueryService $service)
+    public function __invoke(PaginationRequestData $data, Category $category, CategoryQueryService $service): \App\Contracts\ApiResponseInterface
     {
         $paginatedCourses = $service->getProductsForCategory($category, ProductableEnum::SEMINAR, $data->per_page, true);
 

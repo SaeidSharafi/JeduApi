@@ -11,7 +11,7 @@ use Plank\Mediable\Media;
 
 final class CreateStudentStoryAction
 {
-    public function handle(StudentStoryCreateData $data)
+    public function handle(StudentStoryCreateData $data): StudentStory
     {
         return DB::transaction(function () use ($data): StudentStory {
             $avatarMedia = Media::find($data->avatar);

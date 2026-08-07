@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Wallet;
 
+use App\Enums\Wallet\WalletStatusEnum;
 use App\Exceptions\Wallet\WalletNotFoundException;
 use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
@@ -14,7 +15,9 @@ final class GetWalletBalanceAction
     /**
      * Get wallet balance for a user.
      *
-     * @throws Exception
+     * @return array<string, WalletStatusEnum|int>
+     *
+     * @throws WalletUserNotFoundException|WalletNotFoundException
      */
     public function execute(int $userId): array
     {

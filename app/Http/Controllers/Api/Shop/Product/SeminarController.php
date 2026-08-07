@@ -51,7 +51,7 @@ final class SeminarController extends Controller
         $requestData->type = ProductableEnum::SEMINAR->value;
         $courses           = ProductQueryService::make()
             ->getSeminarList($requestData)
-            ->through(function (Product $product) {
+            ->through(function (Product $product): ProductCardData {
                 $priceData = $this->priceService->getPriceDataForProduct($product);
 
                 return ProductCardData::fromModel($product, $priceData);

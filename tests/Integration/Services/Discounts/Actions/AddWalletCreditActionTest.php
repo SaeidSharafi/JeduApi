@@ -54,7 +54,7 @@ it('applies fixed amount wallet credit', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return $transactionData->user_id     === $this->user->id
                 && $transactionData->type        === TransactionTypeEnum::BONUS
                 && $transactionData->amount      === 5000
@@ -102,7 +102,7 @@ it('applies per-item wallet credit', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return $transactionData->amount === 5000; // (2 + 3) * 1000
         });
 
@@ -146,7 +146,7 @@ it('excludes prepayment items from per-item calculation', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return $transactionData->amount === 2000; // Only 2 items * 1000
         });
 
@@ -214,7 +214,7 @@ it('uses localized description when none provided', function (): void {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->withArgs(function ($transactionData) {
+        ->withArgs(function ($transactionData): bool {
             return str_contains($transactionData->description, 'Test Promotion');
         });
 

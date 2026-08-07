@@ -7,9 +7,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Database\Factories\ProductDeliveryOptionDiscountPriceFactory;
 
 final class ProductDeliveryOptionDiscountPrice extends Model
 {
+    /** @use HasFactory<ProductDeliveryOptionDiscountPriceFactory> */
     use HasFactory;
 
     /**
@@ -30,6 +32,9 @@ final class ProductDeliveryOptionDiscountPrice extends Model
     /**
      * The cached price belongs to a parent promotion.
      */
+    /**
+     * @return BelongsTo<DiscountPromotion, $this>
+     */
     public function promotion(): BelongsTo
     {
         return $this->belongsTo(DiscountPromotion::class, 'discount_promotion_id');
@@ -37,6 +42,9 @@ final class ProductDeliveryOptionDiscountPrice extends Model
 
     /**
      * The cached price belongs to a specific ProductDeliveryOption.
+     */
+    /**
+     * @return BelongsTo<ProductDeliveryOption, $this>
      */
     public function productDeliveryOption(): BelongsTo
     {

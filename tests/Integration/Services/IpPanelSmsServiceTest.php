@@ -7,6 +7,7 @@ use App\Services\IpPanelSmsService;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Client\Request;
 
 // Test setup common to both test groups
 beforeEach(function (): void {
@@ -97,9 +98,9 @@ describe('Normal SMS Sending', function (): void {
         $service->setFrom('9999');
         $service->send(['09123456789'], 'Test message');
 
-        Http::assertSent(function ($request) {
+        Http::assertSent(function (Request $request): bool {
             $headerIsCorrect = $request->hasHeader('apikey', 'runtime-key');
-            $senderIsCorrect = $request['sender'] === '9999';
+            $senderIsCorrect = $request->data()['sender'] === '9999';
 
             return $headerIsCorrect && $senderIsCorrect;
         });

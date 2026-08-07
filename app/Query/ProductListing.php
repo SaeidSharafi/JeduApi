@@ -5,21 +5,34 @@ declare(strict_types=1);
 namespace App\Query;
 
 use App\Enums\Product\ProductSortFieldEnum;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 final class ProductListing
 {
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
     public static function forListing(Builder $query): Builder
     {
         return $query->forListing();
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
     public static function forDetail(Builder $query): Builder
     {
         return $query->forDetail();
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
     public static function sortBy(Builder $query, string $field, string $direction = 'desc'): Builder
     {
         if (! in_array($field, ProductSortFieldEnum::ALLOWED, true) || ! in_array($direction, ['asc', 'desc'], true)) {
@@ -39,16 +52,28 @@ final class ProductListing
         return $query->orderBy("products.{$field}", $direction);
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
     public static function sortByCapacityUtilization(Builder $query, float $threshold = 0.8): Builder
     {
         return $query->sortByCapacityUtilization($threshold);
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
     public static function popular(Builder $query): Builder
     {
         return $query->withCount('orderItems')->orderByDesc('order_items_count');
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     * @return LengthAwarePaginator<int, Product>
+     */
     public static function paginate(Builder $query, int $perPage = 15): LengthAwarePaginator
     {
         return $query->paginate($perPage)->withQueryString();

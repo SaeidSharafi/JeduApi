@@ -247,7 +247,7 @@ it('default seminar listing excludes past events via eventNotEnded default', fun
     $json = $response->json();
 
     // Should have 2 results (upcoming + ongoing), NOT past
-    $names = array_map(fn ($item): mixed => $item['name'], $json['data']['data']);
+    $names = array_map(fn (array $item): mixed => $item['name'], $json['data']['data']);
 
     expect($json['data']['total'])->toBe(2);
     expect($names)->toContain('Upcoming Seminar Included')

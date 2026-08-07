@@ -12,7 +12,6 @@ use App\Exceptions\Wallet\WalletNotFoundException;
 use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
 use App\Models\WalletCampaign;
-use Exception;
 use Illuminate\Support\Facades\DB;
 
 final readonly class BulkCampaignAllocationAction
@@ -24,7 +23,7 @@ final readonly class BulkCampaignAllocationAction
     /**
      * Process bulk campaign allocation for multiple users
      *
-     * @return array{success_count: int, failure_count: int, results: array}
+     * @return array{success_count: int, failure_count: int, results: array<int, array<string, mixed>>}
      */
     public function handle(BulkCampaignAllocationData $data, WalletCampaign $campaign): array
     {
@@ -81,10 +80,12 @@ final readonly class BulkCampaignAllocationAction
      * Process bulk allocation in a database transaction for atomicity
      *
      * @codeCoverageIgnore
+     *
+     * @return array{success_count: int, failure_count: int, results: array<int, array<string, mixed>>}
      */
     public function handleAtomic(BulkCampaignAllocationData $data, WalletCampaign $campaign): array
     {
-        return DB::transaction(function () use ($data, $campaign) {
+        return DB::transaction(function () use ($data, $campaign): array {
             return $this->handle($data, $campaign);
         });
     }

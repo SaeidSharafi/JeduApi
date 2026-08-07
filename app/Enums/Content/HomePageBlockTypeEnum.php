@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum HomePageBlockTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case MAIN_CATEGORIES = 'MAIN_CATEGORIES';

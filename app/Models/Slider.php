@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
+use Database\Factories\SliderFactory;
 
 final class Slider extends Model
 {
+    /** @use HasFactory<SliderFactory> */
     use HasFactory, Mediable;
 
     protected $fillable
@@ -39,8 +41,12 @@ final class Slider extends Model
         return null;
     }
 
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     #[Scope]
-    public function active(Builder $query): Builder
+    protected function active(Builder $query): Builder
     {
         return $query->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED);
     }

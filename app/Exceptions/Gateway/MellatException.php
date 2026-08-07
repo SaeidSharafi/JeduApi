@@ -8,7 +8,7 @@ final class MellatException extends BankException
 {
     public int $errorId;
 
-    public function __construct($errorId)
+    public function __construct(int|string $errorId)
     {
         $this->errorId = (int) $errorId;
 
@@ -22,6 +22,9 @@ final class MellatException extends BankException
         return 'MELLAT_ERROR_'.$this->errorId;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
         return ['gateway' => 'mellat', 'gateway_error_id' => $this->errorId];

@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum OrderProvisioningTriggerEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case ANY_PAYMENT     = 'any_payment';

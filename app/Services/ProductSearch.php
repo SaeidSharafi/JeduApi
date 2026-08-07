@@ -26,6 +26,9 @@ final class ProductSearch
         private readonly ?Closure $scoutSearch = null,
     ) {}
 
+    /**
+     * @return LengthAwarePaginator<int, Product>
+     */
     public function search(ProductListRequestData $requestData): LengthAwarePaginator
     {
         if ($this->isTypesenseAvailable()) {
@@ -44,6 +47,9 @@ final class ProductSearch
         return $this->searchDatabase($requestData);
     }
 
+    /**
+     * @return LengthAwarePaginator<int, Product>
+     */
     public function searchDatabase(ProductListRequestData $requestData): LengthAwarePaginator
     {
         $query = Product::query();
@@ -57,7 +63,7 @@ final class ProductSearch
         $query             = ProductAvailabilityFilter::applyPublishedProductable($query);
         $query             = ProductAvailabilityFilter::applyActiveTerm($query);
         $query             = ProductListing::forListing($query);
-        $capacityThreshold = $requestData->filter?->capacity_threshold ?? 0.8;
+        $capacityThreshold = $requestData->filter->capacity_threshold ?? 0.8;
 
         if ($requestData->q) {
             $query->select('products.*')->selectScore(table: 'products');
@@ -132,6 +138,9 @@ final class ProductSearch
     }
 
     /** @codeCoverageIgnore */
+    /**
+     * @return LengthAwarePaginator<int, Product>
+     */
     public function searchScout(ProductListRequestData $requestData): LengthAwarePaginator
     {
         if (! $this->isTypesenseAvailable()) {
@@ -206,6 +215,9 @@ final class ProductSearch
             ->withQueryString();
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     */
     private function applyDatabaseAvailabilityFilters(Builder $query, ProductFilterData $filter): void
     {
         if ($filter->is_available_now) {
@@ -267,6 +279,7 @@ final class ProductSearch
                 AvailabilityStatusEnum::ONGOING->value  => $query
                     ->where('earliest_event_start_ts', ['<=', $today])
                     ->where('latest_event_ended_ts', ['>=', $today]),
+                default                                   => null,
             };
 
             return;

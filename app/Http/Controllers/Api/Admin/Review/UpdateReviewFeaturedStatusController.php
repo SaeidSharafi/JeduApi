@@ -25,7 +25,7 @@ final class UpdateReviewFeaturedStatusController extends Controller
      * @responseFile 200 resources/responses/admin/review/update-featured-status.json
      * @responseFile 403 resources/responses/403.json
      */
-    public function __invoke(FeaturedStatusData $data, Review $review, UpdateReviewFeaturedStatusAction $action)
+    public function __invoke(FeaturedStatusData $data, Review $review, UpdateReviewFeaturedStatusAction $action): \App\Contracts\ApiResponseInterface
     {
         Gate::authorize('update-featured-status', $review);
         $action->handle($review, $data);

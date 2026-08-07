@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\Admin\Order;
 use App\Actions\Admin\Payment\GetNextPaymentDetailsAction;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use Exception;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -24,9 +23,10 @@ final class NextPaymentDetailsController extends Controller
      * @responseFile 403 resources/responses/403.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function __invoke(Order $order, GetNextPaymentDetailsAction $action)
+    public function __invoke(Order $order, GetNextPaymentDetailsAction $action): \App\Contracts\ApiResponseInterface
     {
         Gate::authorize('viewAny', Order::class);
+
         return apiResponse()->success($action->handle($order));
 
     }

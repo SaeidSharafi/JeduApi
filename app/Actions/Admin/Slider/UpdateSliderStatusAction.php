@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Slider;
 
 use App\Data\Admin\ChangeStatusData;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Slider;
 
 final class UpdateSliderStatusAction
 {
     public function handle(ChangeStatusData $data, Slider $slider): Slider
     {
-        $slider->status = $data->status;
+        $slider->status = PublicationStatusEnum::from($data->status);
         $slider->save();
 
         return $slider;

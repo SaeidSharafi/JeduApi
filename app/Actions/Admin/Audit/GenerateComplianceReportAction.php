@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Audit;
 
 use App\Data\Admin\Audit\ComplianceReportRequestData;
+use App\Enums\Wallet\TransactionSourceEnum;
+use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\AdminActionLog;
 use App\Models\WalletTransaction;
 use Carbon\Carbon;
@@ -13,6 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 final class GenerateComplianceReportAction
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function execute(ComplianceReportRequestData $data): array
     {
         $this->normalizeDateRange($data);
@@ -58,6 +63,9 @@ final class GenerateComplianceReportAction
         $data->date_to?->endOfDay();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function generateSummary(ComplianceReportRequestData $data): array
     {
         $query = WalletTransaction::query()
@@ -95,6 +103,9 @@ final class GenerateComplianceReportAction
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function generateTransactionAnalysis(ComplianceReportRequestData $data): array
     {
         $query = WalletTransaction::query()
@@ -109,10 +120,11 @@ final class GenerateComplianceReportAction
             ->select('type', DB::raw('COUNT(*) as count'), DB::raw('SUM(ABS(amount)) as volume'))
             ->groupBy('type')
             ->get()
-            ->mapWithKeys(function ($item) {
+            ->mapWithKeys(function ($item): array {
+                /** @var object{type: TransactionTypeEnum, count: int, volume: int} $item */
                 return [$item->type->value => [
-                    'count'  => $item->count,
-                    'volume' => $item->volume,
+                    'count'  => (int) $item->count,
+                    'volume' => (int) $item->volume,
                 ]];
             });
 
@@ -121,10 +133,11 @@ final class GenerateComplianceReportAction
             ->select('source_type', DB::raw('COUNT(*) as count'), DB::raw('SUM(ABS(amount)) as volume'))
             ->groupBy('source_type')
             ->get()
-            ->mapWithKeys(function ($item) {
+            ->mapWithKeys(function ($item): array {
+                /** @var object{type: TransactionSourceEnum, count: int, volume: int} $item */
                 return [$item->source_type->value => [
-                    'count'  => $item->count,
-                    'volume' => $item->volume,
+                    'count'  => (int) $item->count,
+                    'volume' => (int) $item->volume,
                 ]];
             });
 
@@ -140,6 +153,9 @@ final class GenerateComplianceReportAction
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function generateAdminActionsSummary(ComplianceReportRequestData $data): array
     {
         $query = AdminActionLog::query()
@@ -164,6 +180,9 @@ final class GenerateComplianceReportAction
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function generateSuspiciousActivityReport(ComplianceReportRequestData $data): array
     {
         $query = WalletTransaction::query()
@@ -196,6 +215,9 @@ final class GenerateComplianceReportAction
         ];
     }
 
+    /**
+     * @return array<string, array<string, int>>
+     */
     private function generateDailyBreakdown(ComplianceReportRequestData $data): array
     {
         $breakdown = [];
@@ -212,7 +234,7 @@ final class GenerateComplianceReportAction
                 $dayQuery->whereIn('user_id', $data->user_ids);
             }
 
-            $breakdown[verta($current)->format('Y-m-d')] = [
+            $breakdown[verta($current)->format('Y-m-d')] = [ // @phpstan-ignore argument.type (verta stub types $datetime as null)
                 'total_transactions' => $dayQuery->count(),
                 'total_volume'       => $dayQuery->sum(DB::raw('ABS(amount)')),
                 'unique_users'       => $dayQuery->distinct('user_id')->count(),
@@ -225,6 +247,9 @@ final class GenerateComplianceReportAction
         return $breakdown;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function generateRiskAssessmentReport(ComplianceReportRequestData $data): array
     {
         $transactionQuery = WalletTransaction::query()
@@ -253,36 +278,41 @@ final class GenerateComplianceReportAction
         ];
     }
 
+    /**
+     * @param Collection<int, WalletTransaction> $transactions
+     * @param Collection<int, AdminActionLog> $adminActions
+     * @return array<string, array<string, mixed>>
+     */
     private function calculateRiskFactors(Collection $transactions, Collection $adminActions): array
     {
         $totalTransactions = $transactions->count();
         $totalAdminActions = $adminActions->count();
 
         // Transaction-based risk factors
-        $highAmountTransactions = $transactions->filter(function ($tx) {
+        $highAmountTransactions = $transactions->filter(function ($tx): bool {
             return abs($tx->amount) >= 50000000; // 50M+ IRR
         })->count();
 
-        $offHoursTransactions = $transactions->filter(function ($tx) {
+        $offHoursTransactions = $transactions->filter(function ($tx): bool {
             $hour = Carbon::parse($tx->created_at)->hour;
 
             return ($hour < 6 || $hour > 22) && abs($tx->amount) >= 5000000;
         })->count();
 
-        $highRiskTransactions = $transactions->filter(function ($tx) {
+        $highRiskTransactions = $transactions->filter(function ($tx): bool {
             return isset($tx->metadata['audit']['risk_level']) && $tx->metadata['audit']['risk_level'] === 'high';
         })->count();
 
-        $roundNumberTransactions = $transactions->filter(function ($tx) {
+        $roundNumberTransactions = $transactions->filter(function ($tx): bool {
             return abs($tx->amount) % 1000000 === 0 && abs($tx->amount) >= 1000000;
         })->count();
 
         // Admin action-based risk factors
-        $highRiskAdminActions = $adminActions->filter(function ($action) {
+        $highRiskAdminActions = $adminActions->filter(function ($action): bool {
             return $action->risk_level === 'high';
         })->count();
 
-        $failedAdminActions = $adminActions->filter(function ($action) {
+        $failedAdminActions = $adminActions->filter(function ($action): bool {
             return $action->response_status >= 400;
         })->count();
 
@@ -322,6 +352,9 @@ final class GenerateComplianceReportAction
         ];
     }
 
+    /**
+     * @param array<string, array{risk_level: string}> $riskFactors
+     */
     private function calculateOverallRiskScore(array $riskFactors): int
     {
         $score   = 0;
@@ -349,6 +382,10 @@ final class GenerateComplianceReportAction
         return min(100, max(0, (int) round($score)));
     }
 
+    /**
+     * @param array<string, array{risk_level: string}> $riskFactors
+     * @return array<int, array<string, string>>
+     */
     private function generateRiskRecommendations(array $riskFactors, int $overallRiskScore): array
     {
         $recommendations = [];
@@ -420,6 +457,9 @@ final class GenerateComplianceReportAction
         return $recommendations;
     }
 
+    /**
+     * @param array{int, int} $thresholds
+     */
     private function getRiskLevel(float $percentage, array $thresholds): string
     {
         [$mediumThreshold, $highThreshold] = $thresholds;

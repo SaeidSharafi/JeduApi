@@ -12,6 +12,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 final class PublishedProductExistRule implements DataAwareRule, ValidationRule
 {
+    /** @var array<string, mixed> */
     private array $data = [];
 
     public function __construct(private readonly ?Product $product) {}
@@ -37,7 +38,10 @@ final class PublishedProductExistRule implements DataAwareRule, ValidationRule
         }
     }
 
-    public function setData(array $data): self
+    /**
+     * @param  array<string, mixed>  $data
+     */
+        public function setData(array $data): self
     {
         $this->data = $data;
 

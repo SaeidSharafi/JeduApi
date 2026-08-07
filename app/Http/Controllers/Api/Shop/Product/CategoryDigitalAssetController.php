@@ -29,7 +29,7 @@ final class CategoryDigitalAssetController extends Controller
      *
      * @responseFile resources/responses/shop/products/categories/digital_assets.json
      */
-    public function __invoke(PaginationRequestData $data, Category $category, CategoryQueryService $service)
+    public function __invoke(PaginationRequestData $data, Category $category, CategoryQueryService $service): \App\Contracts\ApiResponseInterface
     {
         $paginatedCourses = $service->getProductsForCategory($category, ProductableEnum::DIGITAL_ASSET, $data->per_page, true);
 

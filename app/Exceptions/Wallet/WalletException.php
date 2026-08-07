@@ -11,6 +11,9 @@ abstract class WalletException extends \Exception
         return $this->customUserMessage() ?? $this->getMessage();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     final public function metadata(): array
     {
         return $this->customMetadata();
@@ -21,6 +24,9 @@ abstract class WalletException extends \Exception
         return null;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
         return [];

@@ -79,6 +79,9 @@ final class DigipayAdminService
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getGatewayResponse(Payment $payment): array
     {
         $response = $payment->transactions()->latest()->first()->gateway_response;

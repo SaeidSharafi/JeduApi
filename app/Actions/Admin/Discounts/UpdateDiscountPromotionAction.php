@@ -15,7 +15,7 @@ final class UpdateDiscountPromotionAction
     public function execute(DiscountPromotion $promotion, DiscountPromotionCreateData $data): DiscountPromotion
     {
         $promotion = DB::transaction(function () use ($promotion, $data) {
-            $isCartSpecific = $data->type === DiscountTypeEnum::CART_CHECKOUT->value;
+            $isCartSpecific = $data->type === DiscountTypeEnum::CART_CHECKOUT;
             $promotion->update([
                 'name'                             => $data->name,
                 'description'                      => $data->description,

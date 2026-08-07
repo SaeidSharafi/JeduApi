@@ -21,6 +21,9 @@ final class OrderFullyPaidException extends PaymentException
         return 'ORDER_FULLY_PAID';
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function customMetadata(): array
     {
         return array_filter([

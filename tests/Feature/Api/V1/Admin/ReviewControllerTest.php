@@ -13,7 +13,7 @@ use App\Models\User;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('ReviewController', function (): void {
-    it('filters reviews', function ($filters, $expectedCount): void {
+    it('filters reviews', function (array $filters, ?int $expectedCount): void {
         $this->authorized_user([PermissionEnum::REVIEW_VIEW_ANY]);
 
         $user = User::factory()->create([
@@ -140,7 +140,7 @@ describe('ReviewController', function (): void {
         $response = $this->deleteJson('/api/v1/admin/reviews/'.$review->id);
         $response->assertNoContent();
         $this->assertDatabaseMissing('reviews', ['id' => $review->id]);
-        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review) {
+        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review): bool {
             return $event->reviewId       === null
                 && $event->reviewableId   === $review->reviewable_id
                 && $event->reviewableType === $review->reviewable_type;
@@ -177,7 +177,7 @@ describe('ApproveReviewController', function (): void {
             'id'     => $review->id,
             'status' => ReviewStatusEnum::APPROVED->value,
         ]);
-        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review, $course) {
+        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review, $course): bool {
             return $event->reviewId       === $review->id
                 && $event->reviewableId   === $course->id
                 && $event->reviewableType === MorphTypeEnum::COURSE->value;
@@ -214,7 +214,7 @@ describe('RejectReviewController', function (): void {
             'id'     => $review->id,
             'status' => ReviewStatusEnum::REJECTED->value,
         ]);
-        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review, $course) {
+        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review, $course): bool {
             return $event->reviewId       === $review->id
                 && $event->reviewableId   === $course->id
                 && $event->reviewableType === MorphTypeEnum::COURSE->value;

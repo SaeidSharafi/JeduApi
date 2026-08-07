@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum OrderItemPaymentTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case PRE_PAYMENT  = 'pre_payment';

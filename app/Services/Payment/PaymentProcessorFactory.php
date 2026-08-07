@@ -13,6 +13,7 @@ final readonly class PaymentProcessorFactory
     /**
      * @param  iterable<PaymentProcessorContract>  $processors
      */
+    /** @var iterable<PaymentProcessorContract> */
     private iterable $processors;
 
     /**
@@ -21,7 +22,7 @@ final readonly class PaymentProcessorFactory
     public function __construct(iterable $processors)
     {
         // Ensure all items are of the correct type
-        $this->processors = (static function (PaymentProcessorContract ...$processors) {
+        $this->processors = (static function (PaymentProcessorContract ...$processors): array {
             return $processors;
         })(...$processors);
     }

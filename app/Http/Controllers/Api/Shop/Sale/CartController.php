@@ -8,7 +8,7 @@ use App\Data\Shop\Cart\AddCartItemData;
 use App\Data\Shop\Cart\ApplyCouponData;
 use App\Data\Shop\Cart\UpdateCartItemData;
 use App\Http\Controllers\Controller;
-use App\Http\Responses\ApiSuccessResponse;
+use App\Contracts\ApiResponseInterface;
 use App\Models\CartItem;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
@@ -33,7 +33,7 @@ final class CartController extends Controller
      *
      * @responseFile 200 resources/responses/shop/cart/index.json
      */
-    public function index(): ApiSuccessResponse
+    public function index(): ApiResponseInterface
     {
         $cartData = $this->cartService->getCart();
 
@@ -45,7 +45,7 @@ final class CartController extends Controller
      *
      * @responseFile resources/responses/shop/cart/show.json
      */
-    public function store(AddCartItemData $data): ApiSuccessResponse
+    public function store(AddCartItemData $data): ApiResponseInterface
     {
         $cartData = $this->cartService->addItem($data);
 
@@ -57,7 +57,7 @@ final class CartController extends Controller
      *
      * @responseFile resources/responses/shop/cart/show.json
      */
-    public function update(UpdateCartItemData $data, CartItem $cartItem): ApiSuccessResponse
+    public function update(UpdateCartItemData $data, CartItem $cartItem): ApiResponseInterface
     {
         $cartData = $this->cartService->updateItem($cartItem->id, $data);
 
@@ -79,7 +79,7 @@ final class CartController extends Controller
      *
      * @responseFile resources/responses/shop/cart/show.json
      */
-    public function applyCoupon(ApplyCouponData $data): ApiSuccessResponse
+    public function applyCoupon(ApplyCouponData $data): ApiResponseInterface
     {
         $cartData = $this->cartService->applyCoupon($data);
 
@@ -91,7 +91,7 @@ final class CartController extends Controller
      *
      * @responseFile resources/responses/shop/cart/show.json
      */
-    public function removeCoupon(): ApiSuccessResponse
+    public function removeCoupon(): ApiResponseInterface
     {
         $cartData = $this->cartService->removeCoupon();
 

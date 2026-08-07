@@ -28,7 +28,7 @@ final class BlogCategoryController extends Controller
      *
      * @responseFile resources/responses/shop/blog/category/index.json
      */
-    public function index()
+    public function index(): \App\Contracts\ApiResponseInterface
     {
         $categories = BlogCategory::query()
             ->withCount(['posts' => function ($query): void {
@@ -52,7 +52,7 @@ final class BlogCategoryController extends Controller
      * @responseFile 200 resources/responses/shop/blog/category/show.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function show(string $slug)
+    public function show(string $slug): \App\Contracts\ApiResponseInterface
     {
         $category = BlogCategory::query()
             ->where('slug', $slug)
@@ -73,7 +73,7 @@ final class BlogCategoryController extends Controller
      *
      * @responseFile resources/responses/shop/blog/post/index.json
      */
-    public function posts(string $slug, BlogPostListRequestData $requestData)
+    public function posts(string $slug, BlogPostListRequestData $requestData): \App\Contracts\ApiResponseInterface
     {
         $category = BlogCategory::query()
             ->where('slug', $slug)
@@ -94,7 +94,7 @@ final class BlogCategoryController extends Controller
 
         $query->orderBy($requestData->sortBy, $requestData->sortOrder);
 
-        /** @var LengthAwarePaginator<BlogPost> $posts */
+        /** @var LengthAwarePaginator<int, BlogPost> $posts */
         $posts = $query->paginate(
             perPage: $requestData->per_page,
             page: $requestData->page

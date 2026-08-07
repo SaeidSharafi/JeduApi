@@ -85,5 +85,8 @@ abstract class AbstractProvisioningJob implements ShouldQueue
     /**
      * Override in subclasses that need additional failure side-effects.
      */
+    /**
+     * @param  array<string, mixed>  $metaData
+     */
     protected function onFailed(Enrollment $enrollment, Throwable $exception, array $metaData): void {}
 }

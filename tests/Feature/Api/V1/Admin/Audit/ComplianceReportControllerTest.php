@@ -678,7 +678,7 @@ describe('ComplianceReportController', function (): void {
         expect($recommendations)->not->toBeEmpty();
 
         // Check for critical or high overall risk recommendation
-        $hasHighPriorityRecommendation = collect($recommendations)->contains(function ($rec) {
+        $hasHighPriorityRecommendation = collect($recommendations)->contains(function (array $rec): bool {
             return in_array($rec['priority'], ['critical', 'high']);
         });
         expect($hasHighPriorityRecommendation)->toBeTrue();
@@ -724,7 +724,7 @@ describe('ComplianceReportController', function (): void {
         $recommendations = $riskAssessment['recommendations'];
         expect($recommendations)->not->toBeEmpty();
 
-        $hasMaintenanceRecommendation = collect($recommendations)->contains(function ($rec) {
+        $hasMaintenanceRecommendation = collect($recommendations)->contains(function (array $rec): bool {
             return $rec['priority'] === 'low' && $rec['action'] === 'continue_regular_monitoring';
         });
         expect($hasMaintenanceRecommendation)->toBeTrue();

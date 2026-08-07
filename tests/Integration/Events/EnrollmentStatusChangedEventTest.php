@@ -16,7 +16,7 @@ it('dispatches event when enrollment is created', function (): void {
         'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
     ]);
 
-    Event::assertDispatched(EnrollmentStatusChanged::class, function ($event) use ($enrollment) {
+    Event::assertDispatched(EnrollmentStatusChanged::class, function ($event) use ($enrollment): bool {
         return $event->enrollment->id === $enrollment->id;
     });
 });
@@ -34,7 +34,7 @@ it('dispatches event when enrollment status is updated', function (): void {
     $enrollment->enrollment_status = EnrollmentStatusEnum::CANCELLED;
     $enrollment->save();
 
-    Event::assertDispatched(EnrollmentStatusChanged::class, function ($event) use ($enrollment) {
+    Event::assertDispatched(EnrollmentStatusChanged::class, function ($event) use ($enrollment): bool {
         return $event->enrollment->id === $enrollment->id;
     });
 });
@@ -50,7 +50,7 @@ it('dispatches event when enrollment is deleted', function (): void {
 
     $enrollment->delete();
 
-    Event::assertDispatched(EnrollmentStatusChanged::class, function ($event) use ($enrollment) {
+    Event::assertDispatched(EnrollmentStatusChanged::class, function ($event) use ($enrollment): bool {
         return $event->enrollment->id === $enrollment->id;
     });
 });

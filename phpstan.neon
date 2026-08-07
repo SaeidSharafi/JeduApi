@@ -1,6 +1,7 @@
 includes:
     - vendor/larastan/larastan/extension.neon
     - vendor/nesbot/carbon/extension.neon
+    - phpstan-baseline.neon
 
 parameters:
 
@@ -9,6 +10,13 @@ parameters:
 
     level: 6
 
+    # Models in this codebase define casts via the casts() method (Laravel 11+
+    # convention). Larastan only reads them when this flag is enabled.
+    parseModelCastsMethod: true
+    treatPhpDocTypesAsCertain: false
     excludePaths:
         - 'app/Data/'
         - 'app/Scribe/'
+
+    stubFiles:
+            - stubs/Mediable.stub

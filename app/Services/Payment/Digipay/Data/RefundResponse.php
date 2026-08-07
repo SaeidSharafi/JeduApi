@@ -17,6 +17,9 @@ final readonly class RefundResponse
         public ?string $trackingCode = null,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $response
+     */
     public static function fromResponse(array $response): self
     {
         $result = $response['result'] ?? [];

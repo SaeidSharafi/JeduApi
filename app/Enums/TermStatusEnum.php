@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum TermStatusEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case ACTIVE   = 'active';

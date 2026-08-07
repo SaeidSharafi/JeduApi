@@ -12,10 +12,6 @@ use Laravel\Sanctum\NewAccessToken;
 
 final class AuthenticateUserAction
 {
-    public function __construct(
-        private OtpManagerService $otpManager,
-    ) {}
-
     public function execute(Staff|User $user, string $guard = 'user'): NewAccessToken
     {
         $tokenName = $guard === 'staff' ? 'staff_token' : 'auth_token';

@@ -60,7 +60,7 @@ describe('addUserToRoom', function (): void {
 
         expect(fn () => $service->addUserToRoom(10, 42))->not->toThrow(UnrecoverableProvisioningException::class);
 
-        Http::assertSent(function ($request) {
+        Http::assertSent(function ($request): bool {
             $body = $request->data();
 
             return $body['action']                        === 'addRoomUsers'

@@ -16,6 +16,9 @@ final class UpdateProductAvailabilityJob implements ShouldQueue
 {
     use Queueable;
 
+    /**
+     * @param  array<int, int>  $productIds
+     */
     public function __construct(public array $productIds) {}
 
     public function handle(?CacheInvalidationService $cacheInvalidationService = null): void
@@ -53,7 +56,7 @@ final class UpdateProductAvailabilityJob implements ShouldQueue
 
             $snapshot = [
                 'has_published_delivery_option' => $options->isNotEmpty(),
-                'productable_status'            => $product->productable?->status?->value ?? PublicationStatusEnum::DRAFT->value,
+                'productable_status'            => $product->productable?->status->value ?? PublicationStatusEnum::DRAFT->value,
                 'is_term_active'                => $product->term === null || $product->term->status === TermStatusEnum::ACTIVE,
                 'earliest_registration_start'   => $registrationStarts->containsStrict(null) ? null : $registrationStarts->min(),
                 'latest_registration_end'       => $registrationEnds->containsStrict(null) ? null : $registrationEnds->max(),

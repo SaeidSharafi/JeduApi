@@ -12,6 +12,7 @@ use Exception;
  */
 abstract class BankException extends PaymentException
 {
+    /** @var int */
     protected $code = -100;
 
     protected $message;

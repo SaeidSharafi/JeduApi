@@ -33,7 +33,7 @@ it('index passes query parameters and returns service data', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getAttendance')
         ->once()
-        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE,Mockery::on(function ($payload) {
+        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function (array $payload): bool {
             return $payload['occurrence_id'] === 42;
         }))
         ->andReturn([
@@ -55,9 +55,9 @@ it('store converts valid jalali date and forwards to IMS', function (): void {
     // 1405/01/01 in Jalali is 2026-03-21 in Gregorian
     $mockService->shouldReceive('storeAttendance')
         ->once()
-        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function ($payload) {
-            return $payload['attendance_date'] === '2026-03-21'
-                && $payload['occurrence_id'] === 10
+        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function (array $payload): bool {
+            return $payload['attendance_date']    === '2026-03-21'
+                && $payload['occurrence_id']      === 10
                 && count($payload['attendances']) === 1;
         }))
         ->andReturn(['message' => 'Attendance stored']);
@@ -70,7 +70,7 @@ it('store converts valid jalali date and forwards to IMS', function (): void {
         ],
     ])
         ->assertOk()
-        ->assertJson(['message' => 'Attendance stored']);
+        ->assertJsonFragment(['message' => 'Attendance stored']);
 });
 
 it('store fails validation on invalid jalali date', function (): void {
@@ -105,7 +105,7 @@ it('store returns 422 when IMS validation fails', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('storeAttendance')
         ->once()
-        ->andThrow(new \App\Exceptions\Integrations\UnrecoverableProvisioningException(
+        ->andThrow(new App\Exceptions\Integrations\UnrecoverableProvisioningException(
             'Validation failed',
             422,
             null,
@@ -129,7 +129,7 @@ it('update converts valid jalali date and forwards to IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('updateAttendance')
         ->once()
-        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function ($payload) {
+        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function (array $payload): bool {
             return $payload['attendance_date'] === '2026-03-21';
         }))
         ->andReturn(['message' => 'Attendance updated']);
@@ -147,7 +147,7 @@ it('update returns 422 when IMS validation fails', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('updateAttendance')
         ->once()
-        ->andThrow(new \App\Exceptions\Integrations\UnrecoverableProvisioningException(
+        ->andThrow(new App\Exceptions\Integrations\UnrecoverableProvisioningException(
             'Validation failed',
             422,
             null,
@@ -171,7 +171,7 @@ it('destroy calls service and returns result', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('destroyAttendance')
         ->once()
-        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function ($payload) {
+        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function (array $payload): bool {
             return $payload['attendance_date'] === '2026-03-21' && $payload['occurrence_id'] === null;
         }))
         ->andReturn(['message' => 'Attendance deleted']);
@@ -181,7 +181,7 @@ it('destroy calls service and returns result', function (): void {
         'occurrence_id'   => null,
     ])
         ->assertOk()
-        ->assertJson(['message' => 'Attendance deleted']);
+        ->assertJsonFragment(['message' => 'Attendance deleted']);
 });
 
 // ─── Authentication ─────────────────────────────────────────────────────────

@@ -1,0 +1,517 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Actions/Shop/Student/GetEnrollmentDetailAction.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Actions/Shop/Student/GetEnrollmentDetailAction.php
+
+		-
+			message: '#^Call to static method forget\(\) on an unknown class App\\Console\\Commands\\Discounts\\Cache\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Console/Commands/Discounts/ClearHandlerCache.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:map\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Admin/User/TeacherController.php
+
+		-
+			message: '#^Unable to resolve the template type TMapValue in call to method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Controllers/Api/Admin/User/TeacherController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\|string\)\: Illuminate\\Support\\Collection\<int\|string, App\\Data\\Admin\\MediaData\>, Closure\(Illuminate\\Support\\Collection, string\)\: Illuminate\\Support\\Collection\<int\|string, App\\Data\\Admin\\MediaData\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Admin/VendorController.php
+
+		-
+			message: '#^Anonymous function has an unused use \$media\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Http/Controllers/Api/Shop/AvatarController.php
+
+		-
+			message: '#^Anonymous function never returns Illuminate\\Pagination\\AbstractCursorPaginator so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/PartnerController.php
+
+		-
+			message: '#^Anonymous function never returns Illuminate\\Pagination\\AbstractPaginator so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/PartnerController.php
+
+		-
+			message: '#^Anonymous function never returns Spatie\\LaravelData\\CursorPaginatedDataCollection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/PartnerController.php
+
+		-
+			message: '#^Anonymous function never returns Spatie\\LaravelData\\DataCollection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/PartnerController.php
+
+		-
+			message: '#^Anonymous function never returns Spatie\\LaravelData\\PaginatedDataCollection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/PartnerController.php
+
+		-
+			message: '#^Anonymous function never returns array so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/PartnerController.php
+
+		-
+			message: '#^Anonymous function never returns Illuminate\\Pagination\\AbstractCursorPaginator so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php
+
+		-
+			message: '#^Anonymous function never returns Illuminate\\Pagination\\AbstractPaginator so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php
+
+		-
+			message: '#^Anonymous function never returns Spatie\\LaravelData\\CursorPaginatedDataCollection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php
+
+		-
+			message: '#^Anonymous function never returns Spatie\\LaravelData\\DataCollection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php
+
+		-
+			message: '#^Anonymous function never returns Spatie\\LaravelData\\PaginatedDataCollection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php
+
+		-
+			message: '#^Anonymous function never returns array so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:publishedAndVisible\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Shop/Product/CategoryController.php
+
+		-
+			message: '#^PHPDoc tag @return with type Illuminate\\Http\\JsonResponse is not subtype of native type App\\Contracts\\ApiResponseInterface\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/SuggestSearchController.php
+
+		-
+			message: '#^Parameter \#1 \$datetime of function verta expects null, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Shop/Teacher/CourseController.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/Api/Shop/Teacher/CourseController.php
+
+		-
+			message: '#^Unable to resolve the template type TNewKey in call to method Illuminate\\Support\\Collection\<int,App\\Models\\ProductDeliveryOption\>\:\:keyBy\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Controllers/Api/Shop/Teacher/CourseController.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/Api/Shop/Teacher/CourseController.php
+
+		-
+			message: '#^Parameter \#1 \$conditions of method Illuminate\\Routing\\Route\:\:signatureParameters\(\) expects array, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Middleware/EnsureAdminNumericIdsMiddleware.php
+
+		-
+			message: '#^Property App\\Models\\Enrollment\:\:\$external_enrollment_id \(int\<0, max\>\|null\) does not accept non\-empty\-string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Jobs/Provisioning/AbstractProvisioningJob.php
+
+		-
+			message: '#^Call to an undefined method App\\Services\\Integrations\\MoodleService\:\:getDefaultRoleId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Jobs/Provisioning/ProvisionMoodleEnrollmentJob.php
+
+		-
+			message: '#^Call to an undefined method App\\Services\\Integrations\\MoodleService\:\:getLoginPath\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Jobs/Provisioning/ProvisionMoodleEnrollmentJob.php
+
+		-
+			message: '#^Call to an undefined method App\\Services\\Integrations\\MoodleService\:\:getDefaultRoleId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Jobs/Provisioning/ProvisionMoodleQuizJob.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\Blog\\BlogCategory\) and ''loadMediaWithVarian…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/Blog/BlogCategory.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\Blog\\BlogPost\) and ''loadMediaWithVarian…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/Blog/BlogPost.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\Course\) and ''loadMediaWithVarian…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/Course.php
+
+		-
+			message: '#^Method App\\Models\\Course\:\:getProductableAttachment\(\) should return array\<string, App\\Data\\Admin\\PrivateFileData\|null\> but returns array\<string, array\<mixed\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Course.php
+
+		-
+			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, \$this\(App\\Models\\Course\)\>\) of method App\\Models\\Course\:\:products\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, App\\Models\\Course\>\) of method App\\Contracts\\ProductableContract\<App\\Models\\Course\>\:\:products\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: app/Models/Course.php
+
+		-
+			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, \$this\(App\\Models\\Course\)\>\) of method App\\Models\\Course\:\:products\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, App\\Models\\Course\>\) of method App\\Contracts\\ReviewableContract\<App\\Models\\Course\>\:\:products\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: app/Models/Course.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\DigitalAsset\) and ''loadMediaWithVarian…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/DigitalAsset.php
+
+		-
+			message: '#^Method App\\Models\\DigitalAsset\:\:getProductableAttachment\(\) should return array\<string, App\\Data\\Admin\\PrivateFileData\|null\> but returns array\<string, array\<mixed\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/DigitalAsset.php
+
+		-
+			message: '#^Relation ''digitalAssets'' is not found in App\\Models\\DigitalAsset model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Models/DigitalAsset.php
+
+		-
+			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, \$this\(App\\Models\\DigitalAsset\)\>\) of method App\\Models\\DigitalAsset\:\:products\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, App\\Models\\DigitalAsset\>\) of method App\\Contracts\\ProductableContract\<App\\Models\\DigitalAsset\>\:\:products\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: app/Models/DigitalAsset.php
+
+		-
+			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, \$this\(App\\Models\\DigitalAsset\)\>\) of method App\\Models\\DigitalAsset\:\:products\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, App\\Models\\DigitalAsset\>\) of method App\\Contracts\\ReviewableContract\<App\\Models\\DigitalAsset\>\:\:products\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: app/Models/DigitalAsset.php
+
+		-
+			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Casts\\Attribute\<Illuminate\\Database\\Eloquent\\Model\|null, never\>\) of method App\\Models\\PersonalAccessToken\:\:tokenable\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphTo\) of method Laravel\\Sanctum\\PersonalAccessToken\:\:tokenable\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: app/Models/PersonalAccessToken.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\Seminar\) and ''loadMediaWithVarian…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/Seminar.php
+
+		-
+			message: '#^Method App\\Models\\Seminar\:\:getProductableAttachment\(\) should return array\<string, App\\Data\\Admin\\PrivateFileData\|null\> but returns array\<string, array\<mixed\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Seminar.php
+
+		-
+			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, \$this\(App\\Models\\Seminar\)\>\) of method App\\Models\\Seminar\:\:products\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, App\\Models\\Seminar\>\) of method App\\Contracts\\ProductableContract\<App\\Models\\Seminar\>\:\:products\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: app/Models/Seminar.php
+
+		-
+			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, \$this\(App\\Models\\Seminar\)\>\) of method App\\Models\\Seminar\:\:products\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, App\\Models\\Seminar\>\) of method App\\Contracts\\ReviewableContract\<App\\Models\\Seminar\>\:\:products\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: app/Models/Seminar.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\User\) and ''loadMediaWithVarian…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^PHPDoc tag @return with type array\<string\> is incompatible with native type string\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: app/Notifications/Auth/OtpSmsNotification.php
+
+		-
+			message: '#^Property App\\Notifications\\Order\\RefundCompletedNotification\:\:\$smsService is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Notifications/Order/RefundCompletedNotification.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Notifications\\Notification\:\:toSms\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Notifications/SmsChannel.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:products\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Observers/ProductableAvailabilityObserver.php
+
+		-
+			message: '#^Static call to instance method Plank\\Mediable\\Facades\\ImageManipulator\:\:defineVariant\(\)\.$#'
+			identifier: method.staticCall
+			count: 1
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Anonymous function has invalid return type App\\Providers\\CachedUserProvider\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Providers/AuthServiceProvider.php
+
+		-
+			message: '#^Instantiated class App\\Providers\\CachedUserProvider not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Providers/AuthServiceProvider.php
+
+		-
+			message: '#^Cannot call static method observe\(\) on int\|string\.$#'
+			identifier: staticMethod.nonObject
+			count: 1
+			path: app/Providers/EventServiceProvider.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\ConnectionInterface\:\:getDriverName\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Providers/FullTextSearchProvider.php
+
+		-
+			message: '#^Generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Data\\Shop\\Product\\ProductCardData\> in PHPDoc tag @return does not specify all template types of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\: TKey, TValue$#'
+			identifier: generics.lessTypes
+			count: 1
+			path: app/Query/CategoryQueryService.php
+
+		-
+			message: '#^Type App\\Data\\Shop\\Product\\ProductCardData in generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Data\\Shop\\Product\\ProductCardData\> in PHPDoc tag @return is not subtype of template type TKey of \(int\|string\) of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\.$#'
+			identifier: generics.notSubtype
+			count: 1
+			path: app/Query/CategoryQueryService.php
+
+		-
+			message: '#^Type App\\Data\\Shop\\Product\\ProductCardData in generic type Illuminate\\Database\\Eloquent\\Collection\<int, App\\Data\\Shop\\Product\\ProductCardData\> in PHPDoc tag @return is not subtype of template type TModel of Illuminate\\Database\\Eloquent\\Model of class Illuminate\\Database\\Eloquent\\Collection\.$#'
+			identifier: generics.notSubtype
+			count: 1
+			path: app/Query/CategoryQueryService.php
+
+		-
+			message: '#^Return type \(void\) of method App\\Rules\\CheckDiscountConfigurationRule\:\:setData\(\) should be compatible with return type \(\$this\(Illuminate\\Contracts\\Validation\\DataAwareRule\)\) of method Illuminate\\Contracts\\Validation\\DataAwareRule\:\:setData\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: app/Rules/CheckDiscountConfigurationRule.php
+
+		-
+			message: '#^Property App\\Rules\\PublishedProductExistRule\:\:\$data is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Rules/PublishedProductExistRule.php
+
+		-
+			message: '#^Cannot access property \$id on object\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Rules/UniqueCivilIdRule.php
+
+		-
+			message: '#^Call to method getCode\(\) on an unknown class App\\Services\\QueryException\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CartService.php
+
+		-
+			message: '#^Caught class App\\Services\\QueryException not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CartService.php
+
+		-
+			message: '#^Parameter \$e of method App\\Services\\CartService\:\:isUniqueConstraintViolation\(\) has invalid type App\\Services\\QueryException\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/CartService.php
+
+		-
+			message: '#^Throwing object of an unknown class App\\Services\\QueryException\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Services/CartService.php
+
+		-
+			message: '#^Match arm comparison between App\\Enums\\Operators\\MatchPolicyEnum\:\:ALL and App\\Enums\\Operators\\MatchPolicyEnum\:\:ALL is always true\.$#'
+			identifier: match.alwaysTrue
+			count: 1
+			path: app/Services/Discounts/Cart/Conditions/ProductCategoryCondition.php
+
+		-
+			message: '#^Attribute class App\\Services\\Discounts\\Product\\Conditions\\DiscountHandlerKey does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: app/Services/Discounts/Product/Conditions/PriceBetweenCondition.php
+
+		-
+			message: '#^Attribute class App\\Services\\Discounts\\Product\\Conditions\\DiscountHandlerKey does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: app/Services/Discounts/Product/Conditions/RegistrationClosingSoonCondition.php
+
+		-
+			message: '#^Property App\\Services\\Fakes\\FakeBbbService\:\:\$settings is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/Fakes/FakeBbbService.php
+
+		-
+			message: '#^Parameter \$state of class App\\Data\\Shop\\Student\\Blocks\\MoodleActivityData constructor expects App\\Enums\\MoodleActivityStateEnum, int given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Services/Fakes/FakeMoodleService.php
+
+		-
+			message: '#^Property App\\Services\\Fakes\\FakeMoodleService\:\:\$settings is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/Fakes/FakeMoodleService.php
+
+		-
+			message: '#^Property App\\Services\\Fakes\\FakeMoodleService\:\:\$timeout is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/Fakes/FakeMoodleService.php
+
+		-
+			message: '#^Property App\\Services\\Fakes\\FakeSpotPlayerService\:\:\$settings is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/Fakes/FakeSpotPlayerService.php
+
+		-
+			message: '#^Method App\\Services\\GlobalSearchService\:\:searchWithDatabase\(\) should return Illuminate\\Pagination\\LengthAwarePaginator\<int, Illuminate\\Database\\Eloquent\\Model\> but returns Illuminate\\Pagination\\LengthAwarePaginator\<int, App\\Models\\Blog\\BlogPost\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/GlobalSearchService.php
+
+		-
+			message: '#^Method App\\Services\\GlobalSearchService\:\:searchWithDatabase\(\) should return Illuminate\\Pagination\\LengthAwarePaginator\<int, Illuminate\\Database\\Eloquent\\Model\> but returns Illuminate\\Pagination\\LengthAwarePaginator\<int, App\\Models\\Product\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/GlobalSearchService.php
+
+		-
+			message: '#^Method App\\Services\\Integrations\\AbstractIntegrationService\:\:formatValidationErrors\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/Integrations/AbstractIntegrationService.php
+
+		-
+			message: '#^Property App\\Services\\Integrations\\MoodleService\:\:\$default_login_redirect_script is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/Integrations/MoodleService.php
+
+		-
+			message: '#^Property App\\Services\\Integrations\\MoodleService\:\:\$default_role_id is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/Integrations/MoodleService.php
+
+		-
+			message: '#^Property App\\Services\\Integrations\\MoodleService\:\:\$token is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/Integrations/MoodleService.php
+
+		-
+			message: '#^Parameter \$products of method App\\Services\\Payment\\Digipay\\DigipayClient\:\:deliver\(\) expects array\<int, array\<string, mixed\>\>, array\<int, string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Payment/Digipay/DigipayAdminService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:forListing\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/ProductSearch.php
+
+		-
+			message: '#^Unable to resolve the template type T in call to static method App\\Services\\SWRCacheService\:\:remember\(\)$#'
+			identifier: argument.templateType
+			count: 3
+			path: app/Services/SWRCacheService.php
+
+		-
+			message: '#^Parameter \#1 \$datetime of function verta expects null, Carbon\\CarbonImmutable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/SkuGeneratorService.php
+
+		-
+			message: '#^Trait App\\Traits\\HasMetaTagsMigration is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/HasMetaTagsMigration.php
+
+		-
+			message: '#^Trait App\\Traits\\ValidatesMetaTags is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/ValidatesMetaTags.php

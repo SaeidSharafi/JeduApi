@@ -14,6 +14,9 @@ final class FakeSpotPlayerService
 {
     public function __construct(private readonly SettingsService $settings) {}
 
+    /**
+     * @return array<string, mixed>
+     */
     public function issueLicense(string $spotId, User $user): array
     {
         $licenseKey = hash('sha256', $spotId.$user->id.'demo-secret');

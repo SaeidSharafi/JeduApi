@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum FulfillmentTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
     case DIGITAL           = 'digital';
     case PHYSICAL          = 'physical';
@@ -15,6 +16,9 @@ enum FulfillmentTypeEnum: string
     case OFFLINE_SERVICE   = 'offline_service';
     case IN_PERSON_SERVICE = 'in_person_service';
 
+    /**
+     * @return array<int, DeliveryMethodEnum>
+     */
     public static function getDeliveryMethodsFor(string $fulfillmentType): array
     {
         $fulfillmentType = FulfillmentTypeEnum::tryFrom($fulfillmentType);
@@ -22,6 +26,9 @@ enum FulfillmentTypeEnum: string
         return $fulfillmentType ? $fulfillmentType->getDeliveryMethods() : [];
     }
 
+    /**
+     * @return array<int, DeliveryMethodEnum>
+     */
     public function getDeliveryMethods(): array
     {
         return match ($this) {

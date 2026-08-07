@@ -25,7 +25,7 @@ final class RefundUpdateStatusController extends Controller
      * @responseFile 403 resources/responses/403.json
      * @responseFile 422 resources/responses/admin/refund/update-status-422.json
      */
-    public function __invoke(RefundStatusUpdateData $data, Refund $refund, UpdateRefundStatusAction $action)
+    public function __invoke(RefundStatusUpdateData $data, Refund $refund, UpdateRefundStatusAction $action): \App\Contracts\ApiResponseInterface
     {
         Gate::authorize('update-status', $refund);
         $refund = $action->handle($refund, $data);

@@ -8,6 +8,7 @@ use App\Traits\AdvanceEnum;
 
 enum RelationTypeEnum: string
 {
+    /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
     case RELATED    = 'related';

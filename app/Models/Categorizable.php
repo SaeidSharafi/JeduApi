@@ -20,6 +20,9 @@ final class Categorizable extends Model
         'good_for_start',
     ];
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function categorizable(): MorphTo
     {
         return $this->morphTo();
