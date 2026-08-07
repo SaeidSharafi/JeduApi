@@ -1,19 +1,18 @@
 {
     "agents": [
-        "copilot",
-        "opencode"
+        "opencode",
+        "copilot"
     ],
+    "cloud": false,
     "guidelines": true,
-    "herd_mcp": false,
     "mcp": true,
-    "packages": [
-        "laravel/scout",
-        "laravel/horizon"
-    ],
+    "nightwatch": false,
     "sail": true,
     "skills": [
-        "pest-testing",
+        "infer-conventions",
+        "laravel-best-practices",
         "configuring-horizon",
-        "scout-development"
+        "scout-development",
+        "pest-testing"
     ]
 }
