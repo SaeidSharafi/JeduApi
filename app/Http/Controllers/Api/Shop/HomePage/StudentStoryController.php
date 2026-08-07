@@ -31,7 +31,7 @@ final class StudentStoryController extends Controller
         $cacheKey = CacheKeysEnum::StudentStory->value.':'.md5(serialize($data->toArray()));
 
         $stories = SWRCacheService::rememberHomepageContent($cacheKey,
-            function () use ($data): \Spatie\LaravelData\DataCollection|\Spatie\LaravelData\PaginatedDataCollection|\Spatie\LaravelData\CursorPaginatedDataCollection|\Illuminate\Support\Enumerable|\Illuminate\Pagination\AbstractPaginator|\Illuminate\Contracts\Pagination\Paginator|\Illuminate\Pagination\AbstractCursorPaginator|\Illuminate\Contracts\Pagination\CursorPaginator|array {
+            function () use ($data) {
                 $stories = StudentStory::query()
                     ->visible()
                     ->when($data->featured_only, fn ($query) => $query->featured())

@@ -21,8 +21,6 @@ final class OtpSmsNotification extends Notification implements ShouldQueue
 
     /**
      * Get the notification's delivery channels.
-     *
-     * @return array<string>
      */
     public function via(object $notifiable): string
     {

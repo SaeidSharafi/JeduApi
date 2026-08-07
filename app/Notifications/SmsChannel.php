@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Notifications\Auth\OtpSmsNotification;
+use App\Notifications\Order\RefundCompletedNotification;
 use App\Services\IpPanelSmsService;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +16,8 @@ final class SmsChannel
 
     /**
      * Send the given notification.
+     *
+     * @param  OtpSmsNotification|RefundCompletedNotification  $notification
      */
     public function send(object $notifiable, Notification $notification): void
     {

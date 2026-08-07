@@ -86,8 +86,10 @@ final class CheckDiscountConfigurationRule implements DataAwareRule, ValidationR
     /**
      * @param  array<string, mixed>  $data
      */
-        public function setData(array $data): void
+    public function setData(array $data): static
     {
         $this->data = $data;
+
+        return $this;
     }
 }

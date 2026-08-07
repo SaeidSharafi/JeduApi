@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Services\PgroongaService;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -27,8 +28,10 @@ final class FullTextSearchProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Builder::macro('withPgroonga', function (): object {
-            if ($this->getConnection()->getDriverName() === 'pgsql') {
+        Builder::macro('withPgroonga', function (): Builder {
+            /** @var Builder<Model> $this */
+            $connection = $this->getConnection();
+            if ($connection instanceof Connection && $connection->getDriverName() === 'pgsql') {
                 $this->whereRaw('use_pgroonga()');
             }
 

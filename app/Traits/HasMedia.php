@@ -84,8 +84,6 @@ trait HasMedia
      */
     public function loadMediaWitVariant(array $tags = []): void
     {
-        if (method_exists($this, 'loadMediaWithVariantsMatchAll')) { // @phpstan-ignore function.alreadyNarrowedType (defensive guard for non-Mediable consumers)
-            $this->loadMediaWithVariantsMatchAll($tags);
-        }
+        $this->loadMediaWithVariantsMatchAll($tags);
     }
 }

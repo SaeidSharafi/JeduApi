@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Contracts\ProductableContract;
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +19,10 @@ final class ProductableAvailabilityObserver
         'slug',
     ];
 
-    public function updated(Model $productable): void
+    /**
+     * @param  Model&ProductableContract<Model>  $productable
+     */
+    public function updated(Model&ProductableContract $productable): void
     {
         $statusChanged = $productable->wasChanged('status');
 
@@ -38,7 +42,10 @@ final class ProductableAvailabilityObserver
         }
     }
 
-    private function dispatchSearchInvalidation(Model $productable): void
+    /**
+     * @param  Model&ProductableContract<Model>  $productable
+     */
+    private function dispatchSearchInvalidation(Model&ProductableContract $productable): void
     {
         $productIds = $productable->products()->pluck('products.id')->all();
 

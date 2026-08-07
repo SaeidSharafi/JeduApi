@@ -7,8 +7,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
+use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
 
+/**
+ * @method Collection<string, Collection<int, Media>> getAllMediaByTag()
+ */
 final class Vendor extends Model
 {
     /** @use HasFactory<\Database\Factories\VendorFactory> */

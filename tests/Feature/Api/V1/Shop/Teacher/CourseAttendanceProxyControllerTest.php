@@ -42,9 +42,10 @@ it('index passes query parameters and returns service data', function (): void {
 
     getJson("/api/v1/shop/teacher/courses/{$this->courseCode}/attendances?occurrence_id=42")
         ->assertOk()
-        ->assertJson([
-            'data' => ['attendance_date' => '2026-07-19'],
-        ]);
+        ->assertJsonPath(
+            'data.data.attendance_date',
+            '2026-07-19'
+        );
 });
 
 // ─── Store (POST) ───────────────────────────────────────────────────────────

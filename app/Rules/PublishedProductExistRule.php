@@ -7,14 +7,10 @@ namespace App\Rules;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Product;
 use Closure;
-use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-final class PublishedProductExistRule implements DataAwareRule, ValidationRule
+final class PublishedProductExistRule implements ValidationRule
 {
-    /** @var array<string, mixed> */
-    private array $data = [];
-
     public function __construct(private readonly ?Product $product) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -36,15 +32,5 @@ final class PublishedProductExistRule implements DataAwareRule, ValidationRule
         if ($existingProduct) {
             $fail(__('messages.exceptions.product_already_exists', ['type' => $this->product->productable_type, 'id' => $existingProduct->id]));
         }
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-        public function setData(array $data): self
-    {
-        $this->data = $data;
-
-        return $this;
     }
 }

@@ -33,7 +33,6 @@ final class AvatarController extends Controller
      *     }
      *     "metadata": []
      * }
-     *
      */
     public function update(Request $request): ApiResponseInterface
     {
@@ -69,12 +68,11 @@ final class AvatarController extends Controller
      * Delete the users avatar.
      *
      * @response 204
-     *
      */
     public function destroy(Request $request): JsonResponse
     {
 
-        DB::transaction(function () use (&$media): void {
+        DB::transaction(function (): void {
 
             $user = auth('user')->user();
             $user->load('media');

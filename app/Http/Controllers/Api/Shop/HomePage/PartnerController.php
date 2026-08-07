@@ -36,7 +36,7 @@ final class PartnerController extends Controller
         $showIn   = $request->query('show_in');
         $cacheKey = PartnerShowInEnum::getCacheKey($showIn);
         $partners = SWRCacheService::rememberHomepageContent($cacheKey->value,
-            function () use ($showIn): \Spatie\LaravelData\DataCollection|\Spatie\LaravelData\PaginatedDataCollection|\Spatie\LaravelData\CursorPaginatedDataCollection|\Illuminate\Support\Enumerable|\Illuminate\Pagination\AbstractPaginator|\Illuminate\Contracts\Pagination\Paginator|\Illuminate\Pagination\AbstractCursorPaginator|\Illuminate\Contracts\Pagination\CursorPaginator|array {
+            function () use ($showIn) {
                 $partners = Partner::query()
                     ->active()
                     ->when($showIn && PartnerShowInEnum::tryFrom($showIn),

@@ -15,7 +15,9 @@ use App\Data\Admin\Teacher\TeacherListItemData;
 use App\Http\Controllers\Controller;
 use App\Models\Teacher;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Plank\Mediable\Media;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -81,8 +83,8 @@ final class TeacherController extends Controller
         Gate::authorize('view', $teacher);
         $teacher->load('user');
         $media = $teacher->getAllMediaByTag()
-            ->map(function ($item, $tag) {
-                return $item->map(function (\Plank\Mediable\Media $mediaItem) use ($tag): MediaData {
+            ->map(function (Collection $item, string $tag) {
+                return $item->map(function (Media $mediaItem) use ($tag): MediaData {
                     return MediaData::fromModel($mediaItem, $tag);
                 });
             })->toArray();

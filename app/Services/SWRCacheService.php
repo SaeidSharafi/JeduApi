@@ -70,6 +70,11 @@ final class SWRCacheService
      *
      * - Fresh: 5 minutes (quickly serve cached content)
      * - Stale: 15 minutes (fallback if refresh fails)
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
      */
     public static function rememberHomepageContent(string $key, Closure $callback): mixed
     {
@@ -84,6 +89,11 @@ final class SWRCacheService
      *
      * - Fresh: 1 hour (users expect consistent suggestions)
      * - Stale: 4 hours (fallback for rare cases)
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
      */
     public static function rememberSearchSuggestions(string $key, Closure $callback): mixed
     {
@@ -98,6 +108,11 @@ final class SWRCacheService
      *
      * - Fresh: 10 minutes (trending data should update reasonably often)
      * - Stale: 30 minutes (fallback if refresh fails)
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
      */
     public static function rememberTrendingContent(string $key, Closure $callback): mixed
     {

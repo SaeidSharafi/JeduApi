@@ -21,6 +21,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\Discounts\PromotionService;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;

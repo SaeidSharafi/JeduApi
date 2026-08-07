@@ -6,6 +6,7 @@ namespace App\Console\Commands\Discounts;
 
 use App\Services\Discounts\DiscountHandlerRegistry;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 
 final class ClearHandlerCache extends Command
 {

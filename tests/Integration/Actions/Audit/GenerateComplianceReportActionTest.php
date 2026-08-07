@@ -439,28 +439,29 @@ describe('GenerateComplianceReportAction', function (): void {
         });
 
         it('detects various suspicious patterns', function (): void {
+            $baseTime = now()->setHour(13)->toImmutable();
             // Large transaction
             WalletTransaction::factory()->create([
                 'amount'     => 60000000, // > 50M
-                'created_at' => now()->subDays(2),
+                'created_at' => $baseTime->subDays(2),
             ]);
 
             // Off-hours transaction (must be during night hours and >= 5M)
             WalletTransaction::factory()->create([
                 'amount'     => 10000000, // >= 5M
-                'created_at' => now()->subDays(2)->setTime(2, 0, 0), // 2 AM
+                'created_at' => $baseTime->subDays(2)->setTime(2, 0, 0), // 2 AM
             ]);
 
             // Round number transaction (specifically exactly divisible by 1M and >= 1M)
             WalletTransaction::factory()->create([
                 'amount'     => 5000000, // Exactly 5M (divisible by 1M)
-                'created_at' => now()->subDays(2),
+                'created_at' => $baseTime->subDays(2),
             ]);
 
             // Non-round number transactions to test pattern detection
             WalletTransaction::factory()->create([
                 'amount'     => 1234567, // Not divisible by 1M
-                'created_at' => now()->subDays(2),
+                'created_at' => $baseTime->subDays(2),
             ]);
 
             // High frequency user transactions
@@ -469,7 +470,7 @@ describe('GenerateComplianceReportAction', function (): void {
                 'user_id'    => $user->id,
                 'wallet_id'  => $user->wallet->id,
                 'amount'     => 1234567, // Non-round amounts
-                'created_at' => now()->subDays(2),
+                'created_at' => $baseTime->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([

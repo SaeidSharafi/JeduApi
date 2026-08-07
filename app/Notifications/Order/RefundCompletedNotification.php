@@ -7,7 +7,6 @@ namespace App\Notifications\Order;
 use App\Models\Refund;
 use App\Notifications\SmsChannel;
 use App\Notifications\SmsMessage;
-use App\Services\IpPanelSmsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -17,13 +16,9 @@ final class RefundCompletedNotification extends Notification implements ShouldQu
 {
     use Queueable;
 
-    private IpPanelSmsService $smsService;
-
     public function __construct(
         protected Refund $refund,
-    ) {
-        $this->smsService = app(IpPanelSmsService::class);
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.

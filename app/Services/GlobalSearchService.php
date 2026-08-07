@@ -21,9 +21,6 @@ use Typesense\Client;
 
 final class GlobalSearchService
 {
-    /**
-     * @var Client
-     */
     private Client $typesenseClient;
 
     public function __construct()
@@ -200,7 +197,7 @@ final class GlobalSearchService
     /**
      * Perform database-based search as fallback.
      *
-     * @return LengthAwarePaginator<int, Model>
+     * @return LengthAwarePaginator<int, BlogPost>|LengthAwarePaginator<int, Product>
      */
     private function searchWithDatabase(SearchData $searchData): LengthAwarePaginator
     {

@@ -20,6 +20,7 @@ uses(AuthTestTrait::class);
 beforeEach(function (): void {
     $this->middleware = new AdminAuditMiddleware();
     $this->next       = fn ($request): Response => new Response('Success', 200);
+    $this->travelTo(now()->setTime(14, 0, 0));
 });
 
 describe('AdminAuditMiddleware', function (): void {
@@ -677,7 +678,7 @@ describe('AdminAuditMiddleware', function (): void {
     });
 
     test('it handles edge case where wallet action has zero amount', function (): void {
-
+        $this->travelTo(now()->setTime(14, 0, 0));
         $request = Request::create('/wallet/deposit', 'POST', ['amount' => 0]);
         $route   = new Route('POST', '/wallet/deposit', ['as' => 'admin.wallet.deposit']);
         $route->bind($request);

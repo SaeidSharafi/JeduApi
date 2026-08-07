@@ -45,7 +45,7 @@ trait IsProductable
     }
 
     /**
-     * @return array<string, PrivateFileData|null>
+     * @return array<string, array<int, PrivateFileData>>
      */
     public function getProductableAttachment(): array
     {

@@ -19,13 +19,7 @@ final class MoodleService extends AbstractIntegrationService
 {
     private string $baseUrl = '';
 
-    private string $token = '';
-
     private string $auth_userkey_token = '';
-
-    private string $default_role_id = '';
-
-    private string $default_login_redirect_script = '';
 
     private int $timeout = 30;
 
@@ -349,6 +343,22 @@ final class MoodleService extends AbstractIntegrationService
         }
 
         return $loginUrl;
+    }
+
+    /**
+     * The Moodle role id assigned to students when enrolling them into a course.
+     */
+    public function getDefaultRoleId(): int
+    {
+        return (int) ($this->config['default_role_id'] ?? 5);
+    }
+
+    /**
+     * The Moodle path students are sent to after login.
+     */
+    public function getLoginPath(): string
+    {
+        return (string) ($this->config['default_login_redirect_script'] ?? '/my/');
     }
 
     protected function getSettingKey(): SettingKeyEnum

@@ -9,9 +9,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
 
+/**
+ * @method Collection<string, Collection<int, Media>> getAllMediaByTag()
+ */
 final class Teacher extends Model
 {
     /** @use HasFactory<\Database\Factories\TeacherFactory> */

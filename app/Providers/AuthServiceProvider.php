@@ -62,7 +62,6 @@ use App\Policies\Admin\VendorPolicy;
 use App\Policies\Admin\WalletCampaignPolicy;
 use App\Policies\Admin\WalletPolicy;
 use App\Policies\AdviceRequestPolicy;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
@@ -77,9 +76,6 @@ final class AuthServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Auth::provider('cached', function (array $app, array $config): CachedUserProvider {
-            return new CachedUserProvider($app['hash'], $config['model']);
-        });
         Gate::before(function (Staff|User $user, mixed $ability, mixed $arguments): ?true {
             // if doing operaion on Super Admin handle authorization in AdminPolciy
             if (count($arguments) === 1 && $arguments[0] instanceof Staff) {
