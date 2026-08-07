@@ -39,7 +39,7 @@ final class CourseController extends Controller
     {
         /** @var Teacher|null $teacher */
         $teacher = Auth::user()?->teacherData;
-        abort_unless(!!$teacher, 403);
+        abort_unless((bool) $teacher, 403);
 
         $teacherCivilId = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;

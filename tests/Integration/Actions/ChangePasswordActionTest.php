@@ -5,7 +5,7 @@ use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
-it('change password validation checks', function () {
+it('change password validation checks', function (): void {
     $user = User::factory()->create(
         [
             'password' => Hash::make('password')
@@ -32,7 +32,7 @@ it('change password validation checks', function () {
 
 });
 
-it('change password', function () {
+it('change password', function (): void {
     $user = User::factory()->create(
         [
             'password' => Hash::make('password')
@@ -50,7 +50,7 @@ it('change password', function () {
     expect(Hash::check('newpassword', $user->password))->toBeTrue();
 });
 
-it('change password when user does not have password', function () {
+it('change password when user does not have password', function (): void {
     $user = User::factory()->create(
         [
             'password' => null

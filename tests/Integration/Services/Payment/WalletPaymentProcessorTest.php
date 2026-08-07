@@ -139,7 +139,7 @@ describe('WalletPaymentProcessor', function (): void {
         // Act & Assert
         expect(fn (): PaymentProcessResultData => $processor->process($payment))
             ->toThrow(InvalidPaymentPurposeException::class)
-            ->and(fn () => $processor->process($payment))
+            ->and(fn (): \App\Data\Admin\Payment\PaymentProcessResultData => $processor->process($payment))
             ->toThrow(InvalidPaymentPurposeException::class, "This payment processor requires purpose 'order', got 'wallet_topup'.");
     });
 

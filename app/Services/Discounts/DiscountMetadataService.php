@@ -75,7 +75,7 @@ final class DiscountMetadataService
             'less_than_or_equal'    => '<=',
             'less_than'             => '<',
             'equal'                 => '=',
-        ])->map(fn (string $symbol, string $value) => [
+        ])->map(fn (string $symbol, string $value): array => [
             'value'  => $value,
             'label'  => __("discount.operators.{$value}"),
             'symbol' => $symbol,
@@ -85,7 +85,7 @@ final class DiscountMetadataService
     public function getTypes(): array
     {
         return collect(['product_specific', 'cart_checkout'])
-            ->map(fn (string $value) => [
+            ->map(fn (string $value): array => [
                 'value'       => $value,
                 'label'       => __("discount.types.{$value}.label"),
                 'description' => __("discount.types.{$value}.description"),

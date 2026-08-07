@@ -46,7 +46,7 @@ it('processes a Digipay refund successfully', function (): void {
     $this->mock(DigipayAdminService::class, function ($mock) use ($payment): void {
         $mock->shouldReceive('refund')
             ->once()
-            ->with(Mockery::on(fn ($p) => $p->id === $payment->id), 100000)
+            ->with(Mockery::on(fn ($p): bool => $p->id === $payment->id), 100000)
             ->andReturn(new RefundResponse(
                 statusCode: 0,
                 message: 'Refund successful',

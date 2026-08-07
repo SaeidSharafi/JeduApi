@@ -64,7 +64,7 @@ describe('Searchable Arrays Schema Integrity', function (): void {
 
 describe('Database Search Fallback & Filter Verification', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         // Force the database driver for these deterministic tests
         Config::set('scout.driver', 'database');
     });

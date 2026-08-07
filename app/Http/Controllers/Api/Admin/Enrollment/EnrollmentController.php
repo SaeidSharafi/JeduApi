@@ -50,8 +50,8 @@ final class EnrollmentController extends Controller
                 AllowedFilter::exact('enrollment_status'),
                 AllowedFilter::exact('customer_id'),
                 AllowedFilter::exact('order_id'),
-                AllowedFilter::callback('product_id', function ($query, $value) {
-                    $query->whereHas('productDeliveryOption', function ($query) use ($value) {
+                AllowedFilter::callback('product_id', function ($query, $value): void {
+                    $query->whereHas('productDeliveryOption', function ($query) use ($value): void {
                         $query->where('product_id', $value);
                     });
                 }),

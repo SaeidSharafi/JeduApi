@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
 class PersonalAccessToken extends SanctumPersonalAccessToken
@@ -34,13 +35,15 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     /**
      * Cache the polymorphic User/Staff retrieval.
      *
-     * @return mixed
+     * @return Attribute
      */
-    public function getTokenableAttribute(): mixed
+    public function tokenable(): Attribute
     {
-        return cache()->remember("token_{$this->id}::id_" . app()->environment(), 360, function () {
-            $this->isDataCached = false;
-            return parent::tokenable()->first();
+        return Attribute::make(get: function () {
+            return cache()->remember("token_{$this->id}::id_" . app()->environment(), 360, function () {
+                $this->isDataCached = false;
+                return parent::tokenable()->first();
+            });
         });
     }
 
@@ -67,7 +70,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      */
     protected static function booted()
     {
-        static::deleted(function ($token) {
+        static::deleted(function ($token): void {
             // "token" attribute holds the SHA-256 hash in the database
             cache()->forget("AccessToken::" . $token->token);
             cache()->forget("token_{$token->id}::id_" . app()->environment());

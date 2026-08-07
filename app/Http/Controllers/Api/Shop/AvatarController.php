@@ -42,7 +42,7 @@ final class AvatarController extends Controller
         ]);
 
         $media = null;
-        DB::transaction(function () use ($request, &$media) {
+        DB::transaction(function () use ($request, &$media): void {
             /** @var UploadedFile $file */
             $file = $request->file('file');
 
@@ -74,7 +74,7 @@ final class AvatarController extends Controller
     public function destroy(Request $request): JsonResponse
     {
 
-        DB::transaction(function () use ($request, &$media) {
+        DB::transaction(function () use ($request, &$media): void {
 
             $user = auth('user')?->user();
             $user->load('media');

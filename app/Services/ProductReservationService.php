@@ -56,7 +56,7 @@ final class ProductReservationService
         ProductDeliveryOption::query()
             ->whereKey($deliveryOptionId)
             ->update([
-                'reserved_count' => DB::raw('GREATEST(reserved_count - '.(int) $qty.', 0)'),
+                'reserved_count' => DB::raw('GREATEST(reserved_count - '.$qty.', 0)'),
             ]);
     }
 }

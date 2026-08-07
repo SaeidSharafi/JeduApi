@@ -29,7 +29,7 @@ class SeminarController extends Controller
     {
         /** @var Teacher|null $teacher */
         $teacher = Auth::user()?->teacherData;
-        abort_unless(!!$teacher, 403);
+        abort_unless((bool) $teacher, 403);
 
         $seminars  = $teacher->products()
             ->with('product')

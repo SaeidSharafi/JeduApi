@@ -31,7 +31,7 @@ final class ShowPaymentController extends Controller
         $user    = Auth::guard('user')->user();
         $purpose = $data->purpose instanceof Optional
             ? null
-            : PaymentPurposeEnum::tryFrom((string) $data->purpose);
+            : PaymentPurposeEnum::tryFrom($data->purpose);
         $payments = Payment::query()
             ->where('customer_id', $user->id)
             ->when($purpose, fn ($query) => $query->where('purpose', $purpose))

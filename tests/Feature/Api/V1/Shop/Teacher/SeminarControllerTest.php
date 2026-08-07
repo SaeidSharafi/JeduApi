@@ -7,7 +7,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Teacher;
 use function Pest\Laravel\getJson;
 
-it('return list of paginted seminars for authenticated teacher', function () {
+it('return list of paginted seminars for authenticated teacher', function (): void {
 
     $this->customer();
 
@@ -19,7 +19,7 @@ it('return list of paginted seminars for authenticated teacher', function () {
    $teahcerPdos =  ProductDeliveryOption::factory()
         ->count(5)
         ->for(Product::factory()->withSeminar())
-        ->afterCreating(function (ProductDeliveryOption $deliveryOption) use ($teacher) {
+        ->afterCreating(function (ProductDeliveryOption $deliveryOption) use ($teacher): void {
             $deliveryOption->teachers()->attach($teacher);
         })
         ->create(

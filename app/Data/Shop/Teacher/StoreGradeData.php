@@ -19,7 +19,7 @@ final class StoreGradeData extends Data
     {
         if (!empty($properties['grades'])) {
             $properties['grades'] = collect($properties['grades'])
-                ->reject(fn($value, $key) => str_starts_with((string) $key, '_'))
+                ->reject(fn($value, $key): bool => str_starts_with((string) $key, '_'))
                 ->toArray();
         }
         return $properties;

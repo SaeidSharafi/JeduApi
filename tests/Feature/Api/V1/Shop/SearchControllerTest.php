@@ -120,7 +120,7 @@ describe('Response Transformation', function (): void {
 
     });
 
-    it('prepares the correct searchable data array', function () {
+    it('prepares the correct searchable data array', function (): void {
         $product = Product::factory()->create(['name' => 'Laravel Advanced Course']);
 
         $searchableArray = $product->toSearchableArray();

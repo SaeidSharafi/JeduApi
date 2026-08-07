@@ -26,7 +26,7 @@ class UserNeverPurchasedCategoryCondition implements DiscountConditionContract
 
         /** @var UserNeverPurchasedCategoryData $configuration */
         $hasPurchased = Enrollment::where('customer_id', $context->customer->id)
-            ->whereHas('productDeliveryOption.product.categories', function (Builder $query) use ($configuration) {
+            ->whereHas('productDeliveryOption.product.categories', function (Builder $query) use ($configuration): void {
                 $query->whereIn('categories.id', $configuration->category_ids);
             })
             ->exists();

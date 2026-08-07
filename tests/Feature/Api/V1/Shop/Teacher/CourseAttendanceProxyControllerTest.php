@@ -14,7 +14,7 @@ use function Pest\Laravel\putJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create([
         'civil_id'      => '1234567890',
         'civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE,
@@ -29,7 +29,7 @@ beforeEach(function () {
 
 // ─── Index (GET) ────────────────────────────────────────────────────────────
 
-it('index passes query parameters and returns service data', function () {
+it('index passes query parameters and returns service data', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getAttendance')
         ->once()
@@ -49,7 +49,7 @@ it('index passes query parameters and returns service data', function () {
 
 // ─── Store (POST) ───────────────────────────────────────────────────────────
 
-it('store converts valid jalali date and forwards to IMS', function () {
+it('store converts valid jalali date and forwards to IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
 
     // 1405/01/01 in Jalali is 2026-03-21 in Gregorian
@@ -73,7 +73,7 @@ it('store converts valid jalali date and forwards to IMS', function () {
         ->assertJson(['message' => 'Attendance stored']);
 });
 
-it('store fails validation on invalid jalali date', function () {
+it('store fails validation on invalid jalali date', function (): void {
     $this->mock(ImsService::class)->shouldNotReceive('storeAttendance');
 
     postJson("/api/v1/shop/teacher/courses/{$this->courseCode}/attendances", [
@@ -86,7 +86,7 @@ it('store fails validation on invalid jalali date', function () {
         ->assertJsonValidationErrors(['attendance_date', 'attendances']);
 });
 
-it('store fails validation if jalali date is in the future', function () {
+it('store fails validation if jalali date is in the future', function (): void {
     $this->mock(ImsService::class)->shouldNotReceive('storeAttendance');
 
     postJson("/api/v1/shop/teacher/courses/{$this->courseCode}/attendances", [
@@ -101,7 +101,7 @@ it('store fails validation if jalali date is in the future', function () {
         ->assertJsonValidationErrors(['attendance_date']);
 });
 
-it('store returns 422 when IMS validation fails', function () {
+it('store returns 422 when IMS validation fails', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('storeAttendance')
         ->once()
@@ -125,7 +125,7 @@ it('store returns 422 when IMS validation fails', function () {
 
 // ─── Update (PUT) ───────────────────────────────────────────────────────────
 
-it('update converts valid jalali date and forwards to IMS', function () {
+it('update converts valid jalali date and forwards to IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('updateAttendance')
         ->once()
@@ -143,7 +143,7 @@ it('update converts valid jalali date and forwards to IMS', function () {
     ])->assertOk();
 });
 
-it('update returns 422 when IMS validation fails', function () {
+it('update returns 422 when IMS validation fails', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('updateAttendance')
         ->once()
@@ -167,7 +167,7 @@ it('update returns 422 when IMS validation fails', function () {
 
 // ─── Destroy (DELETE) ──────────────────────────────────────────────────────
 
-it('destroy calls service and returns result', function () {
+it('destroy calls service and returns result', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('destroyAttendance')
         ->once()
@@ -186,7 +186,7 @@ it('destroy calls service and returns result', function () {
 
 // ─── Authentication ─────────────────────────────────────────────────────────
 
-it('blocks unauthenticated users from attendance endpoints', function () {
+it('blocks unauthenticated users from attendance endpoints', function (): void {
     $this->app->get('auth')->forgetGuards();
 
     getJson("/api/v1/shop/teacher/courses/{$this->courseCode}/attendances")

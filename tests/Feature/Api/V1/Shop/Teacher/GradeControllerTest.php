@@ -12,7 +12,7 @@ use function Pest\Laravel\postJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create([
         'civil_id'      => '1234567890',
         'civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE,
@@ -27,7 +27,7 @@ beforeEach(function () {
 
 // ─── Index (GET) ────────────────────────────────────────────────────────────
 
-it('index returns grades list from IMS', function () {
+it('index returns grades list from IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getGrades')
         ->once()
@@ -39,7 +39,7 @@ it('index returns grades list from IMS', function () {
         ->assertJsonPath('data.0.grade', 95.5);
 });
 
-it('index passes query parameters to IMS', function () {
+it('index passes query parameters to IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getGrades')
         ->once()
@@ -54,7 +54,7 @@ it('index passes query parameters to IMS', function () {
 
 // ─── Store (POST single) ────────────────────────────────────────────────────
 
-it('store creates a single grade via IMS', function () {
+it('store creates a single grade via IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('storeGrade')
         ->once()
@@ -69,7 +69,7 @@ it('store creates a single grade via IMS', function () {
         ->assertJsonPath('message', 'Grade stored');
 });
 
-it('store validates payload', function () {
+it('store validates payload', function (): void {
     postJson("/api/v1/shop/teacher/courses/{$this->courseCode}/grades", [])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['enrolment_id', 'grades']);
@@ -77,7 +77,7 @@ it('store validates payload', function () {
 
 // ─── Store Bulk (POST bulk) ─────────────────────────────────────────────────
 
-it('storeBulk creates bulk grades via IMS', function () {
+it('storeBulk creates bulk grades via IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('storeBulkGrades')
         ->once()
@@ -93,7 +93,7 @@ it('storeBulk creates bulk grades via IMS', function () {
         ->assertJsonPath('message', 'Grades stored');
 });
 
-it('storeBulk strips underscore-prefixed grade keys', function () {
+it('storeBulk strips underscore-prefixed grade keys', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('storeBulkGrades')
         ->once()
@@ -119,7 +119,7 @@ it('storeBulk strips underscore-prefixed grade keys', function () {
         ->assertJsonPath('message', 'Grades stored');
 });
 
-it('storeBulk returns 422 when IMS validation fails', function () {
+it('storeBulk returns 422 when IMS validation fails', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('storeBulkGrades')
         ->once()
@@ -139,7 +139,7 @@ it('storeBulk returns 422 when IMS validation fails', function () {
         ->assertJsonValidationErrors(['course_code']);
 });
 
-it('storeBulk validates payload', function () {
+it('storeBulk validates payload', function (): void {
     postJson("/api/v1/shop/teacher/courses/{$this->courseCode}/grades/bulk", [])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['enrolments']);
@@ -147,14 +147,14 @@ it('storeBulk validates payload', function () {
 
 // ─── Authentication ─────────────────────────────────────────────────────────
 
-it('requires authenticated user for grades', function () {
+it('requires authenticated user for grades', function (): void {
     $this->app->get('auth')->forgetGuards();
 
     getJson("/api/v1/shop/teacher/courses/{$this->courseCode}/grades")
         ->assertUnauthorized();
 });
 
-it('requires authentication for store-grade', function () {
+it('requires authentication for store-grade', function (): void {
     $this->app->get('auth')->forgetGuards();
 
     postJson("/api/v1/shop/teacher/courses/{$this->courseCode}/grades", [
@@ -163,7 +163,7 @@ it('requires authentication for store-grade', function () {
     ])->assertUnauthorized();
 });
 
-it('requires authentication for storeBulk', function () {
+it('requires authentication for storeBulk', function (): void {
     $this->app->get('auth')->forgetGuards();
 
     postJson("/api/v1/shop/teacher/courses/{$this->courseCode}/grades/bulk", [

@@ -105,7 +105,7 @@ describe('BankTransferPaymentProcessor', function (): void {
 
         $processor = new BankTransferPaymentProcessor();
 
-        expect(fn () => $processor->process($payment))
+        expect(fn (): \App\Data\Admin\Payment\PaymentProcessResultData => $processor->process($payment))
             ->toThrow(InvalidPaymentPurposeException::class);
     });
 

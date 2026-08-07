@@ -5,7 +5,7 @@ use App\Models\User;
 use \Illuminate\Support\Facades\Hash;
 use function Pest\Laravel\putJson;
 
-it('change customer password', function () {
+it('change customer password', function (): void {
     $user = User::factory()->create(
         [
             'password' => null
@@ -21,7 +21,7 @@ it('change customer password', function () {
 
     expect(Hash::check('newpassword', $user->fresh()->password))->toBeTrue();
 });
-it('change staff password', function () {
+it('change staff password', function (): void {
     $this->user = Staff::factory()->create(
         [
             'password' => null

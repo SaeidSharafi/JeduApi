@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
 });
 
@@ -20,14 +20,14 @@ beforeEach(function () {
 |--------------------------------------------------------------------------
 */
 
-it('unauthenticated users cannot list payments', function () {
+it('unauthenticated users cannot list payments', function (): void {
     $response = $this->getJson(route('api.v1.shop.student.payments.index'));
 
     // Assuming your routing or middleware handles unauthorized requests with a 401
     $response->assertStatus(401);
 });
 
-it('unauthenticated users cannot view a specific payment', function () {
+it('unauthenticated users cannot view a specific payment', function (): void {
     $payment = Payment::factory()->create();
 
     $response = $this->getJson(route('api.v1.shop.student.payments.show', $payment->uuid));
@@ -41,7 +41,7 @@ it('unauthenticated users cannot view a specific payment', function () {
 |--------------------------------------------------------------------------
 */
 
-it('an authenticated user receives an empty list when they have no payments', function () {
+it('an authenticated user receives an empty list when they have no payments', function (): void {
     $response = $this->customer($this->user)
         ->getJson(route('api.v1.shop.student.payments.index'));
 
@@ -49,7 +49,7 @@ it('an authenticated user receives an empty list when they have no payments', fu
         ->assertJsonPath('data.data', []);
 });
 
-it('an authenticated user can list only their own payments', function () {
+it('an authenticated user can list only their own payments', function (): void {
     $otherUser = User::factory()->create();
 
     // Create 3 payments for the authenticated user and 2 for another user
@@ -68,7 +68,7 @@ it('an authenticated user can list only their own payments', function () {
         ->assertJsonCount(3, 'data.data');
 });
 
-it('payments are returned with the correct structure and relationships', function () {
+it('payments are returned with the correct structure and relationships', function (): void {
     $payment = Payment::factory()->create([
         'customer_id' => $this->user->id,
     ]);
@@ -106,7 +106,7 @@ it('payments are returned with the correct structure and relationships', functio
         ]);
 });
 
-it('payments are sorted from newest to oldest', function () {
+it('payments are sorted from newest to oldest', function (): void {
     $oldPayment = Payment::factory()->create([
         'customer_id' => $this->user->id,
         'created_at' => now()->subDays(2),
@@ -127,7 +127,7 @@ it('payments are sorted from newest to oldest', function () {
     expect($data[1]['uuid'])->toBe($oldPayment->uuid);
 });
 
-it('it filters payments by valid purpose', function () {
+it('it filters payments by valid purpose', function (): void {
     // Collect some backing enum cases for the test
     $cases = PaymentPurposeEnum::cases();
 
@@ -157,7 +157,7 @@ it('it filters payments by valid purpose', function () {
     expect($response->json('data.data.0.purpose.value'))->toBe($purposeA->value);
 });
 
-it('it ignores filtering when the purpose parameter is invalid', function () {
+it('it ignores filtering when the purpose parameter is invalid', function (): void {
     Payment::factory()->count(2)->create([
         'customer_id' => $this->user->id,
     ]);
@@ -171,7 +171,7 @@ it('it ignores filtering when the purpose parameter is invalid', function () {
         ->assertJsonCount(2, 'data.data');
 });
 
-it('it respects pagination requests using per_page parameter', function () {
+it('it respects pagination requests using per_page parameter', function (): void {
     Payment::factory()->count(10)->create([
         'customer_id' => $this->user->id,
     ]);
@@ -189,7 +189,7 @@ it('it respects pagination requests using per_page parameter', function () {
 |--------------------------------------------------------------------------
 */
 
-it('an authenticated user can view their specific payment details', function () {
+it('an authenticated user can view their specific payment details', function (): void {
     $payment = Payment::factory()->create([
         'customer_id' => $this->user->id,
     ]);
@@ -218,7 +218,7 @@ it('an authenticated user can view their specific payment details', function () 
         ]);
 });
 
-it('an authenticated user cannot view another users payment', function () {
+it('an authenticated user cannot view another users payment', function (): void {
     $otherUser = User::factory()->create();
 
     $payment = Payment::factory()->create([
@@ -232,7 +232,7 @@ it('an authenticated user cannot view another users payment', function () {
     $response->assertStatus(404);
 });
 
-it('viewing a non-existent payment uuid returns 404', function () {
+it('viewing a non-existent payment uuid returns 404', function (): void {
     $response = $this->actingAs($this->user, 'user')
         ->getJson(route('api.v1.shop.student.payments.show', \Illuminate\Support\Str::uuid7()));
 

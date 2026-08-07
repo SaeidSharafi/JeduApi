@@ -3,7 +3,7 @@
 use App\Enums\Wallet\WalletStatusEnum;
 use function Pest\Laravel\getJson;
 
-it('should return wallet information for authenticated user', function () {
+it('should return wallet information for authenticated user', function (): void {
 
     $this->customer();
     /** @var \App\Models\Wallet $wallet */
@@ -23,7 +23,7 @@ it('should return wallet information for authenticated user', function () {
         ->and($response->json('data.status.label'))->toBe(WalletStatusEnum::ACTIVE->translate());
 
 });
-it('it should not return wallet information for unauthenticated user', function () {
+it('it should not return wallet information for unauthenticated user', function (): void {
     $response = getJson(route('api.v1.shop.wallet.info'));
 
     $response->assertUnauthorized();

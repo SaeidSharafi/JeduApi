@@ -176,7 +176,7 @@ it('returns true when moodle course is completed', function (): void {
 
     expect($result)->toBeTrue();
 
-    Http::assertSent(fn ($r) => $r['wsfunction'] === 'core_completion_get_course_completion_status');
+    Http::assertSent(fn ($r): bool => $r['wsfunction'] === 'core_completion_get_course_completion_status');
 });
 
 it('returns false when moodle course is not completed', function (): void {
@@ -231,7 +231,7 @@ it('returns activity completion statuses for a course', function (): void {
     expect($result[10]['timecompleted'])->toBe('2023-11-14 22:13:20');
     expect($result[11]['timecompleted'])->toBeNull();
 
-    Http::assertSent(fn ($r) => $r['wsfunction'] === 'core_completion_get_activities_completion_status');
+    Http::assertSent(fn ($r): bool => $r['wsfunction'] === 'core_completion_get_activities_completion_status');
 });
 
 it('re-throws non-nocriteriaset exception from getActivityCompletionStatus on 500', function (): void {
@@ -267,7 +267,7 @@ it('returns course_grade and activity grades', function (): void {
     expect($result['activities'][10])->toBe('90.00');
     expect($result['activities'][11])->toBe('75.00');
 
-    Http::assertSent(fn ($r) => $r['wsfunction'] === 'gradereport_user_get_grade_items');
+    Http::assertSent(fn ($r): bool => $r['wsfunction'] === 'gradereport_user_get_grade_items');
 });
 
 it('returns empty course_grade and activities when no graded items', function (): void {
@@ -316,7 +316,7 @@ it('returns LmsMoodleBlockData with visible modules', function (): void {
     expect($result->activities[1]->cid)->toBe(3);
     expect($result->activities[1]->name)->toBe('Forum');
 
-    Http::assertSent(fn ($r) => $r['wsfunction'] === 'core_course_get_contents');
+    Http::assertSent(fn ($r): bool => $r['wsfunction'] === 'core_course_get_contents');
 });
 
 it('throws when moodle course is not found', function (): void {
@@ -339,7 +339,7 @@ it('returns empty array when user has no enrolled moodle courses', function (): 
 
     expect($result)->toBe([]);
 
-    Http::assertSent(fn ($r) => $r['wsfunction'] === 'core_enrol_get_users_courses');
+    Http::assertSent(fn ($r): bool => $r['wsfunction'] === 'core_enrol_get_users_courses');
 });
 
 it('returns empty array when no quizzes in enrolled courses', function (): void {

@@ -20,5 +20,5 @@ it('returns null - no gateway processing for manual refunds', function (): void 
 
     expect($trackingCode)->toBeNull();
     Log::shouldHaveReceived('info')
-        ->withArgs(fn ($msg) => str_contains($msg, 'Manual Refund'));
+        ->withArgs(fn ($msg): bool => str_contains($msg, 'Manual Refund'));
 });

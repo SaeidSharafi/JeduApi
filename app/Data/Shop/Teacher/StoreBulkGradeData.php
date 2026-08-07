@@ -19,7 +19,7 @@ final class StoreBulkGradeData extends Data
             foreach ($properties['enrolments'] as $key => $enrolment) {
                 if (isset($enrolment['grades'])) {
                     $properties['enrolments'][$key]['grades'] = collect($enrolment['grades'])
-                        ->reject(fn ($value, $k) => str_starts_with((string)$k, '_'))
+                        ->reject(fn ($value, $k): bool => str_starts_with((string)$k, '_'))
                         ->toArray();
                 }
             }

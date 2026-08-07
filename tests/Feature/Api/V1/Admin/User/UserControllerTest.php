@@ -121,7 +121,7 @@ describe('list filters', function (): void {
         // 1. Create 9 users and update their wallets
         $users = User::factory(9)->create();
 
-        $users->slice(0, 3)->each(function (User $user) {
+        $users->slice(0, 3)->each(function (User $user): void {
             $user->wallet->update([
                 'status'       => WalletStatusEnum::SUSPENDED,
                 'balance'      => 100_000,
@@ -129,7 +129,7 @@ describe('list filters', function (): void {
             ]);
         });
 
-        $users->slice(3, 3)->each(function (User $user) {
+        $users->slice(3, 3)->each(function (User $user): void {
             $user->wallet->update([
                 'status'       => WalletStatusEnum::ACTIVE,
                 'balance'      => 20_000,
@@ -137,7 +137,7 @@ describe('list filters', function (): void {
             ]);
         });
 
-        $users->slice(6, 3)->each(function (User $user) {
+        $users->slice(6, 3)->each(function (User $user): void {
             $user->wallet->update([
                 'status'       => WalletStatusEnum::CLOSED,
                 'balance'      => 0,
@@ -155,10 +155,10 @@ describe('list filters', function (): void {
         // 3. Strict, Clean Fluent Assertions
         $response->assertSuccessful();
 
-        $response->assertJson(function (AssertableJson $json) {
+        $response->assertJson(function (AssertableJson $json): void {
             $json->has('data.data', 3)
-                ->has('data.data', function (AssertableJson $json) {
-                    $json->each(function (AssertableJson $json) {
+                ->has('data.data', function (AssertableJson $json): void {
+                    $json->each(function (AssertableJson $json): void {
                         $json->where('wallet.status.value', WalletStatusEnum::SUSPENDED->value)
                             ->where('wallet.status.label', WalletStatusEnum::SUSPENDED->translate())
                             ->where('wallet.balance', 100_000)

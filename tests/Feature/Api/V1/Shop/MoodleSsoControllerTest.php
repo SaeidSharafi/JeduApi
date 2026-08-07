@@ -15,7 +15,7 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     $this->customer();
 });
-describe('Student Moodle SSO', function () {
+describe('Student Moodle SSO', function (): void {
     it('returns 404 for non-owner enrollment', function (): void {
         $otherUser  = App\Models\User::factory()->create();
         $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LMS_MOODLE);
@@ -200,7 +200,7 @@ describe('Student Moodle SSO', function () {
     });
 
 });
-describe('Teacher Moodle SSO', function () {
+describe('Teacher Moodle SSO', function (): void {
     it('returns 403 for non-teachers', function (): void {
         $otherUser  = App\Models\User::factory()->create();
         $teacher    = App\Models\Teacher::factory()->create(

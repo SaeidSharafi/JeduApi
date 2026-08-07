@@ -12,7 +12,7 @@ use function Pest\Laravel\getJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create([
         'civil_id'      => '1234567890',
         'civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE,
@@ -26,7 +26,7 @@ beforeEach(function () {
 
 // ─── Success ────────────────────────────────────────────────────────────────
 
-it('returns teacher courses from IMS enriched with local product image', function () {
+it('returns teacher courses from IMS enriched with local product image', function (): void {
     $pdo = ProductDeliveryOption::factory()
         ->create(['details_json' => ['ims_course_code' => 'IMS-100']]);
 
@@ -71,7 +71,7 @@ it('returns teacher courses from IMS enriched with local product image', functio
         ->assertJsonPath('data.0.product_delivery_option_uuid', $pdo->uuid);
 });
 
-it('returns empty list when IMS has no courses', function () {
+it('returns empty list when IMS has no courses', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getTeacherCourses')
         ->once()
@@ -84,7 +84,7 @@ it('returns empty list when IMS has no courses', function () {
 
 // ─── 403 when user is not a teacher ─────────────────────────────────────────
 
-it('returns 403 when authenticated user has no teacher profile', function () {
+it('returns 403 when authenticated user has no teacher profile', function (): void {
     $nonTeacher = User::factory()->create();
     $this->customer($nonTeacher);
 
@@ -94,7 +94,7 @@ it('returns 403 when authenticated user has no teacher profile', function () {
 
 // ─── 401 when unauthenticated ───────────────────────────────────────────────
 
-it('returns 401 when not authenticated', function () {
+it('returns 401 when not authenticated', function (): void {
     $this->app->get('auth')->forgetGuards();
 
     getJson(route('api.v1.shop.teacher.courses.index'))
@@ -103,7 +103,7 @@ it('returns 401 when not authenticated', function () {
 
 // ─── Query parameter filters ─────────────────────────────────────────────────
 
-it('filters courses by current period', function () {
+it('filters courses by current period', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getTeacherCourses')
         ->once()
@@ -116,7 +116,7 @@ it('filters courses by current period', function () {
         ->assertOk();
 });
 
-it('filters courses by past period', function () {
+it('filters courses by past period', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getTeacherCourses')
         ->once()
@@ -129,7 +129,7 @@ it('filters courses by past period', function () {
         ->assertOk();
 });
 
-it('forwards arbitrary query params to IMS', function () {
+it('forwards arbitrary query params to IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getTeacherCourses')
         ->once()

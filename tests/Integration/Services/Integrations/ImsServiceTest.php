@@ -260,7 +260,7 @@ it('updateAttendance succeeds', function (): void {
 
     expect($response['message'])->toBe('ok');
 
-    Http::assertSent(fn ($request) => $request->method() === 'PUT');
+    Http::assertSent(fn ($request): bool => $request->method() === 'PUT');
 });
 
 it('destroyAttendance succeeds', function (): void {
@@ -270,7 +270,7 @@ it('destroyAttendance succeeds', function (): void {
 
     $response = $this->imsService->destroyAttendance('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE , ['attendance_date' => '2024-01-01']);
     expect($response['message'])->toBe('deleted');
-    Http::assertSent(fn ($request) => $request->method() === 'DELETE');
+    Http::assertSent(fn ($request): bool => $request->method() === 'DELETE');
 });
 
 it('getGrades and storeBulkGrades succeed', function (): void {

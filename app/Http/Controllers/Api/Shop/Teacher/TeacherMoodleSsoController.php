@@ -41,7 +41,7 @@ final class TeacherMoodleSsoController extends Controller
     {
         /** @var Teacher|null $teacher */
         $teacher = Auth::user()?->teacherData;
-        abort_unless(!!$teacher, 403);
+        abort_unless((bool) $teacher, 403);
 
         $wantsurl = request()->get('wantsurl');
         $teacherOwn = $deliveryOption->teachers()->where('teacher_id', $teacher->id)->exists();

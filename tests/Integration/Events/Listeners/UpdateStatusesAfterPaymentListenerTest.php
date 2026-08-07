@@ -76,7 +76,7 @@ describe('UpdateStatusesAfterPaymentListener', function (): void {
         $this->mock(TopupWalletAction::class, function (MockInterface $mock) use ($payment): void {
             $mock->shouldReceive('handle')
                 ->once()
-                ->withArgs(fn ($arg) => $arg instanceof Payment && $arg->id === $payment->id);
+                ->withArgs(fn ($arg): bool => $arg instanceof Payment && $arg->id === $payment->id);
         });
 
         // --- Act ---
