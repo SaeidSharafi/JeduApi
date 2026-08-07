@@ -21,7 +21,7 @@ use Spatie\LaravelData\Optional;
 final class ShowPaymentController extends Controller
 {
     /**
-     * Retrun list of payments
+     * Return list of payments
      *
      * @responseFile resources/responses/shop/payment/index.json
      */

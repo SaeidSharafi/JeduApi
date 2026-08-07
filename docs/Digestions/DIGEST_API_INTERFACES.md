@@ -414,7 +414,7 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 #### OtpAuthenticationController (`app/Http/Controllers/Api/Shop/Auth/OtpAuthenticationController.php`)
 - `__invoke(OtpVerifyData $request)`: **Route:** `POST /api/v1/auth/otp/verify` - **Request DTO:** OtpVerifyData - **Delegates to:** OTP validation - **Response DTO:** AuthTokenData
 
-#### ResnedOtpController (`app/Http/Controllers/Api/Shop/Auth/ResnedOtpController.php`)
+#### ResendOtpController (`app/Http/Controllers/Api/Shop/Auth/ResendOtpController.php`)
 - `__invoke(ResendOtpData $request)`: **Route:** `POST /api/v1/auth/otp/resend` - **Request DTO:** ResendOtpData - **Response DTO:** OtpResendData
 
 #### ForgotPasswordController (`app/Http/Controllers/Api/Shop/Auth/ForgotPasswordController.php`)

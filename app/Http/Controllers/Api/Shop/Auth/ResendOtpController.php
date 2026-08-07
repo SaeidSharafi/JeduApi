@@ -14,14 +14,14 @@ use App\Http\Requests\Auth\OtpRequest;
 /**
  * @group Shop - Auth
  */
-final class ResnedOtpController extends Controller
+final class ResendOtpController extends Controller
 {
     public function __construct(
         protected RequestOtpAction $action
     ) {}
 
     /**
-     * Resned an OTP code via SMS or Email
+     * Resend an OTP code via SMS or Email
      *
      * Re-Sends an OTP to the user's phone number (or Email) for a specific
      * purpose (login/registration or password reset).

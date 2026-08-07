@@ -25,7 +25,7 @@ final class StaffResendOtpController extends Controller
     ) {}
 
     /**
-     * Resned an OTP code via SMS or Email for staff
+     * Resend an OTP code via SMS or Email for staff
      *
      * Re-Sends an OTP to the user's phone number (or Email) for a specific
      * purpose (login/registration or password reset).

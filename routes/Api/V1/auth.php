@@ -15,7 +15,7 @@ use App\Http\Controllers\Api\Shop\Auth\LogoutController;
 use App\Http\Controllers\Api\Shop\Auth\OtpAuthenticationController;
 use App\Http\Controllers\Api\Shop\Auth\PasswordLoginController;
 use App\Http\Controllers\Api\Shop\Auth\ResetPasswordController;
-use App\Http\Controllers\Api\Shop\Auth\ResnedOtpController;
+use App\Http\Controllers\Api\Shop\Auth\ResendOtpController;
 
 Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::post('initiate', InitiateAuthController::class)
@@ -25,7 +25,7 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::post('otp/verify', OtpAuthenticationController::class)
         ->middleware('throttle:otp-verify')
         ->name('otp-verify');
-    Route::post('otp/resend', ResnedOtpController::class)
+    Route::post('otp/resend', ResendOtpController::class)
         ->middleware('throttle:otp-resend')
         ->name('otp-resend');
     Route::post('password/reset', ForgotPasswordController::class)
