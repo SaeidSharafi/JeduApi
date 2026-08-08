@@ -87,17 +87,18 @@ it('applies deduction percentage to all items in order', function (): void {
     ]);
 
     $response->assertCreated();
-    $order->items->sortBy('price');
+    $cheapItem = $order->items->firstWhere('price', 100000);
+    $expensiveItem = $order->items->firstWhere('price', 200000);
     // Item 1: 100k - 10k = 90k
     $this->assertDatabaseHas('refunds', [
-        'order_item_id'    => $order->items[0]->id,
+        'order_item_id'    => $cheapItem->id,
         'amount'           => 90000,
         'deduction_amount' => 10000,
     ]);
 
     // Item 2: 200k - 20k = 180k
     $this->assertDatabaseHas('refunds', [
-        'order_item_id'    => $order->items[1]->id,
+        'order_item_id'    => $expensiveItem->id,
         'amount'           => 180000,
         'deduction_amount' => 20000,
     ]);
