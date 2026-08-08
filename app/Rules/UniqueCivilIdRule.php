@@ -24,7 +24,7 @@ final class UniqueCivilIdRule implements DataAwareRule, ValidationRule
     /**
      * @param  array<string, mixed>  $data
      */
-        public function setData(array $data): static
+    public function setData(array $data): static
     {
         $this->data = $data;
 
@@ -58,8 +58,12 @@ final class UniqueCivilIdRule implements DataAwareRule, ValidationRule
             $userId = $this->userId;
         }
 
-        if (! $userId && $user = request()->route()?->parameter('user')) {
-            $userId = $user->id;
+        $routeUser = request()->route()?->parameter('user');
+
+        if ($userId === null && $routeUser instanceof User) {
+            $userId = (int) $routeUser->getKey();
+        } elseif ($userId === null && is_string($routeUser) && ctype_digit($routeUser)) {
+            $userId = (int) $routeUser;
         }
 
         if (

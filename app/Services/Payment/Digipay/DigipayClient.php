@@ -99,7 +99,7 @@ final class DigipayClient
     }
 
     /**
-     * @param  array<int, array<string, mixed>>  $products
+     * @param  array<int, string>  $products
      */
     public function deliver(
         string $trackingCode,

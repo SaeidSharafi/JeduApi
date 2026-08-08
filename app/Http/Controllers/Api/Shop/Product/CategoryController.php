@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\PaginationRequestData;
 use App\Data\Shop\Product\Category\CategoryCardData;
 use App\Data\Shop\Product\Category\CategoryDetailData;
@@ -11,7 +12,6 @@ use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Query\CategoryQueryService;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @group Shop - Products - Categories
@@ -27,12 +27,12 @@ final class CategoryController extends Controller
      *
      * @responseFile resources/responses/shop/products/categories/index.json
      */
-    public function index(): \App\Contracts\ApiResponseInterface
+    public function index(): ApiResponseInterface
     {
         $categories = Category::query()
             ->with('children')
             ->withCount([
-                'products' => fn (Builder $query): Builder => $query
+                'products' => fn ($query) => $query
                     ->publishedAndVisible()
                     ->hasPublishedDeliveryOption()
                     ->publishedProductable()
@@ -53,7 +53,7 @@ final class CategoryController extends Controller
      *
      * @responseFile resources/responses/shop/products/categories/show.json
      */
-    public function show(PaginationRequestData $data, Category $category, CategoryQueryService $service): \App\Contracts\ApiResponseInterface
+    public function show(PaginationRequestData $data, Category $category, CategoryQueryService $service): ApiResponseInterface
     {
 
         $courses       = $service->getProductsForCategory($category, ProductableEnum::COURSE, $data->per_page);

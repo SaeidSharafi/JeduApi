@@ -1,58 +1,10 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Unable to resolve the template type TKey in call to function collect$#'
-			identifier: argument.templateType
-			count: 1
-			path: app/Actions/Shop/Student/GetEnrollmentDetailAction.php
-
-		-
-			message: '#^Unable to resolve the template type TValue in call to function collect$#'
-			identifier: argument.templateType
-			count: 1
-			path: app/Actions/Shop/Student/GetEnrollmentDetailAction.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:publishedAndVisible\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Api/Shop/Product/CategoryController.php
-
-		-
 			message: '#^Parameter \#1 \$datetime of function verta expects null, mixed given\.$#'
 			identifier: argument.type
 			count: 2
 			path: app/Http/Controllers/Api/Shop/Teacher/CourseController.php
-
-		-
-			message: '#^Unable to resolve the template type TKey in call to function collect$#'
-			identifier: argument.templateType
-			count: 2
-			path: app/Http/Controllers/Api/Shop/Teacher/CourseController.php
-
-		-
-			message: '#^Unable to resolve the template type TNewKey in call to method Illuminate\\Support\\Collection\<int,App\\Models\\ProductDeliveryOption\>\:\:keyBy\(\)$#'
-			identifier: argument.templateType
-			count: 1
-			path: app/Http/Controllers/Api/Shop/Teacher/CourseController.php
-
-		-
-			message: '#^Unable to resolve the template type TValue in call to function collect$#'
-			identifier: argument.templateType
-			count: 2
-			path: app/Http/Controllers/Api/Shop/Teacher/CourseController.php
-
-		-
-			message: '#^Parameter \#1 \$conditions of method Illuminate\\Routing\\Route\:\:signatureParameters\(\) expects array, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Middleware/EnsureAdminNumericIdsMiddleware.php
-
-		-
-			message: '#^Property App\\Models\\Enrollment\:\:\$external_enrollment_id \(int\<0, max\>\|null\) does not accept non\-empty\-string\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Jobs/Provisioning/AbstractProvisioningJob.php
 
 		-
 			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, \$this\(App\\Models\\Course\)\>\) of method App\\Models\\Course\:\:products\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, App\\Models\\Course\>\) of method App\\Contracts\\ProductableContract\<App\\Models\\Course\>\:\:products\(\)$#'
@@ -85,12 +37,6 @@ parameters:
 			path: app/Models/DigitalAsset.php
 
 		-
-			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Casts\\Attribute\<Illuminate\\Database\\Eloquent\\Model\|null, never\>\) of method App\\Models\\PersonalAccessToken\:\:tokenable\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphTo\) of method Laravel\\Sanctum\\PersonalAccessToken\:\:tokenable\(\)$#'
-			identifier: method.childReturnType
-			count: 1
-			path: app/Models/PersonalAccessToken.php
-
-		-
 			message: '#^Return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, \$this\(App\\Models\\Seminar\)\>\) of method App\\Models\\Seminar\:\:products\(\) should be compatible with return type \(Illuminate\\Database\\Eloquent\\Relations\\MorphMany\<App\\Models\\Product, App\\Models\\Seminar\>\) of method App\\Contracts\\ProductableContract\<App\\Models\\Seminar\>\:\:products\(\)$#'
 			identifier: method.childReturnType
 			count: 1
@@ -115,46 +61,10 @@ parameters:
 			path: app/Providers/EventServiceProvider.php
 
 		-
-			message: '#^Generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Data\\Shop\\Product\\ProductCardData\> in PHPDoc tag @return does not specify all template types of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\: TKey, TValue$#'
-			identifier: generics.lessTypes
-			count: 1
-			path: app/Query/CategoryQueryService.php
-
-		-
-			message: '#^Type App\\Data\\Shop\\Product\\ProductCardData in generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Data\\Shop\\Product\\ProductCardData\> in PHPDoc tag @return is not subtype of template type TKey of \(int\|string\) of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\.$#'
-			identifier: generics.notSubtype
-			count: 1
-			path: app/Query/CategoryQueryService.php
-
-		-
-			message: '#^Type App\\Data\\Shop\\Product\\ProductCardData in generic type Illuminate\\Database\\Eloquent\\Collection\<int, App\\Data\\Shop\\Product\\ProductCardData\> in PHPDoc tag @return is not subtype of template type TModel of Illuminate\\Database\\Eloquent\\Model of class Illuminate\\Database\\Eloquent\\Collection\.$#'
-			identifier: generics.notSubtype
-			count: 1
-			path: app/Query/CategoryQueryService.php
-
-		-
-			message: '#^Cannot access property \$id on object\|string\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: app/Rules/UniqueCivilIdRule.php
-
-		-
-			message: '#^Match arm comparison between App\\Enums\\Operators\\MatchPolicyEnum\:\:ALL and App\\Enums\\Operators\\MatchPolicyEnum\:\:ALL is always true\.$#'
-			identifier: match.alwaysTrue
-			count: 1
-			path: app/Services/Discounts/Cart/Conditions/ProductCategoryCondition.php
-
-		-
 			message: '#^Property App\\Services\\Fakes\\FakeBbbService\:\:\$settings is never read, only written\.$#'
 			identifier: property.onlyWritten
 			count: 1
 			path: app/Services/Fakes/FakeBbbService.php
-
-		-
-			message: '#^Parameter \$state of class App\\Data\\Shop\\Student\\Blocks\\MoodleActivityData constructor expects App\\Enums\\MoodleActivityStateEnum, int given\.$#'
-			identifier: argument.type
-			count: 3
-			path: app/Services/Fakes/FakeMoodleService.php
 
 		-
 			message: '#^Property App\\Services\\Fakes\\FakeMoodleService\:\:\$settings is never read, only written\.$#'
@@ -173,30 +83,6 @@ parameters:
 			identifier: property.onlyWritten
 			count: 1
 			path: app/Services/Fakes/FakeSpotPlayerService.php
-
-		-
-			message: '#^Method App\\Services\\GlobalSearchService\:\:search\(\) should return Illuminate\\Pagination\\LengthAwarePaginator\<int, Illuminate\\Database\\Eloquent\\Model\> but returns Illuminate\\Pagination\\LengthAwarePaginator\<int, App\\Models\\Blog\\BlogPost\>\|Illuminate\\Pagination\\LengthAwarePaginator\<int, App\\Models\\Product\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/GlobalSearchService.php
-
-		-
-			message: '#^Method App\\Services\\Integrations\\AbstractIntegrationService\:\:formatValidationErrors\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: app/Services/Integrations/AbstractIntegrationService.php
-
-		-
-			message: '#^Parameter \$products of method App\\Services\\Payment\\Digipay\\DigipayClient\:\:deliver\(\) expects array\<int, array\<string, mixed\>\>, array\<int, string\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/Payment/Digipay/DigipayAdminService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:forListing\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/ProductSearch.php
 
 		-
 			message: '#^Parameter \#1 \$datetime of function verta expects null, Carbon\\CarbonImmutable given\.$#'

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 test('to array', function (): void {
     $user = User::factory()->create()->fresh();
@@ -66,4 +67,15 @@ it('return cart relationship', function (): void {
     ])->fresh();
     $user->load('cart');
     expect($user->cart->toArray())->toEqual($cart->toArray());
+});
+
+it('preserves the Sanctum tokenable relationship while caching the resolved owner', function (): void {
+    $user           = User::factory()->create();
+    $plainTextToken = $user->createToken('static-analysis-test')->plainTextToken;
+    $token          = App\Models\PersonalAccessToken::findToken($plainTextToken);
+
+    expect($token)->not->toBeNull()
+        ->and($token->tokenable())->toBeInstanceOf(MorphTo::class)
+        ->and($token->tokenable)->toBeInstanceOf(User::class)
+        ->and($token->tokenable->is($user))->toBeTrue();
 });

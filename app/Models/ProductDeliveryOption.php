@@ -105,8 +105,7 @@ final class ProductDeliveryOption extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -151,8 +150,7 @@ final class ProductDeliveryOption extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -168,8 +166,7 @@ final class ProductDeliveryOption extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -181,8 +178,7 @@ final class ProductDeliveryOption extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -194,8 +190,7 @@ final class ProductDeliveryOption extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -205,8 +200,7 @@ final class ProductDeliveryOption extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -237,6 +231,20 @@ final class ProductDeliveryOption extends Model
 
                 return ($isAfterStart && $isBeforeEnd) ? $discountRecord->discounted_price : $this->price;
             }
+        );
+    }
+
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function imsCourseCode(): Attribute
+    {
+        return Attribute::make(
+            get: function (): string {
+                $code = $this->details_json['ims_course_code'] ?? null;
+
+                return is_string($code) ? $code : '';
+            },
         );
     }
 

@@ -71,7 +71,7 @@ final readonly class GetEnrollmentDetailAction
      */
     private function buildTeachers(Enrollment $enrollment): DataCollection
     {
-        $teachers = $enrollment->productDeliveryOption->teachers ?? collect();
+        $teachers = $enrollment->productDeliveryOption->teachers ?? collect([]);
 
         $items = $teachers->map(fn ($teacher): TeacherDetailData => new TeacherDetailData(
             uuid: $teacher->uuid,
@@ -153,7 +153,7 @@ final readonly class GetEnrollmentDetailAction
             $files = collect([$productable]);
         } elseif (method_exists($productable, 'digitalAssets')) {
             $productable->loadMissing('digitalAssets');
-            $files = $productable->digitalAssets ?? collect();
+            $files = $productable->digitalAssets ?? collect([]);
         } else {
             $files = collect();
         }
@@ -187,6 +187,10 @@ final readonly class GetEnrollmentDetailAction
         // Backwards compat: old format stored activities inside course_info
         if (empty($activities)) {
             $activities = data_get($provisioning, 'moodle.data.course_info.activities', []);
+        }
+
+        if (! is_array($activities)) {
+            $activities = [];
         }
 
         $items = collect($activities)

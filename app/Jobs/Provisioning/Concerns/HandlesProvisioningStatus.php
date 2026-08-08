@@ -23,7 +23,7 @@ trait HandlesProvisioningStatus
         Enrollment $enrollment,
         string $provider,
         array $data,
-        ?string $externalEnrollmentId = null
+        ?int $externalEnrollmentId = null
     ): void {
         $provisioningData = $enrollment->provisioning_data ?? [];
         $providersData    = $provisioningData['providers'] ?? [];
@@ -36,7 +36,7 @@ trait HandlesProvisioningStatus
 
         $provisioningData['providers'] = $providersData;
 
-        if ($externalEnrollmentId !== null && $externalEnrollmentId !== '') {
+        if ($externalEnrollmentId !== null) {
             $enrollment->external_enrollment_id = $externalEnrollmentId;
         }
 

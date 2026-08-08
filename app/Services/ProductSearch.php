@@ -208,9 +208,7 @@ final class ProductSearch
         }
 
         return $query
-            ->query(function (Builder $query): void {
-                $query->forListing();
-            })
+            ->query(ProductListing::forListing(...))
             ->paginate($requestData->per_page)
             ->withQueryString();
     }
@@ -279,7 +277,7 @@ final class ProductSearch
                 AvailabilityStatusEnum::ONGOING->value  => $query
                     ->where('earliest_event_start_ts', ['<=', $today])
                     ->where('latest_event_ended_ts', ['>=', $today]),
-                default                                   => null,
+                default => null,
             };
 
             return;

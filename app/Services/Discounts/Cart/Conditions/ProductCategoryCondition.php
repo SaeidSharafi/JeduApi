@@ -48,7 +48,6 @@ final class ProductCategoryCondition implements DiscountConditionContract
         return match ($configuration->match_policy) {
             MatchPolicyEnum::ANY => $matchingProductCount > 0,
             MatchPolicyEnum::ALL => $matchingProductCount === count($itemProductIds),
-            default              => false,
         };
     }
 }

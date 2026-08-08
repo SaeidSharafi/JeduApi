@@ -81,7 +81,7 @@ abstract class AbstractIntegrationService
         if ($status === 422) {
             $rawErrors                     = (array) data_get($response->json(), 'errors', []);
             $metaData['validation_errors'] = $rawErrors;
-            $message =  __('messages.integration.validation_failed', ['endpoint' => $endpoint]);
+            $message                       = __('messages.integration.validation_failed', ['endpoint' => $endpoint]);
 
             throw new UnrecoverableProvisioningException($message, $status, null, $metaData);
         }
@@ -104,24 +104,5 @@ abstract class AbstractIntegrationService
         );
 
         return mb_substr($sanitized ?? $body, 0, 500);
-    }
-
-    /**
-     * Formats 422 validation errors into a human-readable string for log messages.
-     * Preserves the same detail level as the original ImsService::buildException().
-     */
-    /**
-     * @param  array<string, mixed>  $rawErrors
-     */
-    private function formatValidationErrors(array $rawErrors): string
-    {
-        $flat = [];
-        foreach ($rawErrors as $field => $messages) {
-            foreach ((array) $messages as $msg) {
-                $flat[] = "{$field}: ".$this->sanitizeBody((string) $msg);
-            }
-        }
-
-        return implode('; ', $flat);
     }
 }

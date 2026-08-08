@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
-class PersonalAccessToken extends SanctumPersonalAccessToken
+final class PersonalAccessToken extends SanctumPersonalAccessToken
 {
     protected bool $isDataCached = true;
 
@@ -13,12 +15,10 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      * Cache the token lookup from the database.
      *
      * @param  string  $token
-     *
-     * @return SanctumPersonalAccessToken|null
      */
     public static function findToken($token): ?SanctumPersonalAccessToken
     {
-        $plainToken = str_contains($token, '|') ? explode('|', $token, 2)[1] : $token;
+        $plainToken  = str_contains($token, '|') ? explode('|', $token, 2)[1] : $token;
         $hashedToken = hash('sha256', $plainToken);
 
         $tokenInstance = cache()->remember("AccessToken::{$hashedToken}", 360, function () use ($token) {
@@ -32,18 +32,12 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
         return null;
     }
 
-    /**
-     * Cache the polymorphic User/Staff retrieval.
-     *
-     * @return Attribute<\Illuminate\Database\Eloquent\Model|null, never>
-     */
-    public function tokenable(): Attribute
+    public function getTokenableAttribute(mixed $value): ?Model
     {
-        return Attribute::make(get: function () {
-            return cache()->remember("token_{$this->id}::id_" . app()->environment(), 360, function () {
-                $this->isDataCached = false;
-                return parent::tokenable()->first();
-            });
+        return cache()->remember("token_{$this->id}::id_".app()->environment(), 360, function (): ?Model {
+            $this->isDataCached = false;
+
+            return parent::tokenable()->first();
         });
     }
 
@@ -51,14 +45,13 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      * Limit saving of records to avoid database writes when only "last_used_at" updates.
      *
      * @param  array<string, mixed>  $options
-     * @return bool
      */
     public function save(array $options = []): bool
     {
         $changes = $this->getDirty();
 
         // Only save to DB if we actually changed data other than last_used_at/updated_at
-        if (!$this->isDataCached || !array_key_exists('last_used_at', $changes) || count($changes) > 2) {
+        if (! $this->isDataCached || ! array_key_exists('last_used_at', $changes) || count($changes) > 2) {
             return parent::save($options);
         }
 
@@ -68,12 +61,12 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     /**
      * Automatically clean up cache entries when a token is deleted (e.g. on logout)
      */
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::deleted(function ($token): void {
+        self::deleted(function ($token): void {
             // "token" attribute holds the SHA-256 hash in the database
-            cache()->forget("AccessToken::" . $token->token);
-            cache()->forget("token_{$token->id}::id_" . app()->environment());
+            cache()->forget('AccessToken::'.$token->token);
+            cache()->forget("token_{$token->id}::id_".app()->environment());
         });
     }
 }

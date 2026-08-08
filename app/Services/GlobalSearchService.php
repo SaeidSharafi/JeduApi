@@ -35,7 +35,7 @@ final class GlobalSearchService
      * @param  SearchData  $searchData  The search request containing query, pagination, and filters.
      */
     /**
-     * @return LengthAwarePaginator<int, Model>
+     * @return LengthAwarePaginator<int, BlogPost>|LengthAwarePaginator<int, Product>|LengthAwarePaginator<int, Model>
      */
     public function search(SearchData $searchData): LengthAwarePaginator
     {

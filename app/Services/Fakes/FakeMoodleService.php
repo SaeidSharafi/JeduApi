@@ -6,6 +6,7 @@ namespace App\Services\Fakes;
 
 use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
 use App\Data\Shop\Student\Blocks\MoodleActivityData;
+use App\Enums\MoodleActivityStateEnum;
 use App\Models\User;
 use App\Services\SettingsService;
 
@@ -72,21 +73,21 @@ final class FakeMoodleService
                 cid: $moodleCourseId * 10 + 1,
                 name: 'معرفی دوره',
                 type: 'page',
-                state: 0,
+                state: MoodleActivityStateEnum::INCOMPLETE,
             ),
             new MoodleActivityData(
                 url: $baseUrl.'/mod/quiz/view.php?id='.($moodleCourseId * 10 + 2),
                 cid: $moodleCourseId * 10 + 2,
                 name: 'آزمون اول',
                 type: 'quiz',
-                state: 0,
+                state: MoodleActivityStateEnum::INCOMPLETE,
             ),
             new MoodleActivityData(
                 url: $baseUrl.'/mod/assign/view.php?id='.($moodleCourseId * 10 + 3),
                 cid: $moodleCourseId * 10 + 3,
                 name: 'تکلیف هفته اول',
                 type: 'assign',
-                state: 0,
+                state: MoodleActivityStateEnum::INCOMPLETE,
             ),
         ];
 

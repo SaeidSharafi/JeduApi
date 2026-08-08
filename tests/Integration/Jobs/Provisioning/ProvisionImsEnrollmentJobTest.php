@@ -19,9 +19,9 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\ImsService;
 use App\Services\SettingsService;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\Request;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
@@ -76,7 +76,7 @@ it('sends configured IMS bank account number in payload', function (): void {
         'https://ims.test/*' => Http::response([
             'status'  => true,
             'message' => 'ok',
-            'data'    => ['enrollment_id' => 1001],
+            'data'    => ['enrollment_id' => '1001'],
         ], 200),
     ]);
 
@@ -84,6 +84,9 @@ it('sends configured IMS bank account number in payload', function (): void {
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
     $job->handle();
+
+    expect($enrollment->refresh()->external_enrollment_id)->toBe(1001)
+        ->and(data_get($enrollment->provisioning_data, 'providers.ims.data.enrollment_id'))->toBe(1001);
 
     Http::assertSent(function (Request $request): bool {
         return str_contains($request->url(), '/api/v2/enrollment/')

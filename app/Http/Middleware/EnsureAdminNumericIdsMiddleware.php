@@ -19,7 +19,7 @@ final class EnsureAdminNumericIdsMiddleware
         if ($route && $request->is('api/v1/admin/*')) {
 
             // Find all route parameters type-hinted with an Eloquent Model
-            foreach ($route->signatureParameters(Model::class) as $parameter) {
+            foreach ($route->signatureParameters(['subClass' => Model::class]) as $parameter) {
                 $name  = $parameter->getName();
                 $value = $route->parameter($name);
 

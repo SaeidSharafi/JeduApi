@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
+
 it('ignore checks if civil_id_type is empty', function (): void {
     $rule      = new App\Rules\UniqueCivilIdRule();
     $validator = Validator::make(
@@ -74,4 +77,29 @@ it('faill the validtion if the civil id exist', function (): void {
         ]
     );
     expect($validator->fails())->toBeTrue();
+});
+
+it('ignores the route user when binding has not resolved the numeric id yet', function (): void {
+    $user = App\Models\User::factory()->create([
+        'civil_id_type' => App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
+        'civil_id'      => 'X123456789',
+    ]);
+
+    $request = Request::create("/users/{$user->id}", 'PUT');
+    $route   = new Route(['PUT'], '/users/{user}', fn (): null => null);
+    $route->bind($request);
+    $request->setRouteResolver(fn (): Route => $route);
+    app()->instance('request', $request);
+
+    $validator = Validator::make(
+        [
+            'civil_id_type' => App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
+            'civil_id'      => 'X123456789',
+        ],
+        [
+            'civil_id' => [new App\Rules\UniqueCivilIdRule()],
+        ],
+    );
+
+    expect($validator->passes())->toBeTrue();
 });

@@ -15,6 +15,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Services\Integrations\ImsService;
 use Illuminate\Support\Carbon;
+use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
@@ -114,8 +115,9 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
         $studentData    = $service->storeStudent($student);
         $enrollmentData = $service->storeEnrollment($enrollment->customer, $enrollmentData);
 
-        $externalEnrollmentId = data_get($enrollmentData, 'data.enrollment_id');
-        $externalEnrollmentId = is_scalar($externalEnrollmentId) ? (string) $externalEnrollmentId : null;
+        $externalEnrollmentId = $this->normalizeExternalEnrollmentId(
+            data_get($enrollmentData, 'data.enrollment_id')
+        );
 
         $this->markProvisioningSuccess($enrollment, 'ims', [
             'course_code'   => $imsCourseCode,
@@ -150,6 +152,17 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
                 'error_message' => $errorMessage,
             ]),
         ]);
+    }
+
+    private function normalizeExternalEnrollmentId(mixed $externalEnrollmentId): ?int
+    {
+        $validatedId = filter_var(
+            $externalEnrollmentId,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 0]],
+        );
+
+        return $validatedId === false ? null : $validatedId;
     }
 
     private function resolvePayment(Enrollment $enrollment): ?Payment
@@ -217,7 +230,7 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
         if (is_string($dataDate) && $dataDate !== '') {
             try {
                 return Carbon::parse($dataDate);
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 // Fallback to created_at when custom date cannot be parsed.
             }
         }
@@ -234,9 +247,9 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
 
         return match ($payment->method) {
             PaymentMethodEnum::MELLAT_GATEWAY => config('payments.mellat.ims_bank_account_number'),
-            PaymentMethodEnum::BANK_TRANSFER => config('payments.bank_transfer.ims_bank_account_number'),
-            PaymentMethodEnum::WALLET => config('payments.wallet.ims_bank_account_number'),
-            default => null,
+            PaymentMethodEnum::BANK_TRANSFER  => config('payments.bank_transfer.ims_bank_account_number'),
+            PaymentMethodEnum::WALLET         => config('payments.wallet.ims_bank_account_number'),
+            default                           => null,
         };
     }
 }

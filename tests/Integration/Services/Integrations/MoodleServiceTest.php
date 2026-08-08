@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Enums\MoodleActivityStateEnum;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
+use App\Services\Fakes\FakeMoodleService;
 use App\Services\Integrations\MoodleService;
 use App\Services\SettingsService;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use \Illuminate\Http\Client\Request;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
@@ -318,6 +320,13 @@ it('returns LmsMoodleBlockData with visible modules', function (): void {
     expect($result->activities[1]->name)->toBe('Forum');
 
     Http::assertSent(fn ($r): bool => $r['wsfunction'] === 'core_course_get_contents');
+});
+
+it('builds fake Moodle activities with enum-backed completion states', function (): void {
+    $course = app(FakeMoodleService::class)->getCourse(101);
+
+    expect($course->activities)->toHaveCount(3)
+        ->and($course->activities[0]->state)->toBe(MoodleActivityStateEnum::INCOMPLETE);
 });
 
 it('throws when moodle course is not found', function (): void {

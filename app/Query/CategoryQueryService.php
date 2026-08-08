@@ -8,9 +8,9 @@ use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Category;
 use App\Models\Product;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 use App\Services\ProductPriceService;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 final class CategoryQueryService
 {
@@ -19,7 +19,7 @@ final class CategoryQueryService
     ) {}
 
     /**
-     * @return LengthAwarePaginator<ProductCardData>|Collection<int, ProductCardData>
+     * @return LengthAwarePaginator<int, ProductCardData>|Collection<int, ProductCardData>
      */
     public function getProductsForCategory(Category $category, ProductableEnum $type, int $limit, bool $paginate = false): LengthAwarePaginator|Collection
     {
@@ -32,19 +32,28 @@ final class CategoryQueryService
             ->activeTerm()
             ->forListing();
 
-        $productsCollection = $paginate
-            ? $query->paginate($limit)
-            : $query
-                ->limit($limit)
-                ->get();
+        if ($paginate) {
+            $products = $query->paginate($limit);
+            $prices   = $this->priceService->getPriceDataForProducts($products->getCollection());
 
-        $prices = $this->priceService->getPriceDataForProducts($productsCollection->collect());
+            return $products->through(
+                fn (Product $product): ProductCardData => ProductCardData::fromModel($product, $prices->get($product->id))
+            );
+        }
 
-        // Map the results into the ProductCardData DTO
-        $productsCollection->transform(
+        return $this->buildProductCards($query->limit($limit)->get());
+    }
+
+    /**
+     * @param  Collection<int, Product>  $products
+     * @return Collection<int, ProductCardData>
+     */
+    private function buildProductCards(Collection $products): Collection
+    {
+        $prices = $this->priceService->getPriceDataForProducts($products);
+
+        return $products->map(
             fn (Product $product): ProductCardData => ProductCardData::fromModel($product, $prices->get($product->id))
         );
-
-        return $productsCollection;
     }
 }
