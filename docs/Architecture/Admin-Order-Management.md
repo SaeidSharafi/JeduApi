@@ -1,18 +1,12 @@
-# Admin Order Management — Developer Guide
+# Admin order and refund boundaries
 
-## Scope
-Admin order creation, admin payment registration, manual approval, and refund lifecycle (single-item + full-order).
+> Supporting architecture note. For contracts and current implementation, use `docs/Digestions/`, code, configuration, and tests.
 
-## Confirmed Domain Rules (authoritative)
+## Why this note exists
 
-1. Digipay refund/delivery uses long HTTP calls. Do **not** keep long DB locks during external calls.
-2. Digipay refund policy is constrained business flow (full-order path or one-time allowed item-refund flow by policy).
-3. Deduction is always based on product original/main price at purchase time (not paid amount).
-4. BNPL/CREDIT delivery guard is warning-oriented operationally; manual out-of-shop handling is acceptable.
+Admin flows can create or repair commercial state, but they must not bypass the same ownership, financial, and concurrency invariants used by storefront checkout.
 
----
-
-## 1) Subsystem Flow Diagram
+## Code flow at a glance
 
 ```mermaid
 flowchart TB
@@ -37,7 +31,7 @@ flowchart TB
     UPS --> OSS[OrderStatusService]
     OSS --> OSE[OrderStatusUpdatedEvent]
     OSE --> OSL[OrderStatusUpdateListener]
-    OSL --> PJ[Provisioning Jobs]
+    OSL --> PJ[Provisioning jobs]
 
     R1 --> RPF[RefundProcessorFactory]
     R2 --> RPF
@@ -46,81 +40,70 @@ flowchart TB
     RPF --> WRP[WalletRefundProcessor]
     RPF --> MRP[ManualRefundProcessor]
 
-    DRP --> DG[Digipay HTTP API]
-    WRP --> WL[Wallet Ledger]
-    MRP --> MA[Manual Audit Notes]
+    DRP --> DG[Digipay API]
+    WRP --> WL[Wallet ledger]
+    MRP --> MA[Manual audit details]
 
     R1 --> RCE[RefundCompletedEvent]
     R2 --> RCE
     R3 --> RCE
-    RCE --> RN[Refund Notification]
+    RCE --> RN[Refund notification]
 ```
 
----
+## Invariants
 
-## 2) Key Execution Path
+- An order-scoped payment, item, or refund must belong to the order in the route. Nested binding is not an ownership check by itself.
+- Status changes flow through the domain actions and the order status service. Direct model updates can skip reservation release, enrollment revocation, notifications, or parent-order aggregation.
+- Refundable amounts are derived from the immutable order snapshot. Current catalog prices must never be used to reconstruct an old purchase.
+- A refund may not exceed the completed amount for its payment after prior refunds. Concurrent refunds against the same payment must serialize this decision.
+- Gateway policy is not interchangeable: Digipay, wallet, and manual refunds have different external and accounting consequences. Resolve the configured processor instead of branching in controllers.
+- Admin approval changes fulfillment state only after the required payment threshold is met. It is not a generic override for unpaid orders.
+
+## External refund boundary
+
+Long-running gateway I/O must not occur while database locks are held.
 
 ```mermaid
 sequenceDiagram
-    autonumber
-    actor Admin
-    participant API as Admin Controller
-    participant ACT as Refund Action
-    participant DB as PostgreSQL
-    participant DG as Digipay Processor
-    participant GW as Digipay API
-    participant OSS as OrderStatusService
+    participant Action
+    participant DB
+    participant Gateway
 
-    Admin->>API: Submit refund request
-    API->>ACT: handle(...)
-    ACT->>DB: TX-1 short lock/validate/create PROCESSING claim
-    DB-->>ACT: claim token/state
-    ACT->>DG: process refund
-    DG->>GW: long HTTP call
-    GW-->>DG: result
-    DG-->>ACT: tracking/failure
-    ACT->>DB: TX-2 short finalize by claim token
-    ACT->>OSS: update item/enrollment/order status
-    ACT-->>API: response
+    Action->>DB: Short transaction: lock, validate, claim PROCESSING
+    DB-->>Action: Commit claim
+    Action->>Gateway: Refund request outside transaction
+    Gateway-->>Action: Gateway result
+    Action->>DB: Short transaction: finalize claim and statuses
 ```
 
----
-
-## 3) State Transitions
+The claim/finalize split exists because neither a database rollback nor an HTTP retry can undo a successful external refund. Finalization must be idempotent, and an external-success/internal-failure outcome must remain visible for reconciliation.
 
 ```mermaid
 stateDiagram-v2
     [*] --> PENDING
-    PENDING --> PROCESSING
-    PENDING --> COMPLETED
+    PENDING --> PROCESSING: external refund claimed
+    PENDING --> COMPLETED: local/manual completion
     PENDING --> CANCELLED
-    PROCESSING --> COMPLETED
-    PROCESSING --> FAILED
-
+    PROCESSING --> COMPLETED: gateway and local finalize succeed
+    PROCESSING --> FAILED: known gateway failure
     COMPLETED --> [*]
     FAILED --> [*]
     CANCELLED --> [*]
 ```
 
----
+## Failure behavior
 
-## 4) Edge Case & Failure Matrix
+| Failure | Required result |
+|---|---|
+| Gateway timeout before a known result | Keep a reconcilable non-terminal record; do not assume success or issue an immediate duplicate refund. |
+| Gateway succeeds, local finalization fails | Preserve the processing claim and emit high-severity telemetry for reconciliation. |
+| Two refund requests race | Only the owner of the valid claim may call or finalize the external refund. |
+| A terminal refund is submitted again | Return the existing outcome without repeating financial side effects. |
+| Refund or cancellation revokes a purchased item | Recompute enrollment and parent-order state through the shared status path. |
 
-| Scenario | Expected Behavior | Operational Handling |
-|---|---|---|
-| Digipay timeout/hang | No long DB lock during external call | Retry/reconcile path |
-| Gateway success, DB finalize fail | Emergency signal + recoverable state | Reconciliation job/command |
-| Concurrent refund-complete requests | Idempotent token ownership prevents duplicate finalize | Return current terminal state |
-| Same payment concurrent item refunds | Payment-scoped guard avoids cap race | Reject second request |
-| BNPL/CREDIT without delivery-confirmed | Warning-only policy retained | Admin manual follow-up |
-| Deduction with discount/prepayment | Still from original product price | No runtime override |
+## Change checklist
 
----
-
-## 5) Developer Guardrails (Strict)
-
-1. Enforce nested resource invariant: `payment.order_id == route order.id`.
-2. Never hold long DB lock while waiting on Digipay HTTP.
-3. Make refund completion idempotent (claim token + terminal no-op).
-4. Merge `transaction_details`; never overwrite with empty payload.
-5. Keep reconciliation flow for external-success/internal-failure cases.
+- Test nested-resource ownership and authorization separately.
+- Test concurrent and repeated refund requests.
+- Test the external-success/local-failure path.
+- Keep transaction metadata additive; never erase a gateway reference with an empty payload.

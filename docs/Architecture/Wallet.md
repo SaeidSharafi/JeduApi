@@ -1,61 +1,53 @@
-# Wallet Subsystem Architecture Reference
+# Wallet boundaries
 
-## 1) Subsystem Flow Diagram
+> Supporting architecture note. For contracts and current implementation, use `docs/Digestions/`, code, schema, and tests.
+
+## Ledger model
+
+Wallet balances are cached totals backed by an append-only transaction history. Every financial mutation goes through the shared transaction action; callers describe the source and intent but do not update balances directly.
 
 ```mermaid
 flowchart TB
-    A[TopupWalletAction] -->|"build RecordTransactionData + idempotency_key wallet-topup:{payment_id}"| R[RecordWalletTransactionAction]
-    B[WalletRefundProcessor] -->|"build RecordTransactionData + idempotency_key wallet-refund:{refund_id}"| R
-    C[TriggerCampaignAllocationAction] -->|lock campaign + generate deterministic idempotency key| R
-    D[WalletPaymentProcessor] -->|build RecordTransactionData for ORDER payment| R
+    A[TopupWalletAction] -->|wallet-topup:payment id| R[RecordWalletTransactionAction]
+    B[WalletRefundProcessor] -->|wallet-refund:refund id| R
+    C[TriggerCampaignAllocationAction] -->|deterministic campaign key| R
+    D[WalletPaymentProcessor] -->|order payment| R
+    E[Admin deposit/withdraw/adjust] --> R
 
-    R --> E[DB transaction]
-    E --> F[lock wallet row FOR UPDATE]
-    F --> G{Idempotency key exists?}
-    G -->|yes| H[return existing WalletTransaction]
-    G -->|no| I{Wallet status allows tx type?}
-    I -->|no| X[throw WalletNotActive]
-    I -->|yes| J[normalize amount sign]
-    J --> K[compute new balance + gift_balance]
-    K --> L{insufficient funds?}
-    L -->|yes| Y[throw WalletInsufficientBalanceException]
-    L -->|no| M[update wallet balances]
-    M --> N[create wallet_transactions row + audit metadata]
-    N --> O[return WalletTransaction]
-
-    C --> P[increment campaign usage + dispatch event]
+    R --> TX[Database transaction]
+    TX --> L[Lock wallet row FOR UPDATE]
+    L --> I{Idempotency key already exists?}
+    I -->|yes| EXISTING[Return existing ledger entry]
+    I -->|no| S{Wallet status permits type?}
+    S -->|no| DENY[Reject]
+    S -->|yes| SIGN[Normalize credit/debit sign]
+    SIGN --> SPLIT[Calculate normal + gift balance split]
+    SPLIT --> FUNDS{Sufficient funds?}
+    FUNDS -->|no| INSUFFICIENT[Rollback with structured shortfall]
+    FUNDS -->|yes| UPDATE[Update cached balances]
+    UPDATE --> APPEND[Append wallet transaction + audit metadata]
 ```
-
-## 2) Key Execution Path
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Caller as Topup/Campaign/Refund/Payment Flow
+    participant Caller
     participant Action as RecordWalletTransactionAction
-    participant DB as Database
-    participant WT as wallet_transactions
-    participant W as wallets
+    participant Wallet
+    participant Ledger as wallet_transactions
 
-    Caller->>Action: execute(RecordTransactionData)
-    Action->>DB: BEGIN TRANSACTION
-    Action->>W: SELECT ... FOR UPDATE (wallet row)
-    Action->>WT: SELECT by idempotency_key (if provided)
-    alt existing transaction found
-        WT-->>Action: existing row
-        Action->>DB: COMMIT
-        Action-->>Caller: existing WalletTransaction
+    Caller->>Action: execute transaction intent
+    Action->>Wallet: lock row
+    Action->>Ledger: find deterministic idempotency key
+    alt already processed
+        Ledger-->>Caller: existing transaction
     else first execution
-        Action->>Action: status gate + amount normalization
-        Action->>Action: balance math (incl ORDER debit split)
-        Action->>W: UPDATE balance, gift_balance
-        Action->>WT: INSERT transaction (audit metadata + idempotency_key)
-        Action->>DB: COMMIT
-        Action-->>Caller: new WalletTransaction
+        Action->>Action: status, sign, split, and funds checks
+        Action->>Wallet: update normal/gift balances
+        Action->>Ledger: append entry in same transaction
+        Ledger-->>Caller: new transaction
     end
 ```
-
-## 3) State Transitions
 
 ```mermaid
 stateDiagram-v2
@@ -65,33 +57,39 @@ stateDiagram-v2
     ACTIVE --> CLOSED
     SUSPENDED --> CLOSED
 
-    state "Transaction Authorization" as TA {
-      [*] --> Evaluate
-      Evaluate --> Allowed: status=ACTIVE && any type
-      Evaluate --> Allowed: status=SUSPENDED && type=REFUND
-      Evaluate --> Rejected: status=CLOSED
-      Evaluate --> Rejected: status=SUSPENDED && type!=REFUND
+    state "Transaction policy" as Policy {
+        [*] --> Evaluate
+        Evaluate --> Allowed: ACTIVE
+        Evaluate --> Allowed: SUSPENDED and REFUND
+        Evaluate --> Rejected: SUSPENDED and non-refund
+        Evaluate --> Rejected: CLOSED
     }
 ```
 
-## 4) Edge Case and Failure Matrix
+## Invariants
 
-| Case | Trigger | Current Handling | Result |
-|---|---|---|---|
-| Replay of same topup/refund/campaign request | Same deterministic `idempotency_key` | Query existing by key before write | Returns prior row, no double credit/debit |
-| Concurrent writes to same wallet | Multiple requests in parallel | `DB::transaction` + wallet `lockForUpdate()` | Serialized balance updates |
-| Duplicate campaign allocation race | Parallel campaign trigger | Campaign row lock + duplicate checks + idempotency key | Single allocation |
-| Wallet suspended | Non-refund tx attempted | `canProcessTransactionForStatus()` | `WalletNotActive` thrown |
-| Wallet closed | Any tx attempted | `canProcessTransactionForStatus()` | `WalletNotActive` thrown |
-| Insufficient balance for payment/debit | Debit exceeds available funds | Explicit available/shortfall check | `WalletInsufficientBalanceException` |
-| ORDER payment split across normal + gift balance | `PAYMENT` + `source_type=ORDER` | Split math (`from_balance`, `from_gift_balance`) | Correct dual-bucket debit |
-| MySQL migration compatibility | PG-only partial index syntax | Conditional execute only on `pgsql` | Migration does not fail on MySQL |
-| Missing user/wallet | Invalid input or orphan state | Explicit user/wallet existence checks | Domain exceptions thrown |
+- Lock the wallet row before checking funds and writing both the balance and ledger entry.
+- Replayable operations carry deterministic idempotency keys derived from stable business identity, such as a payment, refund, or campaign allocation. Random request IDs do not provide financial idempotency.
+- An existing idempotency key returns the existing transaction and performs no second balance change.
+- Debits normalize to negative amounts and credits to positive amounts inside the transaction boundary.
+- Order payment spends normal balance before gift balance. The split is recorded for audit and later financial reasoning.
+- A suspended wallet accepts refunds only; a closed wallet accepts no transactions. Callers do not add local status bypasses.
+- A wallet top-up is a payment with wallet-top-up purpose and customer ownership, not a dummy order. Payment completion routes to the ledger by purpose.
+- Refunds restore funds through the same ledger action; they never edit the original transaction or balance directly.
 
-## 5) Developer Guardrails (Strict Do and Don\'t)
+## Failure behavior
 
-1. **Do** route all balance mutations through `RecordWalletTransactionAction`. **Don\'t** update `wallets.balance` directly in random services/controllers.
-2. **Do** provide deterministic `idempotency_key` for replayable external events (payment webhook, campaign trigger, refund). **Don\'t** use random/non-repeatable keys.
-3. **Do** keep `DB::transaction` + `lockForUpdate()` boundaries intact. **Don\'t** move reads/writes outside lock scope.
-4. **Do** preserve wallet status policy (`active=all`, `suspended=refund-only`, `closed=none`). **Don\'t** add bypass logic per caller path.
-5. **Do** keep migration/database changes cross-DB safe (pgsql-specific SQL behind driver checks) and test with Pest idempotency cases. **Don\'t** introduce raw PG-only SQL unguarded or skip regression tests.
+| Failure | Required result |
+|---|---|
+| Concurrent debits | Row lock serializes the available-balance check; at most affordable debits succeed. |
+| Repeated callback or job | Deterministic key returns the prior ledger entry. |
+| Ledger insert fails | Balance update rolls back in the same database transaction. |
+| Insufficient combined funds | No partial debit; return structured available/required/shortfall data. |
+| Top-up payment belongs to another user | Reject before crediting any wallet. |
+
+## Change checklist
+
+- Test concurrency and idempotency, not only sequential happy paths.
+- Preserve normal/gift split metadata for order debits.
+- Keep source type and source ID stable enough for reconciliation.
+- Never repair balances with a direct database update; use an explicit adjustment transaction.

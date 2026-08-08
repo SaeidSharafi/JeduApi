@@ -1,136 +1,115 @@
-## Product Catalog Subsystem — Architecture Reference
+# Product catalog boundaries
 
-### 1) Subsystem Flow Diagram 
+> Supporting architecture note. For contracts and current implementation, use `docs/Digestions/`, code, schema, and tests.
 
-#### High Level View
+## Three-layer model
+
 ```mermaid
-flowchart TB
-    A[Admin/Shop API Request] --> B[Controller]
-    B --> C[Action Layer]
-    C --> D[(DB: Productable/Product/PDO)]
-
-    D --> E[Model/Observer Events]
-    C --> F[Explicit Domain Events]
-    E --> G[Invalidation Events]
-    F --> G
-
-    G --> H[Queue Listeners]
-    H --> I[Jobs]
-
-    I --> J[(ProductPrice / PDO Discount Index)]
-    I --> K[(Product availability snapshot on products)]
-    I --> L[(Search Engine Index)]
-
-    M[Shop Read Path] --> N[Product scopes + Query services]
-    J --> N
-    K --> N
-    L --> N
+flowchart LR
+    Productable[Course / Seminar / Digital asset] --> Product[Commercial product]
+    Product --> DeliveryOption[Purchasable delivery option]
+    DeliveryOption --> OrderItem[Immutable purchase snapshot]
 ```
 
-#### Detailed View
+- The productable owns educational/content identity.
+- The product owns merchandising, vendor, taxonomy, and storefront identity.
+- The delivery option owns a purchasable SKU: delivery method, price intent, capacity, registration window, and provider details.
+
+These layers are not interchangeable. A new format or price for the same content is usually a delivery option, not a duplicate course or seminar.
+
+## Write-to-read-model flow
 
 ```mermaid
 flowchart TB
-    A[Admin Catalog API] --> B[Create/Update/Delete Productable
-Course/Seminar/DigitalAsset]
-    A --> C[Create/Update/Delete Product]
-    A --> D[Create/Update/Delete ProductDeliveryOption]
-    D --> E[Teacher assignment
-attach/sync pivot]
+    A[Catalog controller] --> B[Action layer]
+    B --> C[(Productable / Product / Delivery option)]
 
-    B --> F[ProductableAvailabilityObserver]
-    C --> G[ProductCacheInvalidated]
-    C --> H[ProductAvailabilityCacheInvalidated]
-    C --> I[ProductSearchIndexInvalidated]
-    D --> G
-    D --> H
-    D --> I
+    C --> D[ProductCacheInvalidated]
+    C --> E[ProductAvailabilityCacheInvalidated]
+    C --> F[ProductSearchIndexInvalidated]
 
-    G --> J[QueueProductPriceCacheUpdate]
-    J --> K[UpdateProductPricingJob]
-    K --> L[ProductPriceService
-upsert product_prices + price_data_cache]
+    D --> G[QueueProductPriceCacheUpdate]
+    G --> H[UpdateProductPricingJob]
+    H --> I[(Price projections)]
 
-    H --> M[QueueProductAvailabilityUpdate]
-    M --> N[UpdateProductAvailabilityJob]
-    N --> O[Write denormalized availability fields]
+    E --> J[QueueProductAvailabilityUpdate]
+    J --> K[UpdateProductAvailabilityJob]
+    K --> L[(Availability snapshot)]
 
-    I --> P[QueueProductSearchIndexSynchronization]
-    P --> Q[SynchronizeProductSearchIndexJob]
+    F --> M[QueueProductSearchIndexSynchronization]
+    M --> N[SynchronizeProductSearchIndexJob]
+    N --> O[(Search index)]
 
-    R[Checkout/Order Flow] --> S["CreateOrderAction
-lockForUpdate(PDO)"]
-    S --> T[OrderStatusService]
-    T --> U[EnrollmentStatusChanged]
-    U --> V[UpdateProductDeliveryOptionEnrolledCount]
-    V --> N
+    P[CreateOrderAction] -->|lock delivery option| Q[Reserve capacity]
+    Q --> R[OrderStatusService]
+    R --> S[EnrollmentStatusChanged]
+    S --> T[Recompute enrolled count]
+    T --> K
 ```
 
-### 2) Key Execution Path
+## Visibility and availability
+
+Storefront availability is an intersection, not a single status:
+
+- the productable is publishable;
+- the product is published and visible;
+- at least one delivery option is published and within its relevant windows;
+- its term and capacity constraints allow sale.
+
+Catalog lists may use denormalized availability, price, and search projections. Checkout must revalidate live rows under lock; projections are never authorization to sell.
+
+```mermaid
+flowchart LR
+    A[Productable published] --> G{All visibility gates pass?}
+    B[Product published and visible] --> G
+    C[Eligible published delivery option] --> G
+    D[Active term] --> G
+    E[Capacity available when limited] --> G
+    G -->|yes| V[Visible and purchasable]
+    G -->|no| H[Hidden or rejected at checkout]
+```
+
+## Capacity invariant
+
+For a limited option:
+
+```text
+enrolled_count + reserved_count <= capacity
+```
+
+Pending orders contribute to `reserved_count`; completed entitlements contribute to `enrolled_count`. Every order terminal path must consume or release its reservation exactly once.
+
+## Projection boundary
+
+Price, availability, and search documents are disposable read models. Domain writes emit invalidation only after persistence succeeds, and jobs recompute from source rows. Rebuilds must be idempotent and must remove stale projections when an entity becomes unavailable.
 
 ```mermaid
 sequenceDiagram
     participant Admin
-    participant Ctrl as Admin ProductDeliveryOptionController
-    participant Act as UpdateProductDeliveryOptionAction
-    participant DB as PostgreSQL
-    participant Ev as Event Bus
-    participant Lis as Queue Listeners
-    participant Job as Update Jobs
-    participant IDX as Search/Price Index
+    participant Action as Catalog action
+    participant DB
+    participant Events as Invalidation events
+    participant Queue
+    participant Jobs as Projection jobs
+    participant Reads as Storefront read models
 
-    Admin->>Ctrl: PUT /admin/product/{id}/delivery-option/{id}
-    Ctrl->>Act: handle(data, option)
-    Act->>DB: BEGIN + update PDO + sync teachers + COMMIT
-    Act->>Ev: dispatch ProductCacheInvalidated
-    Act->>Ev: dispatch ProductAvailabilityCacheInvalidated (conditional)
-    Act->>Ev: dispatch ProductSearchIndexInvalidated (conditional)
-    Ev->>Lis: queue listeners
-    Lis->>Job: dispatch pricing/availability/search jobs
-    Job->>DB: recompute snapshots/index rows
-    Job->>IDX: sync searchable documents
+    Admin->>Action: mutate catalog aggregate
+    Action->>DB: lock/write transaction
+    DB-->>Action: commit
+    Action->>Events: dispatch affected invalidations
+    Events->>Queue: enqueue targeted work
+    Queue->>Jobs: recompute from source rows
+    Jobs->>Reads: replace price/availability/search projections
 ```
 
-### 3) State Transitions
+## Destructive changes
 
-```mermaid
-stateDiagram-v2
-    [*] --> Draft
-    Draft --> Scheduled: publish later
-    Draft --> Published: immediate publish
-    Scheduled --> Published: start time reached/manual
-    Published --> Archived: archive action
-    Published --> Draft: unpublish rollback
-    Archived --> Draft: restore/edit cycle
+Do not delete or repurpose catalog records that appear in orders or enrollments. Historical order items carry snapshots, but relational identity still matters for fulfillment, refunds, and support. Prefer archival/unpublication where commercial history exists.
 
-    state "Visibility Gate (Shop)" as VG {
-[*] --> Hidden
-Hidden --> Visible: Product=Published
-Visible --> Hidden: Product!=Published
-Visible --> Hidden: is_visible=false
-Visible --> Hidden: no published PDO
-Visible --> Hidden: productable not published
-Visible --> Hidden: term inactive
-}
-```
+## Change checklist
 
-### 4) Edge Case & Failure Matrix (Expected/Intended Behavior)
-
-| Case | Expected Behavior | Enforced By |
-|---|---|---|
-| Product is `published` but has zero published delivery options | Hidden from shop/search until a published PDO exists | Product visibility/search scopes + searchable gate |
-| Product term is inactive | Product excluded from shop/search without deleting data | `activeTerm` scope + availability projection |
-| Productable (course/seminar/asset) is not published | Product remains non-searchable/non-listable | `publishedProductable` scope + searchable gate |
-| Registration window not started/ended | Checkout rejects item even if item exists in cart | `CreateOrderFromCartAction::validateCartItems` |
-| Capacity reached | Checkout rejects with sold-out validation message | checkout validation against capacity/enrolled_count |
-| Duplicate gateway callback for completed payment | Callback ignored / blocked, no second completion | Payment processor gatekeeper checks |
-| Product delete when order items exist | Delete blocked with domain exception | `DeleteProductAction` guard |
-| Category delete when mapped to entities | Delete blocked to preserve taxonomy integrity | `DeleteCategoryAction` guard |
-
-### 5) Developer Guardrails (Strict Do/Don’t)
-
-1. **DO** keep controllers thin; **DON’T** write catalog business logic in controllers.
-2. **DO** mutate Product/Productable/PDO via Action classes + DTO validation; **DON’T** bypass with ad-hoc model updates.
-3. **DO** dispatch side-effect events/jobs after successful persistence boundaries; **DON’T** introduce pre-commit queue side effects for catalog projections.
-4. **DO** preserve snapshot/projection pipeline (price index, availability snapshot, search sync) when changing status/date/relationship fields; **DON’T** change write paths without updating invalidation triggers.
-5. **DO** protect destructive paths with invariant guards (orders/enrollments/relations); **DON’T** rely only on FK cascades for access-critical records.
+- Decide explicitly which layer owns a new field.
+- Update all affected projection invalidations when a source field changes.
+- Test publish/unpublish in both directions and the last-seat race.
+- Test that search/listing staleness cannot bypass checkout validation.
+- Preserve productable-level duplicate ownership rules across delivery options.
