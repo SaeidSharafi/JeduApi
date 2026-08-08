@@ -29,6 +29,20 @@ sail artisan always, never bare php artisan. Run `sail bin pint --dirty --format
 Conventional Commits: `type(scope): imperative description`
 e.g. `feat(api-product): add endpoint for creating new products`
 
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked in Forgejo at `https://git.jedu.ir/kuro/Jedu-api`; GitHub is a mirror only. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage uses the five default Matt Pocock engineering-skill labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Domain documentation uses the single-context layout. See `docs/agents/domain.md`.
+
 ---
 <laravel-boost-guidelines>
 === foundation rules ===
