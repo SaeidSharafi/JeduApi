@@ -1,0 +1,25 @@
+# Model Bundles Within the Three-Layer Catalog
+
+A Bundle is a productable with its own Product for storefront presentation and one or more composite Product Delivery Options for purchase. Each composite option owns a fixed set of component Product Delivery Options and their price allocations, preserving the existing productable → Product → Product Delivery Option architecture while allowing heterogeneous fulfillment through Moodle, SpotPlayer, IMS, and digital-file components.
+
+Bundle pricing is independent of component promotions and cannot receive additional coupons or promotions. Every component appears once, its allocated paid amount is snapshotted at checkout, and its Bundle discount is the component's base price minus that allocation. A component base-price change makes affected Bundle options unavailable until an administrator reviews their pricing.
+
+A Bundle may span school departments but has one owning department for catalog presentation. Purchase requires every component to be available and reserves all component capacity atomically. The customer sees one Bundle Purchase with component-level enrollments and provisioning statuses; refunds apply to the whole Bundle and revoke every component where its provider supports revocation, otherwise requiring visible manual follow-up.
+
+Bundles have dedicated PLP/PDP endpoints and composite fulfillment details, while each component retains its own access, progress, and certificate. Their admin APIs remain split across the canonical Bundle, Product, and Product Delivery Option resources; Bundle option composition is written atomically through the delivery-option DTO. Carts use the latest published composition, orders snapshot it immutably, and the customer order response adds grouped Bundle Purchases without removing its existing flat items.
+
+Purchase eligibility expands through Bundle composition: owning any component prevents purchasing the Bundle, and purchasing the Bundle prevents later standalone purchase of its components. Bundle quantity is always one.
+
+Nested Bundles are prohibited. Bundles require full payment and cannot receive coupons, featured prices, or automatic promotions, although unrelated standalone items may share the cart and receive their own discounts. After a full refund, repurchase remains blocked until every component's access has been successfully revoked.
+
+Public Bundle price data exposes the sum of component base prices, the sum of allocated paid amounts, and the resulting savings. A component price change automatically removes affected Bundle options from sale pending explicit pricing review. IMS receives each component's allocated amount as actual payment and the difference from its base price as a manual discount, with Bundle identity recorded in the enrollment note.
+
+A priced component may be allocated zero, but no component allocation may exceed its base price. Ownership is determined by the underlying Productable rather than the exact delivery option. Draft Bundles may reference unpublished components, while publication requires valid published components. A Bundle Product may expose multiple fixed composite options for customer selection.
+
+Bundle Purchase status is derived from all component enrollment and revocation states. Used Bundle records are archived rather than deleted. Refunds are initiated for the whole Bundle Purchase, use its immutable allocation snapshot for money actually paid, and distribute accounting records across its component order items.
+
+Refund percentage deductions are based on undiscounted base value, while refundable money is bounded by the amount actually allocated and paid. A Bundle-specific refund targets all and only the grouped component order items; a full-order refund composes Bundle-level refunds with refunds for unrelated standalone items. Financial refund completion precedes asynchronous provider revocation, and the response exposes both one commercial summary and its component-level audit breakdown.
+
+The Bundle-level policy deduction is distributed across components by base-price weight. A component's effective deduction is capped by its paid allocation; shortfalls from free or insufficiently allocated components are redistributed across paid components with remaining value until the full policy deduction is assigned or all paid value is exhausted. Consequently, the effective deduction is the lesser of the policy deduction and the amount actually paid.
+
+A full-order refund validates every Bundle group and standalone item before proceeding, issues exactly one combined gateway refund, and retains component refund records for accounting and revocation. Percentage deductions are calculated per commercial unit from base value; fixed order deductions are distributed across units by base-value weight and then redistributed within each Bundle. Failed external revocation leaves the order and affected Bundle Purchases pending, with component-level retry visibility and repurchase blocked until revocation succeeds.
