@@ -53,7 +53,7 @@ final class DiscountPromotionCreateData extends Data
             'rules'                            => ['required', 'array', 'min:1', app(CheckDiscountConfigurationRule::class)],
             'rules.*.type'                     => ['required', 'string', 'in:condition,action'],
             'rules.*.handler'                  => ['required', 'string'],
-            'rules.*.configuration'            => ['required', 'array'],
+            'rules.*.configuration'            => ['present', 'array'],
             'coupons'                          => ['array', 'prohibited_if:type,'.DiscountTypeEnum::PRODUCT_SPECIFIC->value],
             'coupons.*.code'                   => ['required_with:coupons', 'string', 'max:50', 'alpha_num'],
             'coupons.*.usage_limit'            => ['nullable', 'integer', 'min:1'],

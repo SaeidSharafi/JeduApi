@@ -11,6 +11,6 @@ final class DiscountPromotionRuleCreateData extends Data
     public function __construct(
         public string $type,           // 'condition' or 'action'
         public string $handler,        // e.g., 'cart_value_over', 'apply_percentage_off'
-        public array $configuration,   // Handler-specific configuration
+        public ?array $configuration = [],   // Handler-specific configuration
     ) {}
 }
