@@ -176,7 +176,7 @@ return [
             'fields'      => [
                 'threshold' => [
                     'label'       => 'Capacity Threshold',
-                    'description' => 'The capacity utilization ratio at which the condition is triggered (e.g., 0.8 for 80% full).',
+                    'description' => 'The capacity utilization ratio at which the condition is triggered (e.g., 80 for 80% full).',
                 ],
             ],
         ],
