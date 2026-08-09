@@ -7,7 +7,7 @@ use Spatie\LaravelData\Data;
 class LowCapacityRemainingData extends Data
 {
     public function __construct(
-        public float $threshold // e.g. 0.8 for 80% full
+        public int $threshold
     ) {}
 
     /**
@@ -18,7 +18,7 @@ class LowCapacityRemainingData extends Data
     public static function rules(): array
     {
         return [
-            'threshold' => ['required', 'numeric', 'min:0', 'max:1'],
+            'threshold' => ['required', 'numeric', 'min:0', 'max:100'],
         ];
     }
 }

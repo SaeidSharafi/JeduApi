@@ -20,8 +20,8 @@ describe('UpdateEnrollmentAction', function (): void {
         ]);
 
         $data = EnrollmentUpdateData::from([
-            'access_start_date'      => '2026-01-01',
-            'access_end_date'        => '2026-12-31',
+            'access_start_date'      => '1404-10-11',
+            'access_end_date'        => '1405-10-10',
             'external_enrollment_id' => 67890,
             'notes'                  => 'New notes',
         ]);

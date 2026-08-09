@@ -9,7 +9,7 @@ use App\Services\Discounts\Product\Conditions\LowCapacityRemainingCondition;
 describe('LowCapacityRemainingCondition', function (): void {
     it('passes when capacity threshold is reached', function (): void {
         $condition = new LowCapacityRemainingCondition();
-        $config    = new LowCapacityRemainingData(threshold: 0.8); // 80% full
+        $config    = new LowCapacityRemainingData(threshold: 80); // 80% full
 
         $option = ProductDeliveryOption::factory()->make([
             'capacity'       => 10,
@@ -21,7 +21,7 @@ describe('LowCapacityRemainingCondition', function (): void {
 
     it('fails when capacity threshold is not reached', function (): void {
         $condition = new LowCapacityRemainingCondition();
-        $config    = new LowCapacityRemainingData(threshold: 0.8);
+        $config    = new LowCapacityRemainingData(threshold: 80);
 
         $option = ProductDeliveryOption::factory()->make([
             'capacity'       => 10,
@@ -33,7 +33,7 @@ describe('LowCapacityRemainingCondition', function (): void {
 
     it('does not include reserved_count', function (): void {
         $condition = new LowCapacityRemainingCondition();
-        $config    = new LowCapacityRemainingData(threshold: 0.8);
+        $config    = new LowCapacityRemainingData(threshold: 80);
 
         $option = ProductDeliveryOption::factory()->make([
             'capacity'       => 10,
@@ -46,7 +46,7 @@ describe('LowCapacityRemainingCondition', function (): void {
 
     it('fails when capacity is null (unlimited)', function (): void {
         $condition = new LowCapacityRemainingCondition();
-        $config    = new LowCapacityRemainingData(threshold: 0.8);
+        $config    = new LowCapacityRemainingData(threshold: 80);
 
         $option = ProductDeliveryOption::factory()->make([
             'capacity'       => null,

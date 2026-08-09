@@ -25,10 +25,8 @@ final class LowCapacityRemainingCondition implements ProductDiscountConditionCon
             return false;
         }
 
-        // only enrolled_count should be considered, becuase if we add reserved_count, malicious user can
-        //  easly trigger this condition by making fake pedning orders
         $ratio = (($option->enrolled_count ?? 0) / $option->capacity);
 
-        return $ratio >= $configuration->threshold;
+        return ($ratio * 100) >= $configuration->threshold;
     }
 }
