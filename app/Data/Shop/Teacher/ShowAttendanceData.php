@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Teacher;
 
+use App\Helpers\JalaliDateHelper;
 use Hekmatinasser\Jalali\Exceptions\InvalidDatetimeException;
 use Hekmatinasser\Jalali\Exceptions\InvalidUnitException;
 use Hekmatinasser\Verta\Facades\Verta;
@@ -19,21 +20,9 @@ final class ShowAttendanceData extends Data
 
     public static function prepareForPipeline(array $properties): array
     {
-        if (!empty($properties['attendance_date'])) {
-            try {
-                // Normalize separator
-                $dateString = str_replace('/', '-', $properties['attendance_date']);
-
-                // Convert Jalali to Gregorian Carbon instance
-                $properties['attendance_date'] = Verta::parseFormat('Y-m-d', $dateString)
-                    ->toCarbon()
-                    ->format('Y-m-d');
-            } catch (InvalidDatetimeException|InvalidUnitException $e) {
-                $properties['attendance_date'] = 'invalid-jalali-date';
-            }
-        }
-
-        return $properties;
+        return JalaliDateHelper::toGregorian($properties, [
+            'attendance_date'
+        ]);
     }
 
     public static function rules(?ValidationContext $context = null): array

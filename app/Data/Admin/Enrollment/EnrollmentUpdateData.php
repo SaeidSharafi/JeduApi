@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Enrollment;
 
+use App\Helpers\JalaliDateHelper;
+use Hekmatinasser\Jalali\Exceptions\InvalidDatetimeException;
+use Hekmatinasser\Jalali\Exceptions\InvalidUnitException;
+use Hekmatinasser\Verta\Facades\Verta;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -15,6 +19,14 @@ final class EnrollmentUpdateData extends Data
         public ?int $external_enrollment_id,
         public ?string $notes,
     ) {}
+
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'access_start_date',
+            'access_end_date',
+        ]);
+    }
 
     public static function rules(?ValidationContext $context = null): array
     {
