@@ -69,6 +69,7 @@ task('deploy', [
     'db:seed:demo',
     'deploy:publish',
     'php-fpm:reload',
+    'artisan:queue:restart',
     'scribe:generate',
 ]);
 
