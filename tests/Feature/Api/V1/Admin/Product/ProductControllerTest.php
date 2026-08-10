@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Category;
 use App\Models\Product;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
@@ -151,14 +152,26 @@ describe('Controller Tests', function (): void {
         $response = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertCreated()
             ->assertJsonFragment(['name' => 'New Product']);
+        expect($response->json('data.category_ids'))->toContain($this->category->id);
     });
 
     it('should show a product', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW]);
         $product  = Product::factory()->create()->fresh();
+        $category1 = Category::factory()->create();
+        $category2 = Category::factory()->create();
+        $category3 = Category::factory()->create();
+
+        $product->categories()->attach([$category1->id, $category2->id]);
+
         $response = $this->getJson(route('api.v1.admin.products.show', ['product' => $product->id]));
         $response->assertOk()
             ->assertJsonFragment(['name' => $product->name]);
+
+        expect($response->json('data.id'))->toBe($product->id)
+            ->and($response->json('data.category_ids'))->not->toContain($category3->id)
+            ->and($response->json('data.category_ids'))->toContain($category1->id)
+            ->and($response->json('data.category_ids'))->toContain($category2->id);
     });
 
     it('should update a product', function (): void {
@@ -176,6 +189,7 @@ describe('Controller Tests', function (): void {
         $response = $this->putJson(route('api.v1.admin.products.update', ['product' => $product->id]), $data);
         $response->assertOk()
             ->assertJsonFragment(['name' => 'Updated Product']);
+        expect($response->json('data.category_ids'))->toContain($this->category->id);
     });
 
     it('should delete a product', function (): void {

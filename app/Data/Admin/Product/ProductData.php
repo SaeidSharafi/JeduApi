@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Data\Admin\Product;
 
 use App\Contracts\ProductableDataContract;
+use App\Data\Admin\Category\CategorizableListItemData;
 use App\Data\Admin\Term\ShowTermData;
 use App\Data\Casts\ProductableCast;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Product;
 use Hekmatinasser\Verta\Verta;
+use Illuminate\Support\Collection;
+use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
@@ -19,6 +22,9 @@ use Spatie\LaravelData\Data;
 
 final class ProductData extends Data
 {
+    #[Computed]
+    public array $category_ids;
+
     public function __construct(
         public int $id,
         public int $vendor_id,
@@ -39,7 +45,10 @@ final class ProductData extends Data
         public ?array $details_json,
         public ?Verta $event_start_at = null,
         public ?Verta $event_ended_at = null,
-    ) {}
+        public ?array $categories = [],
+    ) {
+        $this->category_ids = $this->categories ? array_column($this->categories, 'id') : [];
+    }
 
     public static function fromModel(Product $product): self
     {
@@ -49,5 +58,12 @@ final class ProductData extends Data
             'event_start_at' => $product->event_start_at,
             'event_ended_at' => $product->event_ended_at,
         ]);
+    }
+
+    protected function exceptProperties(): array
+    {
+        return [
+            'categories',
+        ];
     }
 }

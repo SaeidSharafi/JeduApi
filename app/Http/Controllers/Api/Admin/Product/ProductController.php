@@ -72,7 +72,7 @@ final class ProductController extends Controller
     {
         Gate::authorize('create', Product::class);
         $product = $action->handle($data);
-        $product->load(['productableWithAllRelations', 'term']);
+        $product->load(['productableWithAllRelations', 'term', 'categories:id']);
 
         return apiResponse()->created(data: ProductData::from($product), model: Product::class);
     }
@@ -87,7 +87,7 @@ final class ProductController extends Controller
     public function show(Product $product): ApiResponseInterface
     {
         Gate::authorize('view', $product);
-        $product->load(['productableWithAllRelations', 'term']);
+        $product->load(['productableWithAllRelations', 'term', 'categories:id']);
 
         return apiResponse()->success(
             ProductData::from($product)->toArray()
@@ -105,7 +105,7 @@ final class ProductController extends Controller
     {
         Gate::authorize('update', $product);
         $product = $action->handle($data, $product);
-        $product->load(['productableWithAllRelations', 'term', 'categories']);
+        $product->load(['productableWithAllRelations', 'term', 'categories:id']);
 
         return apiResponse()->updated(
             ProductData::from($product)->toArray(),
