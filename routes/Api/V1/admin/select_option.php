@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\Admin\SelectOptions\BlogCategorySelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\CategorySelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\CustomerSelectOptionController;
+use App\Http\Controllers\Api\Admin\SelectOptions\FulfillmentDeliveryOptionsSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\ProductableSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\ProductSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\StaffSelectOptionController;
@@ -28,5 +29,7 @@ Route::get('select-option/staff', StaffSelectOptionController::class)
     ->name('select-option.staff');
 Route::get('select-option/customers', CustomerSelectOptionController::class)
     ->name('select-option.customers');
+Route::get('select-option/delivery-options', FulfillmentDeliveryOptionsSelectOptionController::class)
+    ->name('select-option.delivery-options');
 Route::get('select-option/products/{productableType?}', ProductSelectOptionController::class)
     ->name('select-option.products');

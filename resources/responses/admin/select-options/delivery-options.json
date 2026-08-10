@@ -1,0 +1,59 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "value": "digital",
+      "label": "دیجیتال",
+      "delivery_options": [
+        {
+          "value": "direct_download",
+          "label": "دانلود مستقیم"
+        }
+      ]
+    },
+    {
+      "value": "physical",
+      "label": "فیزیکی",
+      "delivery_options": []
+    },
+    {
+      "value": "online_service",
+      "label": "سرویس آنلاین",
+      "delivery_options": [
+        {
+          "value": "live_session_bbb",
+          "label": "جلسه زنده با BBB"
+        },
+        {
+          "value": "live_session_skyroom",
+          "label": "جلسه زنده با Skyroom"
+        },
+        {
+          "value": "lms_moodle",
+          "label": "LMS Moodle"
+        }
+      ]
+    },
+    {
+      "value": "offline_service",
+      "label": "سرویس آفلاین",
+      "delivery_options": [
+        {
+          "value": "video_platform_spotplayer",
+          "label": "پلتفرم ویدیویی SpotPlayer"
+        }
+      ]
+    },
+    {
+      "value": "in_person_service",
+      "label": "سرویس حضوری",
+      "delivery_options": [
+        {
+          "value": "in_person",
+          "label": "حضوری"
+        }
+      ]
+    }
+  ],
+  "metadata": []
+}
