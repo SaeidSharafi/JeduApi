@@ -9,9 +9,8 @@ use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\StringType;
-use Spatie\LaravelData\Data;
 
-final class LiveSessionSkyroomDetailsData extends Data implements DeliveryOptionDetailDataContract
+final class LiveSessionSkyroomDetailsData extends BaseDeliveryOptionDetailData implements DeliveryOptionDetailDataContract
 {
     public function __construct(
         #[Nullable, IntegerType]

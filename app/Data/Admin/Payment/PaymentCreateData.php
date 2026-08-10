@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Payment;
 
+use App\Helpers\JalaliDateHelper;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -15,16 +17,23 @@ final class PaymentCreateData extends Data
 
     ) {}
 
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'data.transaction_date',
+        ]);
+    }
+
     public static function rules(?ValidationContext $context = null): array
     {
-        $now = verta()->format('Y-m-d');
+        $now = now()->format('Y-m-d');
 
         return [
             'admin_notes' => ['nullable', 'string', 'max:1000'],
             'data'        => ['nullable', 'array'],
             // Bank transfer validation
             'data.transaction_id'   => ['nullable', 'string', 'max:255'],
-            'data.transaction_date' => ['nullable', 'jdate:Y-m-d', 'jdate_before_equal:'.$now.',Y-m-d'],
+            'data.transaction_date' => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'before_or_equal:'.$now],
             'data.sender_name'      => ['nullable', 'string', 'max:255'],
             'data.notes'            => ['nullable', 'string', 'max:1000'],
         ];

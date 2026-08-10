@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Term;
 
-use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\TermStatusEnum;
+use App\Helpers\JalaliDateHelper;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -20,22 +22,28 @@ final class CreateTermData extends Data
         #[WithCast(EnumCast::class)]
         public ?TermStatusEnum $status,
         public ?string $academic_year,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Carbon $start_date,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Carbon $end_date,
     ) {}
 
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'start_date',
+            'end_date',
+        ]);
+    }
+
     public static function rules(?ValidationContext $context = null): array
     {
-        $now = verta()->format('Y-m-d');
-
         return [
             'name'          => ['required', 'string', 'max:255'],
             'status'        => ['nullable', Rule::enum(TermStatusEnum::class)],
             'academic_year' => ['nullable', 'string', 'max:255'],
-            'start_date'    => ['nullable', 'jdate:Y-m-d'],
-            'end_date'      => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('start_date').',Y-m-d'],
+            'start_date'    => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
+            'end_date'      => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after:start_date'],
         ];
     }
 

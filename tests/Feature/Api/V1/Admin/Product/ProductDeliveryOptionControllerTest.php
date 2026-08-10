@@ -140,6 +140,27 @@ describe('User with permissions', function (): void {
             'teacher_id'                 => $this->teachers[2]->id,
         ]);
     });
+    it('should store detail dates as Gregorian and return them as Jalali', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
+        ]);
+
+        $jalaliDate                                = '1405-05-19';
+        $gregorianDate                             = Hekmatinasser\Verta\Facades\Verta::parseFormat('Y-m-d', $jalaliDate)->toCarbon()->format('Y-m-d');
+        $this->simpleData['details']['start_date'] = $jalaliDate;
+
+        $response = $this->postJson(
+            route('api.v1.admin.delivery-options.store', ['product' => $this->product->id]),
+            $this->simpleData
+        );
+
+        $response->assertCreated()
+            ->assertJsonPath('data.details.start_date', $jalaliDate);
+
+        $deliveryOption = ProductDeliveryOption::query()->findOrFail($response->json('data.id'));
+
+        expect($deliveryOption->details_json['start_date'])->toBe($gregorianDate);
+    });
     it('should create a new delivery option for a product without providing sku', function (?string $sku): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
@@ -281,6 +302,48 @@ describe('User with permissions', function (): void {
         ]);
 
     });
+    it('should convert detail dates when updating a delivery option', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_UPDATE,
+        ]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'       => $this->product->id,
+            'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
+        ]);
+        $data             = $deliveryOption->toArray();
+        $jalaliDate       = '1405-05-19';
+        $jalaliEndDate    = '1405-05-20';
+        $gregorianDate    = Hekmatinasser\Verta\Facades\Verta::parseFormat('Y-m-d', $jalaliDate)->toCarbon()->format('Y-m-d');
+        $gregorianEndDate = Hekmatinasser\Verta\Facades\Verta::parseFormat('Y-m-d', $jalaliEndDate)->toCarbon()->format('Y-m-d');
+        $data['details']  = [
+            'moodle_course_id'      => 120,
+            'activity_id'           => null,
+            'start_date'            => $jalaliDate,
+            'enrollment_start_date' => $jalaliDate,
+            'enrollment_end_date'   => $jalaliEndDate,
+        ];
+        $data['teachers'] = Teacher::factory()->count(2)->create()->pluck('id')->all();
+
+        $response = $this->putJson(
+            route('api.v1.admin.delivery-options.update', [
+                'product'         => $deliveryOption->product_id,
+                'delivery_option' => $deliveryOption->id,
+            ]),
+            $data
+        );
+
+        $response->assertOk()
+            ->assertJsonPath('data.details.start_date', $jalaliDate)
+            ->assertJsonPath('data.details.enrollment_start_date', $jalaliDate)
+            ->assertJsonPath('data.details.enrollment_end_date', $jalaliEndDate);
+
+        $details = $deliveryOption->fresh()->details_json;
+
+        expect($details['start_date'])->toBe($gregorianDate)
+            ->and($details['enrollment_start_date'])->toBe($gregorianDate)
+            ->and($details['enrollment_end_date'])->toBe($gregorianEndDate);
+    });
     it('should delete the specified delivery option', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_DELETE,
@@ -359,6 +422,37 @@ describe('User without permissions', function (): void {
 });
 
 describe('validation', function (): void {
+    it('distinguishes an invalid Jalali date from an invalid date format', function (): void {
+        $this->app->setLocale('fa');
+        $this->authorized_user([
+            App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
+        ]);
+        $product = App\Models\Product::factory()->create();
+        $teacher = Teacher::factory()->create();
+        $data    = ProductDeliveryOption::factory()
+            ->make([
+                'product_id'       => $product->id,
+                'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+                'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
+            ])->toArray();
+        $data['teachers'] = [$teacher->id];
+        $data['details']  = [
+            'moodle_course_id' => 120,
+            'activity_id'      => null,
+        ];
+        $data['available_from'] = '1405-12-31';
+
+        $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data)
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.available_from.0', 'تاریخ انتشار یک تاریخ جلالی معتبر نیست.');
+
+        $data['available_from'] = '1405-12';
+
+        $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data)
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.available_from.0', 'تاریخ انتشار با فرمت Y-m-d مطابقت ندارد.');
+    });
+
     it('should return validation error for required fields', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,

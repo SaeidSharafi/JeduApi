@@ -11,9 +11,8 @@ use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Attributes\Validation\Url;
-use Spatie\LaravelData\Data;
 
-final class LiveSessionBbbDetailsData extends Data implements DeliveryOptionDetailDataContract
+final class LiveSessionBbbDetailsData extends BaseDeliveryOptionDetailData implements DeliveryOptionDetailDataContract
 {
     public function __construct(
         #[Nullable, StringType, Max(255)]

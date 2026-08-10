@@ -115,6 +115,10 @@ it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', fu
             'auto_create_meeting'   => null,
             'meeting_id'            => null,
             'moodle_quiz_course_id' => null,
+            'lms_course_code' => null,
+            'start_date' => null,
+            'schedule_days' => null,
+            'duration' => null,
         ]));
 });
 
@@ -135,6 +139,10 @@ it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYR
             'planned_duration_minutes' => 60,
             'admin_notes'              => 'Admin notes for Skyroom session',
             'moodle_quiz_course_id'    => null,
+            'lms_course_code' => null,
+            'start_date' => null,
+            'schedule_days' => null,
+            'duration' => null,
         ]);
 });
 
@@ -152,5 +160,9 @@ it('return VideoPlatformSpotplayerDetailsData if delivery_method is VIDEO_PLATFO
             'spot_id'               => 'spot123',
             'updated_at'            => null,
             'moodle_quiz_course_id' => null,
+            'lms_course_code' => null,
+            'start_date' => null,
+            'schedule_days' => null,
+            'duration' => null,
         ]);
 });

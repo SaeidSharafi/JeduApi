@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Enrollment;
 
 use App\Helpers\JalaliDateHelper;
-use Hekmatinasser\Jalali\Exceptions\InvalidDatetimeException;
-use Hekmatinasser\Jalali\Exceptions\InvalidUnitException;
-use Hekmatinasser\Verta\Facades\Verta;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -31,8 +29,8 @@ final class EnrollmentUpdateData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'access_start_date'      => ['nullable', 'date'],
-            'access_end_date'        => ['nullable', 'date', 'after_or_equal:access_start_date'],
+            'access_start_date'      => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
+            'access_end_date'        => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after_or_equal:access_start_date'],
             'external_enrollment_id' => ['nullable', 'integer'],
             'notes'                  => ['nullable', 'string', 'max:1000'],
         ];

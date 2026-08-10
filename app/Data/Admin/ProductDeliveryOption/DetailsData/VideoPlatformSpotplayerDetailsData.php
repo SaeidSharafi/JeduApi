@@ -10,9 +10,8 @@ use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\WithCast;
-use Spatie\LaravelData\Data;
 
-final class VideoPlatformSpotplayerDetailsData extends Data implements DeliveryOptionDetailDataContract
+final class VideoPlatformSpotplayerDetailsData extends BaseDeliveryOptionDetailData implements DeliveryOptionDetailDataContract
 {
     public function __construct(
         public string $spot_id,

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Teacher;
 
-use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\User\GenderEnum;
+use App\Helpers\JalaliDateHelper;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -23,12 +25,19 @@ final class CreateTeacherData extends Data
         public string $email,
         public string $phone,
         public string $gender,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Carbon $birth_date,
         public ?array $social_links,
         public int $user_id,
         public array $media,
     ) {}
+
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'birth_date',
+        ]);
+    }
 
     public static function rules(?ValidationContext $context = null): array
     {
@@ -60,7 +69,7 @@ final class CreateTeacherData extends Data
                 }),
             ],
             'gender'                  => ['required', Rule::enum(GenderEnum::class)],
-            'birth_date'              => ['nullable', 'jdate:Y-m-d'],
+            'birth_date'              => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
             'social_links'            => ['nullable', 'array'],
             'social_links.*.platform' => ['required', 'string', 'max:50'],
             'social_links.*.link'     => ['required', 'url', 'max:255'],

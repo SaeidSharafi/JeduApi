@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Discounts;
 
-use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\Order\DiscountTypeEnum;
+use App\Helpers\JalaliDateHelper;
 use App\Rules\CheckDiscountConfigurationRule;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -23,9 +25,9 @@ final class DiscountPromotionCreateData extends Data
         public array $rules,
         public bool $is_active,
         public ?string $description = null,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Carbon $starts_at = null,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Carbon $ends_at = null,
         public int $priority = 0,
         public bool $stop_processing_subsequent_rules = false,
@@ -35,17 +37,25 @@ final class DiscountPromotionCreateData extends Data
         public array $coupons = [],
     ) {}
 
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'starts_at',
+            'ends_at',
+        ]);
+    }
+
     public static function rules(?ValidationContext $context = null): array
     {
-        $now = verta()->format('Y-m-d');
+        $now = now()->format('Y-m-d');
 
         return [
             'name'                             => ['required', 'string', 'max:255'],
             'type'                             => ['required', 'string', Rule::enum(DiscountTypeEnum::class)],
             'description'                      => ['nullable', 'string', 'max:1000'],
             'is_active'                        => ['required', 'boolean'],
-            'starts_at'                        => ['nullable', 'jdate:Y-m-d', 'jdate_after_equal:'.$now.',Y-m-d'],
-            'ends_at'                          => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('starts_at').',Y-m-d'],
+            'starts_at'                        => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after_or_equal:'.$now],
+            'ends_at'                          => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after:starts_at'],
             'priority'                         => ['integer', 'min:0', 'max:1000'],
             'stop_processing_subsequent_rules' => ['boolean'],
             'usage_limit_total'                => ['nullable', 'integer', 'min:1'],

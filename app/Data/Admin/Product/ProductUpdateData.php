@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Product;
 
-use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Helpers\JalaliDateHelper;
 use App\Models\Product;
 use App\Rules\PublishedProductExistRule;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -27,11 +29,19 @@ final class ProductUpdateData extends Data
         public bool $is_featured,
         public array $categories,
         public ?array $details_json,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $event_start_at = null,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $event_ended_at = null,
     ) {}
+
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'event_start_at' => 'Y-m-d H:i:s',
+            'event_ended_at' => 'Y-m-d H:i:s',
+        ]);
+    }
 
     public static function rules(?ValidationContext $context = null): array
     {
@@ -56,8 +66,8 @@ final class ProductUpdateData extends Data
             'categories'        => ['required', 'array'],
             'categories.*'      => ['required', 'integer', 'exists:categories,id'],
             'details_json'      => ['nullable', 'array'],
-            'event_start_at'    => ['nullable', 'date_format:Y-m-d H:i:s'],
-            'event_ended_at'    => ['nullable', 'date_format:Y-m-d H:i:s', 'after_or_equal:event_start_at'],
+            'event_start_at'    => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s'],
+            'event_ended_at'    => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s', 'after_or_equal:event_start_at'],
         ];
     }
 

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\WalletCampaign;
 
-use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
+use App\Helpers\JalaliDateHelper;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -22,16 +24,24 @@ final class WalletCampaignCreateData extends Data
         public int $amount,
         public ?int $usage_limit_total,
         public ?int $usage_limit_per_user,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Carbon $starts_at,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Carbon $ends_at,
         public ?array $metadata
     ) {}
 
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'starts_at',
+            'ends_at',
+        ]);
+    }
+
     public static function rules(?ValidationContext $context = null): array
     {
-        $now = verta()->format('Y-m-d');
+        $now = now()->format('Y-m-d');
 
         return [
             'name'                 => ['required', 'string', 'max:255'],
@@ -41,8 +51,8 @@ final class WalletCampaignCreateData extends Data
             'amount'               => ['required', 'integer', 'min:1'],
             'usage_limit_total'    => ['nullable', 'integer', 'min:1'],
             'usage_limit_per_user' => ['nullable', 'integer', 'min:1'],
-            'starts_at'            => ['nullable', 'jdate:Y-m-d', 'jdate_after_equal:'.$now.',Y-m-d'],
-            'ends_at'              => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('starts_at').',Y-m-d'],
+            'starts_at'            => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after_or_equal:'.$now],
+            'ends_at'              => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after:starts_at'],
             'metadata'             => ['nullable', 'array'],
         ];
     }

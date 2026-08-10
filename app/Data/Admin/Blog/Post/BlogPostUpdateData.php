@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Blog\Post;
 
-use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Helpers\JalaliDateHelper;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use App\Traits\ValidatesMetaTags;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -25,7 +27,7 @@ final class BlogPostUpdateData extends Data
         public string $excerpt,
         public string $status,
         public ?int $author_id,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $published_at,
         public ?bool $is_featured = false,
         /** @var array{id: int, type: string}|null */
@@ -39,6 +41,13 @@ final class BlogPostUpdateData extends Data
 
         public ?array $media = [],
     ) {}
+
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'published_at' => 'Y-m-d H:i:s',
+        ]);
+    }
 
     public static function rules(?ValidationContext $context = null): array
     {
@@ -56,7 +65,7 @@ final class BlogPostUpdateData extends Data
             'excerpt'             => ['required', 'string', 'max:500'],
             'status'              => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
             'author_id'           => ['nullable', 'integer', 'exists:staff,id'],
-            'published_at'        => ['nullable', 'jdate:Y-m-d H:i:s'],
+            'published_at'        => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s'],
             'is_featured'         => ['nullable', 'boolean'],
             'main_productable'    => ['nullable', 'array'],
             'main_productable.id' => [

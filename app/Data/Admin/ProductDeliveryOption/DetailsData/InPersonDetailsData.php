@@ -7,9 +7,8 @@ namespace App\Data\Admin\ProductDeliveryOption\DetailsData;
 use App\Contracts\DeliveryOptionDetailDataContract;
 use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
-use Spatie\LaravelData\Data;
 
-final class InPersonDetailsData extends Data implements DeliveryOptionDetailDataContract
+final class InPersonDetailsData extends BaseDeliveryOptionDetailData implements DeliveryOptionDetailDataContract
 {
     public function __construct(
         public string $address,

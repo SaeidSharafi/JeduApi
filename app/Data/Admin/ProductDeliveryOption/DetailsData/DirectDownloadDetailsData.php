@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Data\Admin\ProductDeliveryOption\DetailsData;
 
 use App\Contracts\DeliveryOptionDetailDataContract;
-use Spatie\LaravelData\Data;
 
-final class DirectDownloadDetailsData extends Data implements DeliveryOptionDetailDataContract
+final class DirectDownloadDetailsData extends BaseDeliveryOptionDetailData implements DeliveryOptionDetailDataContract
 {
     public function __construct(
         public int $max_downloads,

@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\DigitalAsset;
 
-use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
+use App\Helpers\JalaliDateHelper;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use App\Traits\ValidatesMetaTags;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
@@ -35,7 +37,7 @@ final class CreateDigitalAssetData extends Data
         public ?string $meta_title,
         public ?string $meta_description,
         public ?string $meta_keywords,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $published_at,
         public ?int $page_count,
         public ?int $duration_seconds,
@@ -43,6 +45,13 @@ final class CreateDigitalAssetData extends Data
         public array $attachments,
         public array $media = [],
     ) {}
+
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'published_at' => 'Y-m-d H:i:s',
+        ]);
+    }
 
     /**
      * @codeCoverageIgnore
@@ -80,7 +89,7 @@ final class CreateDigitalAssetData extends Data
                 'status'              => ['required', Rule::enum(PublicationStatusEnum::class)],
                 'created_by'          => ['nullable', 'integer', 'exists:staff,id'],
                 'keywords'            => ['nullable', 'string', 'max:255'],
-                'published_at'        => ['nullable', 'jdate:Y-m-d H:i:s'],
+                'published_at'        => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s'],
                 'page_count'          => ['nullable', 'integer', 'min:0'],
                 'duration_seconds'    => ['nullable', 'integer', 'min:0'],
                 'faq'                 => ['nullable', 'array'],

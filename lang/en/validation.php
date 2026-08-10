@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'invalid_jalali_date' => 'The :attribute is not a valid Jalali date.',
+
     'custom' => [
         'attribute-name' => [
             'rule-name' => 'custom-message',

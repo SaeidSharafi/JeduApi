@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Customer;
 
-use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\User\CivilIdTypeEnum;
 use App\Enums\User\EducationLevelEnum;
 use App\Enums\User\EducationStatusEnum;
 use App\Enums\User\GenderEnum;
+use App\Helpers\JalaliDateHelper;
 use App\Rules\CivilIdRule;
 use App\Rules\UniqueCivilIdRule;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 
 final class UpdateProfileData extends Data
@@ -25,7 +27,7 @@ final class UpdateProfileData extends Data
         public ?string $phone2,
         public string $civil_id,
         public string $civil_id_type,
-        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Carbon $date_of_birth,
         public string $father_name,
         public string $gender,
@@ -33,6 +35,13 @@ final class UpdateProfileData extends Data
         public ?string $field_of_study,
         public ?string $education_status,
     ) {}
+
+    public static function prepareForPipeline(array $properties): array
+    {
+        return JalaliDateHelper::toGregorian($properties, [
+            'date_of_birth',
+        ]);
+    }
 
     public static function rules(): array
     {
@@ -50,7 +59,7 @@ final class UpdateProfileData extends Data
                 'required', 'string', 'max:20', new CivilIdRule(), new UniqueCivilIdRule(auth()->user()?->id),
             ],
             'civil_id_type'    => ['required', 'string', 'max:20', Rule::enum(CivilIdTypeEnum::class)],
-            'date_of_birth'    => ['required', 'jdate:Y-m-d'],
+            'date_of_birth'    => ['bail', 'required', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
             'father_name'      => ['required', 'string', 'max:100'],
             'gender'           => ['required', 'string', 'max:10', Rule::enum(GenderEnum::class)],
             'education_level'  => ['nullable', 'string', 'max:20', Rule::enum(EducationLevelEnum::class)],
