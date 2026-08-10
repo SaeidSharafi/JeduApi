@@ -64,7 +64,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Copy .env
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+        run: php -r "file_exists('.env') || copy('.env.test', '.env');"
 
       - name: Configure Composer to use Nexus
         run: |
