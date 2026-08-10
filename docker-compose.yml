@@ -27,6 +27,7 @@ services:
             - traefik.docker.network=fleet
         depends_on:
             - pgsql
+            - redis
             - typesense
             - mailpit
     pgsql:
