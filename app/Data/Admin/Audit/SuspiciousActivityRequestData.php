@@ -14,11 +14,11 @@ final class SuspiciousActivityRequestData extends Data
 {
     public function __construct(
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
-        public ?Carbon $date_from,
+        public Carbon $date_from,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
-        public ?Carbon $date_to,
-        public ?int $large_amount_threshold = 50000000, // 50M IRR
-        public ?int $high_frequency_threshold = 10,     // 10+ transactions per day
+        public Carbon $date_to,
+        public int $large_amount_threshold,
+        public int $high_frequency_threshold,
         public bool $include_off_hours = true,
         public bool $include_large_amounts = true,
         public bool $include_high_frequency = true,
@@ -33,8 +33,8 @@ final class SuspiciousActivityRequestData extends Data
         return [
             'date_from'                => ['required', 'jdate:Y-m-d', 'jdate_before_equal:'.request('date_to').',Y-m-d'],
             'date_to'                  => ['required', 'jdate:Y-m-d', 'jdate_before_equal:'.$now.',Y-m-d'],
-            'large_amount_threshold'   => ['nullable', 'integer', 'min:1000000'], // Min 1M IRR
-            'high_frequency_threshold' => ['nullable', 'integer', 'min:5', 'max:100'],
+            'large_amount_threshold'   => ['required', 'integer', 'min:1000000'],
+            'high_frequency_threshold' => ['required', 'integer', 'min:5', 'max:100'],
             'include_off_hours'        => ['boolean'],
             'include_large_amounts'    => ['boolean'],
             'include_high_frequency'   => ['boolean'],

@@ -58,6 +58,8 @@ describe('SuspiciousActivityController', function (): void {
             ->postJson($this->baseUrl, [
                 'date_from' => $this->dateFrom,
                 'date_to'   => $this->dateTo,
+                'large_amount_threshold'   => 5000000,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertForbidden();
@@ -134,6 +136,7 @@ describe('SuspiciousActivityController', function (): void {
                 'date_from'              => $this->dateFrom,
                 'date_to'                => $this->dateTo,
                 'large_amount_threshold' => 50000000,
+                'high_frequency_threshold' => 10,
                 'include_large_amounts'  => true,
             ]);
 
@@ -163,6 +166,8 @@ describe('SuspiciousActivityController', function (): void {
                 'date_from'         => verta('2025-1-14')->format('Y-m-d'),
                 'date_to'           => verta('2025-1-16')->format('Y-m-d'),
                 'include_off_hours' => true,
+                'large_amount_threshold'   => 5000000,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
@@ -197,6 +202,7 @@ describe('SuspiciousActivityController', function (): void {
                 'date_to'                  => $this->dateTo,
                 'high_frequency_threshold' => 10,
                 'include_high_frequency'   => true,
+                'large_amount_threshold'   => 5000000,
             ]);
 
         $response->assertSuccessful();
@@ -229,6 +235,8 @@ describe('SuspiciousActivityController', function (): void {
                 'date_from'             => $this->dateFrom,
                 'date_to'               => $this->dateTo,
                 'include_round_numbers' => true,
+                'large_amount_threshold'   => 5000000,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
@@ -265,6 +273,8 @@ describe('SuspiciousActivityController', function (): void {
             ->postJson($this->baseUrl, [
                 'date_from' => $this->dateFrom,
                 'date_to'   => $this->dateTo,
+                'large_amount_threshold'   => 5000000,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
@@ -287,6 +297,8 @@ describe('SuspiciousActivityController', function (): void {
             ->postJson($this->baseUrl, [
                 'date_from' => $this->dateFrom,
                 'date_to'   => $this->dateTo,
+                'large_amount_threshold'   => 5000000,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
@@ -329,6 +341,7 @@ describe('SuspiciousActivityController', function (): void {
                 'date_to'                => $this->dateTo,
                 'large_amount_threshold' => 50000000,
                 'include_large_amounts'  => true,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
@@ -349,6 +362,8 @@ describe('SuspiciousActivityController', function (): void {
                 'include_off_hours'      => true,
                 'include_high_frequency' => true,
                 'include_round_numbers'  => true,
+                'large_amount_threshold'   => 5000000,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
@@ -377,6 +392,7 @@ describe('SuspiciousActivityController', function (): void {
                 'date_to'                => $this->dateTo,
                 'large_amount_threshold' => 50000000,
                 'include_large_amounts'  => true,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
@@ -397,6 +413,8 @@ describe('SuspiciousActivityController', function (): void {
                 'date_from'             => $this->dateFrom,
                 'date_to'               => $this->dateTo,
                 'include_large_amounts' => true,
+                'large_amount_threshold'   => 5000000,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
@@ -418,6 +436,7 @@ describe('SuspiciousActivityController', function (): void {
                 'date_to'                => $this->dateTo,
                 'large_amount_threshold' => 25000000, // Lower threshold
                 'include_large_amounts'  => true,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
@@ -436,6 +455,8 @@ describe('SuspiciousActivityController', function (): void {
                 'include_off_hours'      => false,
                 'include_high_frequency' => false,
                 'include_round_numbers'  => false,
+                'large_amount_threshold'   => 5000000,
+                'high_frequency_threshold' => 10,
             ]);
 
         $response->assertSuccessful();
