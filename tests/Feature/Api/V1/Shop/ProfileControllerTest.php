@@ -28,6 +28,23 @@ it('show profile', function (): void {
     ]);
 
 });
+
+it('shows profile using the http only authentication cookie', function (): void {
+    $user  = App\Models\User::factory()->create();
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    $this->withCredentials()
+        ->withCookie('user_token', $token)
+        ->getJson(route('api.v1.shop.profile.show'))
+        ->assertOk()
+        ->assertJsonPath('data.uuid', $user->uuid);
+});
+
+it('rejects unauthenticated profile requests', function (): void {
+    $this->getJson(route('api.v1.shop.profile.show'))
+        ->assertUnauthorized();
+});
+
 it('update all fields on newly created profile', function (): void {
     $user = App\Models\User::create([
         'phone' => '09123456789',

@@ -23,7 +23,7 @@ use App\Http\Controllers\Api\Shop\Teacher\TeacherMoodleSsoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletInfoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletTopupController;
 
-Route::middleware(['auth:user'])
+Route::middleware(['auth.cookie:user', 'auth:user'])
     ->prefix('shop')
     ->name('shop.')
     ->group(function (): void {
@@ -97,13 +97,13 @@ Route::middleware(['auth:user'])
                 Route::get('/', [CourseController::class, 'index'])
                     ->name('index');
 
-                //Route::get('/{deliveryOption:uuid}', [EnrollmentController::class, 'show'])
+                // Route::get('/{deliveryOption:uuid}', [EnrollmentController::class, 'show'])
                 //    ->name('show');
                 //
                 Route::post('/{deliveryOption:uuid}/moodle/sso', TeacherMoodleSsoController::class)
                     ->name('moodle.sso');
                 //
-                //Route::get('/{deliveryOption:uuid}/join', JoinUrlController::class)
+                // Route::get('/{deliveryOption:uuid}/join', JoinUrlController::class)
                 //    ->name('join');
 
                 Route::apiResource('/{courseCode}/attendances', AttendanceController::class)->except('destroy');

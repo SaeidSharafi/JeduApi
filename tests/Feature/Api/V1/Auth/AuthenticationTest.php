@@ -265,7 +265,17 @@ test('user can login with password', function (): void {
                 'type',
                 'user',
             ],
-        ]);
+        ])
+        ->assertCookie('user_token', $response->json('data.token'));
+
+    $cookie = $response->getCookie('user_token');
+
+    expect($response->json('data.token'))->toBeString()->not->toBeEmpty()
+        ->and($response->json('data.expires_at'))->not->toBeNull()
+        ->and($cookie->isHttpOnly())->toBeTrue()
+        ->and($cookie->isSecure())->toBeFalse()
+        ->and($cookie->getSameSite())->toBe('lax')
+        ->and($cookie->getPath())->toBe('/');
 });
 test('non existent user can not login with password', function (): void {
     $response = $this->postJson(route('api.v1.auth.password-login'), [
@@ -320,4 +330,46 @@ test('authenticated user can logout', function (): void {
     $response->assertStatus(204);
 
     $this->assertDatabaseCount('personal_access_tokens', 0);
+});
+
+test('user can authenticate and logout with the http only cookie', function (): void {
+    $user  = User::factory()->create();
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    $response = $this->withCredentials()
+        ->withCookie('user_token', $token)
+        ->withHeader('Origin', config('app.url'))
+        ->postJson(route('api.v1.auth.logout'));
+
+    $response->assertNoContent()
+        ->assertCookieExpired('user_token');
+
+    $this->assertDatabaseCount('personal_access_tokens', 0);
+});
+
+test('authorization header takes precedence over the user cookie', function (): void {
+    $user  = User::factory()->create();
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    $this->withCredentials()
+        ->withCookie('user_token', $token)
+        ->withHeader('Origin', config('app.url'))
+        ->withHeader('Authorization', 'Bearer invalid-token')
+        ->postJson(route('api.v1.auth.logout'))
+        ->assertUnauthorized();
+
+    $this->assertDatabaseCount('personal_access_tokens', 1);
+});
+
+test('user cookie rejects an untrusted request origin', function (): void {
+    $user  = User::factory()->create();
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    $this->withCredentials()
+        ->withCookie('user_token', $token)
+        ->withHeader('Origin', 'https://attacker.example')
+        ->postJson(route('api.v1.auth.logout'))
+        ->assertForbidden();
+
+    $this->assertDatabaseCount('personal_access_tokens', 1);
 });

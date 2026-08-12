@@ -32,6 +32,7 @@ final class StaffLogoutController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $request->user('staff')->currentAccessToken()->delete();
+        cookie()->queue(cookie()->forget('staff_token'));
 
         return apiResponse()->noContentJson();
     }

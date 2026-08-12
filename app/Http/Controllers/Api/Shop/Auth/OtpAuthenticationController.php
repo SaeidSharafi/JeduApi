@@ -55,6 +55,18 @@ final class OtpAuthenticationController extends Controller
             );
         }
 
+        cookie()->queue(
+            'user_token',
+            $token->plainTextToken,
+            (int) config('sanctum.expiration'),
+            '/',
+            null,
+            app()->isProduction() || (bool) config('session.secure'),
+            true,
+            false,
+            'Lax'
+        );
+
         return apiResponse()->success(
             [
                 'token'      => $token->plainTextToken,

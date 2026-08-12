@@ -226,7 +226,17 @@ test('staff can login with password', function (): void {
                 'type',
                 'user',
             ],
-        ]);
+        ])
+        ->assertCookie('staff_token', $response->json('data.token'));
+
+    $cookie = $response->getCookie('staff_token');
+
+    expect($response->json('data.token'))->toBeString()->not->toBeEmpty()
+        ->and($response->json('data.expires_at'))->not->toBeNull()
+        ->and($cookie->isHttpOnly())->toBeTrue()
+        ->and($cookie->isSecure())->toBeFalse()
+        ->and($cookie->getSameSite())->toBe('lax')
+        ->and($cookie->getPath())->toBe('/');
 });
 
 test('staff can login with phone and password', function (): void {
@@ -274,4 +284,32 @@ test('staff can logout', function (): void {
     $response->assertStatus(204);
 
     $this->assertDatabaseCount('personal_access_tokens', 0);
+});
+
+test('staff can authenticate and logout with the http only cookie', function (): void {
+    $staff = Staff::factory()->create();
+    $token = $staff->createToken('staff_token')->plainTextToken;
+
+    $response = $this->withCredentials()
+        ->withCookie('staff_token', $token)
+        ->withHeader('Origin', config('app.url'))
+        ->postJson(route('api.v1.admin.auth.logout'));
+
+    $response->assertNoContent()
+        ->assertCookieExpired('staff_token');
+
+    $this->assertDatabaseCount('personal_access_tokens', 0);
+});
+
+test('staff token cookie cannot authenticate as a customer', function (): void {
+    $staff = Staff::factory()->create();
+    $token = $staff->createToken('staff_token')->plainTextToken;
+
+    $this->withCredentials()
+        ->withCookie('staff_token', $token)
+        ->withHeader('Origin', config('app.url'))
+        ->postJson(route('api.v1.auth.logout'))
+        ->assertUnauthorized();
+
+    $this->assertDatabaseCount('personal_access_tokens', 1);
 });

@@ -72,6 +72,18 @@ final class StaffPasswordLoginController extends Controller
             return Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
         });
 
+        cookie()->queue(
+            'staff_token',
+            $token->plainTextToken,
+            (int) config('sanctum.expiration'),
+            '/',
+            null,
+            app()->isProduction() || (bool) config('session.secure'),
+            true,
+            false,
+            'Lax'
+        );
+
         return apiResponse()->success([
             'token'      => $token->plainTextToken,
             'expires_at' => $token->accessToken->expires_at,

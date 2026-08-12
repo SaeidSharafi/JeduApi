@@ -2,9 +2,24 @@
 
 declare(strict_types=1);
 
+use App\Contracts\ApiResponseInterface;
+use App\Exceptions\CustomValidationException;
+use App\Exceptions\Gateway\MellatException;
+use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
+use App\Exceptions\Integrations\ResourceNotProvisionedException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
+use App\Exceptions\RefundGatewayException;
+use App\Exceptions\RefundValidationException;
+use App\Http\Middleware\AdminAuditMiddleware;
+use App\Http\Middleware\AuthenticateTokenFromCookie;
 use App\Http\Middleware\EnsureAdminNumericIdsMiddleware;
+use App\Http\Middleware\ProfileCheckMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -60,7 +75,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(function (): void {
                     require base_path('routes/Api/V1/api.php');
 
-                    Route::middleware(['auth:staff', 'admin.audit'])
+                    Route::middleware(['auth.cookie:staff', 'auth:staff', 'admin.audit'])
                         ->prefix('admin')
                         ->name('admin.')
                         ->group(function (): void {
@@ -76,7 +91,11 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->prependToGroup('api', EnsureAdminNumericIdsMiddleware::class);
+        $middleware->api(prepend: [
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            EnsureAdminNumericIdsMiddleware::class,
+        ]);
         $middleware->validateCsrfTokens(except: [
             '/webhooks/github-deployer',
         ]);
@@ -90,9 +109,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register custom middleware aliases
         $middleware->alias([
-            'admin.audit'   => App\Http\Middleware\AdminAuditMiddleware::class,
-            'profile.check' => App\Http\Middleware\ProfileCheckMiddleware::class,
+            'admin.audit'   => AdminAuditMiddleware::class,
+            'profile.check' => ProfileCheckMiddleware::class,
+            'auth.cookie'   => AuthenticateTokenFromCookie::class,
         ]);
+        $middleware->prependToPriorityList(AuthenticatesRequests::class, AuthenticateTokenFromCookie::class);
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -100,9 +121,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Suppress expected/retryable exceptions from Sentry to reduce noise.
         $exceptions->dontReport([
-            App\Exceptions\Gateway\MellatException::class,
-            App\Exceptions\Integrations\RecoverableProvisioningException::class,
-            App\Exceptions\Integrations\UnrecoverableProvisioningException::class,
+            MellatException::class,
+            RecoverableProvisioningException::class,
+            UnrecoverableProvisioningException::class,
         ]);
 
         $isApiRequest = function (Request $request): bool {
@@ -112,7 +133,7 @@ return Application::configure(basePath: dirname(__DIR__))
         };
 
         // 1. ValidationException (422 Unprocessable Entity)
-        $exceptions->renderable(function (ValidationException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (ValidationException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 // Use your specific macro for validation errors
                 return apiResponse()->validationErrors($e->errors());
@@ -122,7 +143,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 2. AuthenticationException (401 Unauthorized)
-        $exceptions->renderable(function (AuthenticationException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (AuthenticationException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 // Use your 'unauthorized' macro
                 return apiResponse()->unauthorized(__('messages.unauthorized'), $e);
@@ -133,7 +154,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // 3. AccessDeniedHttpException (403 Forbidden)
         // (e.g., from Gate denials or Policies if user is authenticated but not authorized)
-        $exceptions->renderable(function (AccessDeniedHttpException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (AccessDeniedHttpException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->forbidden(__('messages.forbidden'), $e);
             }
@@ -142,7 +163,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 4. ModelNotFoundException (Typically leads to 404)
-        $exceptions->renderable(function (ModelNotFoundException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (ModelNotFoundException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->notFound(model: $e->getModel());
             }
@@ -151,7 +172,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 5. NotFoundHttpException (404 Not Found - for routes or other non-model 404s)
-        $exceptions->renderable(function (NotFoundHttpException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (NotFoundHttpException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->notFound($e->getMessage());
             }
@@ -160,7 +181,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 6. MethodNotAllowedHttpException (405 Method Not Allowed)
-        $exceptions->renderable(function (MethodNotAllowedHttpException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (MethodNotAllowedHttpException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->methodNotAllowed($e->getMessage() ?: (string) __('messages.method_not_allowed'));
             }
@@ -169,7 +190,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 6.5. RefundValidationException (422 Unprocessable Entity)
-        $exceptions->renderable(function (App\Exceptions\RefundValidationException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (RefundValidationException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->error($e->getMessage(), 422);
             }
@@ -178,7 +199,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 6.6. RefundGatewayException (502 Bad Gateway — payment gateway failures)
-        $exceptions->renderable(function (App\Exceptions\RefundGatewayException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (RefundGatewayException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->error($e->getMessage(), 502);
             }
@@ -187,7 +208,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 6.7. MellatException (502 Bad Gateway — bank gateway errors)
-        $exceptions->renderable(function (App\Exceptions\Gateway\MellatException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (MellatException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->error($e->getMessage(), 502);
             }
@@ -196,7 +217,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 6.8. CustomValidationException (422 Unprocessable Entity — service-layer validation failures)
-        $exceptions->renderable(function (App\Exceptions\CustomValidationException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (CustomValidationException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->validationError($e->getMessage());
             }
@@ -206,9 +227,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // 6.9. ExternalProvisioningException hierarchy (provisioning integration errors)
         // Covers: ResourceNotProvisioned(404), RecoverableProvisioning(503), UnrecoverableProvisioning(500)
-        $exceptions->renderable(function (App\Exceptions\Integrations\ExternalProvisioningException $e, Request $request) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        $exceptions->renderable(function (ExternalProvisioningException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
-                $status = $e instanceof App\Exceptions\Integrations\ResourceNotProvisionedException ? 404 : 503;
+                $status = $e instanceof ResourceNotProvisionedException ? 404 : 503;
 
                 return apiResponse()->error($e->getMessage(), $status);
             }
@@ -220,7 +241,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->renderable(function (
             Symfony\Component\HttpKernel\Exception\HttpException $e,
             Request $request
-        ) use ($isApiRequest): ?\App\Contracts\ApiResponseInterface {
+        ) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->error($e->getMessage(), $e->getStatusCode());
             }
