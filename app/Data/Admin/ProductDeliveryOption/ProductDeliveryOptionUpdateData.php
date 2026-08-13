@@ -226,8 +226,8 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => 'COURSE-001',
             ],
-            'details.sart_date' => [
-                'description' => 'All delivery methods. Informational session start date in Jalali format (Y-m-d). Does not control access — use `available_from` for access control. Note: field key is `sart_date` (legacy spelling).',
+            'details.start_date' => [
+                'description' => 'All delivery methods. Informational session start date in Jalali format (Y-m-d). Does not control access — use `available_from` for access control. Note: field key is `start_date` (legacy spelling).',
                 'required'    => false,
                 'example'     => '1404-06-15',
             ],
