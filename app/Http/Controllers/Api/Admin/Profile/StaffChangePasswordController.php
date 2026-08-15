@@ -7,11 +7,9 @@ namespace App\Http\Controllers\Api\Admin\Profile;
 use App\Actions\Auth\ChangePasswordAction;
 use App\Actions\Auth\ResetPasswordAction;
 use App\Contracts\ApiResponseInterface;
+use App\Data\Auth\ChagePasswordData;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Models\Staff;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 /**
  * @group Admin - Profile
@@ -34,7 +32,7 @@ final class StaffChangePasswordController extends Controller
      * @responseFile 422 resources/responses/422.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function __invoke(ChangePasswordRequest $request, ChangePasswordAction $action): ApiResponseInterface
+    public function __invoke(ChagePasswordData $request, ChangePasswordAction $action): ApiResponseInterface
     {
         /** @var ?Staff $staff */
         $staff = auth('staff')->user();

@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\Auth\ChangePasswordAction;
-use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Data\Auth\ChagePasswordData;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
@@ -13,7 +13,7 @@ it('change password validation checks', function (): void {
     );
 
     $action = new ChangePasswordAction();
-    $request =  new ChangePasswordRequest([
+    $request =  ChagePasswordData::from([
         'current_password' => 'wrongpassword',
         'password' => 'newpassword',
         'password_confirmation' => 'newpassword',
@@ -22,7 +22,7 @@ it('change password validation checks', function (): void {
        ValidationException::class, __('validation.password.current_password_does_not_match')
    );
 
-    $request =  new ChangePasswordRequest([
+    $request =  ChagePasswordData::from([
         'password' => 'newpassword',
         'password_confirmation' => 'newpassword',
     ]);
@@ -40,7 +40,7 @@ it('change password', function (): void {
     );
 
     $action = new ChangePasswordAction();
-    $action->handle($user, new ChangePasswordRequest([
+    $action->handle($user, ChagePasswordData::from([
         'current_password' => 'password',
         'password' => 'newpassword',
         'password_confirmation' => 'newpassword',
@@ -58,7 +58,7 @@ it('change password when user does not have password', function (): void {
     );
 
     $action = new ChangePasswordAction();
-    $action->handle($user, new ChangePasswordRequest([
+    $action->handle($user, ChagePasswordData::from([
         'password' => 'newpassword',
         'password_confirmation' => 'newpassword',
     ]));

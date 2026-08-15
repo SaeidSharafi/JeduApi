@@ -7,12 +7,9 @@ namespace App\Http\Controllers\Api\Shop\Profile;
 use App\Actions\Auth\ChangePasswordAction;
 use App\Actions\Auth\ResetPasswordAction;
 use App\Contracts\ApiResponseInterface;
+use App\Data\Auth\ChagePasswordData;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\ChangePasswordRequest;
-use App\Models\Staff;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 /**
  * @group Shop - Profile
@@ -35,7 +32,7 @@ final class CustomerChangePasswordController extends Controller
      * @responseFile 422 resources/responses/422.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function __invoke(ChangePasswordRequest $request, ChangePasswordAction $action): ApiResponseInterface
+    public function __invoke(ChagePasswordData $request, ChangePasswordAction $action): ApiResponseInterface
     {
         /** @var ?User $user */
         $user = auth()->user();

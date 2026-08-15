@@ -1,22 +1,24 @@
 <?php
 
-declare(strict_types=1);
+namespace App\Data\Auth;
 
-namespace App\Http\Requests\Auth;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-final class ChangePasswordRequest extends FormRequest
+class ChagePasswordData extends Data
 {
-    public function authorize(): bool
+    public function __construct(
+        public ?string $current_password,
+        public string $password,
+        public string $password_confirmation
+    )
     {
-        return true;
     }
 
     /**
-     * @return array<string, list<mixed>>
+     * Define validation rules for the request.
      */
-    public function rules(): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'current_password' => ['nullable', 'string'],
