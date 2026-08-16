@@ -146,4 +146,11 @@ final class WalletTransactionFactory extends Factory
             'expires_at' => $expiryDate,
         ]);
     }
+
+    public function expired(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'expires_at' => now()->subDay(),
+        ]);
+    }
 }

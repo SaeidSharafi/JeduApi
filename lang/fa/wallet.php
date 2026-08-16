@@ -9,6 +9,8 @@ return [
         'gift_from_order'   => 'اعتبار هدیه از :promotion',
     ],
 
+    'gift_expiry_reclaimed' => 'بازگشت موجودی هدیه پس از انقضا',
+
     'campaign' => [
         'gift_allocated'  => 'اعتبار هدیه :amount به کیف پول شما از :campaign اضافه شد',
         'bonus_processed' => 'پاداش :amount به کیف پول شما از :campaign برای :event اضافه شد',

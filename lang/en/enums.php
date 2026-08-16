@@ -286,6 +286,7 @@ return [
         'gift'       => 'Gift',
         'bonus'      => 'Bonus',
         'adjustment' => 'Adjustment',
+        'expiry'     => 'Expiry',
     ],
     'ThresholdScopeEnum' => [
         'lifetime' => 'Lifetime',

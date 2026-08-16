@@ -18,10 +18,11 @@ enum TransactionTypeEnum: string
     case GIFT       = 'gift';
     case BONUS      = 'bonus';
     case ADJUSTMENT = 'adjustment';
+    case EXPIRY     = 'expiry';
 
     public function isDebit(): bool
     {
-        return in_array($this, [self::WITHDRAWAL, self::PAYMENT]);
+        return in_array($this, [self::WITHDRAWAL, self::PAYMENT, self::EXPIRY]);
     }
 
     public function isGift(): bool

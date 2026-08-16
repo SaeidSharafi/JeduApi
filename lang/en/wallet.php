@@ -9,6 +9,8 @@ return [
         'gift_from_order'   => 'Gift credit from :promotion',
     ],
 
+    'gift_expiry_reclaimed' => 'Gift balance reclaimed after expiry',
+
     'campaign' => [
         'gift_allocated'  => 'Gift credit of :amount has been allocated to your wallet from :campaign',
         'bonus_processed' => 'Bonus of :amount has been added to your wallet from :campaign for :event',

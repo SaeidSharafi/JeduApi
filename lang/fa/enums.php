@@ -286,6 +286,7 @@ return [
         'gift'       => 'هدیه',
         'bonus'      => 'پاداش',
         'adjustment' => 'تعدیل',
+        'expiry'     => 'انقضا',
     ],
     'ThresholdScopeEnum' => [
         'lifetime' => 'مادام‌العمر',
