@@ -15,6 +15,9 @@ final readonly class DeleteStaffAction
     public function handle(Staff $staff): void
     {
         DB::transaction(function () use ($staff): void {
+            // Spatie auto-detaches roles and permissions on model deletion.
+            // Sanctum tokens have no DB-level cascade and would otherwise linger.
+            $staff->tokens()->delete();
             $staff->delete();
         });
     }

@@ -104,6 +104,14 @@ final class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Order::class, 'customer_id');
     }
 
+    /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'customer_id');
+    }
+
     public function profileCompleted(): bool
     {
         return $this->first_name    !== null
