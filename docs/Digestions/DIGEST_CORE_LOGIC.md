@@ -171,10 +171,16 @@
   - `handle(WalletAdjustmentData $data, Wallet $wallet): WalletTransaction`: Applies signed balance adjustments (positive credit / negative debit).
 
 #### WalletCampaign Actions (`app/Actions/Admin/WalletCampaign/`)
-- **CampaignAllocationAction**: Manages bulk wallet credit campaigns
+- **TriggerCampaignAllocationAction**: Allocates a campaign gift to a user (manual or event-driven). Idempotent (deterministic key `wallet-campaign:{campaign}:user:{user}:trigger:{type}:event:{event}`), dedupes event triggers on `metadata.trigger_event`, honors campaign activity/date-range/per-user/total limits, and resolves the gift expiry deadline from campaign config: relative `metadata.expiry_days` (days from receipt) wins over absolute `ends_at`; no config = no expiry.
+- **BulkCampaignAllocationAction**: Manages bulk wallet credit campaigns
 - **CreateWalletCampaignAction**: Sets up new wallet campaigns
 - **UpdateWalletCampaignAction**: Modifies campaign parameters
 - **DeleteWalletCampaignAction**: Cancels and cleans up campaigns
+
+#### Wallet Campaign Event Dispatch (`app/Subscribers/CampaignEventSubscriber.php`)
+- **CampaignEventSubscriber**: Single explicit subscriber (registered via `Event::subscribe` in `EventServiceProvider::boot` — the codebase's first subscriber, a deliberate deviation from auto-discovered one-listener-per-event). Maps domain events to active campaigns of a type and allocates through `TriggerCampaignAllocationAction`.
+  - `ProfileCompletedEvent` → all active, in-date-range `registration_bonus` campaigns. Ineligible campaigns (inactive/expired/limits) and wallet-less users are skipped, never breaking the event flow.
+- **ProfileCompletedEvent** (`app/Events/ProfileCompletedEvent.php`): Dispatched by `UpdateProfileAction` only on the first false→true transition of `User::profileCompleted()` (requires first_name, last_name, email, civil_id, date_of_birth, father_name). Already-complete profiles and repeated updates never re-fire.
 
 #### Staff Actions (`app/Actions/Admin/Staff/`)
 - **CreateStaffAction**: Creates new admin user accounts

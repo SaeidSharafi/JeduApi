@@ -52,6 +52,24 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
     }
 
     /**
+     * Scope to active campaigns of a type whose date window includes now.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<WalletCampaign>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<WalletCampaign>
+     */
+    public function scopeActiveOfType(\Illuminate\Database\Eloquent\Builder $query, CampaignTypeEnum $type): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query
+            ->where('type', $type)
+            ->where('is_active', true)
+            ->where(fn ($q) => $q
+                ->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+            ->where(fn ($q) => $q
+                ->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
+            ->orderBy('id');
+    }
+
+    /**
      * Check if a user can receive allocation from this campaign
      */
     public function allocationStatus(User $user): AllocationStatusEnum

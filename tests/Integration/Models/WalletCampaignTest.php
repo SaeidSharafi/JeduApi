@@ -253,3 +253,43 @@ it('get user remaining usage count', function (): void {
     ])->fresh();
     expect($walletCampaign->getUserRemainingUsageCount($user))->toBeNull();
 });
+
+it('scope activeOfType returns only active in-date-range campaigns of the type', function (): void {
+    WalletCampaign::factory()->create([
+        'type'      => App\Enums\WalletCampaign\CampaignTypeEnum::REGISTRATION_BONUS,
+        'is_active' => true,
+        'starts_at' => null,
+        'ends_at'   => null,
+    ]);
+    WalletCampaign::factory()->create([
+        'type'      => App\Enums\WalletCampaign\CampaignTypeEnum::REGISTRATION_BONUS,
+        'is_active' => false,
+        'starts_at' => null,
+        'ends_at'   => null,
+    ]);
+    WalletCampaign::factory()->create([
+        'type'      => App\Enums\WalletCampaign\CampaignTypeEnum::REGISTRATION_BONUS,
+        'is_active' => true,
+        'starts_at' => now()->addWeek(),
+        'ends_at'   => null,
+    ]);
+    WalletCampaign::factory()->create([
+        'type'      => App\Enums\WalletCampaign\CampaignTypeEnum::REGISTRATION_BONUS,
+        'is_active' => true,
+        'starts_at' => null,
+        'ends_at'   => now()->subDay(),
+    ]);
+    WalletCampaign::factory()->create([
+        'type'      => App\Enums\WalletCampaign\CampaignTypeEnum::MANUAL_ALLOCATION,
+        'is_active' => true,
+        'starts_at' => null,
+        'ends_at'   => null,
+    ]);
+
+    $results = WalletCampaign::query()
+        ->activeOfType(App\Enums\WalletCampaign\CampaignTypeEnum::REGISTRATION_BONUS)
+        ->get();
+
+    expect($results)->toHaveCount(1)
+        ->and($results->first()->is_active)->toBeTrue();
+});

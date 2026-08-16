@@ -74,6 +74,7 @@ stateDiagram-v2
 - Debits normalize to negative amounts and credits to positive amounts inside the transaction boundary.
 - Order payment spends gift balance before normal balance, oldest gift first (FIFO by receipt). The split is recorded for audit and later financial reasoning.
 - Expired unspent gift balance is reclaimed by a daily sweep as an EXPIRY debit through the same ledger action; reclaim is idempotent (deterministic key per gift) and never exceeds a gift's unspent remaining_amount.
+- Event-driven campaign allocations are routed through one subscriber (`CampaignEventSubscriber`, registered via `Event::subscribe`) that maps each domain event to its campaign type and reuses `TriggerCampaignAllocationAction`. A campaign gift's expiry deadline comes from campaign config (`metadata.expiry_days` relative, else `ends_at` absolute); without config the gift never expires.
 - A suspended wallet accepts refunds only; a closed wallet accepts no transactions. Callers do not add local status bypasses.
 - A wallet top-up is a payment with wallet-top-up purpose and customer ownership, not a dummy order. Payment completion routes to the ledger by purpose.
 - Refunds restore funds through the same ledger action; they never edit the original transaction or balance directly.

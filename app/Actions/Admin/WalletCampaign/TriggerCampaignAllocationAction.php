@@ -74,6 +74,7 @@ final readonly class TriggerCampaignAllocationAction
                 source_id: $campaign->id,
                 description: $description,
                 metadata: $this->buildTransactionMetadata($campaign, $data),
+                expires_at: $this->resolveExpiryDeadline($campaign),
                 idempotency_key: $idempotencyKey,
             );
 
@@ -156,5 +157,27 @@ final readonly class TriggerCampaignAllocationAction
             $data->trigger_type,
             $data->trigger_event ?? 'manual'
         );
+    }
+
+    /**
+     * Resolve the gift expiry deadline from the campaign configuration.
+     * Relative config (metadata.expiry_days, days from receipt) wins over
+     * the absolute campaign ends_at; no config means the gift never expires.
+     *
+     * @return string|null formatted 'Y-m-d H:i:s' or null
+     */
+    private function resolveExpiryDeadline(WalletCampaign $campaign): ?string
+    {
+        $expiryDays = $campaign->metadata['expiry_days'] ?? null;
+
+        if (is_numeric($expiryDays) && (int) $expiryDays > 0) {
+            return now()->addDays((int) $expiryDays)->format('Y-m-d H:i:s');
+        }
+
+        if ($campaign->ends_at) {
+            return $campaign->ends_at->format('Y-m-d H:i:s');
+        }
+
+        return null;
     }
 }

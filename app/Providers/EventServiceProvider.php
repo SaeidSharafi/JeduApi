@@ -15,12 +15,18 @@ use App\Observers\InvalidationObserver;
 use App\Observers\ProductableAvailabilityObserver;
 use App\Observers\SettingObserver;
 use App\Observers\TermAvailabilityObserver;
+use App\Subscribers\CampaignEventSubscriber;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 final class EventServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        // Wallet campaign event dispatch is mapped explicitly via a subscriber
+        // (deliberate deviation from auto-discovered one-listener-per-event).
+        Event::subscribe(CampaignEventSubscriber::class);
+
         // Get the list of models from our config file
         $modelsToObserve = array_keys(config('cache_invalidation.map', []));
 
