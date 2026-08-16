@@ -25,6 +25,16 @@ return [
             'manual_allocation'  => 'تخصیص دستی',
         ],
 
+        'threshold_scopes' => [
+            'lifetime' => 'مادام‌العمر',
+            'windowed' => 'بازه‌ای',
+        ],
+
+        'threshold_descriptions' => [
+            'lifetime' => 'آستانه در کل سوابق کاربر سنجیده می‌شود',
+            'windowed' => 'آستانه در بازه زمانی کمپین سنجیده می‌شود',
+        ],
+
         'descriptions' => [
             'registration_bonus' => 'پاداش اعطایی به کاربران جدید هنگام ثبت نام',
             'birthday_gift'      => 'اعتبار هدیه ویژه در روز تولد کاربران',

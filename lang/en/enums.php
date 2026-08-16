@@ -288,6 +288,10 @@ return [
         'bonus'      => 'Bonus',
         'adjustment' => 'Adjustment',
     ],
+    'ThresholdScopeEnum' => [
+        'lifetime' => 'Lifetime',
+        'windowed' => 'Windowed',
+    ],
     'WalletStatusEnum' => [
         'active'    => 'Active',
         'suspended' => 'Suspended',

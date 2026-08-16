@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\PermissionEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
+use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use App\Models\Staff;
 use App\Models\WalletCampaign;
 use App\Models\WalletTransaction;
@@ -39,6 +40,7 @@ describe('index', function (): void {
                             'name',
                             'description',
                             'type',
+                            'threshold_scope',
                             'is_active',
                             'amount',
                             'usage_limit_total',
@@ -106,6 +108,7 @@ describe('store', function (): void {
             'name'                 => 'New Registration Bonus',
             'description'          => 'Welcome bonus for new users',
             'type'                 => CampaignTypeEnum::REGISTRATION_BONUS->value,
+            'threshold_scope'      => ThresholdScopeEnum::WINDOWED->value,
             'is_active'            => true,
             'amount'               => 50000,
             'usage_limit_total'    => 1000,
@@ -124,16 +127,121 @@ describe('store', function (): void {
                     'id',
                     'name',
                     'type',
+                    'threshold_scope',
                     'amount',
                 ],
             ]);
 
         expect($response->json('data.name'))->toBe('New Registration Bonus');
+        expect($response->json('data.threshold_scope'))->toBe(ThresholdScopeEnum::WINDOWED->value);
 
         $this->assertDatabaseHas('wallet_campaigns', [
-            'name' => 'New Registration Bonus',
-            'type' => CampaignTypeEnum::REGISTRATION_BONUS->value,
+            'name'            => 'New Registration Bonus',
+            'type'            => CampaignTypeEnum::REGISTRATION_BONUS->value,
+            'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
         ]);
+    });
+
+    it('creates a lifetime campaign without dates', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $createData = [
+            'name'            => 'Lifetime Loyalty Bonus',
+            'description'     => 'Bonus measured across all history',
+            'type'            => CampaignTypeEnum::LOYALTY_REWARD->value,
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'is_active'       => true,
+            'amount'          => 25000,
+            'metadata'        => null,
+        ];
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', $createData);
+
+        $response->assertCreated();
+        expect($response->json('data.threshold_scope'))->toBe(ThresholdScopeEnum::LIFETIME->value);
+        expect($response->json('data.starts_at'))->toBeNull();
+        expect($response->json('data.ends_at'))->toBeNull();
+
+        $this->assertDatabaseHas('wallet_campaigns', [
+            'name'            => 'Lifetime Loyalty Bonus',
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'starts_at'       => null,
+            'ends_at'         => null,
+        ]);
+    });
+
+    it('rejects a windowed campaign without both dates', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $createData = [
+            'name'            => 'Windowed Without Dates',
+            'type'            => CampaignTypeEnum::SEASONAL_BONUS->value,
+            'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
+            'is_active'       => true,
+            'amount'          => 30000,
+            'starts_at'       => null,
+            'ends_at'         => null,
+        ];
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', $createData);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['starts_at', 'ends_at']);
+    });
+
+    it('rejects a lifetime campaign with dates', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $createData = [
+            'name'            => 'Lifetime With Dates',
+            'type'            => CampaignTypeEnum::LOYALTY_REWARD->value,
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'is_active'       => true,
+            'amount'          => 30000,
+            'starts_at'       => $this->toJalalitString(now(), 'Y-m-d'),
+            'ends_at'         => $this->toJalalitString(now()->addMonth(), 'Y-m-d'),
+        ];
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', $createData);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['starts_at', 'ends_at']);
+    });
+
+    it('rejects an invalid threshold_scope value', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $createData = [
+            'name'            => 'Bad Scope',
+            'type'            => CampaignTypeEnum::WELCOME_GIFT->value,
+            'threshold_scope' => 'quarterly',
+            'is_active'       => true,
+            'amount'          => 30000,
+        ];
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', $createData);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['threshold_scope']);
+    });
+
+    it('rejects a windowed campaign whose end date is not after start date', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $createData = [
+            'name'            => 'Inverted Window',
+            'type'            => CampaignTypeEnum::SEASONAL_BONUS->value,
+            'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
+            'is_active'       => true,
+            'amount'          => 30000,
+            'starts_at'       => $this->toJalalitString(now()->addMonth(), 'Y-m-d'),
+            'ends_at'         => $this->toJalalitString(now(), 'Y-m-d'),
+        ];
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', $createData);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['ends_at']);
     });
 
     it('validates required fields', function (): void {
@@ -142,16 +250,17 @@ describe('store', function (): void {
         $response = $this->postJson('/api/v1/admin/wallet-campaigns', []);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['name', 'type', 'amount']);
+            ->assertJsonValidationErrors(['name', 'type', 'threshold_scope', 'amount']);
     });
 
     it('denies access without permission', function (): void {
         $this->unauthorized_user();
         $response = $this->postJson('/api/v1/admin/wallet-campaigns', [
-            'name'      => 'Test Campaign',
-            'type'      => CampaignTypeEnum::WELCOME_GIFT->value,
-            'is_active' => true,
-            'amount'    => 10000,
+            'name'            => 'Test Campaign',
+            'type'            => CampaignTypeEnum::WELCOME_GIFT->value,
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'is_active'       => true,
+            'amount'          => 10000,
         ]);
 
         $response->assertForbidden();
@@ -177,6 +286,7 @@ describe('show', function (): void {
                     'name',
                     'description',
                     'type',
+                    'threshold_scope',
                     'is_active',
                     'amount',
                     'usage_limit_total',
@@ -238,12 +348,13 @@ describe('update', function (): void {
             'name'                 => 'Updated Campaign Name',
             'description'          => 'Updated description',
             'type'                 => $this->campaign->type->value,
+            'threshold_scope'      => ThresholdScopeEnum::WINDOWED->value,
             'is_active'            => false,
             'amount'               => 75000,
             'usage_limit_total'    => 500,
             'usage_limit_per_user' => 2,
-            'starts_at'            => null,
-            'ends_at'              => null,
+            'starts_at'            => $this->toJalalitString(now(), 'Y-m-d'),
+            'ends_at'              => $this->toJalalitString(now()->addMonth(), 'Y-m-d'),
             'metadata'             => ['updated' => true],
         ];
 
@@ -254,6 +365,7 @@ describe('update', function (): void {
                 'data' => [
                     'id',
                     'name',
+                    'threshold_scope',
                     'amount',
                     'is_active',
                 ],
@@ -261,22 +373,97 @@ describe('update', function (): void {
 
         expect($response->json('data.name'))->toBe('Updated Campaign Name');
         expect($response->json('data.amount'))->toBe(75000);
+        expect($response->json('data.threshold_scope'))->toBe(ThresholdScopeEnum::WINDOWED->value);
         expect($response->json('data.is_active'))->toBeFalse();
 
         $this->assertDatabaseHas('wallet_campaigns', [
-            'id'        => $this->campaign->id,
-            'name'      => 'Updated Campaign Name',
-            'amount'    => 75000,
-            'is_active' => false,
+            'id'              => $this->campaign->id,
+            'name'            => 'Updated Campaign Name',
+            'amount'          => 75000,
+            'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
+            'is_active'       => false,
         ]);
+    });
+
+    it('updates a campaign to lifetime scope', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_UPDATE]);
+
+        $updateData = [
+            'name'            => 'Converted To Lifetime',
+            'description'     => $this->campaign->description,
+            'type'            => $this->campaign->type->value,
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'is_active'       => $this->campaign->is_active,
+            'amount'          => $this->campaign->amount,
+            'starts_at'       => null,
+            'ends_at'         => null,
+            'metadata'        => $this->campaign->metadata,
+        ];
+
+        $response = $this->putJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}", $updateData);
+
+        $response->assertOk();
+        expect($response->json('data.threshold_scope'))->toBe(ThresholdScopeEnum::LIFETIME->value);
+        expect($response->json('data.starts_at'))->toBeNull();
+        expect($response->json('data.ends_at'))->toBeNull();
+
+        $this->assertDatabaseHas('wallet_campaigns', [
+            'id'              => $this->campaign->id,
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'starts_at'       => null,
+            'ends_at'         => null,
+        ]);
+    });
+
+    it('rejects updating a windowed campaign without both dates', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_UPDATE]);
+
+        $updateData = [
+            'name'            => $this->campaign->name,
+            'description'     => $this->campaign->description,
+            'type'            => $this->campaign->type->value,
+            'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
+            'is_active'       => $this->campaign->is_active,
+            'amount'          => $this->campaign->amount,
+            'starts_at'       => null,
+            'ends_at'         => null,
+            'metadata'        => $this->campaign->metadata,
+        ];
+
+        $response = $this->putJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}", $updateData);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['starts_at', 'ends_at']);
+    });
+
+    it('rejects updating a lifetime campaign with dates', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_UPDATE]);
+
+        $updateData = [
+            'name'            => $this->campaign->name,
+            'description'     => $this->campaign->description,
+            'type'            => $this->campaign->type->value,
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'is_active'       => $this->campaign->is_active,
+            'amount'          => $this->campaign->amount,
+            'starts_at'       => $this->toJalalitString(now(), 'Y-m-d'),
+            'ends_at'         => $this->toJalalitString(now()->addMonth(), 'Y-m-d'),
+            'metadata'        => $this->campaign->metadata,
+        ];
+
+        $response = $this->putJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}", $updateData);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['starts_at', 'ends_at']);
     });
 
     it('validates update data', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_UPDATE]);
 
         $response = $this->putJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}", [
-            'name'   => '', // Invalid empty name
-            'amount' => -1000, // Invalid negative amount
+            'name'            => '', // Invalid empty name
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'amount'          => -1000, // Invalid negative amount
         ]);
 
         $response->assertUnprocessable()
@@ -286,10 +473,11 @@ describe('update', function (): void {
     it('denies access without permission', function (): void {
         $this->unauthorized_user();
         $response = $this->putJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}", [
-            'name'      => 'Updated Name',
-            'type'      => $this->campaign->type->value,
-            'amount'    => 60000,
-            'is_active' => true,
+            'name'            => 'Updated Name',
+            'type'            => $this->campaign->type->value,
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'amount'          => 60000,
+            'is_active'       => true,
         ]);
 
         $response->assertForbidden();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\WalletCampaign\CampaignTypeEnum;
+use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use App\Models\Staff;
 use App\Models\WalletCampaign;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,6 +24,7 @@ final class WalletCampaignFactory extends Factory
             'name'                 => $this->faker->sentence(3),
             'description'          => $this->faker->optional()->paragraph(),
             'type'                 => $this->faker->randomElement(CampaignTypeEnum::cases())->value,
+            'threshold_scope'      => ThresholdScopeEnum::WINDOWED->value,
             'amount'               => $this->faker->numberBetween(10000, 500000), // 100 to 5000 IRR
             'is_active'            => $this->faker->boolean(80), // 80% chance of being active
             'usage_limit_total'    => $this->faker->optional(0.7)->numberBetween(10, 10000),
@@ -58,6 +60,18 @@ final class WalletCampaignFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_active' => false,
+        ]);
+    }
+
+    /**
+     * Create a lifetime campaign (threshold measured across all history, no dates)
+     */
+    public function lifetime(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'starts_at'       => null,
+            'ends_at'         => null,
         ]);
     }
 

@@ -288,6 +288,10 @@ return [
         'bonus'      => 'پاداش',
         'adjustment' => 'تعدیل',
     ],
+    'ThresholdScopeEnum' => [
+        'lifetime' => 'مادام‌العمر',
+        'windowed' => 'بازه‌ای',
+    ],
     'WalletStatusEnum' => [
         'active'    => 'فعال',
         'suspended' => 'معلق',

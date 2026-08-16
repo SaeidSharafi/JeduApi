@@ -209,9 +209,9 @@
 
 ### AdminWalletCampaignController (`app/Http/Controllers/Api/Admin/WalletCampaign/AdminWalletCampaignController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/wallet-campaigns` - **Response DTO:** WalletCampaignData collection
-- `store(WalletCampaignCreateData $request)`: **Route:** `POST /api/v1/admin/wallet-campaigns` - **Request DTO:** WalletCampaignCreateData - **Response DTO:** WalletCampaignData
+- `store(WalletCampaignCreateData $request)`: **Route:** `POST /api/v1/admin/wallet-campaigns` - **Request DTO:** WalletCampaignCreateData (includes required `threshold_scope`: lifetime|windowed; windowed requires both dates, lifetime forbids dates) - **Response DTO:** WalletCampaignData
 - `show(WalletCampaign $walletCampaign)`: **Route:** `GET /api/v1/admin/wallet-campaigns/{wallet_campaign}` - **Response DTO:** WalletCampaignData
-- `update(WalletCampaignUpdateData $request, WalletCampaign $walletCampaign)`: **Route:** `PUT /api/v1/admin/wallet-campaigns/{wallet_campaign}` - **Response DTO:** WalletCampaignData
+- `update(WalletCampaignUpdateData $request, WalletCampaign $walletCampaign)`: **Route:** `PUT /api/v1/admin/wallet-campaigns/{wallet_campaign}` - **Request DTO:** WalletCampaignCreateData (same threshold_scope validation) - **Response DTO:** WalletCampaignData
 - `destroy(WalletCampaign $walletCampaign)`: **Route:** `DELETE /api/v1/admin/wallet-campaigns/{wallet_campaign}` - **Delegates to:** Campaign deletion
 
 ### TriggerCampaignAllocationController (`app/Http/Controllers/Api/Admin/WalletCampaign/TriggerCampaignAllocationController.php`)

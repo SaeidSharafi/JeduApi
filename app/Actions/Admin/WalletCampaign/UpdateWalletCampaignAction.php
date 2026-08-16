@@ -20,6 +20,7 @@ final readonly class UpdateWalletCampaignAction
                 'name'                 => $data->name,
                 'description'          => $data->description,
                 'type'                 => $data->type,
+                'threshold_scope'      => $data->threshold_scope,
                 'is_active'            => $data->is_active,
                 'amount'               => $data->amount,
                 'usage_limit_total'    => $data->usage_limit_total,

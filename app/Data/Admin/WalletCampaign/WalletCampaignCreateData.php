@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\WalletCampaign;
 
 use App\Enums\WalletCampaign\CampaignTypeEnum;
+use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use App\Helpers\JalaliDateHelper;
 use App\Rules\ValidNormalizedJalaliDateRule;
 use Carbon\Carbon;
@@ -20,6 +21,7 @@ final class WalletCampaignCreateData extends Data
         public string $name,
         public ?string $description,
         public string $type,
+        public string $threshold_scope,
         public bool $is_active,
         public int $amount,
         public ?int $usage_limit_total,
@@ -41,19 +43,39 @@ final class WalletCampaignCreateData extends Data
 
     public static function rules(?ValidationContext $context = null): array
     {
-        $now = now()->format('Y-m-d');
+        $now            = now()->format('Y-m-d');
+        $thresholdScope = $context?->payload['threshold_scope'] ?? null;
+        $isWindowed     = $thresholdScope === ThresholdScopeEnum::WINDOWED->value;
+        $isLifetime     = $thresholdScope === ThresholdScopeEnum::LIFETIME->value;
 
         return [
             'name'                 => ['required', 'string', 'max:255'],
             'description'          => ['nullable', 'string', 'max:1000'],
             'type'                 => ['required', 'string', Rule::enum(CampaignTypeEnum::class)],
+            'threshold_scope'      => ['required', 'string', Rule::enum(ThresholdScopeEnum::class)],
             'is_active'            => ['required', 'boolean'],
             'amount'               => ['required', 'integer', 'min:1'],
             'usage_limit_total'    => ['nullable', 'integer', 'min:1'],
             'usage_limit_per_user' => ['nullable', 'integer', 'min:1'],
-            'starts_at'            => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after_or_equal:'.$now],
-            'ends_at'              => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after:starts_at'],
-            'metadata'             => ['nullable', 'array'],
+            'starts_at'            => [
+                'bail',
+                'nullable',
+                Rule::requiredIf($isWindowed),
+                Rule::prohibitedIf($isLifetime),
+                new ValidNormalizedJalaliDateRule,
+                'date_format:Y-m-d',
+                'after_or_equal:'.$now,
+            ],
+            'ends_at' => [
+                'bail',
+                'nullable',
+                Rule::requiredIf($isWindowed),
+                Rule::prohibitedIf($isLifetime),
+                new ValidNormalizedJalaliDateRule,
+                'date_format:Y-m-d',
+                'after:starts_at',
+            ],
+            'metadata' => ['nullable', 'array'],
         ];
     }
 
@@ -68,12 +90,13 @@ final class WalletCampaignCreateData extends Data
             'name'                 => 'Campaign name for admin reference.',
             'description'          => 'Detailed description of the campaign purpose and terms.',
             'type'                 => 'Type of campaign (registration_bonus, birthday_gift, etc.).',
+            'threshold_scope'      => 'Threshold measurement scope: lifetime (all history, no dates) or windowed (within campaign dates).',
             'is_active'            => 'Whether the campaign is currently active.',
             'amount'               => 'Gift amount in rials to be awarded.',
             'usage_limit_total'    => 'Total number of times this campaign can be used (null for unlimited).',
             'usage_limit_per_user' => 'Number of times each user can use this campaign (null for unlimited).',
-            'starts_at'            => 'Campaign start date and time.',
-            'ends_at'              => 'Campaign end date and time.',
+            'starts_at'            => 'Campaign start date and time. Required when threshold_scope is windowed.',
+            'ends_at'              => 'Campaign end date and time. Required when threshold_scope is windowed.',
             'metadata'             => 'Additional configuration data for the campaign.',
         ];
     }
@@ -98,6 +121,10 @@ final class WalletCampaignCreateData extends Data
                 'description' => 'Type of campaign (registration_bonus, birthday_gift, etc.).',
                 'example'     => 'registration_bonus',
             ],
+            'threshold_scope' => [
+                'description' => 'Threshold measurement scope: lifetime (measured across all history, no dates) or windowed (measured within the campaign dates).',
+                'example'     => 'windowed',
+            ],
             'is_active' => [
                 'description' => 'Whether the campaign is currently active.',
                 'example'     => true,
@@ -115,11 +142,11 @@ final class WalletCampaignCreateData extends Data
                 'example'     => 1,
             ],
             'starts_at' => [
-                'description' => 'Campaign start date and time.',
+                'description' => 'Campaign start date and time. Required when threshold_scope is windowed.',
                 'example'     => '1402-01-01',
             ],
             'ends_at' => [
-                'description' => 'Campaign end date and time.',
+                'description' => 'Campaign end date and time. Required when threshold_scope is windowed.',
                 'example'     => '1402-01-30',
             ],
             'metadata' => [

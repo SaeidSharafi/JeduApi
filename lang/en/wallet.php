@@ -25,6 +25,16 @@ return [
             'manual_allocation'  => 'Manual Allocation',
         ],
 
+        'threshold_scopes' => [
+            'lifetime' => 'Lifetime',
+            'windowed' => 'Windowed',
+        ],
+
+        'threshold_descriptions' => [
+            'lifetime' => 'Threshold measured across all history',
+            'windowed' => 'Threshold measured within the campaign dates',
+        ],
+
         'descriptions' => [
             'registration_bonus' => 'Bonus awarded to new users upon registration',
             'birthday_gift'      => 'Special gift credit given on user birthdays',

@@ -7,6 +7,7 @@ namespace App\Data\Admin\WalletCampaign;
 use App\Contracts\WalletTransactionSourceableDataContract;
 use App\Data\Admin\Staff\ShowStaffData;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
+use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Data;
@@ -18,6 +19,7 @@ final class WalletCampaignData extends Data implements WalletTransactionSourceab
         public string $name,
         public ?string $description,
         public CampaignTypeEnum $type,
+        public ThresholdScopeEnum $threshold_scope,
         public bool $is_active,
         public int $amount,
         public ?int $usage_limit_total,

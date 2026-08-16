@@ -13,6 +13,7 @@ it('to array', function (): void {
         'name'                 => $walletCampaign->name,
         'description'          => $walletCampaign->description,
         'type'                 => $walletCampaign->type->value,
+        'threshold_scope'      => $walletCampaign->threshold_scope->value,
         'is_active'            => $walletCampaign->is_active,
         'amount'               => $walletCampaign->amount,
         'usage_limit_total'    => $walletCampaign->usage_limit_total,

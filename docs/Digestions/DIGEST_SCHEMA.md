@@ -447,6 +447,7 @@
   - name (VARCHAR)
   - description (TEXT nullable)
   - type (VARCHAR(50))
+  - threshold_scope (VARCHAR default 'lifetime') INDEX: lifetime|windowed — windowed requires both dates, lifetime requires none
   - is_active (BOOLEAN default true)
   - amount (BIGINT)
   - usage_limit_total (INT nullable)
@@ -457,7 +458,7 @@
   - metadata (JSONB nullable)
   - created_by (BIGINT nullable) FK -> staff(id) SET NULL
   - created_at/updated_at (TIMESTAMPS)
-- Indexes: INDEX(is_active, starts_at, ends_at) as idx_campaign_active_dates, INDEX(type, is_active) as idx_campaign_type_active
+- Indexes: INDEX(is_active, starts_at, ends_at) as idx_campaign_active_dates, INDEX(type, is_active) as idx_campaign_type_active, INDEX(threshold_scope)
 
 ---
 ## Content & Settings Management

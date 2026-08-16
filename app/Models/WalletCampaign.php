@@ -7,16 +7,18 @@ namespace App\Models;
 use App\Contracts\WalletTransactionSourceableContract;
 use App\Enums\WalletCampaign\AllocationStatusEnum;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
+use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use App\Traits\HasAuditor;
+use Database\Factories\WalletCampaignFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Database\Factories\WalletCampaignFactory;
 
 final class WalletCampaign extends Model implements WalletTransactionSourceableContract
 {
     use HasAuditor;
+
     /** @use HasFactory<WalletCampaignFactory> */
     use HasFactory;
 
@@ -25,6 +27,7 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
             'name',
             'description',
             'type',
+            'threshold_scope',
             'is_active',
             'amount',
             'usage_limit_total',
@@ -137,6 +140,7 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
     {
         return [
             'type'                 => CampaignTypeEnum::class,
+            'threshold_scope'      => ThresholdScopeEnum::class,
             'is_active'            => 'boolean',
             'amount'               => 'integer',
             'usage_limit_total'    => 'integer',

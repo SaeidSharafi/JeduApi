@@ -5,6 +5,7 @@
     "name": "Back to School Bonus",
     "description": "Special campaign for students.",
     "type": "bonus",
+    "threshold_scope": "windowed",
     "is_active": true,
     "amount": 50000,
     "usage_limit_total": 1000,

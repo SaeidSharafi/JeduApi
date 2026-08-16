@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actions\Admin\WalletCampaign\UpdateWalletCampaignAction;
 use App\Data\Admin\WalletCampaign\WalletCampaignCreateData;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
+use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use App\Models\Staff;
 use App\Models\WalletCampaign;
 use Carbon\Carbon;
@@ -39,6 +40,7 @@ it('successfully updates all campaign fields', function (): void {
         name: 'Updated Campaign Name',
         description: 'Updated campaign description',
         type: CampaignTypeEnum::WELCOME_GIFT->value,
+        threshold_scope: ThresholdScopeEnum::WINDOWED->value,
         is_active: false,
         amount: 25000,
         usage_limit_total: 500,
@@ -77,6 +79,7 @@ it('updates campaign with null dates', function (): void {
         name: 'No Date Limits Campaign',
         description: 'Campaign without date restrictions',
         type: CampaignTypeEnum::MANUAL_ALLOCATION->value,
+        threshold_scope: ThresholdScopeEnum::LIFETIME->value,
         is_active: true,
         amount: 15000,
         usage_limit_total: null,
@@ -103,6 +106,7 @@ it('updates only specific fields while preserving others', function (): void {
             'name'                 => 'Partially Updated Campaign',
             'description'          => $this->campaign->description, // Keep original
             'type'                 => $this->campaign->type->value, // Keep original
+            'threshold_scope'      => $this->campaign->threshold_scope->value, // Keep original
             'is_active'            => false, // Change this
             'amount'               => 35000, // Change this
             'usage_limit_total'    => $this->campaign->usage_limit_total, // Keep original
@@ -132,6 +136,7 @@ it('handles different campaign types correctly', function (): void {
             name: "Campaign Type: {$campaignType->value}",
             description: "Testing {$campaignType->value} campaign type",
             type: $campaignType->value,
+            threshold_scope: ThresholdScopeEnum::LIFETIME->value,
             is_active: true,
             amount: 10000,
             usage_limit_total: 100,
@@ -171,6 +176,7 @@ it('handles complex metadata updates', function (): void {
             'name'                 => $this->campaign->name,
             'description'          => $this->campaign->description,
             'type'                 => $this->campaign->type->value,
+            'threshold_scope'      => $this->campaign->threshold_scope->value,
             'is_active'            => $this->campaign->is_active,
             'amount'               => $this->campaign->amount,
             'usage_limit_total'    => $this->campaign->usage_limit_total,
@@ -196,6 +202,7 @@ it('updates timestamps correctly', function (): void {
         name: 'Future Campaign',
         description: 'Campaign with future dates',
         type: CampaignTypeEnum::SEASONAL_BONUS->value,
+        threshold_scope: ThresholdScopeEnum::WINDOWED->value,
         is_active: true,
         amount: 40000,
         usage_limit_total: 1000,
@@ -216,6 +223,7 @@ it('returns the same campaign instance', function (): void {
         'name'                 => 'Same Instance Test',
         'description'          => 'Testing instance consistency',
         'type'                 => $this->campaign->type->value,
+        'threshold_scope'      => $this->campaign->threshold_scope->value,
         'is_active'            => $this->campaign->is_active,
         'amount'               => $this->campaign->amount,
         'usage_limit_total'    => $this->campaign->usage_limit_total,
