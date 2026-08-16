@@ -25,7 +25,6 @@ return [
         'registration_bonus' => 'Registration Bonus',
         'birthday_gift'      => 'Birthday Gift',
         'referral_bonus'     => 'Referral Bonus',
-        'welcome_gift'       => 'Welcome Gift',
         'loyalty_reward'     => 'Loyalty Reward',
         'seasonal_bonus'     => 'Seasonal Bonus',
         'milestone_reward'   => 'Milestone Reward',

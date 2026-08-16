@@ -20,7 +20,7 @@ beforeEach(function (): void {
 describe('index', function (): void {
     beforeEach(function (): void {
         $this->campaigns = WalletCampaign::factory()->count(5)->create([
-            'type'       => CampaignTypeEnum::WELCOME_GIFT,
+            'type'       => CampaignTypeEnum::REGISTRATION_BONUS,
             'created_by' => $this->user->id,
         ]);
     });
@@ -213,7 +213,7 @@ describe('store', function (): void {
 
         $createData = [
             'name'            => 'Bad Scope',
-            'type'            => CampaignTypeEnum::WELCOME_GIFT->value,
+            'type'            => CampaignTypeEnum::REGISTRATION_BONUS->value,
             'threshold_scope' => 'quarterly',
             'is_active'       => true,
             'amount'          => 30000,
@@ -257,7 +257,7 @@ describe('store', function (): void {
         $this->unauthorized_user();
         $response = $this->postJson('/api/v1/admin/wallet-campaigns', [
             'name'            => 'Test Campaign',
-            'type'            => CampaignTypeEnum::WELCOME_GIFT->value,
+            'type'            => CampaignTypeEnum::REGISTRATION_BONUS->value,
             'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
             'is_active'       => true,
             'amount'          => 10000,

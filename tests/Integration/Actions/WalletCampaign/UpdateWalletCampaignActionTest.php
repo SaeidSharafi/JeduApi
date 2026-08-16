@@ -39,7 +39,7 @@ it('successfully updates all campaign fields', function (): void {
     $updateData = new WalletCampaignCreateData(
         name: 'Updated Campaign Name',
         description: 'Updated campaign description',
-        type: CampaignTypeEnum::WELCOME_GIFT->value,
+        type: CampaignTypeEnum::SEASONAL_BONUS->value,
         threshold_scope: ThresholdScopeEnum::WINDOWED->value,
         is_active: false,
         amount: 25000,
@@ -55,7 +55,7 @@ it('successfully updates all campaign fields', function (): void {
     expect($updatedCampaign->id)->toBe($this->campaign->id);
     expect($updatedCampaign->name)->toBe('Updated Campaign Name');
     expect($updatedCampaign->description)->toBe('Updated campaign description');
-    expect($updatedCampaign->type)->toBe(CampaignTypeEnum::WELCOME_GIFT);
+    expect($updatedCampaign->type)->toBe(CampaignTypeEnum::SEASONAL_BONUS);
     expect($updatedCampaign->is_active)->toBeFalse();
     expect($updatedCampaign->amount)->toBe(25000);
     expect($updatedCampaign->usage_limit_total)->toBe(500);
@@ -68,7 +68,7 @@ it('successfully updates all campaign fields', function (): void {
     $this->assertDatabaseHas('wallet_campaigns', [
         'id'        => $this->campaign->id,
         'name'      => 'Updated Campaign Name',
-        'type'      => CampaignTypeEnum::WELCOME_GIFT->value,
+        'type'      => CampaignTypeEnum::SEASONAL_BONUS->value,
         'amount'    => 25000,
         'is_active' => false,
     ]);

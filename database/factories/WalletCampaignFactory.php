@@ -165,20 +165,4 @@ final class WalletCampaignFactory extends Factory
                 ],
             ]);
     }
-
-    /**
-     * Create a welcome gift campaign
-     */
-    public function welcomeGift(): static
-    {
-        return $this->ofType(CampaignTypeEnum::WELCOME_GIFT)
-            ->state(fn (array $attributes) => [
-                'name'     => 'Welcome Gift Campaign',
-                'amount'   => 100000, // 1000 IRR
-                'metadata' => [
-                    'gift_type'        => 'promotional',
-                    'non_withdrawable' => true,
-                ],
-            ]);
-    }
 }

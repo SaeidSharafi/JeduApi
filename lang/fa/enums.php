@@ -25,7 +25,6 @@ return [
         'registration_bonus' => 'پاداش ثبت‌نام',
         'birthday_gift'      => 'هدیه تولد',
         'referral_bonus'     => 'پاداش معرفی',
-        'welcome_gift'       => 'هدیه خوش‌آمدگویی',
         'loyalty_reward'     => 'پاداش وفاداری',
         'seasonal_bonus'     => 'پاداش فصلی',
         'milestone_reward'   => 'پاداش دستاورد',

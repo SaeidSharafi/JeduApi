@@ -19,7 +19,7 @@ beforeEach(function (): void {
 
     $this->campaign = WalletCampaign::factory()->create([
         'name'                 => 'Test Campaign',
-        'type'                 => CampaignTypeEnum::WELCOME_GIFT,
+        'type'                 => CampaignTypeEnum::MANUAL_ALLOCATION,
         'amount'               => 50000,
         'is_active'            => true,
         'usage_limit_total'    => 1000,

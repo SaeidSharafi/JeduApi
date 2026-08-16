@@ -17,7 +17,7 @@ it('returns same transaction for duplicate manual campaign trigger', function ()
     $staff    = Staff::factory()->create();
 
     $campaign = WalletCampaign::factory()->create([
-        'type'                 => CampaignTypeEnum::WELCOME_GIFT,
+        'type'                 => CampaignTypeEnum::MANUAL_ALLOCATION,
         'amount'               => 50000,
         'is_active'            => true,
         'usage_limit_total'    => 100,
