@@ -3,54 +3,51 @@
 declare(strict_types=1);
 
 return [
-    'CourseStatusEnum'          => [
-        'draft'     => 'پیش‌نویس',
-        'published' => 'منتشر شده',
-        'archived'  => 'آرشیو',
+    'AdviceRequestStatusEnum' => [
+        'pending'     => 'در انتظار',
+        'contacted'   => 'تماس گرفته شده',
+        'resolved'    => 'حل شده',
+        'no_response' => 'بدون پاسخ',
     ],
-    'PublicationStatusEnum'         => [
-        'draft'     => 'پیش‌نویس',
-        'published' => 'منتشر شده',
-        'archived'  => 'آرشیو',
+    'AllocationStatusEnum' => [
+        'error_inactive'            => 'کمپین غیرفعال',
+        'error_expired'             => 'کمپین منقضی شده',
+        'error_total_limit_reached' => 'سقف کلی مصرف تکمیل شده',
+        'error_user_limit_reached'  => 'سقف مصرف کاربر تکمیل شده',
+        'eligible'                  => 'واجد شرایط',
     ],
-    'CourseDifficultyLevelEnum'     => [
+    'AvailabilityStatusEnum' => [
+        'past'     => 'گذشته',
+        'upcoming' => 'پیش‌رو',
+        'ongoing'  => 'در جریان',
+    ],
+    'CampaignTypeEnum' => [
+        'registration_bonus' => 'پاداش ثبت‌نام',
+        'birthday_gift'      => 'هدیه تولد',
+        'referral_bonus'     => 'پاداش معرفی',
+        'welcome_gift'       => 'هدیه خوش‌آمدگویی',
+        'loyalty_reward'     => 'پاداش وفاداری',
+        'seasonal_bonus'     => 'پاداش فصلی',
+        'milestone_reward'   => 'پاداش دستاورد',
+        'manual_allocation'  => 'تخصیص دستی',
+    ],
+    'CivilIdTypeEnum' => [
+        'national_code'  => 'کد ملی',
+        'passport'       => 'پاسپورت',
+        'immigrant_code' => 'کد اتباع',
+    ],
+    'CourseDifficultyLevelEnum' => [
         'beginner'     => 'مبتدی',
         'intermediate' => 'متوسط',
         'advanced'     => 'پیشرفته',
         'expert'       => 'کارشناس',
     ],
-    'GenderEnum'                    => [
-        'male'   => 'مرد',
-        'female' => 'زن',
+    'CourseStatusEnum' => [
+        'draft'     => 'پیش‌نویس',
+        'published' => 'منتشر شده',
+        'archived'  => 'آرشیو',
     ],
-    'TermStatusEnum'                => [
-        'active'   => 'فعال',
-        'inactive' => 'غیرفعال',
-        'planning' => 'در حال برنامه‌ریزی',
-    ],
-    'MorphTypeEnum'                 => [
-        'course'        => 'دوره',
-        'seminar'       => 'سمینار',
-        'digital_asset' => 'فایل',
-        'product'       => 'محصول',
-        'staff'         => 'کارمند',
-        'user'          => 'کاربر',
-        'teacher'       => 'مدرس',
-        'vendor'        => 'فروشنده',
-    ],
-    'ProductableEnum'               => [
-        'course'        => 'دوره',
-        'seminar'       => 'سمینار',
-        'digital_asset' => 'فایل',
-    ],
-    'FulfillmentTypeEnum'           => [
-        'digital'           => 'دیجیتال',
-        'physical'          => 'فیزیکی',
-        'online_service'    => 'سرویس آنلاین',
-        'offline_service'   => 'سرویس آفلاین',
-        'in_person_service' => 'سرویس حضوری',
-    ],
-    'DeliveryMethodEnum'            => [
+    'DeliveryMethodEnum' => [
         'direct_download'           => 'دانلود مستقیم',
         'live_session_bbb'          => 'جلسه زنده با BBB',
         'live_session_skyroom'      => 'جلسه زنده با Skyroom',
@@ -58,12 +55,28 @@ return [
         'video_platform_spotplayer' => 'پلتفرم ویدیویی SpotPlayer',
         'in_person'                 => 'حضوری',
     ],
-    'CivilIdTypeEnum'               => [
-        'national_code'  => 'کد ملی',
-        'passport'       => 'پاسپورت',
-        'immigrant_code' => 'کد اتباع',
+    'DiscountTypeEnum' => [
+        'product_specific' => 'تخفیف روی محصول خاص',
+        'cart_checkout'    => 'تخفیف روی سبد خرید',
     ],
-    'EducationLevelEnum'            => [
+    'DynamicListEntityTypeEnum' => [
+        'course_products'        => 'محصولات دوره',
+        'seminar_products'       => 'محصولات سمینار',
+        'digital_asset_products' => 'محصولات دارایی دیجیتال',
+        'blog_post'              => 'نوشته وبلاگ',
+        'all_products'           => 'همه محصولات',
+    ],
+    'DynamicListSortByEnum' => [
+        'created_at:desc' => 'جدیدترین',
+        'created_at:asc'  => 'قدیمی‌ترین',
+        'updated_at:desc' => 'آخرین به‌روزرسانی',
+        'updated_at:asc'  => 'قدیمی‌ترین به‌روزرسانی',
+        'name:asc'        => 'نام صعودی',
+        'name:desc'       => 'نام نزولی',
+        'popular'         => 'محبوب',
+        'featured'        => 'ویژه',
+    ],
+    'EducationLevelEnum' => [
         'student'       => 'دانش‌آموز',
         'under_diploma' => 'زیردیپلم',
         'diploma'       => 'دیپلم',
@@ -71,71 +84,16 @@ return [
         'bachelor'      => 'کارشناسی',
         'master'        => 'کارشناسی ارشد',
         'doctorate'     => 'دکتری',
+        'postdoctoral'  => 'پسادکتری',
     ],
-    'EducationStatusEnum'           => [
+    'EducationStatusEnum' => [
         'student'    => 'دانشجو',
         'university' => 'دانشگاه',
         'graduated'  => 'فارغ‌التحصیل',
         'employed'   => 'شاغل',
+        'job_seeker' => 'جویای کار',
     ],
-    'OrderItemStatusEnum'           => [
-        'active'    => 'فعال',
-        'cancelled' => 'لغو شده',
-        'refunded'  => 'بازپرداخت شده',
-    ],
-    'OrderItemPaymentTypeEnum'      => [
-        'pre_payment'  => 'پیش‌پرداخت',
-        'full_payment' => 'پرداخت کامل',
-        'invoice'      => 'صورتحساب',
-    ],
-    'OrderPaymentStatusEnum'        => [
-        'pending'            => 'در انتظار',
-        'partially_paid'     => 'پرداخت جزئی',
-        'paid'               => 'پرداخت شده',
-        'refunded'           => 'بازپرداخت شده',
-        'partially_refunded' => 'بازپرداخت جزئی',
-    ],
-    'OrderStatusEnum'               => [
-        'pending'    => 'در انتظار',
-        'processing' => 'در حال پردازش',
-        'completed'  => 'تکمیل شده',
-        'cancelled'  => 'لغو شده',
-        'failed'     => 'ناموفق',
-        'refunded'   => 'بازپرداخت شده',
-    ],
-    'PaymentMethodEnum'             => [
-        'bank_transfer'  => 'انتقال بانکی',
-        'mellat_gateway' => 'درگاه ملت',
-        'wallet'         => 'کیف پول',
-        'digipay'        => 'دیجی‌پی',
-    ],
-    'PaymentStatusEnum'             => [
-        'pending'   => 'در انتظار',
-        'completed' => 'تکمیل شده',
-        'failed'    => 'ناموفق',
-    ],
-    'MatchPolicyEnum'               => [
-        'any' => 'هر کدام',
-        'all' => 'همه',
-    ],
-    'MathOperatorEnum'              => [
-        '==' => 'برابر',
-        '<'  => 'کوچکتر از',
-        '>'  => 'بزرگتر از',
-        '<=' => 'کوچکتر یا مساوی',
-        '>=' => 'بزرگتر یا مساوی',
-        '<>' => 'نا برابر',
-    ],
-    'ProductRegistrationStatusEnum' => [
-        'in_progress' => 'در حال ثبت‌نام',
-        'finished'    => 'برگزار شده',
-    ],
-    'ProductDeliveryStatusEnum'     => [
-        'online'    => 'آنلاین',
-        'in_person' => 'حضوری',
-        'combined'  => 'ترکیبی',
-    ],
-    'EnrollmentStatusEnum'          => [
+    'EnrollmentStatusEnum' => [
         'awaiting_payment'     => 'در انتظار پرداخت',
         'pending_provisioning' => 'در حال آماده‌سازی دسترسی',
         'active'               => 'فعال',
@@ -144,12 +102,44 @@ return [
         'cancelled'            => 'لغو شده',
         'provisioning_failed'  => 'خطا در آماده‌سازی دسترسی',
     ],
-    'WalletStatusEnum'              => [
-        'active'    => 'فعال',
-        'suspended' => 'معلق',
-        'closed'    => 'بسته شده',
+    'FulfillmentTypeEnum' => [
+        'digital'           => 'دیجیتال',
+        'physical'          => 'فیزیکی',
+        'online_service'    => 'سرویس آنلاین',
+        'offline_service'   => 'سرویس آفلاین',
+        'in_person_service' => 'سرویس حضوری',
     ],
-    'MoodleActivityStateEnum'       => [
+    'GenderEnum' => [
+        'male'   => 'مرد',
+        'female' => 'زن',
+    ],
+    'HomePageBlockTypeEnum' => [
+        'MAIN_CATEGORIES' => 'دسته‌بندی‌های اصلی',
+        'BANNER'          => 'بنر',
+        'CURATED_LIST'    => 'فهرست منتخب',
+        'WEBINAR_BANNER'  => 'بنر وبینار',
+        'DYNAMIC_LIST'    => 'فهرست پویا',
+    ],
+    'MatchPolicyEnum' => [
+        'any' => 'هر کدام',
+        'all' => 'همه',
+    ],
+    'MathOperatorEnum' => [
+        '==' => 'برابر',
+        '<'  => 'کوچکتر از',
+        '>'  => 'بزرگتر از',
+        '<=' => 'کوچکتر یا مساوی',
+        '>=' => 'بزرگتر یا مساوی',
+        '<>' => 'نا برابر',
+    ],
+    'MediaTagEnum' => [
+        'gallery'     => 'گالری',
+        'video'       => 'ویدیو',
+        'cover'       => 'جلد',
+        'certificate' => 'گواهینامه',
+        'main'        => 'اصلی',
+    ],
+    'MoodleActivityStateEnum' => [
         'incomplete'    => 'تکمیل نشده',
         '0'             => 'تکمیل نشده',
         'complete'      => 'تکمیل شده',
@@ -159,14 +149,148 @@ return [
         'complete_fail' => 'رد شده',
         '3'             => 'رد شده',
     ],
-    'PaymentTransactionStatusEnum'  =>
-        [
-            'initiated' => 'شروع شده',
-            'completed' => 'تکمیل شده',
-            'failed'    => 'ناموفق',
-        ],
-    'PaymentPurposeEnum'            => [
+    'MorphTypeEnum' => [
+        'category'              => 'دسته‌بندی',
+        'course'                => 'دوره',
+        'seminar'               => 'سمینار',
+        'digital_asset'         => 'فایل',
+        'staff'                 => 'کارمند',
+        'user'                  => 'کاربر',
+        'teacher'               => 'مدرس',
+        'vendor'                => 'فروشنده',
+        'product'               => 'محصول',
+        'order'                 => 'سفارش',
+        'refund'                => 'بازگشت وجه',
+        'campaign'              => 'کمپین',
+        'slider'                => 'اسلایدر',
+        'home_page_block'       => 'بلوک صفحه اصلی',
+        'partner'               => 'همکار',
+        'student_story'         => 'روایت دانشجو',
+        'blog_post'             => 'نوشته وبلاگ',
+        'blog_category'         => 'دسته‌بندی وبلاگ',
+        'setting'               => 'تنظیمات',
+        'collaboration_request' => 'درخواست همکاری',
+        'deposit'               => 'واریز',
+    ],
+    'NextPaymentTypeEnum' => [
+        'initial_payment' => 'پرداخت اولیه',
+        'final_balance'   => 'تسویه نهایی',
+        'none'            => 'بدون پرداخت',
+    ],
+    'OrderItemPaymentTypeEnum' => [
+        'pre_payment'  => 'پیش‌پرداخت',
+        'full_payment' => 'پرداخت کامل',
+    ],
+    'OrderItemStatusEnum' => [
+        'pending'   => 'در انتظار',
+        'completed' => 'تکمیل شده',
+        'cancelled' => 'لغو شده',
+        'refunded'  => 'بازپرداخت شده',
+    ],
+    'OrderPaymentStatusEnum' => [
+        'pending'            => 'در انتظار',
+        'partially_paid'     => 'پرداخت جزئی',
+        'paid'               => 'پرداخت شده',
+        'refunded'           => 'بازپرداخت شده',
+        'partially_refunded' => 'بازپرداخت جزئی',
+    ],
+    'OrderProvisioningTriggerEnum' => [
+        'any_payment'     => 'هر نوع پرداخت',
+        'full_payment'    => 'پرداخت کامل',
+        'manual_approval' => 'تأیید دستی',
+    ],
+    'OrderStatusEnum' => [
+        'pending'            => 'در انتظار',
+        'processing'         => 'در حال پردازش',
+        'completed'          => 'تکمیل شده',
+        'cancelled'          => 'لغو شده',
+        'failed'             => 'ناموفق',
+        'refunded'           => 'بازپرداخت شده',
+        'partially_refunded' => 'بازپرداخت جزئی',
+    ],
+    'PaymentMethodEnum' => [
+        'bank_transfer'  => 'انتقال بانکی',
+        'mellat_gateway' => 'درگاه ملت',
+        'wallet'         => 'کیف پول',
+        'no_payment'     => 'بدون پرداخت',
+        'digipay'        => 'دیجی‌پی',
+    ],
+    'PaymentPurposeEnum' => [
         'order'        => 'سفارش',
         'wallet_topup' => 'کیف پول',
-    ]
+    ],
+    'PaymentStatusEnum' => [
+        'pending'   => 'در انتظار',
+        'completed' => 'تکمیل شده',
+        'failed'    => 'ناموفق',
+    ],
+    'PaymentTransactionStatusEnum' => [
+        'initiated' => 'شروع شده',
+        'completed' => 'تکمیل شده',
+        'failed'    => 'ناموفق',
+    ],
+    'ProductableEnum' => [
+        'course'        => 'دوره',
+        'seminar'       => 'سمینار',
+        'digital_asset' => 'فایل',
+    ],
+    'ProductDeliveryStatusEnum' => [
+        'online'    => 'آنلاین',
+        'in_person' => 'حضوری',
+        'combined'  => 'ترکیبی',
+    ],
+    'ProductRegistrationStatusEnum' => [
+        'in_progress' => 'در حال ثبت‌نام',
+        'finished'    => 'برگزار شده',
+    ],
+    'PublicationStatusEnum' => [
+        'draft'     => 'پیش‌نویس',
+        'published' => 'منتشر شده',
+        'archived'  => 'آرشیو',
+        'scheduled' => 'زمان‌بندی شده',
+    ],
+    'RefundStatusEnum' => [
+        'pending'    => 'در انتظار',
+        'processing' => 'در حال پردازش',
+        'completed'  => 'تکمیل شده',
+        'failed'     => 'ناموفق',
+        'cancelled'  => 'لغو شده',
+    ],
+    'RelationTypeEnum' => [
+        'related'    => 'مرتبط',
+        'cross_sell' => 'فروش مکمل',
+        'upsell'     => 'فروش ارتقایی',
+    ],
+    'ReviewStatusEnum' => [
+        'pending'  => 'در انتظار بررسی',
+        'approved' => 'تأیید شده',
+        'rejected' => 'رد شده',
+    ],
+    'TermStatusEnum' => [
+        'active'   => 'فعال',
+        'inactive' => 'غیرفعال',
+        'planning' => 'در حال برنامه‌ریزی',
+    ],
+    'TransactionSourceEnum' => [
+        'order'     => 'سفارش',
+        'staff'     => 'کارشناس',
+        'promotion' => 'طرح تشویقی',
+        'campaign'  => 'کمپین',
+        'system'    => 'سیستم',
+        'deposit'   => 'واریز',
+    ],
+    'TransactionTypeEnum' => [
+        'deposit'    => 'واریز',
+        'withdrawal' => 'برداشت',
+        'payment'    => 'پرداخت',
+        'refund'     => 'بازگشت وجه',
+        'gift'       => 'هدیه',
+        'bonus'      => 'پاداش',
+        'adjustment' => 'تعدیل',
+    ],
+    'WalletStatusEnum' => [
+        'active'    => 'فعال',
+        'suspended' => 'معلق',
+        'closed'    => 'بسته شده',
+    ],
 ];
