@@ -30,6 +30,12 @@
 
 ### Console Commands (`app/Console/Commands/`)
 
+#### ReclaimExpiredGiftsCommand (`app/Console/Commands/Wallet/ReclaimExpiredGiftsCommand.php`)
+- **Purpose:** Reclaims unspent gift balance that has passed its expiry date
+- **Signature:** `wallet:reclaim-expired-gifts {--dry-run}`
+- **Functionality:** Invokes `ReclaimExpiredGiftsAction`; prints the number of reclaimed gifts or "No expired gift balances found." `--dry-run` reports what would be reclaimed without writing.
+- **Usage:** Scheduled daily (`->daily()->withoutOverlapping()`) in `bootstrap/app.php`.
+
 #### PublishPostCommand (`app/Console/Commands/PublishPostCommand.php`)
 - **Purpose:** Automated blog post publication for scheduled content
 - **Signature:** `post:publish`
@@ -361,7 +367,9 @@
 
 ### Wallet Actions (`app/Actions/Wallet/`)
 - **RecordWalletTransactionAction** (`app/Actions/Wallet/RecordWalletTransactionAction.php`)
-  - `handle(RecordTransactionData $data): WalletTransaction`: Single entry point for all wallet ledger writes. Runs inside a DB transaction, locks the wallet row (`lockForUpdate`), rejects duplicate `idempotency_key` values, and enforces wallet status (throws `WalletNotActive` on inactive wallets). For `PAYMENT`/`ORDER` transactions debits gift balance first (before regular balance) consuming gift credits oldest-first (FIFO by receipt) via each gift's `remaining_amount`, then normal balance, and tracks the split in `wallet_debit_split` metadata (including per-gift `gift_consumptions`). Gift/bonus credits record their full amount as `remaining_amount`.
+  - `execute(RecordTransactionData $data): WalletTransaction`: Single entry point for all wallet ledger writes. Runs inside a DB transaction, locks the wallet row (`lockForUpdate`), rejects duplicate `idempotency_key` values, and enforces wallet status (throws `WalletNotActive` on inactive wallets). For `PAYMENT`/`ORDER` transactions debits gift balance first (before regular balance) consuming gift credits oldest-first (FIFO by receipt) via each gift's `remaining_amount`, then normal balance, and tracks the split in `wallet_debit_split` metadata (including per-gift `gift_consumptions`). For `EXPIRY` transactions (with `gift_transaction_id`) reclaims a gift's unspent `remaining_amount` as a negative debit: reduces `gift_balance`, zeroes the gift's remaining slice, and never reclaims more than the unspent amount (clamped); throws `GiftAlreadyFullyReclaimedException` when there is nothing left to reclaim. Gift/bonus credits record their full amount as `remaining_amount`.
+- **ReclaimExpiredGiftsAction** (`app/Actions/Wallet/ReclaimExpiredGiftsAction.php`)
+  - `execute(bool $dryRun = false): array{reclaimed: int, skipped: int}`: Daily sweep that reclaims every expired, unspent gift/bonus credit through an `EXPIRY` ledger debit. Candidates are gift/bonus credits with `remaining_amount > 0` and past `expires_at` on ACTIVE wallets, excluding gifts that already have an EXPIRY transaction (idempotent, deterministic key `wallet-gift-expiry:{gift_id}`). Fully-spent, not-yet-expired, and non-gift credits are never candidates. Gifts consumed concurrently between query and lock are counted as skipped. Supports `--dry-run` counting.
 
 ## Services Pattern (`app/Services/`)
 

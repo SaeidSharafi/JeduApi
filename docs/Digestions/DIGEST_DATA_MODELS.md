@@ -271,7 +271,7 @@
 
 ### WalletTransaction (`app/Models/WalletTransaction.php`)
 - **Purpose:** Individual wallet transaction records (immutable ledger entries)
-- **Key Fields:** `wallet_id`, `user_id`, `type` (deposit/withdrawal/payment/refund/gift/bonus/adjustment), `amount` (positive=credit, negative=debit), `remaining_amount` (unspent slice of a gift/bonus credit, null for non-gift), `balance_after`, `gift_balance_after`, `source_type` (order/admin/promotion/refund/manual/system), `source_id`, `description`, `metadata` (JSONB), `expires_at` (promotional credits), `idempotency_key`, `created_by`
+- **Key Fields:** `wallet_id`, `user_id`, `type` (deposit/withdrawal/payment/refund/gift/bonus/adjustment/expiry), `amount` (positive=credit, negative=debit), `remaining_amount` (unspent slice of a gift/bonus credit, null for non-gift), `balance_after`, `gift_balance_after`, `source_type` (order/admin/promotion/refund/manual/system), `source_id`, `description`, `metadata` (JSONB), `expires_at` (promotional credits), `idempotency_key`, `created_by`
 - **Relationships:** 
   - `belongsTo(Wallet::class)` - wallet
   - Polymorphic source tracking via `source_type`/`source_id`

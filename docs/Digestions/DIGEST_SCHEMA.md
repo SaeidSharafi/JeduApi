@@ -426,7 +426,7 @@
   - id (BIGINT, PK)
   - wallet_id (BIGINT) FK -> wallets(id) CASCADE
   - user_id (BIGINT) FK -> users(id) RESTRICT
-  - type (VARCHAR)
+  - type (VARCHAR) — deposit/withdrawal/payment/refund/gift/bonus/adjustment/expiry
   - amount (BIGINT)
   - remaining_amount (BIGINT nullable) — unspent slice of a gift/bonus credit; null for non-gift transactions
   - balance_after (BIGINT)
