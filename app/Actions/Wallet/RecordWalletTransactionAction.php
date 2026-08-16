@@ -8,6 +8,8 @@ use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Enums\Wallet\WalletStatusEnum;
+use App\Exceptions\Wallet\GiftAlreadyFullyReclaimedException;
+use App\Exceptions\Wallet\GiftTransactionNotFoundException;
 use App\Exceptions\Wallet\WalletInsufficientBalanceException;
 use App\Exceptions\Wallet\WalletNotActive;
 use App\Exceptions\Wallet\WalletNotFoundException;
@@ -24,7 +26,7 @@ final class RecordWalletTransactionAction
      * Record a wallet transaction with atomic balance update.
      * Uses database locking to prevent race conditions.
      *
-     * @throws WalletUserNotFoundException|WalletNotFoundException|WalletInsufficientBalanceException
+     * @throws WalletUserNotFoundException|WalletNotFoundException|WalletInsufficientBalanceException|GiftTransactionNotFoundException|GiftAlreadyFullyReclaimedException
      */
     public function execute(RecordTransactionData $data): WalletTransaction
     {
@@ -102,6 +104,40 @@ final class RecordWalletTransactionAction
 
                 $newBalance     = $wallet->balance      - $fromBalance;
                 $newGiftBalance = $wallet->gift_balance - $fromGiftBalance;
+            } elseif ($data->type === TransactionTypeEnum::EXPIRY) {
+                $giftTransaction = WalletTransaction::query()
+                    ->whereKey($data->gift_transaction_id)
+                    ->where('wallet_id', $wallet->id)
+                    ->whereIn('type', [TransactionTypeEnum::GIFT, TransactionTypeEnum::BONUS])
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $giftTransaction) {
+                    throw new GiftTransactionNotFoundException((int) $data->gift_transaction_id);
+                }
+
+                $reclaim = min(
+                    abs($data->amount),
+                    (int) $giftTransaction->remaining_amount,
+                    (int) $wallet->gift_balance,
+                );
+
+                if ($reclaim <= 0) {
+                    throw new GiftAlreadyFullyReclaimedException((int) $giftTransaction->id);
+                }
+
+                // Record the actual reclaimed amount so the ledger entry reconciles
+                // with the balance change, never the (possibly larger) requested amount.
+                $data->amount = -$reclaim;
+
+                $giftTransaction->update(['remaining_amount' => (int) $giftTransaction->remaining_amount - $reclaim]);
+
+                $newGiftBalance   = $wallet->gift_balance - $reclaim;
+                $fromBalance      = 0;
+                $fromGiftBalance  = $reclaim;
+                $giftConsumptions = [
+                    ['transaction_id' => $giftTransaction->id, 'amount' => $reclaim],
+                ];
             } else {
                 $newBalance = $wallet->balance + $data->amount;
             }
