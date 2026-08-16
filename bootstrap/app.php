@@ -64,6 +64,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('orders:cancel-abandoned --timeout=30')
             ->everyTenMinutes()
             ->withoutOverlapping();
+
+        // Reclaim expired unspent gift balance daily
+        $schedule->command('wallet:reclaim-expired-gifts')
+            ->daily()
+            ->withoutOverlapping();
     })
     ->withRouting(
         commands: __DIR__.'/../routes/console.php',
