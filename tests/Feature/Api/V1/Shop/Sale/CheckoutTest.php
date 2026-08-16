@@ -21,6 +21,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\WalletTransaction;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -505,8 +506,9 @@ test('checkout fails with insufficient wallet balance', function (): void {
     ]);
 });
 
-test('wallet payment uses only regular balance (not gift balance)', function (): void {
+test('wallet payment consumes gift balance before regular balance', function (): void {
     $this->customer();
+    WalletTransaction::factory()->forWallet($this->user->wallet)->gift(300000)->create();
     $this->user->wallet->update([
         'balance' => 500000, 'gift_balance' => 300000,
     ]);
@@ -529,8 +531,8 @@ test('wallet payment uses only regular balance (not gift balance)', function ():
     ]);
 
     $this->user->wallet->refresh();
-    expect($this->user->wallet->balance)->toBe(0);
-    expect($this->user->wallet->gift_balance)->toBe(300000);
+    expect($this->user->wallet->balance)->toBe(300000);
+    expect($this->user->wallet->gift_balance)->toBe(0);
 });
 
 test('checkout with bank_transfer creates pending order without payment', function (): void {

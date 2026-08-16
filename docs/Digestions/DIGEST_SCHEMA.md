@@ -428,6 +428,7 @@
   - user_id (BIGINT) FK -> users(id) RESTRICT
   - type (VARCHAR)
   - amount (BIGINT)
+  - remaining_amount (BIGINT nullable) — unspent slice of a gift/bonus credit; null for non-gift transactions
   - balance_after (BIGINT)
   - gift_balance_after (BIGINT)
   - source_type (STRING)

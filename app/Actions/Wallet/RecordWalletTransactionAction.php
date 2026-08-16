@@ -13,8 +13,9 @@ use App\Exceptions\Wallet\WalletNotActive;
 use App\Exceptions\Wallet\WalletNotFoundException;
 use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
+use App\Models\Wallet;
 use App\Models\WalletTransaction;
-use Facades\App\Models\Wallet;
+use Facades\App\Models\Wallet as WalletFacade;
 use Illuminate\Support\Facades\DB;
 
 final class RecordWalletTransactionAction
@@ -39,7 +40,7 @@ final class RecordWalletTransactionAction
 
         return DB::transaction(function () use ($wallet, $user, $data) {
             // Lock the wallet row to prevent race conditions
-            $wallet = Wallet::where('id', $wallet->id)->lockForUpdate()->first();
+            $wallet = WalletFacade::where('id', $wallet->id)->lockForUpdate()->first();
 
             // @codeCoverageIgnoreStart
             if (! $wallet) {
@@ -69,16 +70,35 @@ final class RecordWalletTransactionAction
                 $data->amount = abs($data->amount);
             }
 
-            $newBalance      = $wallet->balance;
-            $newGiftBalance  = $wallet->gift_balance;
-            $fromGiftBalance = 0;
+            $newBalance       = $wallet->balance;
+            $newGiftBalance   = $wallet->gift_balance;
+            $fromGiftBalance  = 0;
+            $remainingAmount  = null;
+            $giftConsumptions = [];
+            $isOrderPayment   = $data->type === TransactionTypeEnum::PAYMENT && $data->source_type === TransactionSourceEnum::ORDER;
 
             if ($data->type->isGift()) {
-                $newGiftBalance = $wallet->gift_balance + $data->amount;
-            } elseif ($data->type === TransactionTypeEnum::PAYMENT && $data->source_type === TransactionSourceEnum::ORDER) {
-                $debitAmount     = abs($data->amount);
-                $fromBalance     = min($wallet->balance, $debitAmount);
-                $fromGiftBalance = $debitAmount - $fromBalance;
+                $newGiftBalance  = $wallet->gift_balance + $data->amount;
+                $remainingAmount = $data->amount;
+            } elseif ($isOrderPayment) {
+                $debitAmount    = abs($data->amount);
+                $availableTotal = $wallet->balance + $wallet->gift_balance;
+
+                if ($availableTotal + $data->amount < 0) {
+                    throw new WalletInsufficientBalanceException(
+                        availableBalance: $availableTotal,
+                        requiredBalance: $debitAmount,
+                        shortfall: abs($availableTotal + $data->amount),
+                        sourceType: $data->source_type,
+                        sourceId: $data->source_id,
+                    );
+                }
+
+                $giftSplit = $this->consumeGiftFifo($wallet, $debitAmount);
+
+                $fromBalance      = $giftSplit['from_balance'];
+                $fromGiftBalance  = $giftSplit['from_gift_balance'];
+                $giftConsumptions = $giftSplit['gift_consumptions'];
 
                 $newBalance     = $wallet->balance      - $fromBalance;
                 $newGiftBalance = $wallet->gift_balance - $fromGiftBalance;
@@ -86,19 +106,7 @@ final class RecordWalletTransactionAction
                 $newBalance = $wallet->balance + $data->amount;
             }
 
-            if ($data->type === TransactionTypeEnum::PAYMENT && $data->source_type === TransactionSourceEnum::ORDER) {
-                $availableTotal = $wallet->balance + $wallet->gift_balance;
-                // dump($availableTotal, $data->amount,$availableTotal + $data->amount,$newBalance < 0);
-                if ($availableTotal + $data->amount < 0) {
-                    throw new WalletInsufficientBalanceException(
-                        availableBalance: $availableTotal,
-                        requiredBalance: abs($data->amount),
-                        shortfall: abs($availableTotal + $data->amount),
-                        sourceType: $data->source_type,
-                        sourceId: $data->source_id,
-                    );
-                }
-            } elseif ($newBalance < 0) {
+            if (! $isOrderPayment && $newBalance < 0) {
                 throw new WalletInsufficientBalanceException(
                     availableBalance: $wallet->balance,
                     requiredBalance: abs($data->amount),
@@ -129,6 +137,7 @@ final class RecordWalletTransactionAction
                     'wallet_debit_split' => [
                         'from_balance'      => $fromBalance ?? abs($data->amount),
                         'from_gift_balance' => $fromGiftBalance,
+                        'gift_consumptions' => $giftConsumptions ?: null,
                     ],
                     'source_details' => [
                         'source_type' => $data->source_type->value,
@@ -143,6 +152,7 @@ final class RecordWalletTransactionAction
                 'user_id'            => $user->id,
                 'type'               => $data->type,
                 'amount'             => $data->amount,
+                'remaining_amount'   => $remainingAmount,
                 'balance_after'      => $newBalance,
                 'gift_balance_after' => $newGiftBalance,
                 'source_type'        => $data->source_type,
@@ -155,6 +165,57 @@ final class RecordWalletTransactionAction
 
             return $transaction;
         });
+    }
+
+    /**
+     * Consume gift balance oldest-first (FIFO by receipt) for an order debit.
+     * Gift credits are depleted by their tracked remaining slice; gift balance
+     * without a ledger row (e.g. initial gift_balance set at wallet creation)
+     * is consumed as untracked gift before falling back to normal balance.
+     *
+     * @return array{from_balance: int, from_gift_balance: int, gift_consumptions: list<array{transaction_id: int, amount: int}>}
+     */
+    private function consumeGiftFifo(Wallet $wallet, int $debitAmount): array
+    {
+        $fromGift         = 0;
+        $giftConsumptions = [];
+
+        $remainingToConsume = min($debitAmount, $wallet->gift_balance);
+
+        $giftCredits = WalletTransaction::query()
+            ->where('wallet_id', $wallet->id)
+            ->whereIn('type', [TransactionTypeEnum::GIFT, TransactionTypeEnum::BONUS])
+            ->where('amount', '>', 0)
+            ->where('remaining_amount', '>', 0)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
+
+        foreach ($giftCredits as $credit) {
+            if ($remainingToConsume <= 0) {
+                break;
+            }
+
+            $consume = min((int) $credit->remaining_amount, $remainingToConsume);
+            $fromGift += $consume;
+            $remainingToConsume -= $consume;
+
+            $credit->update(['remaining_amount' => (int) $credit->remaining_amount - $consume]);
+
+            $giftConsumptions[] = [
+                'transaction_id' => $credit->id,
+                'amount'         => $consume,
+            ];
+        }
+
+        // Any remaining slice of the debit is untracked gift balance, then normal balance.
+        $fromGift += $remainingToConsume;
+
+        return [
+            'from_balance'      => $debitAmount - $fromGift,
+            'from_gift_balance' => $fromGift,
+            'gift_consumptions' => $giftConsumptions,
+        ];
     }
 
     /**

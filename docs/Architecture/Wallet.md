@@ -72,7 +72,7 @@ stateDiagram-v2
 - Replayable operations carry deterministic idempotency keys derived from stable business identity, such as a payment, refund, or campaign allocation. Random request IDs do not provide financial idempotency.
 - An existing idempotency key returns the existing transaction and performs no second balance change.
 - Debits normalize to negative amounts and credits to positive amounts inside the transaction boundary.
-- Order payment spends normal balance before gift balance. The split is recorded for audit and later financial reasoning.
+- Order payment spends gift balance before normal balance, oldest gift first (FIFO by receipt). The split is recorded for audit and later financial reasoning.
 - A suspended wallet accepts refunds only; a closed wallet accepts no transactions. Callers do not add local status bypasses.
 - A wallet top-up is a payment with wallet-top-up purpose and customer ownership, not a dummy order. Payment completion routes to the ledger by purpose.
 - Refunds restore funds through the same ledger action; they never edit the original transaction or balance directly.

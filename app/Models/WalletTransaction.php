@@ -25,6 +25,7 @@ final class WalletTransaction extends Model
         'user_id',
         'type',
         'amount',
+        'remaining_amount',
         'balance_after',
         'gift_balance_after',
         'source_type',
@@ -85,6 +86,7 @@ final class WalletTransaction extends Model
     {
         return [
             'amount'             => 'integer',
+            'remaining_amount'   => 'integer',
             'balance_after'      => 'integer',
             'gift_balance_after' => 'integer',
             'type'               => TransactionTypeEnum::class,

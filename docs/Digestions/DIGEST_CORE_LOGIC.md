@@ -361,7 +361,7 @@
 
 ### Wallet Actions (`app/Actions/Wallet/`)
 - **RecordWalletTransactionAction** (`app/Actions/Wallet/RecordWalletTransactionAction.php`)
-  - `handle(RecordTransactionData $data): WalletTransaction`: Single entry point for all wallet ledger writes. Runs inside a DB transaction, locks the wallet row (`lockForUpdate`), rejects duplicate `idempotency_key` values, and enforces wallet status (throws `WalletNotActive` on inactive wallets). For `PAYMENT`/`ORDER` transactions debits gift balance first (before regular balance) and tracks the split in `wallet_debit_split` metadata.
+  - `handle(RecordTransactionData $data): WalletTransaction`: Single entry point for all wallet ledger writes. Runs inside a DB transaction, locks the wallet row (`lockForUpdate`), rejects duplicate `idempotency_key` values, and enforces wallet status (throws `WalletNotActive` on inactive wallets). For `PAYMENT`/`ORDER` transactions debits gift balance first (before regular balance) consuming gift credits oldest-first (FIFO by receipt) via each gift's `remaining_amount`, then normal balance, and tracks the split in `wallet_debit_split` metadata (including per-gift `gift_consumptions`). Gift/bonus credits record their full amount as `remaining_amount`.
 
 ## Services Pattern (`app/Services/`)
 

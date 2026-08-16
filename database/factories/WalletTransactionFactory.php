@@ -36,6 +36,7 @@ final class WalletTransactionFactory extends Factory
             },
             'type'               => $this->faker->randomElement(TransactionTypeEnum::getAllValues()),
             'amount'             => $amount,
+            'remaining_amount'   => null,
             'balance_after'      => $this->faker->numberBetween(0, 1000000),
             'gift_balance_after' => $this->faker->numberBetween(0, 500000),
             'source_type'        => $this->faker->randomElement(TransactionSourceEnum::getAllValues()),
@@ -97,21 +98,31 @@ final class WalletTransactionFactory extends Factory
 
     public function gift(?int $amount = null): static
     {
-        return $this->state(fn (array $attributes) => [
-            'type'        => TransactionTypeEnum::GIFT,
-            'amount'      => $amount ?? $this->faker->numberBetween(1000, 50000),
-            'source_type' => TransactionSourceEnum::PROMOTION,
-            'expires_at'  => $this->faker->dateTimeBetween('+1 month', '+1 year'),
-        ]);
+        return $this->state(function (array $attributes) use ($amount): array {
+            $giftAmount = $amount ?? $this->faker->numberBetween(1000, 50000);
+
+            return [
+                'type'             => TransactionTypeEnum::GIFT,
+                'amount'           => $giftAmount,
+                'remaining_amount' => $giftAmount,
+                'source_type'      => TransactionSourceEnum::PROMOTION,
+                'expires_at'       => $this->faker->dateTimeBetween('+1 month', '+1 year'),
+            ];
+        });
     }
 
     public function bonus(?int $amount = null): static
     {
-        return $this->state(fn (array $attributes) => [
-            'type'        => TransactionTypeEnum::BONUS,
-            'amount'      => $amount ?? $this->faker->numberBetween(1000, 50000),
-            'source_type' => TransactionSourceEnum::PROMOTION,
-        ]);
+        return $this->state(function (array $attributes) use ($amount): array {
+            $bonusAmount = $amount ?? $this->faker->numberBetween(1000, 50000);
+
+            return [
+                'type'             => TransactionTypeEnum::BONUS,
+                'amount'           => $bonusAmount,
+                'remaining_amount' => $bonusAmount,
+                'source_type'      => TransactionSourceEnum::PROMOTION,
+            ];
+        });
     }
 
     public function forWallet(Wallet $wallet): static
