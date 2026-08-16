@@ -34,11 +34,11 @@ final class SeminarListItemData extends Data implements ProductableDataContract,
         public ?string $slug,
         public ?string $thumbnail_url,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public PublicationStatusEnum $status,
+        public ?PublicationStatusEnum $status,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public CourseDifficultyLevelEnum $difficulty_level,
-        public bool $provides_certificate,
-        public int $created_by,
+        public ?CourseDifficultyLevelEnum $difficulty_level,
+        public ?bool $provides_certificate,
+        public ?int $created_by,
         #[DataCollectionOf(CategoryListItemData::class)]
         public ?DataCollection $categories,
         #[DataCollectionOf(DigitalAssetListItemData::class)]
