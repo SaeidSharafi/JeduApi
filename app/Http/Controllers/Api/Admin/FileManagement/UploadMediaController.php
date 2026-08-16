@@ -46,7 +46,9 @@ final class UploadMediaController extends Controller
             ->onDuplicateIncrement()
             ->upload();
 
-        if ($media->aggregate_type === Media::TYPE_IMAGE) {
+        $resizableExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+        if ($media->aggregate_type === Media::TYPE_IMAGE && in_array($media->extension, $resizableExtensions, true)) {
             CreateImageVariants::dispatch($media, 'thumb');
         }
 
