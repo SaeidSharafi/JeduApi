@@ -290,7 +290,7 @@
 - **Purpose:** Bulk wallet credit campaigns and promotions
 - **Key Fields:** `threshold_scope` (ThresholdScopeEnum: lifetime|windowed), campaign details, allocation rules, eligibility criteria
 - **Relationships:** Campaign management for bulk wallet operations
-- **Special Features:** `threshold_scope` decides whether the threshold is measured across all history (lifetime, no dates) or within campaign dates (windowed, requires both starts_at/ends_at); validation rejects windowed without dates and lifetime with dates
+- **Special Features:** `threshold_scope` decides whether the threshold is measured across all history (lifetime, no dates) or within campaign dates (windowed, requires both starts_at/ends_at); validation rejects windowed without dates and lifetime with dates. Threshold values for event-driven reward campaigns live in `metadata`: `metadata.threshold_amount` (rials) for `loyalty_reward` (cumulative paid order total), `metadata.threshold_order_count` for `milestone_reward` (paid order count); evaluated by `EvaluateThresholdRewardAction` on payment completion.
 
 ### Setting (`app/Models/Setting.php`)
 - **Purpose:** Application configuration registry powering CMS, storefront content, and integration credentials

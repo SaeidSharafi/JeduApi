@@ -176,10 +176,13 @@
 - **CreateWalletCampaignAction**: Sets up new wallet campaigns
 - **UpdateWalletCampaignAction**: Modifies campaign parameters
 - **DeleteWalletCampaignAction**: Cancels and cleans up campaigns
+- **EvaluateThresholdRewardAction** (`app/Actions/Admin/WalletCampaign/EvaluateThresholdRewardAction.php`)
+  - `handle(User $user, WalletCampaign $campaign): ?WalletTransaction`: Evaluates a payment-completed event against a `loyalty_reward` or `milestone_reward` campaign. `loyalty_reward` measures the user's cumulative paid order total (`metadata.threshold_amount`, rials); `milestone_reward` measures the user's paid order count (`metadata.threshold_order_count`). A paid order is one with a completed ORDER-purpose payment (wallet top-ups and non-completed payments never count). Measurement honors `threshold_scope`: `lifetime` measures all history, `windowed` bounds by the campaign's `starts_at`..`ends_at`. Returns the allocation when the measured value crosses the threshold, null otherwise. Refire protection comes from the shared allocation action (duplicate `payment_completed` trigger-event check + deterministic idempotency key) plus the campaign's per-user limit.
 
 #### Wallet Campaign Event Dispatch (`app/Subscribers/CampaignEventSubscriber.php`)
 - **CampaignEventSubscriber**: Single explicit subscriber (registered via `Event::subscribe` in `EventServiceProvider::boot` — the codebase's first subscriber, a deliberate deviation from auto-discovered one-listener-per-event). Maps domain events to active campaigns of a type and allocates through `TriggerCampaignAllocationAction`.
   - `ProfileCompletedEvent` → all active, in-date-range `registration_bonus` campaigns. Ineligible campaigns (inactive/expired/limits) and wallet-less users are skipped, never breaking the event flow.
+  - `PaymentCompletedEvent` → active `loyalty_reward` and `milestone_reward` campaigns, evaluated via `EvaluateThresholdRewardAction` (only ORDER-purpose payments; wallet top-ups are ignored). Threshold not yet crossed → no allocation; crossed → gift allocated once.
 - **ProfileCompletedEvent** (`app/Events/ProfileCompletedEvent.php`): Dispatched by `UpdateProfileAction` only on the first false→true transition of `User::profileCompleted()` (requires first_name, last_name, email, civil_id, date_of_birth, father_name). Already-complete profiles and repeated updates never re-fire.
 
 #### Staff Actions (`app/Actions/Admin/Staff/`)

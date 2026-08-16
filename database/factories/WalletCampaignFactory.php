@@ -165,4 +165,36 @@ final class WalletCampaignFactory extends Factory
                 ],
             ]);
     }
+
+    /**
+     * Create a loyalty reward campaign (cumulative paid order total threshold)
+     */
+    public function loyaltyReward(int $thresholdAmount = 100000, int $amount = 50000): static
+    {
+        return $this->ofType(CampaignTypeEnum::LOYALTY_REWARD)
+            ->state(fn (array $attributes) => [
+                'name'                 => 'Loyalty Reward Campaign',
+                'amount'               => $amount,
+                'usage_limit_per_user' => 1,
+                'metadata'             => [
+                    'threshold_amount' => $thresholdAmount,
+                ],
+            ]);
+    }
+
+    /**
+     * Create a milestone reward campaign (paid order count threshold)
+     */
+    public function milestoneReward(int $thresholdOrderCount = 3, int $amount = 50000): static
+    {
+        return $this->ofType(CampaignTypeEnum::MILESTONE_REWARD)
+            ->state(fn (array $attributes) => [
+                'name'                 => 'Milestone Reward Campaign',
+                'amount'               => $amount,
+                'usage_limit_per_user' => 1,
+                'metadata'             => [
+                    'threshold_order_count' => $thresholdOrderCount,
+                ],
+            ]);
+    }
 }

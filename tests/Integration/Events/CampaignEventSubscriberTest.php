@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Enums\Payment\PaymentPurposeEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
+use App\Events\PaymentCompletedEvent;
 use App\Events\ProfileCompletedEvent;
+use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Staff;
 use App\Models\User;
 use App\Models\WalletCampaign;
@@ -47,6 +52,22 @@ function campaignGiftRows(User $user, WalletCampaign $campaign): int
         ->where('source_id', $campaign->id)
         ->where('type', TransactionTypeEnum::GIFT)
         ->count();
+}
+
+function paidOrderFor(User $user, int $amount): Payment
+{
+    $order = Order::factory()->create([
+        'customer_id' => $user->id,
+        'grand_total' => $amount,
+    ]);
+
+    return Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $user->id,
+        'amount'      => $amount,
+        'purpose'     => PaymentPurposeEnum::ORDER,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
 }
 
 describe('CampaignEventSubscriber', function (): void {
@@ -187,5 +208,113 @@ describe('CampaignEventSubscriber', function (): void {
         app(App\Actions\Shop\UpdateProfileAction::class)->handle($data, $user->fresh());
 
         expect(campaignGiftRows($user, $campaign))->toBe(1);
+    });
+
+    it('allocates a loyalty reward once the paid-order total crosses the threshold', function (): void {
+        $campaign = WalletCampaign::factory()->loyaltyReward(thresholdAmount: 100000)->lifetime()->create([
+            'is_active' => true,
+            'starts_at' => null,
+            'ends_at'   => null,
+        ]);
+
+        paidOrderFor($this->customer, 60000);
+        $payment = paidOrderFor($this->customer, 50000); // crosses to 110_000
+
+        $this->subscriber->handlePaymentCompleted(new PaymentCompletedEvent($payment));
+
+        expect(campaignGiftRows($this->customer, $campaign))->toBe(1);
+        expect($this->customer->wallet->fresh()->gift_balance)->toBe($campaign->amount);
+    });
+
+    it('does not allocate a loyalty reward when the threshold is not crossed', function (): void {
+        $campaign = WalletCampaign::factory()->loyaltyReward(thresholdAmount: 100000)->lifetime()->create([
+            'is_active' => true,
+            'starts_at' => null,
+            'ends_at'   => null,
+        ]);
+
+        $payment = paidOrderFor($this->customer, 30000);
+
+        $this->subscriber->handlePaymentCompleted(new PaymentCompletedEvent($payment));
+
+        expect(campaignGiftRows($this->customer, $campaign))->toBe(0);
+    });
+
+    it('allocates a milestone reward once the paid-order count crosses the threshold', function (): void {
+        $campaign = WalletCampaign::factory()->milestoneReward(thresholdOrderCount: 3)->lifetime()->create([
+            'is_active' => true,
+            'starts_at' => null,
+            'ends_at'   => null,
+        ]);
+
+        paidOrderFor($this->customer, 10000);
+        paidOrderFor($this->customer, 10000);
+        $payment = paidOrderFor($this->customer, 10000); // 3rd paid order
+
+        $this->subscriber->handlePaymentCompleted(new PaymentCompletedEvent($payment));
+
+        expect(campaignGiftRows($this->customer, $campaign))->toBe(1);
+    });
+
+    it('does not refire a threshold reward on a subsequent payment-completed event', function (): void {
+        $campaign = WalletCampaign::factory()->milestoneReward(thresholdOrderCount: 2)->lifetime()->create([
+            'is_active' => true,
+            'starts_at' => null,
+            'ends_at'   => null,
+        ]);
+
+        paidOrderFor($this->customer, 10000);
+        $payment = paidOrderFor($this->customer, 10000); // 2nd order crosses
+
+        $this->subscriber->handlePaymentCompleted(new PaymentCompletedEvent($payment));
+        $this->subscriber->handlePaymentCompleted(new PaymentCompletedEvent($payment));
+
+        expect(campaignGiftRows($this->customer, $campaign))->toBe(1);
+    });
+
+    it('ignores wallet top-up payments for threshold campaigns', function (): void {
+        $campaign = WalletCampaign::factory()->loyaltyReward(thresholdAmount: 100000)->lifetime()->create([
+            'is_active' => true,
+            'starts_at' => null,
+            'ends_at'   => null,
+        ]);
+
+        $topup = Payment::factory()->topup()->create([
+            'customer_id' => $this->customer->id,
+            'amount'      => 200000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        $this->subscriber->handlePaymentCompleted(new PaymentCompletedEvent($topup));
+
+        expect(campaignGiftRows($this->customer, $campaign))->toBe(0);
+    });
+
+    it('skips inactive threshold campaigns', function (): void {
+        $campaign = WalletCampaign::factory()->loyaltyReward(thresholdAmount: 100000)->lifetime()->create([
+            'is_active' => false,
+            'starts_at' => null,
+            'ends_at'   => null,
+        ]);
+
+        $payment = paidOrderFor($this->customer, 120000);
+
+        $this->subscriber->handlePaymentCompleted(new PaymentCompletedEvent($payment));
+
+        expect(campaignGiftRows($this->customer, $campaign))->toBe(0);
+    });
+
+    it('allocates end-to-end when the real PaymentCompletedEvent is dispatched (subscriber registered)', function (): void {
+        $campaign = WalletCampaign::factory()->milestoneReward(thresholdOrderCount: 1)->lifetime()->create([
+            'is_active' => true,
+            'starts_at' => null,
+            'ends_at'   => null,
+        ]);
+
+        $payment = paidOrderFor($this->customer, 5000);
+
+        PaymentCompletedEvent::dispatch($payment);
+
+        expect(campaignGiftRows($this->customer, $campaign))->toBe(1);
     });
 });
