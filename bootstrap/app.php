@@ -15,6 +15,7 @@ use App\Http\Middleware\AdminAuditMiddleware;
 use App\Http\Middleware\AuthenticateTokenFromCookie;
 use App\Http\Middleware\EnsureAdminNumericIdsMiddleware;
 use App\Http\Middleware\ProfileCheckMiddleware;
+use App\Http\Middleware\ThrottlePasswordLogin;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
@@ -119,9 +120,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register custom middleware aliases
         $middleware->alias([
-            'admin.audit'   => AdminAuditMiddleware::class,
-            'profile.check' => ProfileCheckMiddleware::class,
-            'auth.cookie'   => AuthenticateTokenFromCookie::class,
+            'admin.audit'             => AdminAuditMiddleware::class,
+            'profile.check'           => ProfileCheckMiddleware::class,
+            'auth.cookie'             => AuthenticateTokenFromCookie::class,
+            'throttle.password-login' => ThrottlePasswordLogin::class,
         ]);
         $middleware->prependToPriorityList(AuthenticatesRequests::class, AuthenticateTokenFromCookie::class);
 
@@ -253,7 +255,12 @@ return Application::configure(basePath: dirname(__DIR__))
             Request $request
         ) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
-                return apiResponse()->error($e->getMessage(), $e->getStatusCode());
+                return apiResponse()->error(
+                    $e->getMessage(),
+                    $e->getStatusCode(),
+                    null,
+                    $e->getHeaders()
+                );
             }
 
             return null;

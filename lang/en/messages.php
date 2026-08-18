@@ -187,6 +187,7 @@ return [
             'success'             => 'User logged in successfully.',
             'not_found'           => 'User not found.',
             'invalid_credentials' => 'The provided credentials are incorrect.',
+            'throttled'           => 'Too many login attempts. Please try again in :seconds seconds.',
         ],
     ],
     'enrollments' => [

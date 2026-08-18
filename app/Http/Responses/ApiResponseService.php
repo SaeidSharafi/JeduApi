@@ -87,12 +87,14 @@ final class ApiResponseService
 
     /**
      * Generic error response (Default: 400 Bad Request)
+     *
+     * @param  array<string, string>  $headers
      */
-    public function error(string $message = '', int $status = HttpStatus::HTTP_BAD_REQUEST, mixed $errors = null): ApiResponseInterface
+    public function error(string $message = '', int $status = HttpStatus::HTTP_BAD_REQUEST, mixed $errors = null, array $headers = []): ApiResponseInterface
     {
         $message = $message ?: (string) __('messages.error');
 
-        return new ApiFailResponse($message, $errors, $status);
+        return new ApiFailResponse($message, $errors, $status, [], $headers);
     }
 
     /**
