@@ -48,13 +48,13 @@ test('lockout window escalates to 15 minutes after 10 consecutive failures', fun
         RateLimiter::hit($failuresKey, config('password_throttle.shop.failure_counter_ttl_seconds'));
     }
 
-    foreach (range(1, 5) as $i) {
-        $this->postJson('/api/v1/auth/login/password', [
-            'identifier' => 'throttle@example.com',
-            'type'       => 'email',
-            'password'   => 'wrong-password',
-        ])->assertStatus(422);
-    }
+    // at tier 2 only one attempt per window is allowed, so the next failure
+    // fills the window and the following attempt is locked for ~15 minutes
+    $this->postJson('/api/v1/auth/login/password', [
+        'identifier' => 'throttle@example.com',
+        'type'       => 'email',
+        'password'   => 'wrong-password',
+    ])->assertStatus(422);
 
     $response = $this->postJson('/api/v1/auth/login/password', [
         'identifier' => 'throttle@example.com',
@@ -75,13 +75,11 @@ test('lockout window escalates to one hour after 15 consecutive failures', funct
         RateLimiter::hit($failuresKey, config('password_throttle.shop.failure_counter_ttl_seconds'));
     }
 
-    foreach (range(1, 5) as $i) {
-        $this->postJson('/api/v1/auth/login/password', [
-            'identifier' => 'throttle@example.com',
-            'type'       => 'email',
-            'password'   => 'wrong-password',
-        ])->assertStatus(422);
-    }
+    $this->postJson('/api/v1/auth/login/password', [
+        'identifier' => 'throttle@example.com',
+        'type'       => 'email',
+        'password'   => 'wrong-password',
+    ])->assertStatus(422);
 
     $response = $this->postJson('/api/v1/auth/login/password', [
         'identifier' => 'throttle@example.com',
@@ -93,6 +91,34 @@ test('lockout window escalates to one hour after 15 consecutive failures', funct
         ->assertHeader('Retry-After');
 
     expect((int) $response->headers->get('Retry-After'))->toBeGreaterThanOrEqual(3540);
+});
+
+test('lockout escalation is driven by consecutive failures, not burst rate', function (): void {
+    // one spaced-out failure per window: the window is reset before every
+    // attempt so the baseline is never exceeded, but failures accumulate
+    foreach (range(1, 10) as $i) {
+        RateLimiter::clear($this->throttle->idWindowKey('shop', 'throttle@example.com'));
+        RateLimiter::clear($this->throttle->ipWindowKey('shop', '127.0.0.1'));
+
+        $this->postJson('/api/v1/auth/login/password', [
+            'identifier' => 'throttle@example.com',
+            'type'       => 'email',
+            'password'   => 'wrong-password',
+        ])->assertStatus(422);
+    }
+
+    // 10 consecutive failures cross into the 15-minute tier; the window from
+    // the last failure is still full, so the next attempt is locked ~15 min
+    $response = $this->postJson('/api/v1/auth/login/password', [
+        'identifier' => 'throttle@example.com',
+        'type'       => 'email',
+        'password'   => 'wrong-password',
+    ]);
+
+    $response->assertStatus(429)
+        ->assertHeader('Retry-After');
+
+    expect((int) $response->headers->get('Retry-After'))->toBeGreaterThanOrEqual(840);
 });
 
 test('a successful login resets the failure counter', function (): void {

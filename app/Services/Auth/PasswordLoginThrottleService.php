@@ -15,22 +15,26 @@ use RuntimeException;
  *    stuffing even when the attempts come from many different IPs;
  *  - a per-IP key that blocks distributed spray across many accounts.
  *
- * Each dimension keeps a window counter (the "5/min baseline" enforced by the
- * route middleware) and a consecutive-failure counter that drives the lockout
- * escalation (5 -> 1 min, 10 -> 15 min, 15 -> 1 hour). The failure counter is
- * only reset by a successful login, so spaced-out attacks still escalate.
+ * Each dimension keeps a window counter and a consecutive-failure counter.
+ * Below the first tier the window allows the baseline attempts per minute
+ * (5/min shop, 3/min staff); once a tier threshold is reached, the window
+ * allows a single attempt per lockout window (5 -> 1 min, 10 -> 15 min,
+ * 15 -> 1 hour) and the window decay grows accordingly. Because the failure
+ * counter is only reset by a successful login, spaced-out attacks escalate
+ * exactly like bursts.
  */
 final class PasswordLoginThrottleService
 {
-    public function maxAttempts(string $guard): int
+    /**
+     * Allowed attempts per window. Below the first tier this is the baseline
+     * (config max_attempts); from the first tier on, one attempt per lockout
+     * window so the escalating lockout is enforced even for slow attacks.
+     */
+    public function maxAttempts(string $guard, int $failures): int
     {
-        $config = config("password_throttle.{$guard}");
-
-        if (! is_array($config)) {
-            throw new RuntimeException("Unknown password login throttle guard [{$guard}].");
-        }
-
-        return (int) ($config['max_attempts'] ?? 5);
+        return $this->tierFor($guard, $failures) === null
+            ? (int) ($this->configFor($guard)['max_attempts'] ?? 5)
+            : 1;
     }
 
     public function idWindowKey(string $guard, string $identifier): string
@@ -54,16 +58,23 @@ final class PasswordLoginThrottleService
     }
 
     /**
-     * Window keys checked by the middleware, identifier first so a full
-     * identifier window (the more targeted signal) wins the 429.
+     * The two throttled dimensions checked by the middleware. The identifier
+     * dimension comes first so a full identifier window (the more targeted
+     * signal) wins the 429.
      *
-     * @return array{0: string, 1: string}
+     * @return list<array{window: string, failures: string}>
      */
-    public function windowKeys(string $guard, string $identifier, string $ip): array
+    public function dimensions(string $guard, string $identifier, string $ip): array
     {
         return [
-            $this->idWindowKey($guard, $identifier),
-            $this->ipWindowKey($guard, $ip),
+            [
+                'window'   => $this->idWindowKey($guard, $identifier),
+                'failures' => $this->idFailuresKey($guard, $identifier),
+            ],
+            [
+                'window'   => $this->ipWindowKey($guard, $ip),
+                'failures' => $this->ipFailuresKey($guard, $ip),
+            ],
         ];
     }
 
@@ -78,20 +89,7 @@ final class PasswordLoginThrottleService
      */
     public function lockoutSeconds(string $guard, int $failures): int
     {
-        $seconds = 60;
-        $config  = config("password_throttle.{$guard}");
-
-        if (! is_array($config)) {
-            throw new RuntimeException("Unknown password login throttle guard [{$guard}].");
-        }
-
-        foreach ((array) ($config['tiers'] ?? []) as $tier) {
-            if ($failures >= (int) $tier['failures']) {
-                $seconds = (int) $tier['decay_minutes'] * 60;
-            }
-        }
-
-        return $seconds;
+        return (int) ($this->tierFor($guard, $failures)['decay_minutes'] ?? 1) * 60;
     }
 
     /**
@@ -101,16 +99,9 @@ final class PasswordLoginThrottleService
      */
     public function recordAttempt(string $guard, string $identifier, string $ip): void
     {
-        $this->recordForKey(
-            $guard,
-            $this->idFailuresKey($guard, $identifier),
-            $this->idWindowKey($guard, $identifier)
-        );
-        $this->recordForKey(
-            $guard,
-            $this->ipFailuresKey($guard, $ip),
-            $this->ipWindowKey($guard, $ip)
-        );
+        foreach ($this->dimensions($guard, $identifier, $ip) as $dimension) {
+            $this->recordForKey($guard, $dimension['failures'], $dimension['window']);
+        }
     }
 
     /**
@@ -118,13 +109,9 @@ final class PasswordLoginThrottleService
      */
     public function clear(string $guard, string $identifier, string $ip): void
     {
-        foreach ([
-            $this->idWindowKey($guard, $identifier),
-            $this->ipWindowKey($guard, $ip),
-            $this->idFailuresKey($guard, $identifier),
-            $this->ipFailuresKey($guard, $ip),
-        ] as $key) {
-            RateLimiter::clear($key);
+        foreach ($this->dimensions($guard, $identifier, $ip) as $dimension) {
+            RateLimiter::clear($dimension['window']);
+            RateLimiter::clear($dimension['failures']);
         }
     }
 
@@ -134,8 +121,40 @@ final class PasswordLoginThrottleService
 
         RateLimiter::hit($failuresKey, $ttlSeconds);
 
-        $lockoutSeconds = $this->lockoutSeconds($guard, RateLimiter::attempts($failuresKey));
+        $lockoutSeconds = $this->lockoutSeconds($guard, $this->failures($failuresKey));
 
         RateLimiter::hit($windowKey, $lockoutSeconds);
+    }
+
+    /**
+     * Highest tier whose failure threshold has been reached, or null.
+     *
+     * @return array{failures: int, decay_minutes: int}|null
+     */
+    private function tierFor(string $guard, int $failures): ?array
+    {
+        $matched = null;
+
+        foreach ((array) ($this->configFor($guard)['tiers'] ?? []) as $tier) {
+            if ($failures >= (int) $tier['failures']) {
+                $matched = $tier;
+            }
+        }
+
+        return $matched;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function configFor(string $guard): array
+    {
+        $config = config("password_throttle.{$guard}");
+
+        if (! is_array($config)) {
+            throw new RuntimeException("Unknown password login throttle guard [{$guard}].");
+        }
+
+        return $config;
     }
 }

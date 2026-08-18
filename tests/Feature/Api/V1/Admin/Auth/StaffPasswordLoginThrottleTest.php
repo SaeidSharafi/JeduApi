@@ -48,14 +48,13 @@ test('staff lockout window escalates to 15 minutes after 10 consecutive failures
         RateLimiter::hit($failuresKey, config('password_throttle.staff.failure_counter_ttl_seconds'));
     }
 
-    // staff baseline is 3/min, so a single burst of three failures fills the window
-    foreach (range(1, 3) as $i) {
-        $this->postJson('/api/v1/admin/auth/login/password', [
-            'identifier' => 'staff-throttle@example.com',
-            'type'       => 'email',
-            'password'   => 'wrong-password',
-        ])->assertStatus(422);
-    }
+    // at tier 2 only one attempt per window is allowed, so the next failure
+    // fills the window and the following attempt is locked for ~15 minutes
+    $this->postJson('/api/v1/admin/auth/login/password', [
+        'identifier' => 'staff-throttle@example.com',
+        'type'       => 'email',
+        'password'   => 'wrong-password',
+    ])->assertStatus(422);
 
     $response = $this->postJson('/api/v1/admin/auth/login/password', [
         'identifier' => 'staff-throttle@example.com',
