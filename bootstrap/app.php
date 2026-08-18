@@ -69,6 +69,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('wallet:reclaim-expired-gifts')
             ->daily()
             ->withoutOverlapping();
+
+        // Allocate birthday gifts to customers whose birthday is today
+        $schedule->command('wallet:allocate-birthday-gifts')
+            ->daily()
+            ->withoutOverlapping();
     })
     ->withRouting(
         commands: __DIR__.'/../routes/console.php',
