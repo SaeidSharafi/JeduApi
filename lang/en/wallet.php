@@ -16,21 +16,6 @@ return [
         'bonus_processed' => 'Bonus of :amount has been added to your wallet from :campaign for :event',
         'manual_trigger'  => 'manual allocation',
 
-        'types' => [
-            'registration_bonus' => 'Registration Bonus',
-            'birthday_gift'      => 'Birthday Gift',
-            'referral_bonus'     => 'Referral Bonus',
-            'loyalty_reward'     => 'Loyalty Reward',
-            'seasonal_bonus'     => 'Seasonal Bonus',
-            'milestone_reward'   => 'Milestone Reward',
-            'manual_allocation'  => 'Manual Allocation',
-        ],
-
-        'threshold_scopes' => [
-            'lifetime' => 'Lifetime',
-            'windowed' => 'Windowed',
-        ],
-
         'threshold_descriptions' => [
             'lifetime' => 'Threshold measured across all history',
             'windowed' => 'Threshold measured within the campaign dates',

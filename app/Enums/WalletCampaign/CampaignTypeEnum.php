@@ -22,22 +22,6 @@ enum CampaignTypeEnum: string
     /**
      * @codeCoverageIgnore
      */
-    public function getLabel(): string
-    {
-        return match ($this) {
-            self::REGISTRATION_BONUS => __('wallet.campaign.types.registration_bonus'),
-            self::BIRTHDAY_GIFT      => __('wallet.campaign.types.birthday_gift'),
-            self::REFERRAL_BONUS     => __('wallet.campaign.types.referral_bonus'),
-            self::LOYALTY_REWARD     => __('wallet.campaign.types.loyalty_reward'),
-            self::SEASONAL_BONUS     => __('wallet.campaign.types.seasonal_bonus'),
-            self::MILESTONE_REWARD   => __('wallet.campaign.types.milestone_reward'),
-            self::MANUAL_ALLOCATION  => __('wallet.campaign.types.manual_allocation'),
-        };
-    }
-
-    /**
-     * @codeCoverageIgnore
-     */
     public function getDescription(): string
     {
         return match ($this) {

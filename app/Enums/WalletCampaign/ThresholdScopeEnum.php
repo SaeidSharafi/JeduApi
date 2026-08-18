@@ -17,17 +17,6 @@ enum ThresholdScopeEnum: string
     /**
      * @codeCoverageIgnore
      */
-    public function getLabel(): string
-    {
-        return match ($this) {
-            self::LIFETIME => __('wallet.campaign.threshold_scopes.lifetime'),
-            self::WINDOWED => __('wallet.campaign.threshold_scopes.windowed'),
-        };
-    }
-
-    /**
-     * @codeCoverageIgnore
-     */
     public function getDescription(): string
     {
         return match ($this) {

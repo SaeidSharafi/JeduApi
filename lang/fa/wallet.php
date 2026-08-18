@@ -16,21 +16,6 @@ return [
         'bonus_processed' => 'پاداش :amount به کیف پول شما از :campaign برای :event اضافه شد',
         'manual_trigger'  => 'تخصیص دستی',
 
-        'types' => [
-            'registration_bonus' => 'پاداش ثبت نام',
-            'birthday_gift'      => 'هدیه تولد',
-            'referral_bonus'     => 'پاداش معرفی',
-            'loyalty_reward'     => 'پاداش وفاداری',
-            'seasonal_bonus'     => 'پاداش فصلی',
-            'milestone_reward'   => 'پاداش دستاورد',
-            'manual_allocation'  => 'تخصیص دستی',
-        ],
-
-        'threshold_scopes' => [
-            'lifetime' => 'مادام‌العمر',
-            'windowed' => 'بازه‌ای',
-        ],
-
         'threshold_descriptions' => [
             'lifetime' => 'آستانه در کل سوابق کاربر سنجیده می‌شود',
             'windowed' => 'آستانه در بازه زمانی کمپین سنجیده می‌شود',
