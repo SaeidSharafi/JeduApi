@@ -29,7 +29,7 @@ final class AdminWalletCampaignController extends Controller
      * Display a listing of wallet campaigns.
      *
      * @queryParam filter[name] string Filter by campaign name. Example: Back to School Bonus
-     * @queryParam filter[type] string Filter by campaign type. Example: bonus
+     * @queryParam filter[type] string Filter by campaign type. Allowed values: registration_bonus, birthday_gift, referral_bonus, loyalty_reward, seasonal_bonus, milestone_reward, manual_allocation. Example: loyalty_reward
      * @queryParam filter[is_active] boolean Filter by active status. Example: true
      * @queryParam filter[created_by] int Filter by creator staff ID. Example: 10
      * @queryParam sort string Sort by a field. Allowed values: name, type, amount, total_usage_count, created_at, starts_at, ends_at. Prefix with '-' for descending order. Example: -created_at

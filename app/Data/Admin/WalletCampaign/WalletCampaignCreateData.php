@@ -75,7 +75,10 @@ final class WalletCampaignCreateData extends Data
                 'date_format:Y-m-d',
                 'after:starts_at',
             ],
-            'metadata' => ['nullable', 'array'],
+            'metadata'                       => ['nullable', 'array'],
+            'metadata.threshold_amount'      => ['nullable', 'integer', 'min:1'],
+            'metadata.threshold_order_count' => ['nullable', 'integer', 'min:1'],
+            'metadata.expiry_days'           => ['nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -89,15 +92,15 @@ final class WalletCampaignCreateData extends Data
         return [
             'name'                 => 'Campaign name for admin reference.',
             'description'          => 'Detailed description of the campaign purpose and terms.',
-            'type'                 => 'Type of campaign (registration_bonus, birthday_gift, etc.).',
-            'threshold_scope'      => 'Threshold measurement scope: lifetime (all history, no dates) or windowed (within campaign dates).',
+            'type'                 => 'Type of campaign. One of: registration_bonus, birthday_gift, referral_bonus, loyalty_reward, seasonal_bonus, milestone_reward, manual_allocation. Only loyalty_reward and milestone_reward use threshold_scope and the threshold metadata keys.',
+            'threshold_scope'      => 'Threshold measurement scope. Only affects loyalty_reward and milestone_reward (ignored for other types). lifetime measures all order history and requires no dates; windowed measures orders within starts_at..ends_at and requires both dates.',
             'is_active'            => 'Whether the campaign is currently active.',
             'amount'               => 'Gift amount in rials to be awarded.',
             'usage_limit_total'    => 'Total number of times this campaign can be used (null for unlimited).',
             'usage_limit_per_user' => 'Number of times each user can use this campaign (null for unlimited).',
-            'starts_at'            => 'Campaign start date and time. Required when threshold_scope is windowed.',
-            'ends_at'              => 'Campaign end date and time. Required when threshold_scope is windowed.',
-            'metadata'             => 'Additional configuration data for the campaign.',
+            'starts_at'            => 'Campaign start date (Jalali Y-m-d). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime.',
+            'ends_at'              => 'Campaign end date (Jalali Y-m-d). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime. Must be after starts_at.',
+            'metadata'             => 'Campaign-specific configuration. loyalty_reward requires threshold_amount (rials); milestone_reward requires threshold_order_count (paid order count); any gift may set expiry_days (relative expiry, days from receipt, overrides absolute ends_at).',
         ];
     }
 
@@ -118,11 +121,11 @@ final class WalletCampaignCreateData extends Data
                 'example'     => 'Special bonus for spring season.',
             ],
             'type' => [
-                'description' => 'Type of campaign (registration_bonus, birthday_gift, etc.).',
-                'example'     => 'registration_bonus',
+                'description' => 'Type of campaign. One of: registration_bonus, birthday_gift, referral_bonus, loyalty_reward, seasonal_bonus, milestone_reward, manual_allocation. Only loyalty_reward and milestone_reward use threshold_scope and the threshold metadata keys.',
+                'example'     => 'loyalty_reward',
             ],
             'threshold_scope' => [
-                'description' => 'Threshold measurement scope: lifetime (measured across all history, no dates) or windowed (measured within the campaign dates).',
+                'description' => 'Threshold measurement scope. Only affects loyalty_reward and milestone_reward (ignored for other types). lifetime measures all order history and requires no dates (starts_at and ends_at must be omitted). windowed measures orders within starts_at..ends_at and requires both dates.',
                 'example'     => 'windowed',
             ],
             'is_active' => [
@@ -142,16 +145,28 @@ final class WalletCampaignCreateData extends Data
                 'example'     => 1,
             ],
             'starts_at' => [
-                'description' => 'Campaign start date and time. Required when threshold_scope is windowed.',
+                'description' => 'Campaign start date (Jalali Y-m-d). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime.',
                 'example'     => '1402-01-01',
             ],
             'ends_at' => [
-                'description' => 'Campaign end date and time. Required when threshold_scope is windowed.',
+                'description' => 'Campaign end date (Jalali Y-m-d). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime. Must be after starts_at.',
                 'example'     => '1402-01-30',
             ],
             'metadata' => [
-                'description' => 'Additional configuration data for the campaign.',
-                'example'     => ['source' => 'admin_panel'],
+                'description' => 'Campaign-specific configuration object. Only the keys listed below are used; unknown keys are stored but ignored.',
+                'example'     => ['expiry_days' => 30],
+            ],
+            'metadata.expiry_days' => [
+                'description' => 'Relative gift expiry in days from receipt. Applies to any gift-producing campaign type. When set, it overrides the absolute ends_at deadline.',
+                'example'     => 30,
+            ],
+            'metadata.threshold_amount' => [
+                'description' => 'For loyalty_reward only: the cumulative paid order total (in rials) a user must reach before the reward is granted.',
+                'example'     => 5000000,
+            ],
+            'metadata.threshold_order_count' => [
+                'description' => 'For milestone_reward only: the number of paid orders a user must reach before the reward is granted.',
+                'example'     => 5,
             ],
         ];
     }
