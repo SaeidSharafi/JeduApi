@@ -13,8 +13,10 @@ use App\Http\Controllers\Api\Admin\Review\UpdateReviewFeaturedStatusController;
 use App\Http\Controllers\Api\Admin\System\PermissionController;
 use App\Http\Controllers\Api\Admin\System\RoleController;
 use App\Http\Controllers\Api\Admin\TermController;
+use App\Http\Controllers\Api\Admin\User\BanUserController;
 use App\Http\Controllers\Api\Admin\User\StaffController;
 use App\Http\Controllers\Api\Admin\User\TeacherController;
+use App\Http\Controllers\Api\Admin\User\UnbanUserController;
 use App\Http\Controllers\Api\Admin\User\UserController;
 use App\Http\Controllers\Api\Admin\VendorController;
 use App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController;
@@ -46,6 +48,8 @@ Route::prefix('users/{user}')->name('users.')->group(function (): void {
         Route::post('withdrawal', WithdrawFromWalletController::class)->name('withdrawal');
         Route::post('adjustment', AdjustWalletController::class)->name('adjustment');
     });
+    Route::post('ban', BanUserController::class)->name('ban');
+    Route::post('unban', UnbanUserController::class)->name('unban');
 });
 Route::apiResource('reviews', ReviewController::class)
     ->except(['store', 'update']);

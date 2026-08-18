@@ -149,6 +149,7 @@ enum PermissionEnum: string
     case TERM_UPDATE                      = 'terms.update';
     case TERM_VIEW                        = 'terms.view';
     case TERM_VIEW_ANY                    = 'terms.view_any';
+    case USER_BAN                         = 'users.ban';
     case USER_CREATE                      = 'users.create';
     case USER_DELETE                      = 'users.delete';
     case USER_UPDATE                      = 'users.update';

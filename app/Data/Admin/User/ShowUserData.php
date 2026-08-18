@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\User;
 
+use App\Data\Casts\AdvancedDateTimeInterfaceCast;
 use App\Data\Transformer\AdvancedDateTimeInterfaceTransformer;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\User\CivilIdTypeEnum;
@@ -38,6 +39,9 @@ final class ShowUserData extends Data
         public ?string $field_of_study,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?EducationStatusEnum $education_status,
+        public bool $is_banned = false,
+        #[WithCast(AdvancedDateTimeInterfaceCast::class), WithTransformer(AdvancedDateTimeInterfaceTransformer::class)]
+        public ?Verta $banned_at = null,
         public array $media = []
     ) {}
 }

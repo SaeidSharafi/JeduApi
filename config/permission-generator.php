@@ -141,6 +141,7 @@ return [
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
+            'ban', // Custom String: users.ban (ban/unban customer accounts)
         ],
         'order' => [
             PermissionAction::VIEW_SCOPED,

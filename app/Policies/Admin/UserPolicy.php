@@ -37,4 +37,9 @@ final class UserPolicy
     {
         return $staff->can(PermissionEnum::USER_DELETE->value);
     }
+
+    public function ban(Staff $staff, User $user): bool
+    {
+        return $staff->can(PermissionEnum::USER_BAN->value);
+    }
 }

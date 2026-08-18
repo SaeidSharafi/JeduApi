@@ -27,6 +27,8 @@
       "value": "student",
       "label": "دانشجو"
     },
+    "is_banned": false,
+    "banned_at": null,
     "media": [
       {
         "id": 19,

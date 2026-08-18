@@ -10,6 +10,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Customer\CustomerData;
 use App\Enums\System\OtpType;
 use App\Exceptions\InvalidOtpCodeException;
+use App\Exceptions\UserBannedException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
@@ -52,6 +53,10 @@ final class OtpAuthenticationController extends Controller
         } catch (InvalidOtpCodeException $e) {
             return apiResponse()->validationError(
                 message: __('messages.auth.otp.invalid_code')
+            );
+        } catch (UserBannedException) {
+            return apiResponse()->forbidden(
+                message: __('messages.auth.login.banned')
             );
         }
 

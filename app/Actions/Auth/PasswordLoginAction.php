@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
+use App\Exceptions\UserBannedException;
 use App\Exceptions\UserNotFoundException;
 use App\Models\Staff;
 use App\Models\User;
@@ -26,6 +27,10 @@ final class PasswordLoginAction extends AuthAction
 
         if (! $identifier) {
             throw new UserNotFoundException();
+        }
+
+        if ($identifier instanceof User && $identifier->is_banned) {
+            throw new UserBannedException();
         }
 
         if (! $identifier->hasSetPassword() || ! Hash::check($password, $identifier->password)) {

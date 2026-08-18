@@ -188,6 +188,7 @@ return [
             'not_found'           => 'User not found.',
             'invalid_credentials' => 'The provided credentials are incorrect.',
             'throttled'           => 'Too many login attempts. Please try again in :seconds seconds.',
+            'banned'              => 'This account has been banned. Please contact support.',
         ],
     ],
     'enrollments' => [
@@ -292,6 +293,10 @@ return [
     'review' => [
         'approved' => 'Review approved successfully.',
         'rejected' => 'Review rejected successfully.',
+    ],
+    'user' => [
+        'banned'   => 'Customer account banned successfully.',
+        'unbanned' => 'Customer account unbanned successfully.',
     ],
     'category' => [
         'good_for_start' => [

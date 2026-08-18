@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Shop\Auth;
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Customer\CustomerData;
+use App\Exceptions\UserBannedException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -70,6 +71,10 @@ final class PasswordLoginController extends Controller
         } catch (UserNotFoundException $exception) {
             return apiResponse()->notFound(
                 message: __('messages.auth.login.not_found')
+            );
+        } catch (UserBannedException) {
+            return apiResponse()->forbidden(
+                message: __('messages.auth.login.banned')
             );
         }
 
