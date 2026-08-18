@@ -9,6 +9,8 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Models\DiscountCoupon;
+use App\Models\DiscountPromotion;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -65,6 +67,95 @@ describe('OrderStatusService', function (): void {
         app(OrderStatusService::class)->updateParentOrderStatus($order);
 
         expect($order->fresh()->status)->toBe(OrderStatusEnum::PROCESSING);
+    });
+
+    it('increments promotion and coupon usage counters when order transitions to COMPLETED', function (): void {
+        $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+        $coupon    = DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'SAVE10',
+        ]);
+
+        $order = Order::factory()->create([
+            'status'                      => OrderStatusEnum::PENDING,
+            'applied_coupon_code'         => 'SAVE10',
+            'applied_cart_discounts_json' => [
+                [
+                    'promotion_id'   => $promotion->id,
+                    'promotion_name' => $promotion->name,
+                    'applied_amount' => 5000,
+                    'coupon_code'    => 'SAVE10',
+                ],
+            ],
+        ]);
+        OrderItem::factory()->count(2)->for($order)->create(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        app(OrderStatusService::class)->updateParentOrderStatus($order);
+
+        expect($order->fresh()->status)->toBe(OrderStatusEnum::COMPLETED);
+        expect($promotion->fresh()->total_usage_count)->toBe(1);
+        expect($coupon->fresh()->usage_count)->toBe(1);
+    });
+
+    it('does not increment usage counters when order transitions to a non-completed status', function (): void {
+        $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+        DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'SAVE10',
+        ]);
+
+        $order = Order::factory()->create([
+            'status'                      => OrderStatusEnum::PENDING,
+            'applied_coupon_code'         => 'SAVE10',
+            'applied_cart_discounts_json' => [
+                [
+                    'promotion_id'   => $promotion->id,
+                    'promotion_name' => $promotion->name,
+                    'applied_amount' => 5000,
+                    'coupon_code'    => 'SAVE10',
+                ],
+            ],
+        ]);
+        // Mixed item state resolves to PROCESSING, not COMPLETED.
+        OrderItem::factory()->for($order)->create(['status' => OrderItemStatusEnum::PENDING]);
+        OrderItem::factory()->for($order)->create(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        app(OrderStatusService::class)->updateParentOrderStatus($order);
+
+        expect($order->fresh()->status)->toBe(OrderStatusEnum::PROCESSING);
+        expect($promotion->fresh()->total_usage_count)->toBe(0);
+    });
+
+    it('does not increment usage counters again when order is already COMPLETED', function (): void {
+        $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+        $coupon    = DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'SAVE10',
+        ]);
+
+        $order = Order::factory()->create([
+            'status'                      => OrderStatusEnum::PENDING,
+            'applied_coupon_code'         => 'SAVE10',
+            'applied_cart_discounts_json' => [
+                [
+                    'promotion_id'   => $promotion->id,
+                    'promotion_name' => $promotion->name,
+                    'applied_amount' => 5000,
+                    'coupon_code'    => 'SAVE10',
+                ],
+            ],
+        ]);
+        OrderItem::factory()->count(2)->for($order)->create(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        // First transition increments.
+        app(OrderStatusService::class)->updateParentOrderStatus($order);
+
+        // A second call (e.g. from a later payment) must not double-count.
+        app(OrderStatusService::class)->updateParentOrderStatus($order->fresh());
+
+        expect($order->fresh()->status)->toBe(OrderStatusEnum::COMPLETED);
+        expect($promotion->fresh()->total_usage_count)->toBe(1);
+        expect($coupon->fresh()->usage_count)->toBe(1);
     });
 
     it('sets order status to CANCELLED when items are CANCELLED', function (): void {

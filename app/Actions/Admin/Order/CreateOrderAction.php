@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
-use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
-use App\Models\DiscountPromotion;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\OrderCalculationService;
@@ -157,38 +155,7 @@ final readonly class CreateOrderAction
 
         });
 
-        if (! empty($context->applied_cart_discounts)) {
-            $this->incrementUsageCounts($context);
-        }
-
         return $order->load('items', 'payments', 'enrollments');
-    }
-
-    private function incrementUsageCounts(OrderContextData $context): void
-    {
-        $couponCode = $context->triggered_by_coupon_code;
-
-        foreach ($context->applied_cart_discounts as $discount) {
-            $promotionId = $discount['promotion_id'] ?? null;
-            if (! $promotionId) {
-                continue;
-            }
-
-            $promotion = DiscountPromotion::find($promotionId);
-            if (! $promotion) {
-                continue;
-            }
-
-            $promotion->increment('total_usage_count');
-
-            // Coupon usage only incremented on the promotion that owns this coupon.
-            // Safe: coupon() query on a promotion without this code affects 0 rows.
-            if ($couponCode) {
-                $promotion->coupons()
-                    ->where('code', $couponCode)
-                    ->increment('usage_count');
-            }
-        }
     }
 
     /**

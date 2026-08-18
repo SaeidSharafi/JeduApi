@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
+use App\Actions\Admin\Discounts\IncrementDiscountUsageCountsAction;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
@@ -24,6 +25,7 @@ final readonly class ApproveOrderAction
         private OrderStatusService $orderStatusService,
         private DigipayAdminService $digipayService,
         private ProductReservationService $productReservationService,
+        private IncrementDiscountUsageCountsAction $incrementDiscountUsageCounts,
     ) {}
 
     /**
@@ -35,7 +37,6 @@ final readonly class ApproveOrderAction
      *
      * @param  Order  $order  The order to approve
      * @return Order The approved order
-     *
      */
     public function handle(Order $order): Order
     {
@@ -73,6 +74,10 @@ final readonly class ApproveOrderAction
 
                 // Recalculate parent order status from items to keep single source of truth
                 $this->orderStatusService->updateParentOrderStatus($order->fresh());
+
+                // updateParentOrderStatus is a no-op here because the order status was
+                // already saved as COMPLETED above, so bump the usage counters explicitly.
+                $this->incrementDiscountUsageCounts->handle($order->fresh());
 
                 return $order->fresh();
             });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Actions\Admin\Discounts\IncrementDiscountUsageCountsAction;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderProvisioningTriggerEnum;
@@ -17,6 +18,7 @@ final class OrderStatusService
 {
     public function __construct(
         private ProductReservationService $productReservationService,
+        private IncrementDiscountUsageCountsAction $incrementDiscountUsageCounts,
     ) {}
 
     /**
@@ -96,6 +98,13 @@ final class OrderStatusService
         if ($order->status !== $newStatus) {
             $order->status = $newStatus;
             $order->save();
+
+            // Coupon/promotion usage counters reflect COMPLETED orders only, so
+            // abandoned or cancelled pending orders never consume the allowance.
+            if ($newStatus === OrderStatusEnum::COMPLETED) {
+                $this->incrementDiscountUsageCounts->handle($order);
+            }
+
             OrderStatusUpdatedEvent::dispatch($order);
         }
     }
