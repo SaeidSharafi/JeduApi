@@ -1,0 +1,41 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "value": "registration_bonus",
+      "label": "پاداش ثبت‌نام",
+      "description": "پاداش اعطایی به کاربران جدید هنگام ثبت نام"
+    },
+    {
+      "value": "birthday_gift",
+      "label": "هدیه تولد",
+      "description": "اعتبار هدیه ویژه در روز تولد کاربران"
+    },
+    {
+      "value": "referral_bonus",
+      "label": "پاداش معرفی",
+      "description": "پاداش برای معرفی موفق کاربران"
+    },
+    {
+      "value": "loyalty_reward",
+      "label": "پاداش وفاداری",
+      "description": "پاداش برای مشتریان وفادار بر اساس فعالیت"
+    },
+    {
+      "value": "seasonal_bonus",
+      "label": "پاداش فصلی",
+      "description": "تبلیغات و پاداش‌های ویژه فصلی"
+    },
+    {
+      "value": "milestone_reward",
+      "label": "پاداش دستاورد",
+      "description": "پاداش‌های مبتنی بر دستاوردها"
+    },
+    {
+      "value": "manual_allocation",
+      "label": "تخصیص دستی",
+      "description": "اعتبارات تخصیص یافته دستی توسط مدیران"
+    }
+  ],
+  "metadata": []
+}

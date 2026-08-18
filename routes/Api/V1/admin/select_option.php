@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\SelectOptions\StaffSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\TeacherSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\TermSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\VendorSelectOptionController;
+use App\Http\Controllers\Api\Admin\SelectOptions\WalletCampaignTypeSelectOptionController;
 
 Route::get('select-option/categories', CategorySelectOptionController::class)
     ->name('select-option.categories');
@@ -33,3 +34,5 @@ Route::get('select-option/delivery-options', FulfillmentDeliveryOptionsSelectOpt
     ->name('select-option.delivery-options');
 Route::get('select-option/products/{productableType?}', ProductSelectOptionController::class)
     ->name('select-option.products');
+Route::get('select-option/wallet-campaign-types', WalletCampaignTypeSelectOptionController::class)
+    ->name('select-option.wallet-campaign-types');
