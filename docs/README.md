@@ -20,6 +20,7 @@ Generated API documentation is the authority for client integration. Do not recr
 - [Enrollment provisioning](Architecture/Enrollment-Provisioning-System.md)
 - [Product catalog](Architecture/Product-Catalog.md)
 - [Wallet](Architecture/Wallet.md)
+- [Wallet campaigns](Architecture/Wallet-Campaign.md)
 
 ## Maintenance rule
 
