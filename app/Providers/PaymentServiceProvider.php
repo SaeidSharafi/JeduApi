@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Actions\Payment\PreparePendingPaymentAction;
+use App\Contracts\Payment\PendingPaymentPreparerContract;
 use App\Services\Payment\BankTransferPaymentProcessor;
 use App\Services\Payment\Digipay\DigipayAdminService;
 use App\Services\Payment\Digipay\DigipayAuthenticator;
@@ -24,6 +26,9 @@ final class PaymentServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Bind the pending-payment preparer contract to its concrete action
+        $this->app->bind(PendingPaymentPreparerContract::class, PreparePendingPaymentAction::class);
+
         // 1. Register each individual processor as a singleton
         $this->app->singleton(WalletPaymentProcessor::class);
         $this->app->singleton(BankTransferPaymentProcessor::class);

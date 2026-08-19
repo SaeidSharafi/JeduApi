@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Payment;
 
+use App\Contracts\Payment\PendingPaymentPreparerContract;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
@@ -13,7 +14,7 @@ use App\Models\Staff;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 
-final readonly class PreparePendingPaymentAction
+final readonly class PreparePendingPaymentAction implements PendingPaymentPreparerContract
 {
     /**
      * @param  array<string, mixed>|null  $data

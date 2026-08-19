@@ -228,6 +228,7 @@ return [
             'unauthorized_payment_retry'           => 'شما دسترسی لازم برای تلاش مجدد جهت پرداخت این سفارش را ندارید.',
             'order_fully_paid'                     => 'این سفارش به طور کامل پرداخت شده است.',
             'payment_method_required'              => 'انتخاب روش پرداخت الزامی است.',
+            'invalid_payment_method'               => 'روش پرداخت انتخاب‌شده نامعتبر است.',
             'duplicate_payment'                    => 'این سفارش قبلاً پرداخت شده است.',
         ],
         'refund' => [

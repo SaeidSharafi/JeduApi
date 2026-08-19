@@ -61,6 +61,12 @@ return [
             ],
         ],
 
+        // ── Checkout ────────────────────────────────────────────────────
+        'checkout' => [
+            'payment_method_required' => 'A payment method is required for this order.',
+            'invalid_payment_method'  => 'The selected payment method is invalid.',
+        ],
+
         // ── Footer ──────────────────────────────────────────────────────
         'footer' => [
             'categories' => [

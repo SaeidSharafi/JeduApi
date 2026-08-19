@@ -7,7 +7,7 @@ namespace App\Actions\Shop;
 use App\Actions\Admin\Order\CreateOrderAction;
 use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
 use App\Actions\Payment\CompleteFreeOrderPaymentAction;
-use App\Actions\Payment\PreparePendingPaymentAction;
+use App\Contracts\Payment\PendingPaymentPreparerContract;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
@@ -22,22 +22,32 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\CartService;
+use App\Services\Discounts\OrderCalculationService;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use ValueError;
 
 final readonly class CreateOrderFromCartAction
 {
     public function __construct(
         private CartService $cartService,
+        private OrderCalculationService $orderCalculationService,
         private CreateOrderAction $createOrderAction,
         private PaymentProcessorFactory $processorFactory,
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
         private CompleteFreeOrderPaymentAction $completeFreeOrderPayment,
+        private PendingPaymentPreparerContract $preparePendingPayment,
     ) {}
 
     /**
      * Convert a cart into an order and process payment.
+     *
+     * Payment eligibility (method required, valid, processor available) is
+     * validated BEFORE the order-creation transaction, so a rejected payment
+     * setup never deletes the cart. The pending payment is then prepared
+     * atomically with order creation: if order creation OR payment prep
+     * fails, the transaction rolls back and the cart stays intact.
      *
      * Returns PaymentProcessResultData which may contain:
      * - For free orders: completed payment with NO_PAYMENT
@@ -48,8 +58,14 @@ final readonly class CreateOrderFromCartAction
      */
     public function handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData
     {
-        // Steps 1-6: Create order inside DB transaction (atomic cart→order conversion)
-        $order = DB::transaction(function () use ($user): Order {
+        // Step 0: Validate payment eligibility before any mutation happens.
+        // A missing/invalid payment method must fail fast with a 422 —
+        // never after the cart is deleted.
+        $paymentMethod = $this->validatePaymentEligibility($checkoutData, $user);
+
+        // Steps 1-7: Create order + prepare payment inside one DB transaction
+        // (atomic cart→order conversion; any failure rolls back, keeping the cart).
+        [$order, $payment] = DB::transaction(function () use ($checkoutData, $user, $paymentMethod): array {
             // Step 1: Get the cart model directly
             $cart = $this->cartService->findOrCreateCart($user, lockForUpdate: true);
             if ($cart->items->count() === 0) {
@@ -74,41 +90,92 @@ final readonly class CreateOrderFromCartAction
             // Step 6: Execute the existing CreateOrderAction
             $order = $this->createOrderAction->handle($orderCreateData);
 
+            // Step 7: Prepare the pending payment atomically with order creation.
+            // If this throws, the transaction rolls back — cart intact, no orphan order.
+            $payment = $this->preparePaymentForOrder($order, $checkoutData, $paymentMethod, $user);
+
             $cart->delete();
 
-            return $order;
+            return [$order, $payment];
         });
 
-        return $this->processPayment($order, $checkoutData, $user);
+        return $this->processPayment($order, $checkoutData, $paymentMethod, $payment, $user);
     }
 
     /**
-     * Process payment for the order based on the grand total and payment method.
+     * Validate payment eligibility BEFORE the order-creation transaction.
+     *
+     * Uses the current cart contents to estimate the grand total. A free
+     * order (grand_total <= 0) needs no payment method. A paid order requires
+     * a non-empty, valid payment method backed by a registered processor.
      *
      * @throws ValidationException
      */
-    private function processPayment(Order $order, CheckoutData $checkoutData, User $user): PaymentProcessResultData
+    private function validatePaymentEligibility(CheckoutData $checkoutData, User $user): ?PaymentMethodEnum
     {
-        // Handle free orders automatically with NO_PAYMENT
+        // Read the cart without locking — this is a pre-flight check only.
+        // The order-creation transaction re-fetches and re-validates everything.
+        $cart = $this->cartService->findOrCreateCart($user);
 
-        if ($order->grand_total <= 0) {
-            return $this->createFreeOrderPayment($order, $user);
+        if ($cart->items->isEmpty()) {
+            return null; // cart is empty → the transaction will throw cart_empty
         }
 
-        // For paid orders, payment_method is required
+        $orderCreateData = $this->buildOrderCreateData($cart, $user);
+        $context         = $this->orderCalculationService->calculate($orderCreateData);
+
+        if ($context->calculateGrandTotal() <= 0) {
+            return null; // free order → NO_PAYMENT, no payment method needed
+        }
+
+        $paymentMethod = $this->resolvePaymentMethod($checkoutData);
+
+        // Confirm a processor is registered for the method (no gateway call).
+        $this->processorFactory->make($paymentMethod);
+
+        return $paymentMethod;
+    }
+
+    /**
+     * Resolve the payment method from checkout data.
+     *
+     * @throws ValidationException
+     */
+    private function resolvePaymentMethod(CheckoutData $checkoutData): PaymentMethodEnum
+    {
         if (empty($checkoutData->payment_method)) {
             throw ValidationException::withMessages([
                 'payment_method' => [__('validation.custom.checkout.payment_method_required')],
             ]);
         }
 
-        $paymentMethod = PaymentMethodEnum::from($checkoutData->payment_method);
+        try {
+            return PaymentMethodEnum::from($checkoutData->payment_method);
+        } catch (ValueError) {
+            throw ValidationException::withMessages([
+                'payment_method' => [__('validation.custom.checkout.invalid_payment_method')],
+            ]);
+        }
+    }
 
-        // Get the appropriate payment processor
-        $processor = $this->processorFactory->make($paymentMethod);
+    /**
+     * Prepare the pending payment for a paid order.
+     */
+    private function preparePaymentForOrder(
+        Order $order,
+        CheckoutData $checkoutData,
+        ?PaymentMethodEnum $paymentMethod,
+        User $user
+    ): ?Payment {
+        if ($order->grand_total <= 0) {
+            return null; // free order → payment handled by createFreeOrderPayment
+        }
 
-        // Create pending payment then process
-        $payment = app(PreparePendingPaymentAction::class)->handle(
+        // Defensive re-resolution: the cart may have changed since the
+        // pre-flight eligibility check (e.g. price/quantity drift).
+        $paymentMethod ??= $this->resolvePaymentMethod($checkoutData);
+
+        return $this->preparePendingPayment->handle(
             actor: $user,
             customerId: $user->id,
             method: $paymentMethod,
@@ -117,6 +184,33 @@ final readonly class CreateOrderFromCartAction
             order: $order,
             data: $checkoutData->payment_data
         );
+    }
+
+    /**
+     * Process payment for the order based on the grand total and payment method.
+     *
+     * The payment record is already prepared (inside the order transaction);
+     * only the processor call remains, which stays outside the application
+     * transaction.
+     *
+     * @throws ValidationException
+     */
+    private function processPayment(
+        Order $order,
+        CheckoutData $checkoutData,
+        ?PaymentMethodEnum $paymentMethod,
+        ?Payment $payment,
+        User $user
+    ): PaymentProcessResultData {
+        // Handle free orders automatically with NO_PAYMENT
+        if ($order->grand_total <= 0) {
+            return $this->createFreeOrderPayment($order, $user);
+        }
+
+        $paymentMethod ??= $this->resolvePaymentMethod($checkoutData);
+
+        // Get the appropriate payment processor
+        $processor = $this->processorFactory->make($paymentMethod);
 
         return $processor->process($payment);
     }

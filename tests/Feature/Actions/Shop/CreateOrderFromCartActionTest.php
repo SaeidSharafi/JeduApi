@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\Shop\CreateOrderFromCartAction;
 use App\Contracts\Payment\PaymentProcessorContract;
+use App\Contracts\Payment\PendingPaymentPreparerContract;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Enums\Content\PublicationStatusEnum;
@@ -22,6 +23,7 @@ use App\Models\Vendor;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
@@ -278,5 +280,100 @@ describe('CreateOrderFromCartAction idempotency & transaction scope', function (
         $order = $result->payment->order;
         expect($order->customer_id)->toBe($this->user->id);
         expect($order->status)->toBe(OrderStatusEnum::PENDING);
+    });
+});
+
+describe('payment eligibility validated before cart deletion (issue #42)', function (): void {
+    it('missing payment_method on paid cart fails with 422 and keeps cart, order, and capacity untouched', function (): void {
+        // Arrange: paid cart (delivery option price = 500000)
+        $cart = Cart::factory()->create(['user_id' => $this->user->id]);
+        CartItem::factory()->create([
+            'cart_id'                    => $cart->id,
+            'product_delivery_option_id' => $this->deliveryOption->id,
+            'quantity'                   => 1,
+        ]);
+
+        $action = app(CreateOrderFromCartAction::class);
+
+        // Act & Assert: 422 validation error, NOT a deleted cart
+        expect(fn () => $action->handle(new CheckoutData(), $this->user))
+            ->toThrow(ValidationException::class, __('validation.custom.checkout.payment_method_required'));
+
+        // Cart intact, no order row, no reserved capacity
+        expect($cart->fresh())->not->toBeNull();
+        expect(Order::where('customer_id', $this->user->id)->count())->toBe(0);
+        expect($this->deliveryOption->fresh()->reserved_count)->toBe(0);
+    });
+
+    it('invalid payment_method string fails with 422 (not 500) and keeps cart intact', function (): void {
+        $cart = Cart::factory()->create(['user_id' => $this->user->id]);
+        CartItem::factory()->create([
+            'cart_id'                    => $cart->id,
+            'product_delivery_option_id' => $this->deliveryOption->id,
+            'quantity'                   => 1,
+        ]);
+
+        $action = app(CreateOrderFromCartAction::class);
+
+        expect(fn () => $action->handle(new CheckoutData(payment_method: 'definitely_not_a_method'), $this->user))
+            ->toThrow(ValidationException::class, __('validation.custom.checkout.invalid_payment_method'));
+
+        expect($cart->fresh())->not->toBeNull();
+        expect(Order::where('customer_id', $this->user->id)->count())->toBe(0);
+        expect($this->deliveryOption->fresh()->reserved_count)->toBe(0);
+    });
+
+    it('gateway prep failure rolls back order creation and keeps cart', function (): void {
+        // Mock processor so the pre-flight eligibility check passes
+        $mockProcessor = new class implements PaymentProcessorContract
+        {
+            public function canHandle(PaymentMethodEnum $paymentMethod): bool
+            {
+                return true;
+            }
+
+            public function process(Payment $payment): PaymentProcessResultData
+            {
+                throw new RuntimeException('Mock process should never be reached.');
+            }
+
+            public function requiresRedirect(): bool
+            {
+                return false;
+            }
+
+            public function verify(Payment $payment, array $callbackData): Payment
+            {
+                throw new BadMethodCallException('Mock does not support verify.');
+            }
+        };
+
+        $this->app->instance(
+            PaymentProcessorFactory::class,
+            new PaymentProcessorFactory([$mockProcessor])
+        );
+
+        // Simulate a gateway/service outage during payment preparation
+        $this->mock(PendingPaymentPreparerContract::class, function ($mock): void {
+            $mock->shouldReceive('handle')->andThrow(new RuntimeException('gateway down'));
+        });
+
+        $cart = Cart::factory()->create(['user_id' => $this->user->id]);
+        CartItem::factory()->create([
+            'cart_id'                    => $cart->id,
+            'product_delivery_option_id' => $this->deliveryOption->id,
+            'quantity'                   => 1,
+        ]);
+
+        $action = app(CreateOrderFromCartAction::class);
+
+        expect(fn () => $action->handle(new CheckoutData(payment_method: 'bank_transfer'), $this->user))
+            ->toThrow(RuntimeException::class, 'gateway down');
+
+        // No orphan order, no payment record, cart intact, no reserved capacity
+        expect(Order::where('customer_id', $this->user->id)->count())->toBe(0);
+        expect(Payment::where('customer_id', $this->user->id)->count())->toBe(0);
+        expect($cart->fresh())->not->toBeNull();
+        expect($this->deliveryOption->fresh()->reserved_count)->toBe(0);
     });
 });
