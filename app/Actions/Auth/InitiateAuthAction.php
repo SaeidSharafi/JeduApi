@@ -7,6 +7,7 @@ namespace App\Actions\Auth;
 use App\Data\Auth\AuthInitiationResultData;
 use App\Enums\System\OtpType;
 use App\Exceptions\UserNotFoundException;
+use App\Helpers\PhoneNumberHelper;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 
@@ -26,12 +27,12 @@ final class InitiateAuthAction extends AuthAction
                 throw new UserNotFoundException;
             }
             try {
-                $user = User::query()->firstOrCreate(
-                    ['phone' => $identifier],
-                    ['phone' => $identifier],
-                );
+                $user = User::query()
+                    ->whereIn('phone', PhoneNumberHelper::lookupVariants($identifier))
+                    ->first()
+                    ?? User::query()->create(['phone' => PhoneNumberHelper::normalize($identifier)]);
             } catch (QueryException) {
-                $user = User::query()->where('phone', $identifier)->firstOrFail();
+                $user = User::query()->whereIn('phone', PhoneNumberHelper::lookupVariants($identifier))->firstOrFail();
             }
 
             return AuthInitiationResultData::otp(

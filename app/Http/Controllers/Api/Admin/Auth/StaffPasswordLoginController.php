@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Auth\StaffData;
+use App\Helpers\PhoneNumberHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Staff;
@@ -59,7 +60,7 @@ final class StaffPasswordLoginController extends Controller
         $user = Staff::when(
             $type === 'email',
             fn (Builder $q) => $q->where('email', $request->identifier),
-            fn (Builder $q) => $q->where('phone', $request->identifier)
+            fn (Builder $q) => $q->whereIn('phone', PhoneNumberHelper::lookupVariants($request->identifier))
         )->firstOrFail();
 
         $token = $this->action->execute(

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
+use App\Helpers\PhoneNumberHelper;
 use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +28,7 @@ abstract class AuthAction
         return $model::when(
             $this->getIdentifierType($identifier) === 'email',
             fn (Builder $q) => $q->where('email', $identifier),
-            fn (Builder $q) => $q->where('phone', $identifier)
+            fn (Builder $q) => $q->whereIn('phone', PhoneNumberHelper::lookupVariants($identifier))
         )->first();
     }
 }

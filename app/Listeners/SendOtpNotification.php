@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Events\OtpPrepared;
+use App\Helpers\PhoneNumberHelper;
 use App\Models\Staff;
 use App\Models\User;
 use App\Notifications\Auth\OtpEmailNotification;
@@ -26,7 +27,7 @@ final class SendOtpNotification
         $user  = $model::when(
             filter_var($identifier, FILTER_VALIDATE_EMAIL),
             fn (Builder $q) => $q->where('email', $identifier),
-            fn (Builder $q) => $q->where('phone', $identifier)
+            fn (Builder $q) => $q->whereIn('phone', PhoneNumberHelper::lookupVariants($identifier))
         )->first();
 
         if (! $user) {

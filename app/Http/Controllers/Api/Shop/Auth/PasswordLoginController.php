@@ -9,6 +9,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Customer\CustomerData;
 use App\Exceptions\UserBannedException;
 use App\Exceptions\UserNotFoundException;
+use App\Helpers\PhoneNumberHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
@@ -41,7 +42,7 @@ final class PasswordLoginController extends Controller
         $user = User::when(
             $type === 'email',
             fn (Builder $q) => $q->where('email', $request->identifier),
-            fn (Builder $q) => $q->where('phone', $request->identifier)
+            fn (Builder $q) => $q->whereIn('phone', PhoneNumberHelper::lookupVariants($request->identifier))
         )->first();
 
         try {

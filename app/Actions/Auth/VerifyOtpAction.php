@@ -38,6 +38,11 @@ final class VerifyOtpAction extends AuthAction
             throw new InvalidOtpCodeException();
         }
 
+        if ($otpType === OtpType::SIGNUP && $guard === 'user') {
+            $user->phone_verified_at = now();
+            $user->save();
+        }
+
         return $user;
 
     }

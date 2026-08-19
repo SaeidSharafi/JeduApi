@@ -8,6 +8,7 @@ use App\Enums\User\CivilIdTypeEnum;
 use App\Enums\User\EducationLevelEnum;
 use App\Enums\User\EducationStatusEnum;
 use App\Enums\User\GenderEnum;
+use App\Helpers\PhoneNumberHelper;
 use App\Traits\HasMedia;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -162,6 +163,14 @@ final class User extends Authenticatable implements MustVerifyEmail
             'gender'            => GenderEnum::class,
             'civil_id_type'     => CivilIdTypeEnum::class,
         ];
+    }
+
+    /** @return Attribute<never, ?string> */
+    protected function phone(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => $value === null ? null : PhoneNumberHelper::normalize($value),
+        );
     }
 
     /** @return Attribute<bool, never> */
