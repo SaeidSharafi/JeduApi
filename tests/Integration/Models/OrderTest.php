@@ -13,31 +13,32 @@ test('to array', function (): void {
 
     expect($order->toArray())
         ->toEqual([
-            'id'                          => $order->id,
-            'increment_id'                => $order->increment_id,
-            'status'                      => $order->status->value,
-            'customer_id'                 => $order->customer_id,
-            'customer_email'              => $order->customer_email,
-            'customer_phone'              => $order->customer_phone,
-            'customer_first_name'         => $order->customer_first_name,
-            'customer_last_name'          => $order->customer_last_name,
-            'customer_snapshot_json'      => $order->customer_snapshot_json,
-            'total_item_count'            => $order->total_item_count,
-            'total_qty_ordered'           => $order->total_qty_ordered,
-            'subtotal'                    => $order->subtotal,
-            'discount_amount'             => $order->discount_amount,
-            'tax_amount'                  => $order->tax_amount,
-            'grand_total'                 => $order->grand_total,
-            'full_value_grand_total'      => $order->full_value_grand_total,
-            'currency_code'               => $order->currency_code,
-            'applied_cart_discounts_json' => $order->applied_cart_discounts_json,
-            'applied_coupon_code'         => $order->applied_coupon_code,
-            'admin_notes'                 => $order->admin_notes,
-            'created_at'                  => $order->created_at?->utc()->toJSON(),
-            'updated_at'                  => $order->updated_at?->utc()->toJSON(),
-            'created_by'                  => $order->created_by,
-            'payments'                    => $order->payments->toArray(),
-            'total_refunded'              => $order->total_refunded,
+            'id'                            => $order->id,
+            'increment_id'                  => $order->increment_id,
+            'status'                        => $order->status->value,
+            'customer_id'                   => $order->customer_id,
+            'customer_email'                => $order->customer_email,
+            'customer_phone'                => $order->customer_phone,
+            'customer_first_name'           => $order->customer_first_name,
+            'customer_last_name'            => $order->customer_last_name,
+            'customer_snapshot_json'        => $order->customer_snapshot_json,
+            'total_item_count'              => $order->total_item_count,
+            'total_qty_ordered'             => $order->total_qty_ordered,
+            'subtotal'                      => $order->subtotal,
+            'discount_amount'               => $order->discount_amount,
+            'tax_amount'                    => $order->tax_amount,
+            'grand_total'                   => $order->grand_total,
+            'full_value_grand_total'        => $order->full_value_grand_total,
+            'currency_code'                 => $order->currency_code,
+            'applied_cart_discounts_json'   => $order->applied_cart_discounts_json,
+            'applied_coupon_code'           => $order->applied_coupon_code,
+            'admin_notes'                   => $order->admin_notes,
+            'created_at'                    => $order->created_at?->utc()->toJSON(),
+            'updated_at'                    => $order->updated_at?->utc()->toJSON(),
+            'created_by'                    => $order->created_by,
+            'discount_usage_incremented_at' => $order->discount_usage_incremented_at?->utc()->toJSON(),
+            'payments'                      => $order->payments->toArray(),
+            'total_refunded'                => $order->total_refunded,
 
         ]);
 });
@@ -159,7 +160,7 @@ test('enrollments relationship', function (): void {
 });
 
 test('refunds relationship', function (): void {
-    $order  = App\Models\Order::factory()->create();
+    $order  = Order::factory()->create();
     $refund = App\Models\Refund::factory()->create([
         'order_id' => $order->id,
     ]);

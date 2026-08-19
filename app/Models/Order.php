@@ -169,19 +169,20 @@ final class Order extends Model implements WalletTransactionSourceableContract
     protected function casts(): array
     {
         return [
-            'customer_snapshot_json'      => 'array',
-            'applied_cart_discounts_json' => 'array',
-            'subtotal'                    => 'integer',
-            'discount_amount'             => 'integer',
-            'tax_amount'                  => 'integer',
-            'grand_total'                 => 'integer',
-            'full_value_grand_total'      => 'integer',
-            'status'                      => OrderStatusEnum::class,
-            'payment_status'              => OrderPaymentStatusEnum::class,
-            'created_at'                  => 'datetime',
-            'updated_at'                  => 'datetime',
-            'total_paid'                  => 'integer',
-            'total_refunded'              => 'integer',
+            'customer_snapshot_json'        => 'array',
+            'applied_cart_discounts_json'   => 'array',
+            'subtotal'                      => 'integer',
+            'discount_amount'               => 'integer',
+            'tax_amount'                    => 'integer',
+            'grand_total'                   => 'integer',
+            'full_value_grand_total'        => 'integer',
+            'status'                        => OrderStatusEnum::class,
+            'payment_status'                => OrderPaymentStatusEnum::class,
+            'created_at'                    => 'datetime',
+            'updated_at'                    => 'datetime',
+            'discount_usage_incremented_at' => 'datetime',
+            'total_paid'                    => 'integer',
+            'total_refunded'                => 'integer',
         ];
     }
 
