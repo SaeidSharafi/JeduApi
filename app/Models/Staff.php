@@ -30,6 +30,8 @@ final class Staff extends Authenticatable implements MustVerifyEmail, WalletTran
         'email',
         'phone',
         'password',
+        'is_banned',
+        'banned_at',
     ];
 
     protected $hidden = [
@@ -52,6 +54,8 @@ final class Staff extends Authenticatable implements MustVerifyEmail, WalletTran
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
+            'is_banned'         => 'boolean',
+            'banned_at'         => 'datetime',
             'created_at'        => 'datetime',
             'updated_at'        => 'datetime',
         ];

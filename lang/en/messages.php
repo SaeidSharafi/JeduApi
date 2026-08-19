@@ -301,6 +301,10 @@ return [
         'banned'   => 'Customer account banned successfully.',
         'unbanned' => 'Customer account unbanned successfully.',
     ],
+    'staff' => [
+        'banned'   => 'Staff account banned successfully.',
+        'unbanned' => 'Staff account unbanned successfully.',
+    ],
     'category' => [
         'good_for_start' => [
             'updated' => 'Good for start status updated successfully.',

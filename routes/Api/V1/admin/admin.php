@@ -13,9 +13,11 @@ use App\Http\Controllers\Api\Admin\Review\UpdateReviewFeaturedStatusController;
 use App\Http\Controllers\Api\Admin\System\PermissionController;
 use App\Http\Controllers\Api\Admin\System\RoleController;
 use App\Http\Controllers\Api\Admin\TermController;
+use App\Http\Controllers\Api\Admin\User\BanStaffController;
 use App\Http\Controllers\Api\Admin\User\BanUserController;
 use App\Http\Controllers\Api\Admin\User\StaffController;
 use App\Http\Controllers\Api\Admin\User\TeacherController;
+use App\Http\Controllers\Api\Admin\User\UnbanStaffController;
 use App\Http\Controllers\Api\Admin\User\UnbanUserController;
 use App\Http\Controllers\Api\Admin\User\UserController;
 use App\Http\Controllers\Api\Admin\VendorController;
@@ -33,6 +35,10 @@ require __DIR__.'/setting.php';
 require __DIR__.'/wallet.php';
 
 Route::apiResource('staff', StaffController::class);
+Route::prefix('staff/{staff}')->name('staff.')->group(function (): void {
+    Route::post('ban', BanStaffController::class)->name('ban');
+    Route::post('unban', UnbanStaffController::class)->name('unban');
+});
 Route::apiResource('roles', RoleController::class);
 Route::get('permissions', PermissionController::class)->name('permissions.index');
 

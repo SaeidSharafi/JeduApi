@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Auth\StaffData;
+use App\Exceptions\UserBannedException;
 use App\Helpers\PhoneNumberHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -63,12 +64,18 @@ final class StaffPasswordLoginController extends Controller
             fn (Builder $q) => $q->whereIn('phone', PhoneNumberHelper::lookupVariants($request->identifier))
         )->firstOrFail();
 
-        $token = $this->action->execute(
-            $user,
-            $type,
-            $request->password,
-            guard: 'staff'
-        );
+        try {
+            $token = $this->action->execute(
+                $user,
+                $type,
+                $request->password,
+                guard: 'staff'
+            );
+        } catch (UserBannedException) {
+            return apiResponse()->forbidden(
+                message: __('messages.auth.login.banned')
+            );
+        }
         $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {
             return Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
         });

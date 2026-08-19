@@ -128,6 +128,7 @@ enum PermissionEnum: string
     case SLIDER_UPDATE                    = 'sliders.update';
     case SLIDER_VIEW                      = 'sliders.view';
     case SLIDER_VIEW_ANY                  = 'sliders.view_any';
+    case STAFF_BAN                        = 'staff.ban';
     case STAFF_CREATE                     = 'staff.create';
     case STAFF_DELETE                     = 'staff.delete';
     case STAFF_IMPERSONATE                = 'staff.impersonate';

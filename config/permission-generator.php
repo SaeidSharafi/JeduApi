@@ -92,6 +92,7 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
             'impersonate',
+            'ban', // Custom String: staff.ban (ban/unban staff accounts)
         ],
         'role' => [
             PermissionAction::VIEW_SCOPED,

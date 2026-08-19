@@ -12,7 +12,9 @@
         "name": "admin",
         "label": "Admin"
       }
-    ]
+    ],
+    "is_banned": false,
+    "banned_at": null
   },
   "metadata": []
 }

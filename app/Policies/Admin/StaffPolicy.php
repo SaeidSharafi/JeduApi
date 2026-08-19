@@ -56,4 +56,9 @@ final class StaffPolicy
 
         return $user->can(PermissionEnum::STAFF_DELETE);
     }
+
+    public function ban(Staff $user, Staff $model): bool
+    {
+        return $user->can(PermissionEnum::STAFF_BAN);
+    }
 }

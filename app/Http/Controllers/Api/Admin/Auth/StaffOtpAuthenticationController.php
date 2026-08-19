@@ -10,6 +10,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Auth\StaffData;
 use App\Enums\System\OtpType;
 use App\Exceptions\InvalidOtpCodeException;
+use App\Exceptions\UserBannedException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
@@ -63,6 +64,10 @@ final class StaffOtpAuthenticationController extends Controller
         } catch (InvalidOtpCodeException $e) {
             return apiResponse()->validationError(
                 message: __('messages.auth.otp.invalid_code')
+            );
+        } catch (UserBannedException) {
+            return apiResponse()->forbidden(
+                message: __('messages.auth.login.banned')
             );
         }
         $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {

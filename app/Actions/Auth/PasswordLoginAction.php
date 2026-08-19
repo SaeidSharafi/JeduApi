@@ -29,7 +29,7 @@ final class PasswordLoginAction extends AuthAction
             throw new UserNotFoundException();
         }
 
-        if ($identifier instanceof User && $identifier->is_banned) {
+        if (($identifier instanceof User || $identifier instanceof Staff) && $identifier->is_banned) {
             throw new UserBannedException();
         }
 
