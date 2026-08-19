@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Actions\Shop;
 
 use App\Actions\Admin\Order\CreateOrderAction;
-use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
 use App\Actions\Payment\CompleteFreeOrderPaymentAction;
 use App\Contracts\Payment\PendingPaymentPreparerContract;
 use App\Data\Admin\Order\OrderCreateData;
@@ -35,7 +34,6 @@ final readonly class CreateOrderFromCartAction
         private OrderCalculationService $orderCalculationService,
         private CreateOrderAction $createOrderAction,
         private PaymentProcessorFactory $processorFactory,
-        private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
         private CompleteFreeOrderPaymentAction $completeFreeOrderPayment,
         private PendingPaymentPreparerContract $preparePendingPayment,
     ) {}
@@ -63,7 +61,7 @@ final readonly class CreateOrderFromCartAction
         // never after the cart is deleted.
         $paymentMethod = $this->validatePaymentEligibility($checkoutData, $user);
 
-        // Steps 1-7: Create order + prepare payment inside one DB transaction
+        // Steps 1-6: Create order + prepare payment inside one DB transaction
         // (atomic cart→order conversion; any failure rolls back, keeping the cart).
         [$order, $payment] = DB::transaction(function () use ($checkoutData, $user, $paymentMethod): array {
             // Step 1: Get the cart model directly
@@ -80,17 +78,13 @@ final readonly class CreateOrderFromCartAction
             // Step 3: Validate availability and capacity for each item
             $this->validateCartItems($cart);
 
-            // Step 4: Validate that the user doesn't already own these products
-            $deliveryOptions = $cart->items->pluck('productDeliveryOption');
-            $this->validateNoDuplicatePurchases->handle($user, $deliveryOptions);
-
-            // Step 5: Build OrderCreateData from cart
+            // Step 4: Build OrderCreateData from cart
             $orderCreateData = $this->buildOrderCreateData($cart, $user);
 
-            // Step 6: Execute the existing CreateOrderAction
+            // Step 5: Execute the existing CreateOrderAction
             $order = $this->createOrderAction->handle($orderCreateData);
 
-            // Step 7: Prepare the pending payment atomically with order creation.
+            // Step 6: Prepare the pending payment atomically with order creation.
             // If this throws, the transaction rolls back — cart intact, no orphan order.
             $payment = $this->preparePaymentForOrder($order, $checkoutData, $paymentMethod, $user);
 
