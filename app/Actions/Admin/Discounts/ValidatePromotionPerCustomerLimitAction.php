@@ -65,6 +65,7 @@ final readonly class ValidatePromotionPerCustomerLimitAction
                 ->where('customer_id', $customerId)
                 ->whereHas('order', fn (Builder $query): Builder => $query->where('status', OrderStatusEnum::PENDING->value))
                 ->with('order')
+                ->latest('id')
                 ->first()
                 ?->order;
 

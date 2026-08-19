@@ -13,7 +13,8 @@ return new class extends Migration
         Schema::create('discount_promotion_usages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('discount_promotion_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('discount_coupon_id')->nullable()->constrained()->cascadeOnDelete();
+            // Audit only — coupon deletion must not free a consumed slot.
+            $table->foreignId('discount_coupon_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('customer_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->timestamps();

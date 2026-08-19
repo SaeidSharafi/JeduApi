@@ -45,16 +45,6 @@ final class DiscountPromotion extends Model
     }
 
     /**
-     * A promotion has one usage slot per order that applied it.
-     *
-     * @return HasMany<DiscountPromotionUsage, $this>
-     */
-    public function usages(): HasMany
-    {
-        return $this->hasMany(DiscountPromotionUsage::class, 'discount_promotion_id');
-    }
-
-    /**
      * A promotion can have many pre-calculated prices associated with it.
      */
     /**
