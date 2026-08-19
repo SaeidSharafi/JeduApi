@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\Student;
 
+use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
@@ -18,6 +19,7 @@ final class CancelOrderByCustomerAction
 {
     public function __construct(
         private ProductReservationService $productReservationService,
+        private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
     ) {}
 
     /**
@@ -57,6 +59,9 @@ final class CancelOrderByCustomerAction
             // Update order status to CANCELLED
             $order->status = OrderStatusEnum::CANCELLED;
             $order->save();
+
+            // A cancelled order no longer holds the coupon/promotion slot.
+            $this->releasePromotionUsageSlots->handle($order);
 
             // Release any reserved seats back to the pool (order is unpaid at this point)
             foreach ($order->items as $item) {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
+use App\Actions\Admin\Discounts\RecordPromotionUsageAction;
+use App\Actions\Admin\Discounts\ValidatePromotionPerCustomerLimitAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
@@ -25,6 +27,8 @@ final readonly class CreateOrderAction
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
         private ProductPriceService $productPriceService,
         private ProductReservationService $productReservationService,
+        private ValidatePromotionPerCustomerLimitAction $validatePromotionPerCustomerLimit,
+        private RecordPromotionUsageAction $recordPromotionUsage,
     ) {}
 
     /**
@@ -43,6 +47,10 @@ final readonly class CreateOrderAction
         $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
 
         $order = DB::transaction(function () use ($data, $context): Order {
+            // Enforce the per-customer promotion limit before anything else is
+            // reserved/created in this transaction (locks each applied promotion row).
+            $this->validatePromotionPerCustomerLimit->handle($context);
+
             $originalInputItems = collect($data->items)->keyBy('product_delivery_option_id');
             $orderItemsData     = new Collection();
 
@@ -148,6 +156,10 @@ final readonly class CreateOrderAction
 
             $order->items()->createMany($orderItemsData->all());
             $order->refresh();
+
+            // Record one usage slot per applied Promotion — the pending slot
+            // holds the per-customer allowance until completion/cancellation.
+            $this->recordPromotionUsage->handle($order);
 
             // Enrollments are now created by OrderStatusService after payment.
 

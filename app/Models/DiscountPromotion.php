@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Order\DiscountTypeEnum;
+use Database\Factories\DiscountPromotionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Database\Factories\DiscountPromotionFactory;
 
 final class DiscountPromotion extends Model
 {
@@ -42,6 +42,16 @@ final class DiscountPromotion extends Model
     public function coupons(): HasMany
     {
         return $this->hasMany(DiscountCoupon::class);
+    }
+
+    /**
+     * A promotion has one usage slot per order that applied it.
+     *
+     * @return HasMany<DiscountPromotionUsage, $this>
+     */
+    public function usages(): HasMany
+    {
+        return $this->hasMany(DiscountPromotionUsage::class, 'discount_promotion_id');
     }
 
     /**

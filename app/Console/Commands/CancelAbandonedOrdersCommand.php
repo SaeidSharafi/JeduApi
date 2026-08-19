@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Events\OrderStatusUpdatedEvent;
@@ -31,8 +32,10 @@ final class CancelAbandonedOrdersCommand extends Command
      */
     protected $description = 'Cancel abandoned pending orders that have not received payment';
 
-    public function __construct(private ProductReservationService $productReservationService)
-    {
+    public function __construct(
+        private ProductReservationService $productReservationService,
+        private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
+    ) {
         parent::__construct();
     }
 
@@ -93,6 +96,9 @@ final class CancelAbandonedOrdersCommand extends Command
                     // Update order status to CANCELLED
                     $order->status = OrderStatusEnum::CANCELLED;
                     $order->save();
+
+                    // A cancelled order no longer holds the coupon/promotion slot.
+                    $this->releasePromotionUsageSlots->handle($order);
 
                     // Cancel all associated enrollments
                     foreach ($order->items as $item) {

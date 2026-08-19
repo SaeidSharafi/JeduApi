@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Actions\Admin\Discounts\IncrementDiscountUsageCountsAction;
+use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderProvisioningTriggerEnum;
@@ -19,6 +20,7 @@ final class OrderStatusService
     public function __construct(
         private ProductReservationService $productReservationService,
         private IncrementDiscountUsageCountsAction $incrementDiscountUsageCounts,
+        private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
     ) {}
 
     /**
@@ -103,6 +105,13 @@ final class OrderStatusService
             // abandoned or cancelled pending orders never consume the allowance.
             if ($newStatus === OrderStatusEnum::COMPLETED) {
                 $this->incrementDiscountUsageCounts->handle($order);
+            }
+
+            // Cancelled/failed orders release their coupon/promotion usage slot.
+            if ($newStatus    === OrderStatusEnum::CANCELLED
+                || $newStatus === OrderStatusEnum::FAILED
+            ) {
+                $this->releasePromotionUsageSlots->handle($order);
             }
 
             OrderStatusUpdatedEvent::dispatch($order);

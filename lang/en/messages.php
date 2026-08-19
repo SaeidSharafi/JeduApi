@@ -413,11 +413,13 @@ return [
     ],
 
     'checkout' => [
-        'cart_empty'                  => 'Your cart is empty. Please add items before checking out.',
-        'product_unavailable'         => "The product ':name' is no longer available.",
-        'delivery_option_unavailable' => "The delivery option for ':name' is no longer available.",
-        'payment_not_pending'         => 'Payment :uuid is not in pending state.',
-        'spots_remaining'             => 'Only :count spot(s) remaining for \':name\', but you requested :requested.',
+        'cart_empty'                         => 'Your cart is empty. Please add items before checking out.',
+        'product_unavailable'                => "The product ':name' is no longer available.",
+        'delivery_option_unavailable'        => "The delivery option for ':name' is no longer available.",
+        'payment_not_pending'                => 'Payment :uuid is not in pending state.',
+        'spots_remaining'                    => 'Only :count spot(s) remaining for \':name\', but you requested :requested.',
+        'coupon_usage_limit_reached'         => 'You have reached the usage limit for this discount. It can no longer be applied to your orders.',
+        'coupon_usage_pending_order_blocked' => 'A pending order (:order_id) is currently holding your slot for this discount. Complete or cancel that order first.',
     ],
 
     'wallet' => [

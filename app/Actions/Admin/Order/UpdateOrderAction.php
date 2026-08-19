@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
+use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
 use App\Data\Admin\Order\OrderUpdateData;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
@@ -17,6 +18,7 @@ final readonly class UpdateOrderAction
 {
     public function __construct(
         private ProductReservationService $productReservationService,
+        private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
     ) {}
 
     /**
@@ -29,6 +31,15 @@ final readonly class UpdateOrderAction
             $order->update($data->toArray());
             $order->refresh();
             $order->load('enrollments');
+
+            // Cancelled/failed orders release the coupon/promotion slot.
+            // Refunded orders keep it — a refund does not restore usage.
+            if ($order->status    === OrderStatusEnum::CANCELLED
+                || $order->status === OrderStatusEnum::FAILED
+            ) {
+                $this->releasePromotionUsageSlots->handle($order);
+            }
+
             if ($order->status    === OrderStatusEnum::CANCELLED
                 || $order->status === OrderStatusEnum::REFUNDED
             ) {
