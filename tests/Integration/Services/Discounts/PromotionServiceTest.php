@@ -2,9 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Data\Admin\Order\OrderCreateData;
+use App\Data\Admin\Order\OrderItemCreateData;
 use App\Enums\Order\DiscountTypeEnum;
+use App\Enums\Order\OrderStatusEnum;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
+use App\Models\DiscountPromotionRule;
+use App\Models\ProductDeliveryOption;
+use App\Models\User;
+use App\Services\Discounts\OrderCalculationService;
 use App\Services\Discounts\PromotionService;
 
 it('finds an active promotion by coupon code', function (): void {
@@ -69,7 +76,7 @@ it('does not return coupon-required promotions when no coupon is provided', func
         ->and($promotions->pluck('id'))->not->toContain($couponRequiredPromotion->id);
 });
 
-it('orders non-coupon promotions before coupon promotions, then by priority in each group', function (): void {
+it('orders all applicable promotions purely by priority ascending regardless of coupon requirement', function (): void {
     $nonCouponHighPriority = DiscountPromotion::factory()->create([
         'type'            => DiscountTypeEnum::CART_CHECKOUT,
         'is_active'       => true,
@@ -106,8 +113,74 @@ it('orders non-coupon promotions before coupon promotions, then by priority in e
     $promotions = app(PromotionService::class)->findAllApplicableCartPromotions('ORDER10');
 
     expect($promotions->pluck('id')->all())->toBe([
+        $couponHighPriority->id,
         $nonCouponHighPriority->id,
         $nonCouponLowPriority->id,
-        $couponHighPriority->id,
     ]);
+});
+
+it('lets a high-priority coupon promotion with stop_processing_subsequent_rules override a lower-priority automatic promotion', function (): void {
+    $user           = User::factory()->create();
+    $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+    $automaticPromotion = DiscountPromotion::factory()->create([
+        'name'                             => 'Blanket 10% Campaign',
+        'type'                             => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'                        => true,
+        'requires_coupon'                  => false,
+        'priority'                         => 3,
+        'stop_processing_subsequent_rules' => false,
+        'starts_at'                        => now()->subDay(),
+        'ends_at'                          => now()->addDay(),
+    ]);
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $automaticPromotion->id,
+        'type'                  => 'action',
+        'handler'               => 'apply_percentage_off',
+        'configuration'         => ['percentage' => 10],
+    ]);
+
+    $couponPromotion = DiscountPromotion::factory()->create([
+        'name'                             => 'VIP 30% Coupon',
+        'type'                             => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'                        => true,
+        'requires_coupon'                  => true,
+        'priority'                         => 0,
+        'stop_processing_subsequent_rules' => true,
+        'starts_at'                        => now()->subDay(),
+        'ends_at'                          => now()->addDay(),
+    ]);
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $couponPromotion->id,
+        'type'                  => 'action',
+        'handler'               => 'apply_percentage_off',
+        'configuration'         => ['percentage' => 30],
+    ]);
+    DiscountCoupon::factory()->create([
+        'discount_promotion_id' => $couponPromotion->id,
+        'code'                  => 'OVERRIDE',
+        'is_active'             => true,
+    ]);
+
+    $data = new OrderCreateData(
+        status: OrderStatusEnum::PENDING->value,
+        customer_id: $user->id,
+        items: [
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: 'full_payment',
+            ),
+        ],
+        applied_coupon_code: 'OVERRIDE',
+    );
+
+    $context = app(OrderCalculationService::class)->calculate($data);
+
+    // Coupon runs first (priority 0) and stops stacking, so the automatic
+    // 10% campaign never applies.
+    expect($context->items[0]->discount_amount)->toBe(3000)
+        ->and($context->items[0]->total)->toBe(7000)
+        ->and($context->applied_cart_discounts)->toHaveCount(1)
+        ->and($context->applied_cart_discounts[0]['promotion_id'])->toBe($couponPromotion->id)
+        ->and($context->applied_cart_discounts[0]['coupon_code'])->toBe('OVERRIDE');
 });

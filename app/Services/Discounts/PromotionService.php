@@ -66,8 +66,7 @@ final class PromotionService
      *
      * A promotion with requires_coupon = true needs a matching coupon to activate.
      * A promotion with requires_coupon = false is always evaluated subject to its conditions.
-     */
-    /**
+     *
      * @return Collection<int, DiscountPromotion>
      */
     public function findAllApplicableCartPromotions(
@@ -101,7 +100,6 @@ final class PromotionService
                 }
             })
             ->with('rules')
-            ->orderBy('requires_coupon', 'asc')
             ->orderBy('priority', 'asc');
 
         return $query->get();
