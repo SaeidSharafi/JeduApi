@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
-use App\Actions\Admin\Discounts\IncrementDiscountUsageCountsAction;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
@@ -25,7 +24,6 @@ final readonly class ApproveOrderAction
         private OrderStatusService $orderStatusService,
         private DigipayAdminService $digipayService,
         private ProductReservationService $productReservationService,
-        private IncrementDiscountUsageCountsAction $incrementDiscountUsageCounts,
     ) {}
 
     /**
@@ -57,10 +55,6 @@ final readonly class ApproveOrderAction
                 $order->loadMissing('items', 'payments');
                 $this->validateOrderEligibility($order);
 
-                // Mark parent order completed
-                $order->status = OrderStatusEnum::COMPLETED;
-                $order->save();
-
                 // Manually mark each item as completed (manual approval provisioning)
                 foreach ($order->items as $item) {
                     if ($item->status !== OrderItemStatusEnum::COMPLETED) {
@@ -72,12 +66,11 @@ final readonly class ApproveOrderAction
                     $this->orderStatusService->updateEnrollmentStatus($item);
                 }
 
-                // Recalculate parent order status from items to keep single source of truth
+                // Recalculate parent order status from items to keep single source of truth.
+                // With every item COMPLETED this performs the PROCESSING → COMPLETED
+                // transition itself: dispatches OrderStatusUpdatedEvent and increments
+                // coupon/promotion usage counters exactly once.
                 $this->orderStatusService->updateParentOrderStatus($order->fresh());
-
-                // updateParentOrderStatus is a no-op here because the order status was
-                // already saved as COMPLETED above, so bump the usage counters explicitly.
-                $this->incrementDiscountUsageCounts->handle($order->fresh());
 
                 return $order->fresh();
             });
