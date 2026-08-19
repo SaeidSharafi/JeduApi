@@ -465,6 +465,72 @@ test('it attributes the coupon code only to the coupon-required promotion in the
     expect($context->triggered_by_coupon_code)->toBe('SAVE20');
 });
 
+test('it does not crash or grant credit when a wallet-credit promotion is applied to a guest cart', function (): void {
+    // Arrange
+    $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+    $promotion = DiscountPromotion::factory()->make([
+        'type' => DiscountTypeEnum::CART_CHECKOUT,
+    ]);
+    $promotion->setRelation('rules', collect([
+        ['type' => 'action', 'handler' => 'add_wallet_credit', 'configuration' => ['amount' => 5000, 'per_item' => false]],
+    ]));
+
+    mockPromotionFinderReturning($promotion);
+
+    // Guest cart: customer_id is null.
+    $data = new OrderCreateData(
+        status: App\Enums\Order\OrderStatusEnum::PENDING->value,
+        customer_id: null,
+        items: [new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')],
+        applied_coupon_code: null
+    );
+
+    $service = app(OrderCalculationService::class);
+
+    // Act & Assert: no fatal error on null customer, no wallet credit granted, normal totals.
+    expect(fn () => $service->calculate($data))->not->toThrow(Exception::class);
+
+    $context = $service->calculate($data);
+    expect($context->customer)->toBeNull();
+    expect(App\Models\WalletTransaction::count())->toBe(0);
+    expect($context->items[0]->discount_amount)->toBe(0);
+    expect($context->items[0]->total)->toBe(10000);
+});
+
+test('it does not crash or grant credit when a gift-credit promotion is applied to a guest cart', function (): void {
+    // Arrange
+    $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+    $promotion = DiscountPromotion::factory()->make([
+        'type' => DiscountTypeEnum::CART_CHECKOUT,
+    ]);
+    $promotion->setRelation('rules', collect([
+        ['type' => 'action', 'handler' => 'add_gift_credit', 'configuration' => ['amount' => 3000, 'per_item' => false]],
+    ]));
+
+    mockPromotionFinderReturning($promotion);
+
+    // Guest cart: customer_id is null.
+    $data = new OrderCreateData(
+        status: App\Enums\Order\OrderStatusEnum::PENDING->value,
+        customer_id: null,
+        items: [new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')],
+        applied_coupon_code: null
+    );
+
+    $service = app(OrderCalculationService::class);
+
+    // Act & Assert: no fatal error on null customer, no gift credit granted, normal totals.
+    expect(fn () => $service->calculate($data))->not->toThrow(Exception::class);
+
+    $context = $service->calculate($data);
+    expect($context->customer)->toBeNull();
+    expect(App\Models\WalletTransaction::count())->toBe(0);
+    expect($context->items[0]->discount_amount)->toBe(0);
+    expect($context->items[0]->total)->toBe(10000);
+});
+
 test('it stops applying subsequent cart promotions when stop_processing_subsequent_rules is enabled', function (): void {
     $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
