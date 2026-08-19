@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 // Import all necessary classes at the top
 use App\Actions\Admin\Order\CreateOrderAction;
+use App\Data\Admin\Discounts\CalculatedOrderItemData;
+use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Enums\Content\PublicationStatusEnum;
@@ -20,8 +22,10 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
+use App\Services\Discounts\OrderCalculationService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
+use Mockery;
 
 // Or your specific status enum
 
@@ -813,5 +817,133 @@ describe('CreateOrderAction', function (): void {
 
         $enrollmentCount = Enrollment::where('order_item_id', $orderItem->id)->count();
         expect($enrollmentCount)->toBe(0);
+    });
+
+    it('creates an order when a discount action injects a non-gift calculated item without an input DTO', function (): void {
+        // A future action (bundle/upsell) injects a line item that is NOT a
+        // gift and has no matching OrderItemCreateData in the request. The
+        // action must fall back to the calculated item's properties instead
+        // of passing null into validateItem() (regression for #43).
+        $user    = User::factory()->create();
+        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+
+        $inputOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+            'capacity'   => 20,
+            'price'      => 50000,
+        ]);
+        $injectedOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'capacity'                => 20,
+            'price'                   => 30000,
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 10000,
+            'allow_multiple_quantity' => true,
+        ]);
+
+        $calculatedItems = collect([
+            new CalculatedOrderItemData(
+                product_delivery_option: $inputOption,
+                qty: 1,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
+                price: 50000,
+                total: 50000,
+            ),
+            new CalculatedOrderItemData(
+                product_delivery_option: $injectedOption,
+                qty: 2,
+                payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT,
+                price: 30000,
+                total: 20000, // 2 x prepayment_amount
+            ),
+        ]);
+
+        $context = new OrderContextData(
+            customer: $user,
+            items: $calculatedItems,
+            subtotal_full_payment_items: 50000,
+            subtotal_all_items: 110000,
+        );
+
+        $mock = Mockery::mock(OrderCalculationService::class);
+        $mock->shouldReceive('calculate')->once()->andReturn($context);
+        $this->app->instance(OrderCalculationService::class, $mock);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [new OrderItemCreateData(
+                product_delivery_option_id: $inputOption->id,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                qty_ordered: 1,
+            )],
+            applied_coupon_code: null,
+            admin_notes: null,
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        expect($order)->toBeInstanceOf(Order::class);
+
+        $injectedItem = $order->items->where('product_delivery_option_id', $injectedOption->id)->first();
+        expect($injectedItem)->not->toBeNull()
+            ->and($injectedItem->qty_ordered)->toBe(2)
+            ->and($injectedItem->payment_type)->toBe(OrderItemPaymentTypeEnum::PRE_PAYMENT);
+    });
+
+    it('validates injected gift line items as full payment with quantity one', function (): void {
+        $user    = User::factory()->create();
+        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+
+        $option = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+            'capacity'   => 20,
+            'price'      => 50000,
+        ]);
+        $giftOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+            'capacity'   => 20,
+            'price'      => 5000,
+        ]);
+
+        $promotion = DiscountPromotion::factory()->create([
+            'type'      => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active' => true,
+        ]);
+        $promotion->rules()->create([
+            'type'          => 'action',
+            'handler'       => 'gift_product',
+            'configuration' => ['product_delivery_option_id' => $giftOption->id],
+        ]);
+        DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'GIFTME',
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [new OrderItemCreateData(
+                product_delivery_option_id: $option->id,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                qty_ordered: 1,
+            )],
+            applied_coupon_code: 'GIFTME',
+            admin_notes: null,
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        expect($order)->toBeInstanceOf(Order::class);
+
+        $giftItem = $order->items->where('product_delivery_option_id', $giftOption->id)->first();
+        expect($giftItem)->not->toBeNull()
+            ->and($giftItem->qty_ordered)->toBe(1)
+            ->and($giftItem->payment_type)->toBe(OrderItemPaymentTypeEnum::FULL_PAYMENT)
+            ->and($giftItem->total)->toBe(0);
     });
 });

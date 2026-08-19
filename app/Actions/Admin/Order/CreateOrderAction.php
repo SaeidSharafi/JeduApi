@@ -7,6 +7,7 @@ namespace App\Actions\Admin\Order;
 use App\Actions\Admin\Discounts\RecordPromotionUsageAction;
 use App\Actions\Admin\Discounts\ValidatePromotionPerCustomerLimitAction;
 use App\Data\Admin\Order\OrderCreateData;
+use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
@@ -65,15 +66,16 @@ final readonly class CreateOrderAction
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                $originalItemData = $originalInputItems->get($deliveryOption->id);
-
-                if ($calculatedItem->is_gift && ! $originalItemData) {
-                    $originalItemData = new \App\Data\Admin\Order\OrderItemCreateData(
-                        product_delivery_option_id: $deliveryOption->id,
-                        payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-                        qty_ordered: $calculatedItem->qty
+                // Fall back to the calculated item's own properties when the
+                // line item was injected by a discount action (e.g. a gift) and
+                // therefore has no corresponding input DTO. This keeps the
+                // invariant that $originalItemData is never null.
+                $originalItemData = $originalInputItems->get($deliveryOption->id)
+                    ?? new OrderItemCreateData(
+                        product_delivery_option_id: $calculatedItem->product_delivery_option->id,
+                        payment_type: $calculatedItem->payment_type->value,
+                        qty_ordered: $calculatedItem->qty,
                     );
-                }
 
                 $this->validateItem($key, $originalItemData, $deliveryOption);
 
