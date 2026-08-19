@@ -228,7 +228,7 @@ final readonly class CartService
         // Find the guest cart
         $guestCart = Cart::query()
             ->where('guest_token', $guestToken)
-            ->with('items')
+            ->with(['items.productDeliveryOption.product'])
             ->first();
 
         if (! $guestCart || $guestCart->items->isEmpty()) {
@@ -258,15 +258,26 @@ final readonly class CartService
                 ->where('product_delivery_option_id', $guestItem->product_delivery_option_id)
                 ->first();
 
-            if ($existingItem) {
-                // Add quantities together
-                $existingItem->update([
-                    'quantity' => $existingItem->quantity + $guestItem->quantity,
-                ]);
-            } else {
+            if (! $existingItem) {
                 // Move item to user cart
                 $guestItem->update([
                     'cart_id' => $userCart->id,
+                ]);
+
+                continue;
+            }
+
+            $deliveryOption         = $guestItem->productDeliveryOption;
+            $allowsMultipleQuantity = $deliveryOption->allow_multiple_quantity
+                || ProductableEnum::tryFrom($deliveryOption->product?->productable_type)
+                    ?->allowsMultipleQuantity();
+
+            // Only sum quantities when the product allows it and both items
+            // share the same payment intent. Otherwise keep the user's item
+            // and drop the guest duplicate together with the guest cart.
+            if ($allowsMultipleQuantity && $existingItem->payment_type === $guestItem->payment_type) {
+                $existingItem->update([
+                    'quantity' => $existingItem->quantity + $guestItem->quantity,
                 ]);
             }
         }

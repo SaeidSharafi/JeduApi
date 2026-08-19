@@ -130,12 +130,60 @@ it('merges guest cart into user cart on password login', function (): void {
     ]);
 });
 
-it('merges guest cart quantities when user already has the same item', function (): void {
+it('keeps user quantity when guest cart has the same single-quantity product', function (): void {
     // Arrange: Create a user with cart containing an item
     $user     = User::factory()->create(['password' => bcrypt('password')]);
     $userCart = Cart::factory()->create(['user_id' => $user->id]);
 
     $deliveryOption = ProductDeliveryOption::factory()->create();
+    CartItem::factory()->create([
+        'cart_id'                    => $userCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'quantity'                   => 1,
+    ]);
+
+    // Create a guest cart with the SAME item
+    $guestToken = Illuminate\Support\Str::uuid()->toString();
+    $guestCart  = Cart::factory()->create(['guest_token' => $guestToken]);
+
+    CartItem::factory()->create([
+        'cart_id'                    => $guestCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'quantity'                   => 1,
+    ]);
+
+    // Act: Login with guest token in header
+    $response = postJson(route('api.v1.auth.password-login'), [
+        'identifier' => $user->email,
+        'password'   => 'password',
+    ], [
+        'X-Guest-Token' => $guestToken,
+    ]);
+
+    // Assert: Login successful
+    $response->assertOk();
+
+    // Assert: Guest cart is deleted
+    $this->assertDatabaseMissing('carts', ['id' => $guestCart->id]);
+
+    // Assert: User cart has only 1 item
+    $userCart->refresh();
+    expect($userCart->items)->toHaveCount(1);
+
+    // Assert: Quantities are NOT summed (single-quantity invariant is preserved)
+    $this->assertDatabaseHas('cart_items', [
+        'cart_id'                    => $userCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'quantity'                   => 1,
+    ]);
+});
+
+it('sums quantities when merging the same multiple-quantity product', function (): void {
+    // Arrange: Create a user with cart containing a multiple-quantity item
+    $user     = User::factory()->create(['password' => bcrypt('password')]);
+    $userCart = Cart::factory()->create(['user_id' => $user->id]);
+
+    $deliveryOption = ProductDeliveryOption::factory()->create(['allow_multiple_quantity' => true]);
     CartItem::factory()->create([
         'cart_id'                    => $userCart->id,
         'product_delivery_option_id' => $deliveryOption->id,
@@ -166,7 +214,7 @@ it('merges guest cart quantities when user already has the same item', function 
     // Assert: Guest cart is deleted
     $this->assertDatabaseMissing('carts', ['id' => $guestCart->id]);
 
-    // Assert: User cart has only 1 item (not 2)
+    // Assert: User cart has only 1 item
     $userCart->refresh();
     expect($userCart->items)->toHaveCount(1);
 
@@ -175,6 +223,56 @@ it('merges guest cart quantities when user already has the same item', function 
         'cart_id'                    => $userCart->id,
         'product_delivery_option_id' => $deliveryOption->id,
         'quantity'                   => 5,
+    ]);
+});
+
+it('keeps user item when payment_type differs between user and guest items', function (): void {
+    // Arrange: Create a user with cart containing a full-payment item
+    $user     = User::factory()->create(['password' => bcrypt('password')]);
+    $userCart = Cart::factory()->create(['user_id' => $user->id]);
+
+    $deliveryOption = ProductDeliveryOption::factory()->create(['is_prepayment_available' => true]);
+    CartItem::factory()->create([
+        'cart_id'                    => $userCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT,
+        'quantity'                   => 1,
+    ]);
+
+    // Create a guest cart with the SAME item but a different payment intent
+    $guestToken = Illuminate\Support\Str::uuid()->toString();
+    $guestCart  = Cart::factory()->create(['guest_token' => $guestToken]);
+
+    CartItem::factory()->create([
+        'cart_id'                    => $guestCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::PRE_PAYMENT,
+        'quantity'                   => 1,
+    ]);
+
+    // Act: Login with guest token in header
+    $response = postJson(route('api.v1.auth.password-login'), [
+        'identifier' => $user->email,
+        'password'   => 'password',
+    ], [
+        'X-Guest-Token' => $guestToken,
+    ]);
+
+    // Assert: Login successful
+    $response->assertOk();
+
+    // Assert: Guest cart is deleted
+    $this->assertDatabaseMissing('carts', ['id' => $guestCart->id]);
+
+    // Assert: User cart has only 1 item, unchanged
+    $userCart->refresh();
+    expect($userCart->items)->toHaveCount(1);
+
+    $this->assertDatabaseHas('cart_items', [
+        'cart_id'                    => $userCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+        'quantity'                   => 1,
     ]);
 });
 
