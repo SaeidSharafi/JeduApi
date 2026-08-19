@@ -33,6 +33,9 @@ final class InitiateAuthController extends Controller
     {
         $result = $this->action->execute(
             $request->identifier,
+            'user',
+            $request->ip(),
+            $request->userAgent(),
         );
 
         if ($result->requiresPassword) {

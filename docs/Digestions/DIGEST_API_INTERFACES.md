@@ -407,6 +407,7 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 
 #### InitiateAuthController (`app/Http/Controllers/Api/Shop/Auth/InitiateAuthController.php`)
 - `__invoke(AuthInitiateData $request)`: **Route:** `POST /api/v1/auth/initiate` - **Request DTO:** AuthInitiateData - **Delegates to:** OTP generation - **Response DTO:** AuthResponseData
+- **Registration velocity caps:** New customer phone registrations are capped at `config('registration_velocity.max_per_day', 3)` per IP and per device hash (sha256 of ip + user-agent). Returns 429 with `messages.auth.register.throttled` when either cap is reached. Device fingerprint recorded on successful creation. Existing-user logins, staff auth, and email identifiers are unaffected. ADR: `docs/adr/0004-server-side-device-fingerprint.md`
 
 #### PasswordLoginController (`app/Http/Controllers/Api/Shop/Auth/PasswordLoginController.php`)
 - `__invoke(PasswordLoginData $request)`: **Route:** `POST /api/v1/auth/login/password` - **Request DTO:** PasswordLoginData - **Delegates to:** Password authentication - **Response DTO:** AuthTokenData

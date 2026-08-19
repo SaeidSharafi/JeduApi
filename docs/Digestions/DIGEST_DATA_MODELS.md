@@ -10,6 +10,7 @@
   - `hasMany(Review::class)` - reviews
   - `hasOne(Cart::class)` - cart
   - `hasMany(Order::class, 'customer_id')` - orders
+  - `hasMany(UserDevice::class)` - devices
 - **Helper Methods:** `hasSetPassword(): bool`, `profileCompleted(): bool` (requires `is_profile_completed` flag AND `civil_id` present), `routeNotificationForSms($notification): string` (returns phone)
 - **Casts:** `civil_id_type` cast to `CivilIdTypeEnum`
 - **Guard:** `user` (Sanctum authentication)
@@ -415,6 +416,13 @@
 - **Purpose:** Customer contact form submissions captured from the shop CMS
 - **Key Fields:** `full_name`, `phone`, `subject`, `email`, `message`
 - **Relationships:** Self-contained request records for support follow-up
+
+### UserDevice (`app/Models/UserDevice.php`)
+- **Purpose:** Device fingerprint records for registration velocity limiting
+- **Key Fields:** `user_id`, `device_hash` (sha256 hex of ip+user_agent), `ip_address`, `user_agent`
+- **Relationships:**
+  - `belongsTo(User::class)` - user
+- **Special Features:** One row per registration event; used by `RegistrationVelocityService` to enforce per-IP and per-device-hash daily caps
 
 ### SmsLog (`app/Models/SmsLog.php`)
 - **Purpose:** SMS delivery tracking and logging

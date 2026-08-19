@@ -190,6 +190,9 @@ return [
             'throttled'           => 'Too many login attempts. Please try again in :seconds seconds.',
             'banned'              => 'This account has been banned. Please contact support.',
         ],
+        'register' => [
+            'throttled' => 'Too many accounts have been created from this device or IP address today. Please try again tomorrow.',
+        ],
     ],
     'enrollments' => [
         'not_found'                       => 'Enrollment not found.',

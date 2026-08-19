@@ -61,6 +61,17 @@
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: PK(id), UNIQUE(email)
 
+### Table: `user_devices`
+- Purpose: Device fingerprint records for registration velocity limiting.
+- Columns:
+  - id (BIGINT, PK)
+  - user_id (BIGINT) FK -> users(id) CASCADE
+  - device_hash (VARCHAR(64), indexed) — sha256(ip . user_agent) hex
+  - user_agent (VARCHAR(500), nullable)
+  - ip_address (VARCHAR(45), nullable, indexed)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id), INDEX(device_hash), INDEX(ip_address)
+
 ---
 ## Product & Catalog Management
 

@@ -347,6 +347,7 @@
   - `handle(string $identifier): string`: Creates time-limited verification codes
 - **InitiateAuthAction** (`app/Actions/Auth/InitiateAuthAction.php`)
   - `handle(AuthInitiateData $data): AuthResponseData`: Starts authentication process for both guards. Creates the user/staff record race-safely (unique-constraint race recovery) when the identifier does not exist yet.
+  - **Registration velocity caps:** When creating a new customer user (guard `user`, phone identifier), `RegistrationVelocityService::assertWithinLimits()` checks daily caps per IP address and per device hash (sha256 of IP + user-agent). Exceeding `config('registration_velocity.max_per_day', 3)` throws `RegistrationVelocityExceededException` (429, `messages.auth.register.throttled`). On successful creation, `record()` inserts the device fingerprint row. Existing-user logins (SIGNIN), staff auth, and email identifiers are unaffected.
 - **PasswordLoginAction** (`app/Actions/Auth/PasswordLoginAction.php`)
   - `handle(PasswordLoginData $data): AuthTokenData`: Manages password-based login flows
 - **VerifyOtpAction** (`app/Actions/Auth/VerifyOtpAction.php`)
