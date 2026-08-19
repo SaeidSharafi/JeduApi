@@ -411,6 +411,60 @@ test('it does not apply discount when promotion conditions fail', function (): v
     expect($context->evaluating_promotion)->toBeNull();
 });
 
+test('it attributes the coupon code only to the coupon-required promotion in the audit trail', function (): void {
+    // Arrange
+    $user           = User::factory()->create();
+    $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+    // Automatic promotion (requires_coupon = false): applied whenever conditions pass.
+    $automaticPromotion = DiscountPromotion::factory()->make([
+        'id'              => 200,
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'requires_coupon' => false,
+        'priority'        => 1,
+    ]);
+    $automaticPromotion->setRelation('rules', collect([
+        ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 10]],
+    ]));
+
+    // Coupon-required promotion that owns the applied coupon code.
+    $couponPromotion = DiscountPromotion::factory()->make([
+        'id'              => 201,
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'requires_coupon' => true,
+        'priority'        => 2,
+    ]);
+    $couponPromotion->setRelation('rules', collect([
+        ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 20]],
+    ]));
+
+    mockPromotionFinderReturning([$automaticPromotion, $couponPromotion]);
+
+    $data = new OrderCreateData(
+        status: App\Enums\Order\OrderStatusEnum::PENDING->value,
+        customer_id: $user->id,
+        items: [new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')],
+        applied_coupon_code: 'SAVE20',
+    );
+
+    $service = app(OrderCalculationService::class);
+
+    // Act
+    $context = $service->calculate($data);
+
+    // Assert: both promotions applied a discount...
+    expect($context->applied_cart_discounts)->toHaveCount(2);
+
+    $byPromotion = collect($context->applied_cart_discounts)->keyBy('promotion_id');
+
+    // ...but only the coupon-required promotion carries the coupon in the audit trail.
+    expect($byPromotion[$automaticPromotion->id]['coupon_code'])->toBeNull();
+    expect($byPromotion[$couponPromotion->id]['coupon_code'])->toBe('SAVE20');
+
+    // Order-level coupon attribution is preserved (the coupon promotion is processed last).
+    expect($context->triggered_by_coupon_code)->toBe('SAVE20');
+});
+
 test('it stops applying subsequent cart promotions when stop_processing_subsequent_rules is enabled', function (): void {
     $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);

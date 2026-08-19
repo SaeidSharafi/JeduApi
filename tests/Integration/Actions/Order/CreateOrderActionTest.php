@@ -25,7 +25,6 @@ use App\Models\User;
 use App\Services\Discounts\OrderCalculationService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
-use Mockery;
 
 // Or your specific status enum
 
@@ -362,9 +361,10 @@ describe('CreateOrderAction', function (): void {
 
         // 1. Create the master promotion
         $promotion = DiscountPromotion::factory()->create([
-            'name'      => '10% Off All Courses',
-            'type'      => 'cart_checkout',
-            'is_active' => true,
+            'name'            => '10% Off All Courses',
+            'type'            => 'cart_checkout',
+            'is_active'       => true,
+            'requires_coupon' => true,
         ]);
 
         // 2. Create the "Action" rule for this promotion (what it does)
@@ -490,9 +490,10 @@ describe('CreateOrderAction', function (): void {
                 'status'     => PublicationStatusEnum::PUBLISHED,
             ]);
         $promotion = DiscountPromotion::factory()->create([
-            'name'      => 'Test Sale',
-            'is_active' => true,
-            'type'      => DiscountTypeEnum::CART_CHECKOUT,
+            'name'            => 'Test Sale',
+            'is_active'       => true,
+            'type'            => DiscountTypeEnum::CART_CHECKOUT,
+            'requires_coupon' => true,
         ]);
         $promotion->rules()->create([
             'type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 10],
@@ -595,8 +596,9 @@ describe('CreateOrderAction', function (): void {
 
         // Create a promotion with discount
         $promotion = DiscountPromotion::factory()->create([
-            'type'      => DiscountTypeEnum::CART_CHECKOUT,
-            'is_active' => true,
+            'type'            => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'       => true,
+            'requires_coupon' => true,
         ]);
         $promotion->rules()->create([
             'type'          => 'action',

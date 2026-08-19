@@ -47,12 +47,12 @@ function createCouponCartPromotion(
     int $priority = 1
 ): DiscountPromotion {
     $promotion = DiscountPromotion::create([
-        'name'      => $name,
-        'type'      => DiscountTypeEnum::CART_CHECKOUT,
-        'is_active' => true,
-        'priority'  => $priority,
-        'starts_at' => now()->subDay(),
-        'ends_at'   => now()->addDay(),
+        'name'                             => $name,
+        'type'                             => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'                        => true,
+        'priority'                         => $priority,
+        'starts_at'                        => now()->subDay(),
+        'ends_at'                          => now()->addDay(),
         'stop_processing_subsequent_rules' => false,
         'requires_coupon'                  => true,
     ]);
@@ -74,9 +74,9 @@ function createCouponCartPromotion(
 describe('Complex Multi-Step Checkout Scenarios', function (): void {
 
     test('coupon usage limit enforced: exhaustion prevents further use', function (): void {
-        $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
-        $course = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $vendor  = Vendor::factory()->create();
+        $term    = Term::factory()->create();
+        $course  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product = Product::factory()->create([
             'vendor_id'        => $vendor->id,
             'term_id'          => $term->id,
@@ -102,6 +102,7 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
             'total_usage_count' => 0,
             'starts_at'         => now()->subDay(),
             'ends_at'           => now()->addDay(),
+            'requires_coupon'   => true,
         ]);
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotion->id,
@@ -166,9 +167,9 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
     });
 
     test('discount expiry at checkout time: expired promotion not applied', function (): void {
-        $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
-        $course = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $vendor  = Vendor::factory()->create();
+        $term    = Term::factory()->create();
+        $course  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product = Product::factory()->create([
             'vendor_id'        => $vendor->id,
             'term_id'          => $term->id,
@@ -226,15 +227,15 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
 
         // Order should be created with no discount applied (grand_total = subtotal)
         $orderId = $response->json('data.order.id');
-        $order = Order::with('items')->find($orderId);
+        $order   = Order::with('items')->find($orderId);
         expect($order->discount_amount)->toBe(0);
         expect($order->grand_total)->toBe($order->subtotal);
     });
 
     test('wallet insufficient balance then top-up and retry succeeds', function (): void {
-        $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
-        $course = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $vendor  = Vendor::factory()->create();
+        $term    = Term::factory()->create();
+        $course  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product = Product::factory()->create([
             'vendor_id'        => $vendor->id,
             'term_id'          => $term->id,
@@ -263,7 +264,7 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
         // First checkout: insufficient balance
         $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value]);
         $response->assertStatus(422);
-        $requiredBalance = $response->json('metadata.required_balance');
+        $requiredBalance  = $response->json('metadata.required_balance');
         $orderIncrementId = $response->json('metadata.order_id');
         expect($requiredBalance)->toBe(100000);
         expect($orderIncrementId)->not->toBeNull();
@@ -271,7 +272,7 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
         $customer->wallet->update(['balance' => 200000]);
 
         // Retry payment on existing order
-        $order = Order::query()->where('increment_id', $orderIncrementId)->first();
+        $order    = Order::query()->where('increment_id', $orderIncrementId)->first();
         $response = postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
             'payment_method' => PaymentMethodEnum::WALLET->value,
         ]);
@@ -283,9 +284,9 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
     });
 
     test('order totals include applied_cart_discounts_json snapshot', function (): void {
-        $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
-        $course = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $vendor  = Vendor::factory()->create();
+        $term    = Term::factory()->create();
+        $course  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product = Product::factory()->create([
             'vendor_id'        => $vendor->id,
             'term_id'          => $term->id,
@@ -336,7 +337,7 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
             ->assertCreated();
 
         $orderId = $response->json('data.order.id');
-        $order = Order::with('items')->find($orderId);
+        $order   = Order::with('items')->find($orderId);
 
         // Assert applied_cart_discounts_json is populated
         expect($order->applied_cart_discounts_json)->not->toBeNull();
@@ -350,9 +351,9 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
     });
     test('gift product action successfully attaches free promotional item during checkout calculation',
         function (): void {
-            $vendor = Vendor::factory()->create();
-            $term = Term::factory()->create();
-            $course = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+            $vendor  = Vendor::factory()->create();
+            $term    = Term::factory()->create();
+            $course  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
             $product = Product::factory()->create([
                 'vendor_id'        => $vendor->id,
                 'term_id'          => $term->id,
@@ -426,7 +427,7 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
 describe('Advanced Discount Engine Logic', function (): void {
 
     test('1. Multiple cart discounts stack correctly', function (): void {
-        $option = ProductDeliveryOption::factory()->create(['price' => 100000]);
+        $option   = ProductDeliveryOption::factory()->create(['price' => 100000]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
@@ -434,7 +435,7 @@ describe('Advanced Discount Engine Logic', function (): void {
         $promo1 = createCouponCartPromotion('10 Percent', ['percentage' => 10], priority: 5);
 
         $promotion = DiscountPromotion::create([
-            'name'      => "First Order",
+            'name'      => 'First Order',
             'type'      => DiscountTypeEnum::CART_CHECKOUT,
             'is_active' => true,
             'priority'  => 1,
@@ -464,7 +465,7 @@ describe('Advanced Discount Engine Logic', function (): void {
     });
 
     test('2. Priority overrides lower priority promotions', function (): void {
-        $option = ProductDeliveryOption::factory()->create(['price' => 100000]);
+        $option   = ProductDeliveryOption::factory()->create(['price' => 100000]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
@@ -512,7 +513,7 @@ describe('Advanced Discount Engine Logic', function (): void {
     });
 
     test('4. Product level discount vs Cart checkout discount interaction', function (): void {
-        $option = ProductDeliveryOption::factory()->create(['price' => 100000]);
+        $option   = ProductDeliveryOption::factory()->create(['price' => 100000]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
@@ -533,10 +534,10 @@ describe('Advanced Discount Engine Logic', function (): void {
     });
 
     test('5. Remove qualifying item after coupon application → discount voided at checkout', function (): void {
-        $courseA     = Product::factory()->create();
-        $optionA     = ProductDeliveryOption::factory()->create(['product_id' => $courseA->id, 'price' => 100000]);
-        $optionB     = ProductDeliveryOption::factory()->create(['price' => 50000]);
-        $customer    = User::factory()->create();
+        $courseA  = Product::factory()->create();
+        $optionA  = ProductDeliveryOption::factory()->create(['product_id' => $courseA->id, 'price' => 100000]);
+        $optionB  = ProductDeliveryOption::factory()->create(['price' => 50000]);
+        $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
 
@@ -664,11 +665,12 @@ describe('Malicious User & Edge Cases', function (): void {
 
         // Single-use coupon (usage_limit = 1)
         $promotion = DiscountPromotion::create([
-            'name'      => 'Single Use',
-            'type'      => DiscountTypeEnum::CART_CHECKOUT,
-            'is_active' => true,
-            'starts_at' => now()->subDay(),
-            'ends_at'   => now()->addDay(),
+            'name'            => 'Single Use',
+            'type'            => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'       => true,
+            'starts_at'       => now()->subDay(),
+            'ends_at'         => now()->addDay(),
+            'requires_coupon' => true,
         ]);
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotion->id,
@@ -739,10 +741,10 @@ describe('Malicious User & Edge Cases', function (): void {
     });
 
     test('5. Apply coupon, swap cart items → conditions re-checked at checkout', function (): void {
-        $courseA    = Product::factory()->create();
-        $optionA    = ProductDeliveryOption::factory()->create(['product_id' => $courseA->id, 'price' => 100000]);
-        $optionB    = ProductDeliveryOption::factory()->create(['price' => 75000]);
-        $customer   = User::factory()->create();
+        $courseA  = Product::factory()->create();
+        $optionA  = ProductDeliveryOption::factory()->create(['product_id' => $courseA->id, 'price' => 100000]);
+        $optionB  = ProductDeliveryOption::factory()->create(['price' => 75000]);
+        $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
 
@@ -914,7 +916,7 @@ describe('Order & Payment Flow', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => 'wallet'])->assertCreated();
 
-        $orderId  = $response->json('data.order.id');
+        $orderId    = $response->json('data.order.id');
         $enrollment = Enrollment::where('order_id', $orderId)->first();
 
         expect($enrollment)->not->toBeNull();

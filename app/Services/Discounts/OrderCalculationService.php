@@ -38,9 +38,11 @@ final class OrderCalculationService
             }
 
             $context->evaluating_promotion = $promotion;
-            if ($data->applied_coupon_code) {
-                $context->triggered_by_coupon_code = $data->applied_coupon_code;
-            }
+            // Attribute the coupon code only to the promotion that requires it;
+            // automatic promotions must not inherit it in the audit trail.
+            $context->triggered_by_coupon_code = $promotion->requires_coupon
+                ? $data->applied_coupon_code
+                : null;
             $this->applyActions($promotion, $context);
 
             if ($promotion->stop_processing_subsequent_rules) {
