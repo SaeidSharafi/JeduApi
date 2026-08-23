@@ -80,7 +80,7 @@ final class PasswordLoginThrottleService
 
     public function failures(string $key): int
     {
-        return RateLimiter::attempts($key);
+        return (int) RateLimiter::attempts($key);
     }
 
     /**
@@ -119,9 +119,9 @@ final class PasswordLoginThrottleService
     {
         $ttlSeconds = (int) config("password_throttle.{$guard}.failure_counter_ttl_seconds", 3600);
 
-        RateLimiter::hit($failuresKey, $ttlSeconds);
+        $failures = RateLimiter::hit($failuresKey, $ttlSeconds);
 
-        $lockoutSeconds = $this->lockoutSeconds($guard, $this->failures($failuresKey));
+        $lockoutSeconds = $this->lockoutSeconds($guard, $failures);
 
         RateLimiter::hit($windowKey, $lockoutSeconds);
     }
