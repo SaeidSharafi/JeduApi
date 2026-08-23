@@ -1,0 +1,33 @@
+services:
+  api:
+    image: nexus.jedu.ir/repository/docker-hub/jedu-api:latest
+    container_name: jedu-api-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - DEPLOYMENT_TYPE=web
+      - APP_ENV=production
+      - APP_DEBUG=false
+    env_file:
+      - .env
+    volumes:
+      - ./storage/app:/app/storage/app
+      - ./storage/logs:/app/storage/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  worker:
+    image: nexus.jedu.ir/repository/docker-hub/jedu-api:latest
+    container_name: jedu-api-worker
+    restart: unless-stopped
+    environment:
+      - DEPLOYMENT_TYPE=worker
+      - APP_ENV=production
+    env_file:
+      - .env
+    volumes:
+      - ./storage/app:/app/storage/app
+      - ./storage/logs:/app/storage/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
