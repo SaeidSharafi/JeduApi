@@ -15,7 +15,7 @@ return [
         Str::slug(env('APP_NAME', 'laravel'), '_').'_horizon:'
     ),
     'middleware' => ['web', HorizonBasicAuth::class],
-    'auth' => [
+    'auth'       => [
         'username' => env('HORIZON_USERNAME'),
         'password' => env('HORIZON_PASSWORD'),
     ],
@@ -30,17 +30,17 @@ return [
         'failed'        => 10080,
         'monitored'     => 10080,
     ],
-    'silenced' => [],
+    'silenced'      => [],
     'silenced_tags' => [],
-    'metrics' => [
+    'metrics'       => [
         'trim_snapshots' => [
             'job'   => 288,
             'queue' => 288,
         ],
     ],
     'fast_termination' => false,
-    'memory_limit' => 64,
-    'defaults' => [
+    'memory_limit'     => 64,
+    'defaults'         => [
         'supervisor-1' => [
             'connection'          => 'redis',
             'queue'               => ['default'],
@@ -61,6 +61,27 @@ return [
                 'maxProcesses'    => 10,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
+            ],
+            'supervisor-provisioning' => [
+                'connection'          => 'redis',
+                'queue'               => ['provisioning', 'notifications'],
+                'balance'             => 'auto',
+                'autoScalingStrategy' => 'time',
+                'minProcesses'        => 2,
+                'maxProcesses'        => 10,
+                'tries'               => 3,
+                'timeout'             => 120,
+                'nice'                => 0,
+            ],
+            'supervisor-default' => [
+                'connection'   => 'redis',
+                'queue'        => ['default'],
+                'balance'      => 'simple',
+                'minProcesses' => 2,
+                'maxProcesses' => 5,
+                'tries'        => 3,
+                'timeout'      => 60,
+                'nice'         => 0,
             ],
         ],
         'local' => [

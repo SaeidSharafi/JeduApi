@@ -1,0 +1,42 @@
+# VCS & CI
+.git
+.github
+.gitlab-ci.yml
+.gitignore
+.editorconfig
+
+# Secrets — never bake into image
+.env
+.env.*
+!.env.example
+
+# Dependencies (installed inside the image)
+vendor
+node_modules
+
+# Laravel caches — must regenerate for --no-dev package set at runtime
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
+# Tests & tooling (not needed at runtime)
+tests
+pest.xml
+phpstan.neon
+rector.php
+pint.json
+peck.json
+
+# Dev logs & local junk
+storage/logs/*
+!storage/logs/.gitignore
+laradumps.xml
+.DS_Store
+
+# Local tooling & docs
+docker-compose*.y*ml
+scripts
+docs
+.ai
+.agents
+.opencode
+graphify-out

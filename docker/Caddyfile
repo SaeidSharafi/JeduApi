@@ -1,0 +1,19 @@
+{
+    admin off
+    auto_https off
+    frankenphp
+    order php_server before file_server
+}
+
+:8000 {
+    root * /app/public
+    encode zstd gzip
+
+    # Execute PHP files with a fresh state on each request (Safe Mode)
+    php_server {
+        resolve_root_symlink
+    }
+
+    # Serve static assets or fallback to index.php
+    file_server
+}
