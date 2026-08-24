@@ -34,7 +34,7 @@ final class RefundCompletedNotification extends Notification implements ShouldQu
     {
         $order  = $this->refund->orderItem->order;
         $item   = $this->refund->orderItem;
-        $method = $order->payments()->oldest()->value('method');
+        $method = $order->payments()->oldest()->value('method')?->value;
 
         $message = (new MailMessage)
             ->subject("استرداد وجه سفارش #{$order->id}")
