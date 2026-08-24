@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Profile;
 
 use App\Actions\Shop\UpdateProfileAction;
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Customer\CustomerData;
 use App\Data\Shop\Customer\UpdateProfileData;
 use App\Http\Controllers\Controller;
-use App\Contracts\ApiResponseInterface;
 
 /**
  * @group Shop - Profile
@@ -26,7 +26,7 @@ final class ProfileController extends Controller
      */
     public function show(): ApiResponseInterface
     {
-        return apiResponse()->success(CustomerData::from(auth()->user()));
+        return apiResponse()->success(CustomerData::fromUser(auth()->user()));
     }
 
     /**
@@ -38,6 +38,6 @@ final class ProfileController extends Controller
     {
         $user = $action->handle($data, auth()->user());
 
-        return apiResponse()->updated(CustomerData::from($user), model: $user);
+        return apiResponse()->updated(CustomerData::fromUser($user), model: $user);
     }
 }

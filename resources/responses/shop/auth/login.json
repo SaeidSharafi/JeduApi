@@ -8,6 +8,7 @@
       "uuid": "01993d34-24d6-7080-894d-6a72bff73ac8",
       "phone": "09123456789",
       "is_profile_completed": true,
+      "is_teacher": false,
       "first_name": "علی",
       "last_name": "محمدی",
       "email": "ali@example.com",

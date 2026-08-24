@@ -9,6 +9,7 @@ use App\Enums\User\CivilIdTypeEnum;
 use App\Enums\User\EducationLevelEnum;
 use App\Enums\User\EducationStatusEnum;
 use App\Enums\User\GenderEnum;
+use App\Models\User;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
@@ -23,6 +24,7 @@ final class CustomerData extends Data
         public string $uuid,
         public string $phone,
         public bool $is_profile_completed,
+        public bool $is_teacher,
         public ?string $first_name,
         public ?string $last_name,
         public ?string $email,
@@ -43,4 +45,14 @@ final class CustomerData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?EducationStatusEnum $education_status,
     ) {}
+
+    public static function fromUser(User $user): self
+    {
+        $user->loadMissing('teacherData');
+
+        // Spatie auto-dispatches any public static method starting with "from" to
+        // custom creation. Calling plain self::from() here would recurse into this
+        // method forever (segfault). withoutMagicalCreation() bypasses that.
+        return self::factory()->withoutMagicalCreation()->from($user);
+    }
 }

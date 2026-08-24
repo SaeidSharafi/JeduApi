@@ -77,7 +77,7 @@ final class OtpAuthenticationController extends Controller
                 'token'      => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
                 'type'       => 'Bearer',
-                'user'       => CustomerData::from($user),
+                'user'       => CustomerData::fromUser($user),
             ]
         );
     }

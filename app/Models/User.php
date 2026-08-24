@@ -188,4 +188,12 @@ final class User extends Authenticatable implements MustVerifyEmail
             get: fn (): bool => $this->profileCompleted(),
         );
     }
+
+    /** @return Attribute<bool, never> */
+    protected function isTeacher(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): bool => $this->teacherData !== null,
+        );
+    }
 }

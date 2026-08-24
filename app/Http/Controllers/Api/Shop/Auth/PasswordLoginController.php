@@ -67,7 +67,7 @@ final class PasswordLoginController extends Controller
                 'token'      => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
                 'type'       => 'Bearer',
-                'user'       => CustomerData::from($user),
+                'user'       => CustomerData::fromUser($user),
             ], __('messages.auth.login.success'));
         } catch (UserNotFoundException $exception) {
             return apiResponse()->notFound(

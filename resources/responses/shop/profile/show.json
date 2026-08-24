@@ -4,6 +4,7 @@
     "uuid": "0197f45d-868d-70c0-b1bb-4fd86561d767",
     "phone": "09301234567",
     "is_profile_completed": true,
+    "is_teacher": false,
     "first_name": "Saeed",
     "last_name": "Sharafi",
     "email": "09301234567@example.com",
