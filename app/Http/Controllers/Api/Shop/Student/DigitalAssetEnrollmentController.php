@@ -40,22 +40,16 @@ final class DigitalAssetEnrollmentController extends Controller
                                 $query->whereIn('productable_type', [
                                     ProductableEnum::DIGITAL_ASSET->value,
                                     \App\Models\DigitalAsset::class,
-                                ]);
+                                ])->with(['productableWithAllRelations']);
                             }
                         );
                 }
             )
             ->with([
-                'productDeliveryOption.product.productable',
                 'orderItem.vendor',
             ])
             ->paginate($perPage)
             ->withQueryString();
-
-        $enrollments->getCollection()->each(function ($enrollment): void {
-            $enrollment->productDeliveryOption->product->productable
-                ->loadMediaWithVariantsMatchAll([MediaTagEnum::MAIN->value]);
-        });
 
         $data = $enrollments->getCollection()->map(function ($enrollment) {
             $asset = $enrollment->productDeliveryOption->product->productable;
