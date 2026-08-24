@@ -22,6 +22,17 @@ on:
         description: 'Run migrations? (true/false)'
         required: false
         default: 'false'
+      push_docker:
+        description: 'Push Docker image to Nexus?'
+        type: boolean
+        required: true
+        default: true
+
+env:
+  REGISTRY: nexus.jedu.ir
+  IMAGE: repository/docker-hub/jedu-api
+  PHP_BASE_IMAGE: nexus.jedu.ir/docker-hub-proxy/dunglas/frankenphp:1-php8.4
+  COMPOSER_IMAGE: nexus.jedu.ir/docker-hub-proxy/library/composer:2
 
 jobs:
   # =========================================================================
@@ -103,15 +114,14 @@ jobs:
         run: ./vendor/bin/pest --parallel --coverage --coverage-clover=coverage.xml --log-junit junit.xml
 
   # =========================================================================
-  # JOB 2: Deploy API (Only executes if tests pass)
+  # JOB 2: Deploy API (Only executes on push to main or workflow_dispatch)
   # =========================================================================
   deploy:
     name: Deploy API
     needs: tests
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest # Matches the label registered in your runner-config.yml
+    runs-on: ubuntu-latest
     container:
-      # Using the Nexus proxy path ensures it pulls successfully through your network setup
       image: nexus.jedu.ir/docker-hub/php-ci:8.4
 
     steps:
@@ -138,3 +148,72 @@ jobs:
       - name: Cleanup SSH
         if: always()
         run: rm -f ~/.ssh/deploy_key
+
+  # =========================================================================
+  # JOB 3: Docker Build & Push (Runs after deployment succeeds)
+  # =========================================================================
+  build-and-push:
+    name: Build & Push Image
+    needs: deploy
+    runs-on: ubuntu-latest
+    env:
+      SHOULD_PUSH: ${{ github.event_name != 'workflow_dispatch' || inputs.push_docker == true }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve image tags
+        id: tags
+        run: |
+          set -eu
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          TAGS="${REGISTRY}/${IMAGE}:${SHORT_SHA}"
+
+          if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
+            TAGS="${REGISTRY}/${IMAGE}:${GITHUB_REF_NAME},${TAGS}"
+          fi
+
+          echo "tags=${TAGS},${REGISTRY}/${IMAGE}:latest" >> "$GITHUB_OUTPUT"
+          echo "Tags: ${TAGS},${REGISTRY}/${IMAGE}:latest"
+
+      - name: Login to Nexus registry
+        if: env.SHOULD_PUSH == 'true'
+        run: |
+          set -eu
+          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login "${REGISTRY}" -u "${{ secrets.NEXUS_USERNAME }}" --password-stdin
+
+      - name: Build image (Dry Run)
+        if: env.SHOULD_PUSH != 'true'
+        run: |
+          set -eu
+          docker buildx build \
+            --provenance=false \
+            --sbom=false \
+            -f docker/Dockerfile \
+            --build-arg "PHP_BASE_IMAGE=${PHP_BASE_IMAGE}" \
+            --build-arg "COMPOSER_IMAGE=${COMPOSER_IMAGE}" \
+            .
+
+      - name: Build and push image
+        if: env.SHOULD_PUSH == 'true'
+        run: |
+          set -eu
+          DOCKER_ARGS=()
+          while IFS= read -r tag; do
+            [ -n "$tag" ] && DOCKER_ARGS+=(-t "$tag")
+          done < <(echo "${{ steps.tags.outputs.tags }}" | tr ',' '\n')
+
+          docker buildx build \
+            --push \
+            --provenance=false \
+            --sbom=false \
+            -f docker/Dockerfile \
+            --build-arg "PHP_BASE_IMAGE=${PHP_BASE_IMAGE}" \
+            --build-arg "COMPOSER_IMAGE=${COMPOSER_IMAGE}" \
+            "${DOCKER_ARGS[@]}" \
+            .
+
+      - name: Logout from Nexus registry
+        if: always() && env.SHOULD_PUSH == 'true'
+        run: docker logout "${REGISTRY}" || true

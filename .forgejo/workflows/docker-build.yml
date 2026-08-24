@@ -1,15 +1,6 @@
 name: Docker Build & Push
 
 on:
-  # 1. Trigger automatically ONLY after CI/CD Pipeline succeeds on main
-  workflow_run:
-    workflows: ["CI/CD Pipeline"]
-    types:
-      - completed
-    branches:
-      - main
-
-  # 2. Allow manual execution from the UI anytime
   workflow_dispatch:
     inputs:
       ref:
