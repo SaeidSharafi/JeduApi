@@ -61,6 +61,10 @@ _Avoid_: File, attachment, download
 A customer's purchased access to a specific product delivery option, bounded by an access window and enrollment status. Links customer, order item, and delivery option.
 _Avoid_: Order item, registration, subscription
 
+**Teacher**:
+An instructor profile record linked to at most one customer account. Existence of the link grants the teacher dashboard. A Teacher may exist unlinked (public course-page profile) without granting any account access.
+_Avoid_: instructor, professor
+
 ### Account Security
 
 **Ban**:

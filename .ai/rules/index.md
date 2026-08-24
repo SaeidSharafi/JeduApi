@@ -4,7 +4,8 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| app/Data/Shop/Customer/CustomerData.php | .ai/rules/customer.md |
 | database/migrations/** | .ai/rules/migrations.md |
-| app/Models/** | .ai/rules/models.md |
+| app/Models/**, app/Models/User.php | .ai/rules/models.md |
 | app/Subscribers/** | .ai/rules/subscribers.md |
 | tests/** | .ai/rules/tests.md |
