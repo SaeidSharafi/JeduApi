@@ -7,10 +7,6 @@ use App\Http\Responses\ApiResponseService;
 if (! function_exists('get_model_label')) {
     /**
      * Get the class name from a fully qualified class name or object.
-     *
-     * @param  string|object  $class
-     *
-     * @return string
      */
     function get_model_label(string|object $class): string
     {
@@ -80,5 +76,38 @@ if (! function_exists('apiResponse')) {
     function apiResponse(): ApiResponseService
     {
         return app(ApiResponseService::class);
+    }
+}
+
+if (! function_exists('formatFileSize')) {
+    /**
+     * Format bytes to human readable decimal size (1 MB = 1_000_000 bytes).
+     * Single file per digital asset constraint documented in ADR 0006.
+     */
+    function formatFileSize(?int $bytes): ?string
+    {
+        if ($bytes === null) {
+            return null;
+        }
+
+        if ($bytes >= 1_000_000_000) {
+            $value = $bytes / 1_000_000_000;
+
+            return mb_rtrim(mb_rtrim(number_format($value, 1, '.', ''), '0'), '.').' GB';
+        }
+
+        if ($bytes >= 1_000_000) {
+            $value = $bytes / 1_000_000;
+
+            return mb_rtrim(mb_rtrim(number_format($value, 1, '.', ''), '0'), '.').' MB';
+        }
+
+        if ($bytes >= 1_000) {
+            $value = $bytes / 1_000;
+
+            return mb_rtrim(mb_rtrim(number_format($value, 1, '.', ''), '0'), '.').' KB';
+        }
+
+        return $bytes.' B';
     }
 }
