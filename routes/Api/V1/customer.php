@@ -61,7 +61,8 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
                 Route::get('/', DigitalAssetEnrollmentController::class)
                     ->name('index');
 
-                Route::get('/{enrollment:uuid}/download/{digitalAsset}', DigitalAssetDownloadController::class)
+                Route::get('/{enrollment:uuid}/download/{digitalAsset:uuid}', DigitalAssetDownloadController::class)
+                    ->withoutScopedBindings()
                     ->name('download');
             });
 

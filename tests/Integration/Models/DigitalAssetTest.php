@@ -10,6 +10,7 @@ test('to array', function (): void {
     expect($digitalAsset->toArray())
         ->toEqual([
             'id'                      => $digitalAsset->id,
+            'uuid'                    => $digitalAsset->uuid,
             'short_name'              => $digitalAsset->short_name,
             'full_name'               => $digitalAsset->full_name,
             'slug'                    => $digitalAsset->slug,

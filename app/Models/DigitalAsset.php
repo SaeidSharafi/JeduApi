@@ -15,6 +15,7 @@ use Database\Factories\DigitalAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Str;
 use Plank\Mediable\Mediable;
 
 /**
@@ -67,6 +68,15 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
     public function courses(): MorphToMany
     {
         return $this->morphedByMany(Course::class, 'assetable');
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        self::creating(function ($model): void {
+            $model->uuid = (string) Str::uuid7();
+        });
     }
 
     protected function casts(): array

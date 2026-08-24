@@ -17,6 +17,7 @@ return new class extends Migration
     {
         Schema::create('digital_assets', function (Blueprint $table) {
             $table->id();
+            $table->uuid()->unique()->index();
             $table->string('full_name', 255);
             $table->string('short_name', 100);
             $table->string('slug')->unique();

@@ -25,7 +25,7 @@ it('returns 403 when enrollment belongs to another user', function (): void {
 
     $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
-        'digitalAsset' => $digitalAsset->id,
+        'digitalAsset' => $digitalAsset->uuid,
     ]))->assertForbidden();
 });
 
@@ -37,7 +37,7 @@ it('returns 403 when enrollment is not active', function (): void {
 
     $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
-        'digitalAsset' => $digitalAsset->id,
+        'digitalAsset' => $digitalAsset->uuid,
     ]))->assertForbidden();
 });
 
@@ -49,7 +49,7 @@ it('returns 404 when digital asset does not belong to enrollment productable', f
 
     $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
-        'digitalAsset' => $unrelatedAsset->id,
+        'digitalAsset' => $unrelatedAsset->uuid,
     ]))->assertNotFound();
 });
 
@@ -61,7 +61,7 @@ it('streams file for owner with active enrollment and attached main media', func
 
     $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
-        'digitalAsset' => $digitalAsset->id,
+        'digitalAsset' => $digitalAsset->uuid,
     ]))->assertOk();
 });
 
@@ -72,7 +72,7 @@ it('returns 404 when no downloadable media file exists for digital asset', funct
 
     $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
-        'digitalAsset' => $digitalAsset->id,
+        'digitalAsset' => $digitalAsset->uuid,
     ]))->assertNotFound();
 });
 
@@ -93,7 +93,7 @@ it('returns 404 when productable is Course but digital asset not attached', func
 
     $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
-        'digitalAsset' => $digitalAsset->id,
+        'digitalAsset' => $digitalAsset->uuid,
     ]))->assertNotFound();
 });
 
@@ -118,7 +118,7 @@ it('streams file when productable is Course with attached digital asset', functi
 
     $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
-        'digitalAsset' => $digitalAsset->id,
+        'digitalAsset' => $digitalAsset->uuid,
     ]))->assertOk();
 });
 
@@ -134,7 +134,7 @@ it('returns 404 when media record exists but file is missing from storage', func
 
     $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
-        'digitalAsset' => $digitalAsset->id,
+        'digitalAsset' => $digitalAsset->uuid,
     ]))->assertNotFound();
 });
 

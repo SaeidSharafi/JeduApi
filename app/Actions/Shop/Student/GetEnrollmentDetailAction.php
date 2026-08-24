@@ -165,7 +165,7 @@ final readonly class GetEnrollmentDetailAction
             thumbnail_url: $asset->thumbnail_url,
             download_url: route(
                 'api.v1.shop.student.digital-assets.download',
-                ['enrollment' => $enrollment->uuid, 'digitalAsset' => $asset->id],
+                ['enrollment' => $enrollment->uuid, 'digitalAsset' => $asset->uuid],
                 absolute: true
             ),
         ))->values()->all();
