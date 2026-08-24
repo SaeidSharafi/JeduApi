@@ -30,7 +30,7 @@ on:
 
 env:
   REGISTRY: nexus.jedu.ir
-  IMAGE: repository/docker-hub/jedu-api
+  IMAGE: docker-hub/jedu-api
   PHP_BASE_IMAGE: nexus.jedu.ir/docker-hub-proxy/dunglas/frankenphp:1-php8.4
   COMPOSER_IMAGE: nexus.jedu.ir/docker-hub-proxy/library/composer:2
 
