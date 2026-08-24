@@ -27,6 +27,7 @@ final class CustomerData extends Data
         public ?string $last_name,
         public ?string $email,
         public ?string $phone2,
+        public ?string $avatar_url,
         public ?string $civil_id,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?CivilIdTypeEnum $civil_id_type,
