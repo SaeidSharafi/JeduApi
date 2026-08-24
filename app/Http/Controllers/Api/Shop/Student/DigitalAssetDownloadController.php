@@ -10,6 +10,7 @@ use App\Enums\MediaTagEnum;
 use App\Http\Controllers\Controller;
 use App\Models\DigitalAsset;
 use App\Models\Enrollment;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -30,7 +31,7 @@ final class DigitalAssetDownloadController extends Controller
      * @responseFile 403 resources/responses/403.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function __invoke(Enrollment $enrollment, DigitalAsset $digitalAsset): ApiResponseInterface|StreamedResponse
+    public function __invoke(Enrollment $enrollment, DigitalAsset $digitalAsset): ApiResponseInterface|StreamedResponse|RedirectResponse
     {
         $user = auth()->user();
 
@@ -68,12 +69,25 @@ final class DigitalAssetDownloadController extends Controller
             return apiResponse()->notFound(__('messages.digital_asset.no_downloadable_file'));
         }
 
-        // 5. Stream the file
+        // 5. Deliver the file — s3 via 302 redirect (resumable, 7-day window), local via stream
         $disk = Storage::disk($media->disk);
         $path = $media->getDiskPath();
 
         if (! $disk->exists($path)) {
             return apiResponse()->notFound(__('messages.file.storage_not_found'));
+        }
+
+        if ($media->disk === 's3') {
+            $expiryDays = (int) config('filesystems.disks.s3.temporary_url_expiry_days', 7);
+            $expiryDays = max(1, min($expiryDays, 7));
+            $expiresAt  = now()->addDays($expiryDays);
+
+            $url = $disk->temporaryUrl($path, $expiresAt, [
+                'ResponseContentType'        => $media->mime_type,
+                'ResponseContentDisposition' => 'attachment; filename="'.$media->filename.'.'.$media->extension.'"',
+            ]);
+
+            return redirect()->away($url, 302);
         }
 
         return $disk->download($path, "{$media->filename}.{$media->extension}", [

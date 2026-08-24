@@ -138,6 +138,63 @@ it('returns 404 when media record exists but file is missing from storage', func
     ]))->assertNotFound();
 });
 
+it('redirects to S3 temporaryUrl with 302 for s3 disk', function (): void {
+    $this->fakeMedia();
+    $digitalAsset = DigitalAsset::factory()->withFile()->create();
+    $enrollment   = createDirectDownloadEnrollmentForAsset($this->user, $digitalAsset);
+    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
+
+    $media       = $digitalAsset->getMedia(MediaTagEnum::MAIN->value)->first();
+    $media->disk = 's3';
+    $media->save();
+
+    Storage::fake('s3');
+    Storage::disk('s3')->put($media->getDiskPath(), 'fake-content');
+    Storage::disk('s3')->buildTemporaryUrlsUsing(fn ($path, $expiration, $options) => 'https://s3.example.com/'.$path.'?expires='.$expiration->getTimestamp());
+
+    $response = $this->getJson(route('api.v1.shop.student.digital-assets.download', [
+        'enrollment'   => $enrollment->uuid,
+        'digitalAsset' => $digitalAsset->uuid,
+    ]));
+
+    $response->assertRedirect();
+    expect($response->status())->toBe(302)
+        ->and($response->headers->get('Location'))->toContain('https://s3.example.com/'.$media->getDiskPath());
+});
+
+it('caps S3 expiry at 7 days when config exceeds max', function (): void {
+    config(['filesystems.disks.s3.temporary_url_expiry_days' => 30]);
+
+    $this->fakeMedia();
+    $digitalAsset = DigitalAsset::factory()->withFile()->create();
+    $enrollment   = createDirectDownloadEnrollmentForAsset($this->user, $digitalAsset);
+    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
+
+    $media       = $digitalAsset->getMedia(MediaTagEnum::MAIN->value)->first();
+    $media->disk = 's3';
+    $media->save();
+
+    Storage::fake('s3');
+    Storage::disk('s3')->put($media->getDiskPath(), 'content');
+    $capturedExpiration = null;
+    Storage::disk('s3')->buildTemporaryUrlsUsing(function ($path, $expiration, $options) use (&$capturedExpiration) {
+        $capturedExpiration = $expiration;
+
+        return 'https://s3.example.com/'.$path;
+    });
+
+    $this->getJson(route('api.v1.shop.student.digital-assets.download', [
+        'enrollment'   => $enrollment->uuid,
+        'digitalAsset' => $digitalAsset->uuid,
+    ]))->assertRedirect();
+
+    expect($capturedExpiration)->not->toBeNull();
+    // Allow 1s tolerance — diffInDays truncates, so use hours
+    $diffHours = now()->diffInHours($capturedExpiration, false);
+    expect($diffHours)->toBeGreaterThanOrEqual(167)
+        ->and($diffHours)->toBeLessThanOrEqual(169);
+});
+
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
 function createDirectDownloadEnrollmentForAsset(
