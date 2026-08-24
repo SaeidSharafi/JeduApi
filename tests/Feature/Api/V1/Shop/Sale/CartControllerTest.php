@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductDeliveryOption;
@@ -176,10 +177,12 @@ describe('update', function (): void {
             'cart_id'                    => $cart->id,
             'product_delivery_option_id' => $deliveryOption->id,
             'quantity'                   => 0, // we set this to 0 since we do not have any product that accept multiple quantities
+            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT
         ]);
 
         $response = putJson(route('api.v1.shop.cart.items.update', $cartItem), [
             'quantity' => 1,
+            'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value
         ]);
 
         $response->assertOk();
@@ -188,6 +191,7 @@ describe('update', function (): void {
         $this->assertDatabaseHas('cart_items', [
             'id'       => $cartItem->id,
             'quantity' => 1,
+            'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value
         ]);
     });
 
@@ -205,6 +209,7 @@ describe('update', function (): void {
 
         $response = putJson(route('api.v1.shop.cart.items.update', $otherCartItem), [
             'quantity' => 1,
+            'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value
         ]);
 
         $response->assertNotFound();
@@ -224,6 +229,7 @@ describe('update', function (): void {
 
         $response = putJson(route('api.v1.shop.cart.items.update', $cartItem), [
             'quantity' => 2,
+            'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value
         ]);
 
         $response->assertUnprocessable();
@@ -369,10 +375,12 @@ describe('CartController - Guest Users', function (): void {
                 'cart_id'                    => $cart->id,
                 'product_delivery_option_id' => $deliveryOption->id,
                 'quantity'                   => 0,
+                'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value
             ]);
 
             $response = putJson(route('api.v1.shop.cart.items.update', $cartItem), [
                 'quantity' => 1,
+                'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value
             ], [
                 'X-Guest-Token' => $guestToken,
             ]);
@@ -395,6 +403,7 @@ describe('CartController - Guest Users', function (): void {
 
             $response = putJson(route('api.v1.shop.cart.items.update', $otherCartItem), [
                 'quantity' => 5,
+                'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value
             ], [
                 'X-Guest-Token' => $guestToken,
             ]);

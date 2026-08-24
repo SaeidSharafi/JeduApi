@@ -119,6 +119,7 @@ final readonly class CartService
         $this->validateQuantity($deliveryOption, $data->quantity, $cartItem);
         $cartItem->update([
             'quantity' => $data->quantity,
+            'payment_type' => $data->payment_type,
         ]);
 
         // Reload cart with relationships
