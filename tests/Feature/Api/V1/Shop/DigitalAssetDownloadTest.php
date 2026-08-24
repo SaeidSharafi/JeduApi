@@ -202,7 +202,7 @@ function createDirectDownloadEnrollmentForAsset(
     DigitalAsset $digitalAsset,
 ): Enrollment {
     $product = Product::factory()->create([
-        'productable_type' => DigitalAsset::class,
+        'productable_type' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
         'productable_id'   => $digitalAsset->id,
     ]);
 

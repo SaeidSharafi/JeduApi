@@ -101,7 +101,7 @@ function createEnrollmentForAsset(
     App\Models\DigitalAsset $asset,
 ): App\Models\Enrollment {
     $product = App\Models\Product::factory()->create([
-        'productable_type' => $asset::class,
+        'productable_type' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
         'productable_id'   => $asset->id,
     ]);
 
