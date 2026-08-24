@@ -53,6 +53,14 @@ _Avoid_: voucher, promo code, discount code
 A discount rule set (`discount_promotions`) — conditions ("if") and actions ("then") evaluated against an order context. One Promotion can be activated by many Coupons. Carries total and per-customer usage caps.
 _Avoid_: discount, offer, deal
 
+**Digital Asset**:
+A standalone digital product (e.g. PDF, video) sold as a Product. Each asset has one downloadable file (the main media). Sold via a `DIRECT_DOWNLOAD` delivery option.
+_Avoid_: File, attachment, download
+
+**Enrollment**:
+A customer's purchased access to a specific product delivery option, bounded by an access window and enrollment status. Links customer, order item, and delivery option.
+_Avoid_: Order item, registration, subscription
+
 ### Account Security
 
 **Ban**:

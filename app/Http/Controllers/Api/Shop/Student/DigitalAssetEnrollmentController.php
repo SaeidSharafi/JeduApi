@@ -30,7 +30,7 @@ final class DigitalAssetEnrollmentController extends Controller
      */
     public function __invoke(): ApiResponseInterface
     {
-        $perPage = request()->integer('per_page', config('app.page_size'));
+        $perPage = max(1, request()->integer('per_page', config('app.page_size')));
 
         $enrollments = auth()->user()->enrollments()
             ->withWhereHas(

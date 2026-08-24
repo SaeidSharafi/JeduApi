@@ -24,9 +24,10 @@ final class DigitalAssetDownloadController extends Controller
     /**
      * Download a digital asset file.
      *
-     * Streams the file associated with the given digital asset for the authenticated user's enrollment.
+     * Streams for local disk, 302 redirect to S3 presigned URL (resumable, up to 7 days) otherwise.
      *
      * @response 200 <<binary>> file
+     * @response 302 redirect to S3 temporaryUrl
      *
      * @responseFile 403 resources/responses/403.json
      * @responseFile 404 resources/responses/404.json
