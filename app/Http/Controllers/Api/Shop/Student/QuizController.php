@@ -23,7 +23,7 @@ final class QuizController extends Controller
     public function __invoke(MoodleService $moodleService): \App\Contracts\ApiResponseInterface
     {
         $user    = auth()->user();
-        $quizzes = SWRCacheService::remember('student_quizzes', function () use ($moodleService, $user): array {
+        $quizzes = SWRCacheService::remember('student_quizzes:'.$user->id, function () use ($moodleService, $user): array {
             [$moodleUserId] = $moodleService->findOrCreateUser($user);
             $quizzes        = $moodleService->getAllQuizzes($moodleUserId);
 
