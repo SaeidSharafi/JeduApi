@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Shop\Student\ShowPaymentController;
 use App\Http\Controllers\Api\Shop\Teacher\AttendanceController;
 use App\Http\Controllers\Api\Shop\Teacher\CourseController;
 use App\Http\Controllers\Api\Shop\Teacher\GradeController;
+use App\Http\Controllers\Api\Shop\Teacher\QuizController as TeacherQuizController;
 use App\Http\Controllers\Api\Shop\Teacher\SeminarController;
 use App\Http\Controllers\Api\Shop\Teacher\TeacherMoodleSsoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletInfoController;
@@ -97,7 +98,6 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
             Route::prefix('courses')->name('courses.')->group(function (): void {
                 Route::get('/', [CourseController::class, 'index'])
                     ->name('index');
-
                 // Route::get('/{deliveryOption:uuid}', [EnrollmentController::class, 'show'])
                 //    ->name('show');
                 //
@@ -113,6 +113,7 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
                 Route::post('/{courseCode}/grades/bulk', [GradeController::class, 'storeBulk']);
 
             });
+            Route::get('/quizzes', TeacherQuizController::class)->name('quizzes');
             Route::get('/seminars', SeminarController::class)->name('seminars');
         });
 
