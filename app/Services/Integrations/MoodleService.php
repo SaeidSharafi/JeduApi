@@ -180,129 +180,24 @@ final class MoodleService extends AbstractIntegrationService
     }
 
     /**
-     * Get all visible quizzes that the user is enrolled in Moodle,
+     * Get all visible quizzes that the user is enrolled in as a student,
      * populated with completion states, quiz grades, and completion times.
-     *
      *
      * @return array<int, LmsMoodleBlockData>
      */
     public function getAllQuizzes(int $moodleUserId): array
     {
-        $courses = $this->call('core_enrol_get_users_courses', [
-            'userid' => $moodleUserId,
-        ]);
+        return $this->fetchUserQuizzes($moodleUserId, asTeacher: false);
+    }
 
-        if (! is_array($courses) || empty($courses)) {
-            return [];
-        }
-
-        $params                   = [];
-        $coursesData              = [];
-        $courseCompletionStatuses = [];
-        $courseGrades             = [];
-
-        foreach ($courses as $course) {
-            // Guard clause: skip invalid or invisible courses
-            if (! is_array($course) || ! isset($course['id']) || ! $course['visible']) {
-                continue;
-            }
-
-            $courseId              = (int) $course['id'];
-            $params['courseids'][] = $courseId;
-
-            // Determine if the entire course is completed
-            $isCourseCompleted = false;
-            try {
-                $isCourseCompleted = $this->isCourseCompleted($courseId, $moodleUserId);
-            } catch (UnrecoverableProvisioningException|RecoverableProvisioningException $e) {
-                // Fall back to false
-            }
-
-            $coursesData[$courseId] = new LmsMoodleBlockData(
-                visible: (bool) $course['visible'],
-                name: $course['fullname'],
-                course_url: $this->baseUrl.'/course/view.php?id='.$courseId,
-                completed: $isCourseCompleted,
-                activities: [],
-            );
-
-            // Fetch activity completion statuses for this course
-            try {
-                $courseCompletionStatuses[$courseId] = $this->getActivityCompletionStatus($courseId, $moodleUserId);
-            } catch (UnrecoverableProvisioningException|RecoverableProvisioningException $e) {
-                $courseCompletionStatuses[$courseId] = [];
-            }
-
-            // Fetch grades for this course
-            try {
-                $courseGrades[$courseId] = $this->getGrades($courseId, $moodleUserId);
-            } catch (UnrecoverableProvisioningException|RecoverableProvisioningException $e) {
-                $courseGrades[$courseId] = ['course_grade' => null, 'activities' => []];
-            }
-        }
-
-        if (empty($params)) {
-            return [];
-        }
-
-        $params['courseids'] = array_values(array_unique($params['courseids']));
-
-        // Retrieve all quizzes matching those course IDs
-        $response = $this->call('mod_quiz_get_quizzes_by_courses', $params);
-        $quizzes  = data_get($response, 'quizzes', []);
-
-        if (! is_array($quizzes) || empty($quizzes)) {
-            return [];
-        }
-
-        // Filter only the visible quizzes
-        $visibleQuizes = array_values(array_filter($quizzes, function ($quiz): bool {
-            return is_array($quiz) && (bool) data_get($quiz, 'visible', true);
-        }));
-
-        foreach ($visibleQuizes as $quiz) {
-            $courseId = (int) $quiz['course'];
-            $cmid     = (int) $quiz['coursemodule']; // Course Module ID wrapper
-            $course   = data_get($coursesData, $courseId);
-
-            // Guard clause: skip if the parent course was not resolved or is invisible
-            if (! $course) {
-                continue;
-            }
-
-            // Determine completion state and timestamp of the specific quiz activity
-            $state         = 0;
-            $timeCompleted = null;
-
-            if (isset($courseCompletionStatuses[$courseId][$cmid])) {
-                $state         = (int) data_get($courseCompletionStatuses[$courseId][$cmid], 'state', 0);
-                $timeCompleted = data_get($courseCompletionStatuses[$courseId][$cmid], 'timecompleted');
-            }
-
-            // Determine formatted grade of the specific quiz activity (if present)
-            $grade = null;
-            if (isset($courseGrades[$courseId]['activities'][$cmid])) {
-                $grade = $courseGrades[$courseId]['activities'][$cmid];
-            }
-
-            // Append the quiz to the course's activity list
-            $course->activities[] = MoodleActivityData::from(
-                [
-                    'url'           => $this->baseUrl.'/mod/quiz/view.php?id='.$cmid,
-                    'cid'           => $cmid,
-                    'name'          => $quiz['name'],
-                    'type'          => 'quiz',
-                    'state'         => $state,
-                    'grade'         => $grade,
-                    'timecompleted' => $timeCompleted,
-                ]
-            )->toArray();
-        }
-        $coursesData = array_filter($coursesData, function (LmsMoodleBlockData $course): bool {
-            return ! empty($course->activities);
-        });
-
-        return array_values($coursesData);
+    /**
+     * Get all quizzes for courses where the user has teacher/editing permissions.
+     *
+     * @return array<int, LmsMoodleBlockData>
+     */
+    public function getTeacherQuizzes(int $moodleUserId): array
+    {
+        return $this->fetchUserQuizzes($moodleUserId, asTeacher: true);
     }
 
     public function enrollUser(
@@ -377,6 +272,176 @@ final class MoodleService extends AbstractIntegrationService
     }
 
     /**
+     * Unified pipeline to fetch and map quizzes for both students and teachers.
+     *
+     * @return array<int, LmsMoodleBlockData>
+     */
+    private function fetchUserQuizzes(int $moodleUserId, bool $asTeacher = false): array
+    {
+        $courses = $this->call('core_enrol_get_users_courses', [
+            'userid' => $moodleUserId,
+        ]);
+
+        if (! is_array($courses) || empty($courses)) {
+            return [];
+        }
+        // 1. Filter valid courses
+        $courses = array_filter($courses, function ($course) use ($asTeacher): bool {
+            return is_array($course) && isset($course['id']) && ($asTeacher || ! empty($course['visible']));
+        });
+
+        $courseIds = array_column($courses, 'id');
+
+        // 2. If teacher mode, narrow down to courses where the user has editing rights
+        if ($asTeacher) {
+            $teacherCourseIds = $this->filterTeacherCourseIds($courseIds, $moodleUserId);
+            $courses          = array_filter($courses, fn ($c) => in_array((int) $c['id'], $teacherCourseIds, true));
+            $courseIds        = $teacherCourseIds;
+        }
+
+        if (empty($courseIds)) {
+            return [];
+        }
+
+        // 3. For students only: load completion statuses & grades
+        $studentContext = $asTeacher ? [] : $this->loadStudentCourseContext($courseIds, $moodleUserId);
+
+        // 4. Initialize course block objects
+        $coursesData = [];
+        foreach ($courses as $course) {
+            $courseId               = (int) $course['id'];
+            $coursesData[$courseId] = new LmsMoodleBlockData(
+                visible: (bool) $course['visible'],
+                name: $course['fullname'],
+                course_url: $this->baseUrl.'/course/view.php?id='.$courseId,
+                completed: $studentContext['course_completed'][$courseId] ?? false,
+                activities: [],
+            );
+        }
+
+        // 5. Batch-fetch all quizzes for the targeted courses
+        $response = $this->call('mod_quiz_get_quizzes_by_courses', [
+            'courseids' => array_values(array_unique($courseIds)),
+        ]);
+        $quizzes = data_get($response, 'quizzes', []);
+
+        if (! is_array($quizzes) || empty($quizzes)) {
+            return [];
+        }
+
+        // 6. Map quizzes into their respective course blocks
+        foreach ($quizzes as $quiz) {
+            if (! is_array($quiz) || (! $asTeacher && ! (bool) data_get($quiz, 'visible', true))) {
+                continue;
+            }
+
+            $courseId = (int) $quiz['course'];
+            $cmid     = (int) $quiz['coursemodule'];
+
+            if (! isset($coursesData[$courseId])) {
+                continue;
+            }
+
+            $coursesData[$courseId]->activities[] = MoodleActivityData::from([
+                'url'           => $this->baseUrl.'/mod/quiz/view.php?id='.$cmid,
+                'cid'           => $cmid,
+                'name'          => $quiz['name'],
+                'type'          => 'quiz',
+                'state'         => $studentContext['completion_statuses'][$courseId][$cmid]['state']         ?? 0,
+                'grade'         => $studentContext['grades'][$courseId]['activities'][$cmid]                 ?? null,
+                'timecompleted' => $studentContext['completion_statuses'][$courseId][$cmid]['timecompleted'] ?? null,
+            ])->toArray();
+        }
+
+        // 7. Strip courses that have no matching quizzes
+        return array_values(array_filter($coursesData, fn (LmsMoodleBlockData $c) => ! empty($c->activities)));
+    }
+
+    /**
+     * Batch-fetch grades and completion states for student courses.
+     *
+     * @param  array<int>  $courseIds
+     * @return array{course_completed: array<int, bool>, completion_statuses: array<int, array>, grades: array<int, array>}
+     */
+    private function loadStudentCourseContext(array $courseIds, int $moodleUserId): array
+    {
+        $context = [
+            'course_completed'    => [],
+            'completion_statuses' => [],
+            'grades'              => [],
+        ];
+
+        foreach ($courseIds as $courseId) {
+            try {
+                $context['course_completed'][$courseId] = $this->isCourseCompleted($courseId, $moodleUserId);
+            } catch (UnrecoverableProvisioningException|RecoverableProvisioningException) {
+                $context['course_completed'][$courseId] = false;
+            }
+
+            try {
+                $context['completion_statuses'][$courseId] = $this->getActivityCompletionStatus($courseId, $moodleUserId);
+            } catch (UnrecoverableProvisioningException|RecoverableProvisioningException) {
+                $context['completion_statuses'][$courseId] = [];
+            }
+
+            try {
+                $context['grades'][$courseId] = $this->getGrades($courseId, $moodleUserId);
+            } catch (UnrecoverableProvisioningException|RecoverableProvisioningException) {
+                $context['grades'][$courseId] = ['course_grade' => null, 'activities' => []];
+            }
+        }
+
+        return $context;
+    }
+
+    /**
+     * Filter course IDs to only those where the user has editing/teacher permissions.
+     *
+     * @param  array<int>  $courseIds
+     * @return array<int>
+     */
+    private function filterTeacherCourseIds(array $courseIds, int $moodleUserId): array
+    {
+        if (empty($courseIds)) {
+            return [];
+        }
+
+        $coursecapabilities = [];
+        foreach (array_unique($courseIds) as $courseId) {
+            $coursecapabilities[] = [
+                'courseid'     => $courseId,
+                'capabilities' => [
+                    'moodle/course:update', // Editing Teacher / Manager
+                    'moodle/grade:viewall', // Non-editing Teacher
+                ],
+            ];
+        }
+
+        $response = $this->call('core_enrol_get_enrolled_users_with_capability', [
+            'coursecapabilities' => $coursecapabilities,
+        ]);
+
+        if (! is_array($response)) {
+            return [];
+        }
+
+        $teacherCourseIds = [];
+        foreach ($response as $item) {
+            $courseId = (int) data_get($item, 'courseid');
+            $users    = data_get($item, 'users', []);
+
+            foreach ($users as $user) {
+                if ((int) data_get($user, 'id') === $moodleUserId) {
+                    $teacherCourseIds[] = $courseId;
+                    break;
+                }
+            }
+        }
+
+        return array_values(array_unique($teacherCourseIds));
+    }
+
+    /**
      * @return array<mixed>|bool|string|int|float|null
      */
     /**
@@ -384,7 +449,7 @@ final class MoodleService extends AbstractIntegrationService
      */
     private function call(string $function, array $params, ?string $token = null): mixed
     {
-        $this->assertConfigured(); // throws UnrecoverableProvisioningException if not ready
+        $this->assertConfigured();
 
         $response = $this->request($this->config['base_url'])->post('/webservice/rest/server.php', array_merge(
             [

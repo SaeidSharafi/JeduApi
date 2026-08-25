@@ -59,12 +59,13 @@ it('creates moodle user when lookup is empty', function (): void {
             ], 200),
     ]);
 
-    [$id,$username] = $this->moodleService->findOrCreateUser($user);
+    [$id, $username] = $this->moodleService->findOrCreateUser($user);
 
     expect($id)->toBe(22);
 
     Http::assertSentCount(2);
 });
+
 it('throws when username does not exist on user model', function (): void {
     $user = User::factory()->create([
         'civil_id' => null,
@@ -72,8 +73,8 @@ it('throws when username does not exist on user model', function (): void {
 
     expect(fn () => $this->moodleService->findOrCreateUser($user))
         ->toThrow(UnrecoverableProvisioningException::class, 'Moodle username source missing.');
-
 });
+
 it('throws when moodle user creation response missing id', function (): void {
     $user = User::factory()->create();
 
@@ -141,6 +142,7 @@ it('throws when moodle request returns failed status', function (): void {
     expect(fn () => $this->moodleService->enrollUser(1, 2))
         ->toThrow(RecoverableProvisioningException::class, 'Moodle server error for enrol_manual_enrol_users.');
 });
+
 it('throws when response contains exception', function (): void {
     Http::fake([
         'https://moodle.test/*' => Http::response([
@@ -152,6 +154,7 @@ it('throws when response contains exception', function (): void {
     expect(fn () => $this->moodleService->createUserKey('1122334', 'AUTH_USER_KEY'))
         ->toThrow(UnrecoverableProvisioningException::class);
 });
+
 it('throws when service used before configuration', function (): void {
     $settings = $this->mock(SettingsService::class);
     $settings->shouldReceive('get')
@@ -400,11 +403,11 @@ it('returns quizzes with completion and grade data', function (): void {
     // 4. gradereport_user_get_grade_items — quiz cmid=10 has grade
     $sequence->push([
         'usergrades' => [[
-            'gradeitems' => [
-                ['itemtype' => 'course', 'gradeformatted' => '92.00'],
-                ['itemtype' => 'mod', 'cmid' => 10, 'gradeformatted' => '88.00'],
-            ],
-        ]],
+                             'gradeitems' => [
+                                 ['itemtype' => 'course', 'gradeformatted' => '92.00'],
+                                 ['itemtype' => 'mod', 'cmid' => 10, 'gradeformatted' => '88.00'],
+                             ],
+                         ]],
     ], 200);
 
     // 5. mod_quiz_get_quizzes_by_courses — 1 quiz matching cmid=10
@@ -421,7 +424,7 @@ it('returns quizzes with completion and grade data', function (): void {
     expect($result)->toHaveCount(1);
     expect($result[0]->name)->toBe('Course A');
     expect($result[0]->completed)->toBeTrue();
-    expect($result[0]->course_grade)->toBeNull(); // course_grade not populated by getAllQuizzes
+    expect($result[0]->course_grade)->toBeNull();
     expect($result[0]->activities)->toHaveCount(1);
     expect($result[0]->activities[0]['cid'])->toBe(10);
     expect($result[0]->activities[0]['name'])->toBe('Quiz 1');
@@ -437,7 +440,6 @@ it('skips invisible courses in getAllQuizzes', function (): void {
         ['id' => 101, 'visible' => 0, 'fullname' => 'Hidden Course'],
     ], 200);
 
-    // No further calls expected (empty params after filtering)
     Http::fake(['https://moodle.test/*' => $sequence]);
 
     $result = $this->moodleService->getAllQuizzes(55);
@@ -473,7 +475,7 @@ it('skips courses not in coursesData in getAllQuizzes', function (): void {
 
     $result = $this->moodleService->getAllQuizzes(55);
 
-    expect($result)->toBe([]); // No matching course, quizzes filtered out
+    expect($result)->toBe([]);
 });
 
 it('handles exceptions gracefully in getAllQuizzes inner loops', function (): void {
@@ -487,11 +489,10 @@ it('handles exceptions gracefully in getAllQuizzes inner loops', function (): vo
     // 2. isCourseCompleted throws
     $sequence->push(['exception' => 'moodle_exception', 'errorcode' => 'other', 'message' => 'Fail'], 200);
 
-    // But getAllQuizzes catches Unrecoverable internally → fallback to false
-    // Continue with fallback: getActivityCompletionStatus also throws
+    // 3. getActivityCompletionStatus throws
     $sequence->push(['exception' => 'moodle_exception', 'errorcode' => 'other', 'message' => 'Fail'], 200);
 
-    // getGrades also throws
+    // 4. getGrades throws
     $sequence->push(['exception' => 'moodle_exception', 'errorcode' => 'other', 'message' => 'Fail'], 200);
 
     // 5. mod_quiz_get_quizzes_by_courses — no quizzes
@@ -501,7 +502,7 @@ it('handles exceptions gracefully in getAllQuizzes inner loops', function (): vo
 
     $result = $this->moodleService->getAllQuizzes(55);
 
-    expect($result)->toBe([]); // Still returns valid result via fallback to empty
+    expect($result)->toBe([]);
 });
 
 // ─── call() error handling ─────────────────────────────────────────
@@ -526,4 +527,198 @@ it('throws with errorcode metadata when moodle returns exception response', func
 
     expect(fn () => $this->moodleService->enrollUser(1, 2))
         ->toThrow(UnrecoverableProvisioningException::class);
+});
+
+// ─── getTeacherQuizzes ─────────────────────────────────────────────
+
+it('returns empty array in getTeacherQuizzes when user has no enrolled courses', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([], 200),
+    ]);
+
+    $result = $this->moodleService->getTeacherQuizzes(55);
+
+    expect($result)->toBe([]);
+
+    Http::assertSentCount(1);
+    Http::assertSent(fn (Request $r): bool => $r->data()['wsfunction'] === 'core_enrol_get_users_courses');
+});
+
+it('returns empty array in getTeacherQuizzes when user has no teacher permissions', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. core_enrol_get_users_courses
+    $sequence->push([
+        ['id' => 101, 'visible' => 1, 'fullname' => 'Course A'],
+    ], 200);
+
+    // 2. core_enrol_get_enrolled_users_with_capability — user 55 is NOT in the teacher list
+    $sequence->push([
+        [
+            'courseid'   => 101,
+            'capability' => 'moodle/course:update',
+            'users'      => [
+                ['id' => 999, 'username' => 'another_user'],
+            ],
+        ],
+    ], 200);
+
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getTeacherQuizzes(55);
+
+    expect($result)->toBe([]);
+    Http::assertSentCount(2);
+});
+
+it('returns quizzes for teacher courses without fetching student grades or completions', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. core_enrol_get_users_courses — user enrolled in 2 courses
+    $sequence->push([
+        ['id' => 101, 'visible' => 1, 'fullname' => 'Teacher Course'],
+        ['id' => 102, 'visible' => 1, 'fullname' => 'Student Course'],
+    ], 200);
+
+    // 2. core_enrol_get_enrolled_users_with_capability — user 55 is only a teacher in course 101
+    $sequence->push([
+        [
+            'courseid'   => 101,
+            'capability' => 'moodle/course:update',
+            'users'      => [
+                ['id' => 55, 'username' => 'teacher55'],
+            ],
+        ],
+        [
+            'courseid'   => 102,
+            'capability' => 'moodle/course:update',
+            'users'      => [
+                ['id' => 888, 'username' => 'someone_else'],
+            ],
+        ],
+    ], 200);
+
+    // 3. mod_quiz_get_quizzes_by_courses — quizzes for course 101
+    $sequence->push([
+        'quizzes' => [
+            ['id' => 1, 'course' => 101, 'coursemodule' => 10, 'name' => 'Midterm Exam', 'visible' => 1],
+        ],
+    ], 200);
+
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getTeacherQuizzes(55);
+
+    expect($result)->toHaveCount(1);
+    expect($result[0]->name)->toBe('Teacher Course');
+    expect($result[0]->completed)->toBeFalse();
+    expect($result[0]->activities)->toHaveCount(1);
+    expect($result[0]->activities[0]['cid'])->toBe(10);
+    expect($result[0]->activities[0]['name'])->toBe('Midterm Exam');
+    expect($result[0]->activities[0]['grade'])->toBeNull();
+
+    // Assert exactly 3 requests were sent (no completion or grade requests)
+    Http::assertSentCount(3);
+    Http::assertSent(fn (Request $r): bool => $r->data()['wsfunction'] === 'core_enrol_get_users_courses');
+    Http::assertSent(fn (Request $r): bool => $r->data()['wsfunction'] === 'core_enrol_get_enrolled_users_with_capability');
+    Http::assertSent(fn (Request $r): bool => $r->data()['wsfunction'] === 'mod_quiz_get_quizzes_by_courses');
+});
+
+it('returns empty array in getTeacherQuizzes when teacher course has no quizzes', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. core_enrol_get_users_courses
+    $sequence->push([
+        ['id' => 101, 'visible' => 1, 'fullname' => 'Teacher Course'],
+    ], 200);
+
+    // 2. core_enrol_get_enrolled_users_with_capability
+    $sequence->push([
+        [
+            'courseid'   => 101,
+            'capability' => 'moodle/course:update',
+            'users'      => [
+                ['id' => 55, 'username' => 'teacher55'],
+            ],
+        ],
+    ], 200);
+
+    // 3. mod_quiz_get_quizzes_by_courses — no quizzes
+    $sequence->push([
+        'quizzes' => [],
+    ], 200);
+
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getTeacherQuizzes(55);
+
+    expect($result)->toBe([]);
+});
+
+it('does not skip invisible quizzes in getTeacherQuizzes', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. core_enrol_get_users_courses
+    $sequence->push([
+        ['id' => 101, 'visible' => 1, 'fullname' => 'Teacher Course'],
+    ], 200);
+
+    // 2. core_enrol_get_enrolled_users_with_capability
+    $sequence->push([
+        [
+            'courseid'   => 101,
+            'capability' => 'moodle/course:update',
+            'users'      => [
+                ['id' => 55, 'username' => 'teacher55'],
+            ],
+        ],
+    ], 200);
+
+    // 3. mod_quiz_get_quizzes_by_courses — hidden quiz
+    $sequence->push([
+        'quizzes' => [
+            ['id' => 1, 'course' => 101, 'coursemodule' => 10, 'name' => 'Hidden Quiz', 'visible' => 0],
+        ],
+    ], 200);
+
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getTeacherQuizzes(55);
+
+    expect($result)->toHaveCount(1);
+    expect($result[0]->activities[0]['name'])->toBe('Hidden Quiz');
+});
+
+it('includes courses where the user is a non-editing teacher (moodle/grade:viewall capability)', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. core_enrol_get_users_courses
+    $sequence->push([
+        ['id' => 101, 'visible' => 1, 'fullname' => 'Course with Non-Editing Teacher'],
+    ], 200);
+
+    // 2. core_enrol_get_enrolled_users_with_capability — non-editing teacher has moodle/grade:viewall
+    $sequence->push([
+        [
+            'courseid'   => 101,
+            'capability' => 'moodle/grade:viewall',
+            'users'      => [
+                ['id' => 55, 'username' => 'non_editing_teacher'],
+            ],
+        ],
+    ], 200);
+
+    // 3. mod_quiz_get_quizzes_by_courses
+    $sequence->push([
+        'quizzes' => [
+            ['id' => 1, 'course' => 101, 'coursemodule' => 10, 'name' => 'Graded Quiz', 'visible' => 1],
+        ],
+    ], 200);
+
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getTeacherQuizzes(55);
+
+    expect($result)->toHaveCount(1);
+    expect($result[0]->activities[0]['name'])->toBe('Graded Quiz');
 });
