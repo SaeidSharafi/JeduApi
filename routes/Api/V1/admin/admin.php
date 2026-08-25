@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestController;
 use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestUpdateStatusController;
+use App\Http\Controllers\Api\Admin\MoodleSsoController;
 use App\Http\Controllers\Api\Admin\Profile\StaffChangePasswordController;
 use App\Http\Controllers\Api\Admin\Profile\StaffProfileController;
 use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
@@ -72,3 +73,4 @@ Route::patch('advice-requests/{adviceRequest}/status', AdviceRequestUpdateStatus
 Route::singleton('profile', StaffProfileController::class)
     ->only(['show', 'update']);
 Route::put('change-password', StaffChangePasswordController::class)->name('change-password');
+Route::post('moodle/sso', MoodleSsoController::class)->name('moodle.sso');

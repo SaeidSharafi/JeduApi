@@ -49,9 +49,9 @@ trait AuthTestTrait
         return $this->actingAs($this->user->fresh(), 'user');
     }
 
-    public function admin_user($guard = 'staff'): self
+    public function admin_user(?Staff $staff = null ): self
     {
-        $this->user = Staff::forceCreate(
+        $this->user = $staff ?: Staff::forceCreate(
             Staff::factory()->make([
                 'phone'    => '09300000000',
                 'email'    => 'staff@example.com',
@@ -59,6 +59,6 @@ trait AuthTestTrait
             ])->toArray()
         );
 
-        return $this->actingAs($this->user->fresh(), $guard);
+        return $this->actingAs($this->user->fresh(), 'staff');
     }
 }

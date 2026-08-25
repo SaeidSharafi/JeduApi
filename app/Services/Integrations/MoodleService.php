@@ -6,9 +6,11 @@ namespace App\Services\Integrations;
 
 use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
 use App\Data\Shop\Student\Blocks\MoodleActivityData;
+use App\Data\Shop\Student\MoodleSsoUrlData;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
+use App\Models\Enrollment;
 use App\Models\User;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Carbon;
@@ -238,6 +240,33 @@ final class MoodleService extends AbstractIntegrationService
         }
 
         return $loginUrl;
+    }
+
+    /**
+     * Generate SSO URL for a raw Moodle username.
+     */
+    public function generateSsoUrl(string $username, ?string $wantsUrl = null): ?MoodleSsoUrlData
+    {
+        try {
+            $url = $this->createUserKey($username);
+
+            return new MoodleSsoUrlData(url: $url, wantsurl: $wantsUrl);
+        } catch (Throwable $e) {
+            report($e);
+
+            return null;
+        }
+    }
+
+
+    /**
+     * Build the relative Moodle course URL from enrollment details.
+     */
+    public function getCourseWantsUrl(Enrollment $enrollment): ?string
+    {
+        $courseId = data_get($enrollment->productDeliveryOption?->details_json, 'moodle_course_id');
+
+        return $courseId ? "/course/view.php?id={$courseId}" : null;
     }
 
     /**

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Data\Shop\Student\MoodleSsoUrlData;
 use App\Enums\Product\DeliveryMethodEnum;
-use App\Enums\System\SettingKeyEnum;
+use App\Models\Enrollment;
 use App\Models\ProductDeliveryOption;
-use App\Models\Setting;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Services\Integrations\MoodleService;
@@ -15,9 +15,15 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     $this->customer();
 });
+
+/*
+|--------------------------------------------------------------------------
+| Student Moodle SSO Tests
+|--------------------------------------------------------------------------
+*/
 describe('Student Moodle SSO', function (): void {
     it('returns 404 for non-owner enrollment', function (): void {
-        $otherUser  = App\Models\User::factory()->create();
+        $otherUser  = User::factory()->create();
         $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LMS_MOODLE);
 
         $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
@@ -34,8 +40,7 @@ describe('Student Moodle SSO', function (): void {
     });
 
     it('returns 422 when moodle provisioning is incomplete', function (): void {
-        $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
-        // provisioning_data has no moodle_user_name
+        $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
         $enrollment->provisioning_data = [];
         $enrollment->save();
 
@@ -44,45 +49,42 @@ describe('Student Moodle SSO', function (): void {
             ->assertJsonFragment(['message' => __('messages.enrollments.moodle_provisioning_incomplete')]);
     });
 
-    it('returns sso url for valid moodle enrollment', function (): void {
-        $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
-        $enrollment->provisioning_data = [
-            'providers' => [
-                'moodle' => [
-                    'status' => 'success',
-                    'data'   => ['moodle_user_name' => 'testuser'],
+    it('returns sso url with default course wantsurl for valid moodle enrollment', function (): void {
+        $pdo = ProductDeliveryOption::factory()->create([
+            'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
+            'details_json'    => ['moodle_course_id' => 101],
+        ]);
+
+        $enrollment = Enrollment::factory()->create([
+            'customer_id'                => $this->user->id,
+            'product_delivery_option_id' => $pdo->id,
+            'provisioning_data'          => [
+                'providers' => [
+                    'moodle' => [
+                        'status' => 'success',
+                        'data'   => ['moodle_user_name' => 'testuser'],
+                    ],
                 ],
             ],
-        ];
-        $enrollment->save();
+        ]);
 
-        Setting::query()->updateOrCreate(
-            ['key' => SettingKeyEnum::MOODLE->value],
-            [
-                'value' => [
-                    'enabled'            => true,
-                    'base_url'           => 'https://moodle.test',
-                    'token'              => 'admin-token',
-                    'auth_userkey_token' => 'userkey-token',
-                ],
-            ]
-        );
+        $ssoUrl  = 'https://moodle.test/auth/userkey/login.php?key=abc123';
+        $ssoData = new MoodleSsoUrlData(url: $ssoUrl, wantsurl: '/course/view.php?id=101');
 
-        $ssoUrl = 'https://moodle.test/auth/userkey/login.php?key=abc123';
-
-        $this->mock(MoodleService::class, function ($mock) use ($ssoUrl): void {
-            $mock->shouldReceive('createUserKey')
+        $this->mock(MoodleService::class, function ($mock) use ($ssoData): void {
+            $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->with('testuser')
-                ->andReturn($ssoUrl);
+                ->with('testuser', '/course/view.php?id=101')
+                ->andReturn($ssoData);
         });
 
         $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
             ->assertOk()
-            ->assertJsonPath('data.url', $ssoUrl);
+            ->assertJsonPath('data.url', $ssoUrl)
+            ->assertJsonPath('data.wantsurl', '/course/view.php?id=101');
     });
 
-    it('includes wantsurl in request to MoodleService when provided', function (): void {
+    it('includes custom wantsurl when explicitly provided', function (): void {
         $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
         $enrollment->provisioning_data = [
             'providers' => [
@@ -94,26 +96,15 @@ describe('Student Moodle SSO', function (): void {
         ];
         $enrollment->save();
 
-        Setting::query()->updateOrCreate(
-            ['key' => SettingKeyEnum::MOODLE->value],
-            [
-                'value' => [
-                    'enabled'            => true,
-                    'base_url'           => 'https://moodle.test',
-                    'token'              => 'admin-token',
-                    'auth_userkey_token' => 'userkey-token',
-                ],
-            ]
-        );
+        $ssoUrl  = 'https://moodle.test/auth/userkey/login.php?key=abc123';
+        $wants   = 'https://moodle.test/course/view.php?id=5';
+        $ssoData = new MoodleSsoUrlData(url: $ssoUrl, wantsurl: $wants);
 
-        $ssoUrl = 'https://moodle.test/auth/userkey/login.php?key=abc123';
-        $wants  = 'https://moodle.test/course/view.php?id=5';
-
-        $this->mock(MoodleService::class, function ($mock) use ($ssoUrl): void {
-            $mock->shouldReceive('createUserKey')
+        $this->mock(MoodleService::class, function ($mock) use ($wants, $ssoData): void {
+            $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->with('testuser')
-                ->andReturn($ssoUrl);
+                ->with('testuser', $wants)
+                ->andReturn($ssoData);
         });
 
         $this->postJson(route('api.v1.shop.student.courses.moodle.sso', [
@@ -127,7 +118,6 @@ describe('Student Moodle SSO', function (): void {
 
     it('uses moodle_username provisioning key fallback', function (): void {
         $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
-        // Use alternative key 'moodle_username' instead of 'moodle_user_name'
         $enrollment->provisioning_data = [
             'providers' => [
                 'moodle' => [
@@ -138,25 +128,17 @@ describe('Student Moodle SSO', function (): void {
         ];
         $enrollment->save();
 
-        Setting::query()->updateOrCreate(
-            ['key' => SettingKeyEnum::MOODLE->value],
-            [
-                'value' => [
-                    'enabled'            => true,
-                    'base_url'           => 'https://moodle.test',
-                    'token'              => 'admin-token',
-                    'auth_userkey_token' => 'userkey-token',
-                ],
-            ]
-        );
+        $courseId    = data_get($enrollment->productDeliveryOption->details_json, 'moodle_course_id');
+        $expectedUrl = $courseId ? "/course/view.php?id={$courseId}" : null;
 
-        $ssoUrl = 'https://moodle.test/auth/userkey/login.php?key=fallback123';
+        $ssoUrl  = 'https://moodle.test/auth/userkey/login.php?key=fallback123';
+        $ssoData = new MoodleSsoUrlData(url: $ssoUrl, wantsurl: $expectedUrl);
 
-        $this->mock(MoodleService::class, function ($mock) use ($ssoUrl): void {
-            $mock->shouldReceive('createUserKey')
+        $this->mock(MoodleService::class, function ($mock) use ($expectedUrl, $ssoData): void {
+            $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->with('fallback_user')
-                ->andReturn($ssoUrl);
+                ->with('fallback_user', $expectedUrl)
+                ->andReturn($ssoData);
         });
 
         $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
@@ -164,7 +146,7 @@ describe('Student Moodle SSO', function (): void {
             ->assertJsonPath('data.url', $ssoUrl);
     });
 
-    it('returns 422 when MoodleService throws an exception', function (): void {
+    it('returns 422 when MoodleService fails to generate sso url', function (): void {
         $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
         $enrollment->provisioning_data = [
             'providers' => [
@@ -176,38 +158,28 @@ describe('Student Moodle SSO', function (): void {
         ];
         $enrollment->save();
 
-        Setting::query()->updateOrCreate(
-            ['key' => SettingKeyEnum::MOODLE->value],
-            [
-                'value' => [
-                    'enabled'            => true,
-                    'base_url'           => 'https://moodle.test',
-                    'token'              => 'admin-token',
-                    'auth_userkey_token' => 'userkey-token',
-                ],
-            ]
-        );
-
         $this->mock(MoodleService::class, function ($mock): void {
-            $mock->shouldReceive('createUserKey')
+            $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->andThrow(new RuntimeException('Moodle API error'));
+                ->with('testuser', \Mockery::any())
+                ->andReturnNull();
         });
 
         $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
             ->assertUnprocessable()
             ->assertJsonFragment(['message' => __('messages.enrollments.moodle_service_error')]);
     });
-
 });
+
+/*
+|--------------------------------------------------------------------------
+| Teacher Moodle SSO Tests
+|--------------------------------------------------------------------------
+*/
 describe('Teacher Moodle SSO', function (): void {
     it('returns 403 for non-teachers', function (): void {
-        $otherUser  = App\Models\User::factory()->create();
-        $teacher    = App\Models\Teacher::factory()->create(
-            [
-                'user_id' => $otherUser->id,
-            ]
-        );
+        $otherUser = User::factory()->create();
+        $teacher   = Teacher::factory()->create(['user_id' => $otherUser->id]);
 
         $pdo = ProductDeliveryOption::factory()->create([
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
@@ -218,18 +190,11 @@ describe('Teacher Moodle SSO', function (): void {
             ->assertForbidden();
     });
 
-    it('returns 403 for non-owner', function (): void {
-        Teacher::factory()->create(
-            [
-                'user_id' => $this->user->id,
-            ]
-        );
-        $otherUser  = User::factory()->create();
-        $teacher    = Teacher::factory()->create(
-            [
-                'user_id' => $otherUser->id,
-            ]
-        );
+    it('returns 403 when teacher does not own the delivery option', function (): void {
+        Teacher::factory()->create(['user_id' => $this->user->id]);
+
+        $otherUser = User::factory()->create();
+        $teacher   = Teacher::factory()->create(['user_id' => $otherUser->id]);
 
         $pdo = ProductDeliveryOption::factory()->create([
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
@@ -240,119 +205,111 @@ describe('Teacher Moodle SSO', function (): void {
             ->assertForbidden();
     });
 
-    it('returns sso url for course owned by the teacher', function (): void {
-        $teacher    = Teacher::factory()->create(
-            [
-                'user_id' => $this->user->id,
-            ]
-        );
+    it('returns 422 for non-moodle delivery option', function (): void {
+        $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
+
+        $pdo = ProductDeliveryOption::factory()->create([
+            'delivery_method' => DeliveryMethodEnum::IN_PERSON,
+        ]);
+        $pdo->teachers()->attach($teacher);
+
+        $this->postJson(route('api.v1.shop.teacher.courses.moodle.sso', ['deliveryOption' => $pdo->uuid]))
+            ->assertUnprocessable()
+            ->assertJsonFragment(['message' => __('messages.enrollments.not_moodle')]);
+    });
+
+    it('returns 422 when teacher civil_id is empty', function (): void {
+        $this->user->forceFill(['civil_id' => null])->save();
+
+        $this->customer($this->user->fresh());
+
+        $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
+
 
         $pdo = ProductDeliveryOption::factory()->create([
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
         ]);
         $pdo->teachers()->attach($teacher);
-        Setting::query()->updateOrCreate(
-            ['key' => SettingKeyEnum::MOODLE->value],
-            [
-                'value' => [
-                    'enabled'            => true,
-                    'base_url'           => 'https://moodle.test',
-                    'token'              => 'admin-token',
-                    'auth_userkey_token' => 'userkey-token',
-                ],
-            ]
-        );
 
-        $ssoUrl = 'https://moodle.test/auth/userkey/login.php?key=abc123';
+        $this->mock(MoodleService::class, function ($mock): void {
+            $mock->shouldNotReceive('generateSsoUrl');
+        });
 
-        $this->mock(MoodleService::class, function ($mock) use ($ssoUrl): void {
-            $mock->shouldReceive('createUserKey')
+        $this->postJson(route('api.v1.shop.teacher.courses.moodle.sso', ['deliveryOption' => $pdo->uuid]))
+            ->assertUnprocessable()
+            ->assertJsonFragment(['message' => __('messages.enrollments.moodle_provisioning_incomplete')]);
+    });
+
+    it('returns sso url with default course wantsurl for course owned by teacher', function (): void {
+        $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
+
+        $pdo = ProductDeliveryOption::factory()->create([
+            'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
+            'details_json'    => ['moodle_course_id' => 205],
+        ]);
+        $pdo->teachers()->attach($teacher);
+
+        $ssoUrl  = 'https://moodle.test/auth/userkey/login.php?key=abc123';
+        $ssoData = new MoodleSsoUrlData(url: $ssoUrl, wantsurl: '/course/view.php?id=205');
+
+        $this->mock(MoodleService::class, function ($mock) use ($ssoData): void {
+            $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->with($this->user->civil_id)
-                ->andReturn($ssoUrl);
+                ->with($this->user->civil_id, '/course/view.php?id=205')
+                ->andReturn($ssoData);
         });
 
         $this->postJson(route('api.v1.shop.teacher.courses.moodle.sso', ['deliveryOption' => $pdo->uuid]))
             ->assertOk()
-            ->assertJsonPath('data.url', $ssoUrl);
+            ->assertJsonPath('data.url', $ssoUrl)
+            ->assertJsonPath('data.wantsurl', '/course/view.php?id=205');
     });
 
-    it('includes wantsurl in request to MoodleService when provided', function (): void {
-        $teacher    = Teacher::factory()->create(
-            [
-                'user_id' => $this->user->id,
-            ]
-        );
+    it('includes wantsurl in request when explicitly provided', function (): void {
+        $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
 
         $pdo = ProductDeliveryOption::factory()->create([
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
         ]);
         $pdo->teachers()->attach($teacher);
 
-        Setting::query()->updateOrCreate(
-            ['key' => SettingKeyEnum::MOODLE->value],
-            [
-                'value' => [
-                    'enabled'            => true,
-                    'base_url'           => 'https://moodle.test',
-                    'token'              => 'admin-token',
-                    'auth_userkey_token' => 'userkey-token',
-                ],
-            ]
-        );
+        $ssoUrl  = 'https://moodle.test/auth/userkey/login.php?key=abc123';
+        $wants   = 'https://moodle.test/course/view.php?id=5';
+        $ssoData = new MoodleSsoUrlData(url: $ssoUrl, wantsurl: $wants);
 
-        $ssoUrl = 'https://moodle.test/auth/userkey/login.php?key=abc123';
-        $wants  = 'https://moodle.test/course/view.php?id=5';
-
-        $this->mock(MoodleService::class, function ($mock) use ($ssoUrl): void {
-            $mock->shouldReceive('createUserKey')
+        $this->mock(MoodleService::class, function ($mock) use ($wants, $ssoData): void {
+            $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->with($this->user->civil_id)
-                ->andReturn($ssoUrl);
+                ->with($this->user->civil_id, $wants)
+                ->andReturn($ssoData);
         });
 
         $this->postJson(route('api.v1.shop.teacher.courses.moodle.sso', [
             'deliveryOption' => $pdo->uuid,
-            'wantsurl'   => $wants,
+            'wantsurl'       => $wants,
         ]))
             ->assertOk()
             ->assertJsonPath('data.url', $ssoUrl)
             ->assertJsonPath('data.wantsurl', $wants);
     });
 
-    it('returns 422 when MoodleService throws an exception', function (): void {
-        $teacher    = Teacher::factory()->create(
-            [
-                'user_id' => $this->user->id,
-            ]
-        );
+    it('returns 422 when MoodleService fails to generate sso url', function (): void {
+        $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
 
         $pdo = ProductDeliveryOption::factory()->create([
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
         ]);
         $pdo->teachers()->attach($teacher);
 
-        Setting::query()->updateOrCreate(
-            ['key' => SettingKeyEnum::MOODLE->value],
-            [
-                'value' => [
-                    'enabled'            => true,
-                    'base_url'           => 'https://moodle.test',
-                    'token'              => 'admin-token',
-                    'auth_userkey_token' => 'userkey-token',
-                ],
-            ]
-        );
-
         $this->mock(MoodleService::class, function ($mock): void {
-            $mock->shouldReceive('createUserKey')
+            $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->andThrow(new RuntimeException('Moodle API error'));
+                ->with($this->user->civil_id, \Mockery::any())
+                ->andReturnNull();
         });
 
         $this->postJson(route('api.v1.shop.teacher.courses.moodle.sso', ['deliveryOption' => $pdo->uuid]))
             ->assertUnprocessable()
             ->assertJsonFragment(['message' => __('messages.enrollments.moodle_service_error')]);
     });
-
 });
