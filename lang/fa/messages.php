@@ -402,7 +402,7 @@ return [
             'auth_userkey_creation_failed' => 'خطا در ایجاد توکن یکپارچه مودل (auth_userkey).',
             'server_error'                 => 'خطای سرور سیستم مودل در تابع :function.',
             'request_failed'               => 'ارسال درخواست به سیستم مودل برای تابع :function ناموفق بود.',
-            'exception_response'           => 'سیستم مودل پاسخ خطا (Exception) برگرداند.',
+            'exception_response'           => 'سیستم مودل پاسخ خطا (Exception) برگرداند: :message',
             'student_default'              => 'دانشجو',
             'user_default'                 => 'کاربر',
         ],

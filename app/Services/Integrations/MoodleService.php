@@ -405,7 +405,7 @@ final class MoodleService extends AbstractIntegrationService
 
         $json = $response->json();
         if (is_array($json) && isset($json['exception'])) {
-            $message = (string) ($json['message'] ?? __('messages.integration.moodle.exception_response'));
+            $message = __('messages.integration.moodle.exception_response', ['message' => ((string) $json['message'] ?? 'Unknown error')]);
             // metaData['errorcode'] is what getMoodleErrorCode() reads — must be preserved
             throw new UnrecoverableProvisioningException($message, 0, null, $json);
         }

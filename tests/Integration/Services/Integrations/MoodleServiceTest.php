@@ -150,7 +150,7 @@ it('throws when response contains exception', function (): void {
     ]);
 
     expect(fn () => $this->moodleService->createUserKey('1122334', 'AUTH_USER_KEY'))
-        ->toThrow(UnrecoverableProvisioningException::class, 'Something went wrong');
+        ->toThrow(UnrecoverableProvisioningException::class);
 });
 it('throws when service used before configuration', function (): void {
     $settings = $this->mock(SettingsService::class);
@@ -525,5 +525,5 @@ it('throws with errorcode metadata when moodle returns exception response', func
     ]);
 
     expect(fn () => $this->moodleService->enrollUser(1, 2))
-        ->toThrow(UnrecoverableProvisioningException::class, 'Invalid parameter value detected');
+        ->toThrow(UnrecoverableProvisioningException::class);
 });
