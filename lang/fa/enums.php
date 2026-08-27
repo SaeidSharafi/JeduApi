@@ -12,8 +12,8 @@ return [
     'AllocationStatusEnum' => [
         'error_inactive'            => 'کمپین غیرفعال',
         'error_expired'             => 'کمپین منقضی شده',
-        'error_total_limit_reached' => 'سقف کلی مصرف تکمیل شده',
-        'error_user_limit_reached'  => 'سقف مصرف کاربر تکمیل شده',
+        'error_total_limit_reached' => 'سقف کلی مصرف پر شده',
+        'error_user_limit_reached'  => 'سقف مصرف کاربر پر شده',
         'eligible'                  => 'واجد شرایط',
     ],
     'AvailabilityStatusEnum' => [
@@ -39,12 +39,12 @@ return [
         'beginner'     => 'مبتدی',
         'intermediate' => 'متوسط',
         'advanced'     => 'پیشرفته',
-        'expert'       => 'کارشناس',
+        'expert'       => 'حرفه‌ای',
     ],
     'CourseStatusEnum' => [
         'draft'     => 'پیش‌نویس',
         'published' => 'منتشر شده',
-        'archived'  => 'آرشیو',
+        'archived'  => 'آرشیو شده',
     ],
     'DeliveryMethodEnum' => [
         'direct_download'           => 'دانلود مستقیم',
@@ -55,14 +55,14 @@ return [
         'in_person'                 => 'حضوری',
     ],
     'DiscountTypeEnum' => [
-        'product_specific' => 'تخفیف روی محصول خاص',
+        'product_specific' => 'تخفیف مخصوص محصول',
         'cart_checkout'    => 'تخفیف روی سبد خرید',
     ],
     'DynamicListEntityTypeEnum' => [
         'course_products'        => 'محصولات دوره',
         'seminar_products'       => 'محصولات سمینار',
-        'digital_asset_products' => 'محصولات دارایی دیجیتال',
-        'blog_post'              => 'نوشته وبلاگ',
+        'digital_asset_products' => 'محصولات فایل دیجیتال',
+        'blog_post'              => 'پست وبلاگ',
         'all_products'           => 'همه محصولات',
     ],
     'DynamicListSortByEnum' => [
@@ -70,8 +70,8 @@ return [
         'created_at:asc'  => 'قدیمی‌ترین',
         'updated_at:desc' => 'آخرین به‌روزرسانی',
         'updated_at:asc'  => 'قدیمی‌ترین به‌روزرسانی',
-        'name:asc'        => 'نام صعودی',
-        'name:desc'       => 'نام نزولی',
+        'name:asc'        => 'بر اساس نام (الف تا ی)',
+        'name:desc'       => 'بر اساس نام (ی تا الف)',
         'popular'         => 'محبوب',
         'featured'        => 'ویژه',
     ],
@@ -86,8 +86,8 @@ return [
         'postdoctoral'  => 'پسادکتری',
     ],
     'EducationStatusEnum' => [
-        'student'    => 'دانشجو',
-        'university' => 'دانشگاه',
+        'student'    => 'دانش‌آموز',
+        'university' => 'دانشجو',
         'graduated'  => 'فارغ‌التحصیل',
         'employed'   => 'شاغل',
         'job_seeker' => 'جویای کار',
@@ -134,8 +134,8 @@ return [
     'MediaTagEnum' => [
         'gallery'     => 'گالری',
         'video'       => 'ویدیو',
-        'cover'       => 'جلد',
-        'certificate' => 'گواهینامه',
+        'cover'       => 'کاور',
+        'certificate' => 'گواهی',
         'main'        => 'اصلی',
     ],
     'MoodleActivityStateEnum' => [
@@ -216,7 +216,7 @@ return [
     ],
     'PaymentPurposeEnum' => [
         'order'        => 'سفارش',
-        'wallet_topup' => 'کیف پول',
+        'wallet_topup' => 'شارژ کیف پول',
     ],
     'PaymentStatusEnum' => [
         'pending'   => 'در انتظار',
@@ -245,7 +245,7 @@ return [
     'PublicationStatusEnum' => [
         'draft'     => 'پیش‌نویس',
         'published' => 'منتشر شده',
-        'archived'  => 'آرشیو',
+        'archived'  => 'آرشیو شده',
         'scheduled' => 'زمان‌بندی شده',
     ],
     'RefundStatusEnum' => [
