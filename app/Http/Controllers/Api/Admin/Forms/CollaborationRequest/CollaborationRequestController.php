@@ -75,7 +75,7 @@ final class CollaborationRequestController extends Controller
         $assignee = $data->staff_id ? Staff::query()->findOrFail($data->staff_id) : null;
         Gate::authorize('assign', [$collaborationRequest, $assignee]);
 
-        return apiResponse()->updated(CollaborationRequestData::fromModel($action->handle($collaborationRequest, ['assigned_to_id' => $data->staff_id])), model: CollaborationRequest::class);
+        return apiResponse()->updated(CollaborationRequestData::fromModel($action->handle($collaborationRequest, ['assigned_to_id' => $data->staff_id], auth('staff')->user())), model: CollaborationRequest::class);
     }
 
     /** @responseFile 200 resources/responses/admin/collaboration-request/show.json */

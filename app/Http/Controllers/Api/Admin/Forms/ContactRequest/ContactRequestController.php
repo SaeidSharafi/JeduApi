@@ -89,7 +89,7 @@ final class ContactRequestController extends Controller
         $assignee = $data->staff_id ? Staff::query()->findOrFail($data->staff_id) : null;
         Gate::authorize('assign', [$contactRequest, $assignee]);
 
-        return apiResponse()->updated(ContactRequestData::from($action->handle($contactRequest, ['assigned_to_id' => $data->staff_id])), model: ContactUsRequest::class);
+        return apiResponse()->updated(ContactRequestData::from($action->handle($contactRequest, ['assigned_to_id' => $data->staff_id], auth('staff')->user())), model: ContactUsRequest::class);
     }
 
     /**
