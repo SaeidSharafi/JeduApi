@@ -25,6 +25,10 @@ PEST only. AuthTestTrait, not actingAs(). No RefreshDatabase.
 ## Commands
 sail artisan always, never bare php artisan. Run `sail bin pint --dirty --format agent` before finalizing any PHP change.
 
+## Befor Commits
+update the Digestion docs if any DB model, relation, action/service, or API interface changed.
+
+
 ## Commits
 Conventional Commits: `type(scope): imperative description`
 e.g. `feat(api-product): add endpoint for creating new products`
