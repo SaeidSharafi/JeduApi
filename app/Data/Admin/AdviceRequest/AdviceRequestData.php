@@ -6,7 +6,7 @@ namespace App\Data\Admin\AdviceRequest;
 
 use App\Data\Admin\Auth\StaffData;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\AdviceRequestStatusEnum;
+use App\Enums\InboundRequestStatusEnum;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 
@@ -16,7 +16,7 @@ final class AdviceRequestData extends Data
         public int $id,
         public ?string $phone,
         #[WithTransformer(TranslatableEnumData::class)]
-        public AdviceRequestStatusEnum $status,
+        public InboundRequestStatusEnum $status,
         public ?string $note,
         public ?StaffData $handler,
         public ?string $created_at,

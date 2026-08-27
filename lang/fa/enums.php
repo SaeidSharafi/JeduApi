@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'AdviceRequestStatusEnum' => [
+    'InboundRequestStatusEnum' => [
         'pending'     => 'در انتظار',
         'contacted'   => 'تماس گرفته شده',
         'resolved'    => 'حل شده',

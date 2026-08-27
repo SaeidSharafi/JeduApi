@@ -8,7 +8,7 @@
         "phone": "09120000301",
         "status": {
           "value": "pending",
-          "label": "enums.AdviceRequestStatusEnum.pending"
+          "label": "enums.InboundRequestStatusEnum.pending"
         },
         "note": "درخواست مشاوره برای انتخاب مسیر شغلی در حوزه برنامه‌نویسی",
         "handler": {
@@ -25,7 +25,7 @@
         "phone": "09120000302",
         "status": {
           "value": "contacted",
-          "label": "enums.AdviceRequestStatusEnum.contacted"
+          "label": "enums.InboundRequestStatusEnum.contacted"
         },
         "note": "مشاوره برای یادگیری برنامه‌نویسی پایتون",
         "handler": null,
@@ -37,7 +37,7 @@
         "phone": null,
         "status": {
           "value": "resolved",
-          "label": "enums.AdviceRequestStatusEnum.resolved"
+          "label": "enums.InboundRequestStatusEnum.resolved"
         },
         "note": "سوال در مورد دوره‌های زبان انگلیسی",
         "handler": {

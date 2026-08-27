@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\AdviceRequestStatusEnum;
+use App\Enums\InboundRequestStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Models\AdviceRequest;
 
@@ -11,18 +11,18 @@ describe('AdviceRequestController', function (): void {
     it('list requests and filter them', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_VIEW_ANY]);
         AdviceRequest::factory()->count(4)
-            ->create(['status' => AdviceRequestStatusEnum::PENDING]);
+            ->create(['status' => InboundRequestStatusEnum::PENDING]);
         AdviceRequest::factory()->count(3)
-            ->create(['status' => AdviceRequestStatusEnum::CONTACTED]);
+            ->create(['status' => InboundRequestStatusEnum::CONTACTED]);
         AdviceRequest::factory()->count(2)
-            ->create(['status' => AdviceRequestStatusEnum::RESOLVED]);
+            ->create(['status' => InboundRequestStatusEnum::RESOLVED]);
         AdviceRequest::factory()->count(4)
-            ->create(['status' => AdviceRequestStatusEnum::NO_RESPONSE]);
+            ->create(['status' => InboundRequestStatusEnum::NO_RESPONSE]);
 
         $staff = App\Models\Staff::factory()->create();
         AdviceRequest::factory()->count(2)
             ->create([
-                'status'        => AdviceRequestStatusEnum::CONTACTED,
+                'status'        => InboundRequestStatusEnum::CONTACTED,
                 'handled_by_id' => $staff->id,
             ]);
         $response = $this->getJson('/api/v1/admin/advice-requests');
@@ -49,7 +49,7 @@ describe('AdviceRequestController', function (): void {
         $responseData = $response->json('data.data');
         $this->assertCount(5, $responseData);
         foreach ($responseData as $item) {
-            $this->assertEquals(AdviceRequestStatusEnum::CONTACTED->value, $item['status']['value']);
+            $this->assertEquals(InboundRequestStatusEnum::CONTACTED->value, $item['status']['value']);
         }
         $response = $this->getJson('/api/v1/admin/advice-requests?filter[handled_by_id]='.$staff->id);
         $response->assertOk();
@@ -63,7 +63,7 @@ describe('AdviceRequestController', function (): void {
     it('view a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_VIEW]);
         $request = AdviceRequest::factory()->create([
-            'status' => AdviceRequestStatusEnum::PENDING,
+            'status' => InboundRequestStatusEnum::PENDING,
         ]);
         $response = $this->getJson('/api/v1/admin/advice-requests/'.$request->id);
         $response->assertOk();
@@ -87,10 +87,10 @@ describe('AdviceRequestController', function (): void {
     it('update a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_UPDATE]);
         $request = AdviceRequest::factory()->create([
-            'status' => AdviceRequestStatusEnum::PENDING,
+            'status' => InboundRequestStatusEnum::PENDING,
         ]);
         $payload = [
-            'status' => AdviceRequestStatusEnum::CONTACTED->value,
+            'status' => InboundRequestStatusEnum::CONTACTED->value,
             'note'   => 'This is a note',
         ];
         $response = $this->putJson('/api/v1/admin/advice-requests/'.$request->id, $payload);
@@ -125,7 +125,7 @@ describe('AdviceRequestController', function (): void {
     it('delete a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_DELETE]);
         $request = AdviceRequest::factory()->create([
-            'status' => AdviceRequestStatusEnum::PENDING,
+            'status' => InboundRequestStatusEnum::PENDING,
         ]);
         $response = $this->deleteJson('/api/v1/admin/advice-requests/'.$request->id);
         $response->assertNoContent();
@@ -145,7 +145,7 @@ describe('AdviceRequestController', function (): void {
         $response->assertForbidden();
         // Update
         $response = $this->putJson('/api/v1/admin/advice-requests/'.$request->id, [
-            'status' => AdviceRequestStatusEnum::CONTACTED->value,
+            'status' => InboundRequestStatusEnum::CONTACTED->value,
         ]);
         $response->assertForbidden();
         // Delete
@@ -158,10 +158,10 @@ describe('AdviceRequestUpdateStatusController', function (): void {
     it('update status of a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_UPDATE]);
         $request = AdviceRequest::factory()->create([
-            'status' => AdviceRequestStatusEnum::PENDING,
+            'status' => InboundRequestStatusEnum::PENDING,
         ]);
         $payload = [
-            'status' => AdviceRequestStatusEnum::CONTACTED->value,
+            'status' => InboundRequestStatusEnum::CONTACTED->value,
         ];
         $response = $this->patchJson('/api/v1/admin/advice-requests/'.$request->id.'/status', $payload);
         $response->assertOk();
@@ -194,7 +194,7 @@ describe('AdviceRequestUpdateStatusController', function (): void {
         $this->unauthorized_user();
         $request  = AdviceRequest::factory()->create();
         $response = $this->patchJson('/api/v1/admin/advice-requests/'.$request->id.'/status', [
-            'status' => AdviceRequestStatusEnum::CONTACTED->value,
+            'status' => InboundRequestStatusEnum::CONTACTED->value,
         ]);
         $response->assertForbidden();
     });

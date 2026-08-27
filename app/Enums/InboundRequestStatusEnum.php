@@ -6,7 +6,7 @@ namespace App\Enums;
 
 use App\Traits\AdvanceEnum;
 
-enum AdviceRequestStatusEnum: string
+enum InboundRequestStatusEnum: string
 {
     /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;

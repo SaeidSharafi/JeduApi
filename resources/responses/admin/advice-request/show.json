@@ -5,7 +5,7 @@
     "phone": "09120000301",
     "status": {
       "value": "pending",
-      "label": "enums.AdviceRequestStatusEnum.pending"
+      "label": "enums.InboundRequestStatusEnum.pending"
     },
     "note": "درخواست مشاوره برای انتخاب مسیر شغلی در حوزه برنامه‌نویسی",
     "handler": {

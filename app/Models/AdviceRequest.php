@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\AdviceRequestStatusEnum;
+use App\Enums\InboundRequestStatusEnum;
+use Database\Factories\AdviceRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Database\Factories\AdviceRequestFactory;
 
 final class AdviceRequest extends Model
 {
@@ -33,7 +33,7 @@ final class AdviceRequest extends Model
     protected function casts(): array
     {
         return [
-            'status'     => AdviceRequestStatusEnum::class,
+            'status'     => InboundRequestStatusEnum::class,
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

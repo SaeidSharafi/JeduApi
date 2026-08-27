@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\AdviceRequestStatusEnum;
+use App\Enums\InboundRequestStatusEnum;
 use App\Models\AdviceRequest;
 use App\Models\Staff;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,7 +18,7 @@ final class AdviceRequestFactory extends Factory
     {
         return [
             'phone'         => $this->faker->mobile(),
-            'status'        => $this->faker->randomElement(AdviceRequestStatusEnum::cases()),
+            'status'        => $this->faker->randomElement(InboundRequestStatusEnum::cases()),
             'note'          => $this->faker->word(),
             'handled_by_id' => Staff::factory(),
             'created_at'    => Carbon::now(),

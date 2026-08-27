@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'AdviceRequestStatusEnum' => [
+    'InboundRequestStatusEnum' => [
         'pending'     => 'Pending',
         'contacted'   => 'Contacted',
         'resolved'    => 'Resolved',
