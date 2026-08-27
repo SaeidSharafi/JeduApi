@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\Forms\ContactRequest;
 
-use App\Actions\Admin\ContactRequest\UpdateContactRequestAction;
+use App\Actions\Admin\InboundRequest\UpdateInboundRequestAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\ContactRequest\ContactRequestAssignmentData;
 use App\Data\Admin\ContactRequest\ContactRequestData;
@@ -72,7 +72,7 @@ final class ContactRequestController extends Controller
      *
      * @responseFile 200 resources/responses/admin/contact-request/show.json
      */
-    public function status(ContactRequestStatusData $data, ContactUsRequest $contactRequest, UpdateContactRequestAction $action): ApiResponseInterface
+    public function status(ContactRequestStatusData $data, ContactUsRequest $contactRequest, UpdateInboundRequestAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $contactRequest);
 
@@ -84,7 +84,7 @@ final class ContactRequestController extends Controller
      *
      * @responseFile 200 resources/responses/admin/contact-request/show.json
      */
-    public function assignment(ContactRequestAssignmentData $data, ContactUsRequest $contactRequest, UpdateContactRequestAction $action): ApiResponseInterface
+    public function assignment(ContactRequestAssignmentData $data, ContactUsRequest $contactRequest, UpdateInboundRequestAction $action): ApiResponseInterface
     {
         $assignee = $data->staff_id ? Staff::query()->findOrFail($data->staff_id) : null;
         Gate::authorize('assign', [$contactRequest, $assignee]);
@@ -97,7 +97,7 @@ final class ContactRequestController extends Controller
      *
      * @responseFile 200 resources/responses/admin/contact-request/show.json
      */
-    public function note(ContactRequestNoteData $data, ContactUsRequest $contactRequest, UpdateContactRequestAction $action): ApiResponseInterface
+    public function note(ContactRequestNoteData $data, ContactUsRequest $contactRequest, UpdateInboundRequestAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $contactRequest);
 

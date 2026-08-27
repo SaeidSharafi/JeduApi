@@ -39,6 +39,10 @@ enum PermissionEnum: string
     case CATEGORY_UPDATE_OWN              = 'categories.update_own';
     case CATEGORY_VIEW                    = 'categories.view';
     case CATEGORY_VIEW_ANY                = 'categories.view_any';
+    case COLLABORATION_REQUEST_UPDATE     = 'collaboration_requests.update';
+    case COLLABORATION_REQUEST_UPDATE_OWN = 'collaboration_requests.update_own';
+    case COLLABORATION_REQUEST_VIEW       = 'collaboration_requests.view';
+    case COLLABORATION_REQUEST_VIEW_ANY   = 'collaboration_requests.view_any';
     case CONTACT_US_REQUEST_UPDATE        = 'contact_us_requests.update';
     case CONTACT_US_REQUEST_UPDATE_OWN    = 'contact_us_requests.update_own';
     case CONTACT_US_REQUEST_VIEW          = 'contact_us_requests.view';

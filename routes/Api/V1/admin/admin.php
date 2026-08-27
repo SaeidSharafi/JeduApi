@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestController;
 use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestUpdateStatusController;
+use App\Http\Controllers\Api\Admin\Forms\CollaborationRequest\CollaborationRequestController;
 use App\Http\Controllers\Api\Admin\Forms\ContactRequest\ContactRequestController;
 use App\Http\Controllers\Api\Admin\MoodleSsoController;
 use App\Http\Controllers\Api\Admin\Profile\StaffChangePasswordController;
@@ -70,6 +71,13 @@ Route::patch('reviews/{review}/featured', UpdateReviewFeaturedStatusController::
 Route::apiResource('advice-requests', AdviceRequestController::class)->except(['store']);
 Route::patch('advice-requests/{adviceRequest}/status', AdviceRequestUpdateStatusController::class)
     ->name('advice-requests.update-status');
+
+Route::apiResource('collaboration-requests', CollaborationRequestController::class)->only(['index', 'show']);
+Route::prefix('collaboration-requests/{collaborationRequest}')->name('collaboration-requests.')->group(function (): void {
+    Route::patch('status', [CollaborationRequestController::class, 'status'])->name('update-status');
+    Route::patch('assignment', [CollaborationRequestController::class, 'assignment'])->name('update-assignment');
+    Route::patch('note', [CollaborationRequestController::class, 'note'])->name('update-note');
+});
 
 Route::apiResource('contact-requests', ContactRequestController::class)->only(['index', 'show']);
 Route::prefix('contact-requests/{contactRequest}')->name('contact-requests.')->group(function (): void {
