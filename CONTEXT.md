@@ -91,4 +91,22 @@ _Avoid_: suspend, block, deactivate, disable
 Server-side hash of IP address + User-Agent, used to correlate anonymous activity across requests. Not a persistent hardware ID.
 _Avoid_: device ID, hardware fingerprint
 
+### Inbound Requests
+
+**Contact Request**:
+A message submitted through the public contact form for staff follow-up.
+_Avoid_: Contact Us entry, contact message
+
+**Collaboration Request**:
+A proposal submitted through the public collaboration form for staff review, optionally including a supporting attachment.
+_Avoid_: Collaboration entry, application
+
+**Inbound Request Status**:
+The follow-up state shared by Contact Requests, Collaboration Requests, and Advice Requests: pending, contacted, resolved, or no response.
+_Avoid_: State, stage
+
+**Assigned Staff Member**:
+The staff member currently responsible for following up an inbound request.
+_Avoid_: Handler, last handled by
+
 > Distinction to keep sharp: a **Campaign** credits wallet gift balance; a **Promotion** (`DiscountPromotion`) discounts product prices. They are unrelated.
