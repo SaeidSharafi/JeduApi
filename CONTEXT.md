@@ -65,6 +65,22 @@ _Avoid_: Order item, registration, subscription
 An instructor profile record linked to at most one customer account. Existence of the link grants the teacher dashboard. A Teacher may exist unlinked (public course-page profile) without granting any account access.
 _Avoid_: instructor, professor
 
+**Seminar**:
+A live-session product delivered via a LIVE_SESSION delivery option (BBB/Niliroom or Skyroom). Teachers are attached through the delivery-option pivot, not through an IMS course code.
+_Avoid_: online course, webinar
+
+**Session Login URL**:
+A single-use, short-lived URL that authenticates the current teacher into the live-session provider's panel/room without credentials. Generated per delivery method: Skyroom `createLoginUrl` (room entry as presenter) or Niliroom login grant (panel login + room redirect). Teachers get login URLs; students get join URLs.
+_Avoid_: join URL, access link
+
+**Niliroom room**:
+The provider-side meeting room for a BBB seminar, created manually by staff in the Niliroom panel and referenced by its opaque public ID stored in the delivery option's details (`nili_room_id`). Never created via API.
+_Avoid_: meeting, BBB room
+
+**Skyroom room**:
+The provider-side conference room for a Skyroom seminar, created manually in the Skyroom panel and referenced by its numeric ID stored in the delivery option's details (`room_id`). Never created via API.
+_Avoid_: session, conference
+
 ### Account Security
 
 **Ban**:
