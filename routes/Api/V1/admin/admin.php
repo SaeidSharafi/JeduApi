@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestUpdateStatus
 use App\Http\Controllers\Api\Admin\Forms\CollaborationRequest\CollaborationRequestController;
 use App\Http\Controllers\Api\Admin\Forms\ContactRequest\ContactRequestController;
 use App\Http\Controllers\Api\Admin\MoodleSsoController;
+use App\Http\Controllers\Api\Admin\Notifications\StaffNotificationController;
 use App\Http\Controllers\Api\Admin\Profile\StaffChangePasswordController;
 use App\Http\Controllers\Api\Admin\Profile\StaffProfileController;
 use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
@@ -85,6 +86,11 @@ Route::prefix('contact-requests/{contactRequest}')->name('contact-requests.')->g
     Route::patch('assignment', [ContactRequestController::class, 'assignment'])->name('update-assignment');
     Route::patch('note', [ContactRequestController::class, 'note'])->name('update-note');
 });
+
+Route::get('notifications', [StaffNotificationController::class, 'index'])->name('notifications.index');
+Route::get('notifications/unread-count', [StaffNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+Route::patch('notifications/read-all', [StaffNotificationController::class, 'readAll'])->name('notifications.read-all');
+Route::patch('notifications/{notification}/read', [StaffNotificationController::class, 'read'])->name('notifications.read');
 
 Route::singleton('profile', StaffProfileController::class)
     ->only(['show', 'update']);

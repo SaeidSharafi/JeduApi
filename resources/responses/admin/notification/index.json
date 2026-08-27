@@ -1,0 +1,24 @@
+{
+  "message": "Operation completed successfully.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": "6a9f8a8c-6a75-4d3e-94d9-7d7cbf1c1a54",
+        "type": "App\\Notifications\\Admin\\InboundRequestAssignedNotification",
+        "title": "New request assignment",
+        "message": "A collaboration request was assigned to you.",
+        "resource_type": "collaboration_request",
+        "resource_id": 42,
+        "read_at": null,
+        "created_at": "2026-08-27T10:00:00.000000Z"
+      }
+    ],
+    "from": 1,
+    "last_page": 1,
+    "per_page": 15,
+    "to": 1,
+    "total": 1
+  },
+  "metadata": []
+}
