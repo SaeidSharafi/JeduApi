@@ -67,4 +67,13 @@ describe('Admin Staff Select Option API', function (): void {
         $response->assertOk();
         $response->assertJsonCount(3, 'data');
     });
+
+    it('excludes banned staff', function (): void {
+        $this->authorized_user();
+        App\Models\Staff::factory()->create(['name' => 'Banned Staff', 'is_banned' => true]);
+
+        $response = $this->getJson('/api/v1/admin/select-option/staff?q=Banned Staff');
+
+        $response->assertOk()->assertJson(['data' => []]);
+    });
 });

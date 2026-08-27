@@ -39,6 +39,10 @@ enum PermissionEnum: string
     case CATEGORY_UPDATE_OWN              = 'categories.update_own';
     case CATEGORY_VIEW                    = 'categories.view';
     case CATEGORY_VIEW_ANY                = 'categories.view_any';
+    case CONTACT_US_REQUEST_UPDATE        = 'contact_us_requests.update';
+    case CONTACT_US_REQUEST_UPDATE_OWN    = 'contact_us_requests.update_own';
+    case CONTACT_US_REQUEST_VIEW          = 'contact_us_requests.view';
+    case CONTACT_US_REQUEST_VIEW_ANY      = 'contact_us_requests.view_any';
     case COURSE_CREATE                    = 'courses.create';
     case COURSE_DELETE                    = 'courses.delete';
     case COURSE_DELETE_OWN                = 'courses.delete_own';

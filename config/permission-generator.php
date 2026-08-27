@@ -233,6 +233,11 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
+        'contact_us_request' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::UPDATE,
+            PermissionAction::UPDATE_OWN,
+        ],
         'blog_category' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,

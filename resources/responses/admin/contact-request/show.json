@@ -1,0 +1,17 @@
+{
+  "message": "Operation completed successfully.",
+  "data": {
+    "id": 1,
+    "full_name": "John Doe",
+    "phone": "09123456789",
+    "email": "john@example.com",
+    "subject": "Course question",
+    "message": "I have a question about your courses.",
+    "status": {"value": "pending", "label": "enums.InboundRequestStatusEnum.pending"},
+    "note": null,
+    "assignee": null,
+    "created_at": "1405-06-05 13:30:00",
+    "updated_at": "1405-06-05 13:30:00"
+  },
+  "metadata": []
+}

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\InboundRequestStatusEnum;
+use Database\Factories\ContactUsRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Database\Factories\ContactUsRequestFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class ContactUsRequest extends Model
 {
@@ -19,5 +21,23 @@ final class ContactUsRequest extends Model
         'subject',
         'email',
         'message',
+        'status',
+        'note',
+        'assigned_to_id',
     ];
+
+    /** @return BelongsTo<Staff, $this> */
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(Staff::class, 'assigned_to_id');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'status'     => InboundRequestStatusEnum::class,
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 }

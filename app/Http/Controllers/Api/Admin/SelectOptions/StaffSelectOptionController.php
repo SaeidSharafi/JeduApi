@@ -30,6 +30,7 @@ final class StaffSelectOptionController extends Controller
         $limit = request()->integer('limit', 10);
 
         $staffs = \App\Models\Staff::query()
+            ->where('is_banned', false)
             ->select(['id', 'name', 'email'])
             ->when($query, function ($staff) use ($query): void {
                 $staff->where(function ($staff) use ($query): void {
