@@ -257,7 +257,7 @@
 
 #### Provisioning Attempt Lifecycle
 
-`ProvisioningAttemptService` records queued, running, succeeded, retry-scheduled, failed, and manual-action-required states for provider executions. `ProvisionEnrollmentProviderJob` runs Moodle through `MoodleProvisioningProvider` and `ProvisioningProviderRegistry`; lifecycle transitions and enrollment snapshot merges lock fresh rows in short transactions, with external Moodle calls outside those locks. Failure metadata is whitelisted and canonical provider references are persisted without raw Moodle payloads.
+`ProvisioningAttemptService` records queued, running, succeeded, retry-scheduled, failed, and manual-action-required states for provider executions. `ProvisionEnrollmentProviderJob` runs Moodle and IMS through provider adapters and `ProvisioningProviderRegistry`; lifecycle transitions and enrollment snapshot merges lock fresh rows in short transactions, with external calls outside those locks. Failure metadata is whitelisted and canonical provider references are persisted without raw provider payloads.
 
 #### Student Story Actions (`app/Actions/Admin/Setting/StudentStory/`)
 - **CreateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/CreateStudentStoryAction.php`)

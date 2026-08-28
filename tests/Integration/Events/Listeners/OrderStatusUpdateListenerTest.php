@@ -10,7 +10,6 @@ use App\Events\EnrollmentStatusChanged;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Listeners\OrderStatusUpdateListener;
@@ -27,7 +26,6 @@ describe('OrderStatusUpdateListener', function (): void {
 
     beforeEach(function (): void {
         Queue::fake([
-            ProvisionImsEnrollmentJob::class,
             ProvisionEnrollmentProviderJob::class,
             ProvisionMoodleQuizJob::class,
             ProvisionSpotPlayerEnrollmentJob::class,
@@ -101,8 +99,7 @@ describe('OrderStatusUpdateListener', function (): void {
 
         (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))->handle($event);
 
-        Queue::assertPushed(ProvisionImsEnrollmentJob::class, 5);
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 1);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 6);
         Queue::assertPushed(ProvisionSpotPlayerEnrollmentJob::class, 1);
         Queue::assertPushed(ProvisionBbbEnrollmentJob::class, 1);
     });

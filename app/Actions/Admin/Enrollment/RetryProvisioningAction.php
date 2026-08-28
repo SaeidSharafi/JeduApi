@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Enrollment;
 
 use App\Enums\EnrollmentStatusEnum;
-use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningTriggerEnum;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
@@ -116,11 +115,10 @@ final readonly class RetryProvisioningAction
             }
 
             if ($provider === 'ims') {
-                $paymentId = $this->resolvePaymentId($enrollment);
-                ProvisionImsEnrollmentJob::dispatch($enrollment->id, $paymentId);
+                $this->dispatchProvider($enrollment, ProvisioningProviderEnum::IMS);
                 $dispatched[] = 'ims';
             } elseif ($provider === 'moodle') {
-                $this->dispatchMoodle($enrollment);
+                $this->dispatchProvider($enrollment, ProvisioningProviderEnum::MOODLE);
                 $dispatched[] = 'moodle';
             } elseif ($provider === 'spotplayer') {
                 ProvisionSpotPlayerEnrollmentJob::dispatch($enrollment->id);
@@ -141,19 +139,6 @@ final readonly class RetryProvisioningAction
     }
 
     /**
-     * Resolve the latest completed payment ID.
-     */
-    private function resolvePaymentId(Enrollment $enrollment): ?int
-    {
-        $payment = $enrollment->order?->payments()
-            ->where('status', PaymentStatusEnum::COMPLETED)
-            ->latest('id')
-            ->first();
-
-        return $payment?->id;
-    }
-
-    /**
      * Dispatch all required provisioning jobs (for null provisioning_data case).
      *
      * This handles the edge case where provisioning was never attempted
@@ -171,13 +156,12 @@ final readonly class RetryProvisioningAction
         }
 
         if ($plannedProviders->contains('ims')) {
-            $paymentId = $this->resolvePaymentId($enrollment);
-            ProvisionImsEnrollmentJob::dispatch($enrollment->id, $paymentId);
+            $this->dispatchProvider($enrollment, ProvisioningProviderEnum::IMS);
             $dispatched[] = 'ims';
         }
 
         if ($plannedProviders->contains('moodle')) {
-            $this->dispatchMoodle($enrollment);
+            $this->dispatchProvider($enrollment, ProvisioningProviderEnum::MOODLE);
             $dispatched[] = 'moodle';
         }
 
@@ -204,12 +188,13 @@ final readonly class RetryProvisioningAction
         return $dispatched;
     }
 
-    private function dispatchMoodle(Enrollment $enrollment): void
+    private function dispatchProvider(Enrollment $enrollment, ProvisioningProviderEnum $provider): void
     {
         $attempt = $this->attemptService->queue(
             $enrollment,
             ProvisioningTriggerEnum::RETRY,
             auth('staff')->id(),
+            $provider,
         );
         ProvisionEnrollmentProviderJob::dispatch($attempt->id);
     }

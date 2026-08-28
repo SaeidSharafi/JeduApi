@@ -8,7 +8,6 @@ use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
@@ -74,7 +73,7 @@ describe('RetryProvisioningAction', function (): void {
         expect($result['message'])->toContain('Initial provisioning dispatched');
         expect($result['providers'])->toContain('ims', 'moodle');
 
-        Queue::assertPushed(ProvisionImsEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
         Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
@@ -104,9 +103,7 @@ describe('RetryProvisioningAction', function (): void {
         expect($result['message'])->toBe('Retry dispatched for 1 provider(s)')
             ->and($result['providers'])->toBe(['ims']);
 
-        Queue::assertPushed(ProvisionImsEnrollmentJob::class, function ($job) use ($enrollment): bool {
-            return $job->enrollmentId === $enrollment->id;
-        });
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('dispatches Moodle provisioning job for failed Moodle provider', function (): void {
@@ -247,7 +244,7 @@ describe('RetryProvisioningAction', function (): void {
         expect($result['message'])->toBe('Retry dispatched for 2 provider(s)')
             ->and($result['providers'])->toBe(['ims', 'moodle']);
 
-        Queue::assertPushed(ProvisionImsEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
         Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 

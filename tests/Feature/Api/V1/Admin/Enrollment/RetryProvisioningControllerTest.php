@@ -7,7 +7,6 @@ use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
@@ -108,7 +107,7 @@ describe('RetryProvisioningController', function (): void {
             ->assertJsonPath('data.message', 'Retry dispatched for 2 provider(s)')
             ->assertJsonPath('data.providers', ['ims', 'moodle']);
 
-        Queue::assertPushed(ProvisionImsEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
         Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 

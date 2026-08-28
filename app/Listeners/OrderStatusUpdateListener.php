@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningTriggerEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
@@ -66,7 +66,8 @@ final class OrderStatusUpdateListener implements ShouldQueue
             }
 
             if ($plannedProviders->contains('ims')) {
-                ProvisionImsEnrollmentJob::dispatch($item->enrollment->id, $order->firstPayment?->id);
+                $attempt = $this->attemptService->queue($item->enrollment, ProvisioningTriggerEnum::PAYMENT, provider: ProvisioningProviderEnum::IMS);
+                ProvisionEnrollmentProviderJob::dispatch($attempt->id);
             }
 
             if ($plannedProviders->contains('moodle')) {

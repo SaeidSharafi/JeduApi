@@ -6,6 +6,7 @@ namespace App\Services\Provisioning;
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\ProvisioningAttemptStatusEnum;
+use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningReadinessEnum;
 use App\Enums\ProvisioningStatusEnum;
 use App\Enums\ProvisioningTriggerEnum;
@@ -16,13 +17,13 @@ use Throwable;
 
 final class ProvisioningAttemptService
 {
-    public function queue(Enrollment $enrollment, ProvisioningTriggerEnum $trigger, ?int $staffId = null): ProvisioningAttempt
+    public function queue(Enrollment $enrollment, ProvisioningTriggerEnum $trigger, ?int $staffId = null, ProvisioningProviderEnum $provider = ProvisioningProviderEnum::MOODLE): ProvisioningAttempt
     {
-        return DB::transaction(function () use ($enrollment, $trigger, $staffId): ProvisioningAttempt {
+        return DB::transaction(function () use ($enrollment, $trigger, $staffId, $provider): ProvisioningAttempt {
             Enrollment::query()->lockForUpdate()->findOrFail($enrollment->id);
             $active = ProvisioningAttempt::query()
                 ->where('enrollment_id', $enrollment->id)
-                ->where('provider', 'moodle')
+                ->where('provider', $provider->value)
                 ->whereIn('status', [
                     ProvisioningAttemptStatusEnum::QUEUED,
                     ProvisioningAttemptStatusEnum::RUNNING,
@@ -40,7 +41,7 @@ final class ProvisioningAttemptService
 
             return ProvisioningAttempt::query()->create([
                 'enrollment_id' => $enrollment->id,
-                'provider'      => 'moodle',
+                'provider'      => $provider,
                 'trigger'       => $trigger,
                 'status'        => ProvisioningAttemptStatusEnum::QUEUED,
                 'sequence'      => $sequence,
@@ -92,12 +93,13 @@ final class ProvisioningAttemptService
             }
 
             $data             = $enrollment->provisioning_data ?? [];
-            $existingSequence = (int) data_get($data, 'providers.moodle.attempt_sequence', 0);
+            $provider         = $lockedAttempt->provider->value;
+            $existingSequence = (int) data_get($data, "providers.{$provider}.attempt_sequence", 0);
             if ($lockedAttempt->sequence < $existingSequence) {
                 return;
             }
 
-            data_set($data, 'providers.moodle', [
+            data_set($data, "providers.{$provider}", [
                 'status'           => 'success',
                 'attempt_sequence' => $lockedAttempt->sequence,
                 'data'             => $this->safeReferences($references),
@@ -147,11 +149,12 @@ final class ProvisioningAttemptService
                 return;
             }
             $data             = $enrollment->provisioning_data ?? [];
-            $existingSequence = (int) data_get($data, 'providers.moodle.attempt_sequence', 0);
+            $provider         = $locked->provider->value;
+            $existingSequence = (int) data_get($data, "providers.{$provider}.attempt_sequence", 0);
             if ($locked->sequence < $existingSequence) {
                 return;
             }
-            data_set($data, 'providers.moodle', [
+            data_set($data, "providers.{$provider}", [
                 'status'           => $manualAction ? 'manual_action_required' : 'failed',
                 'attempt_sequence' => $locked->sequence,
                 'last_error'       => mb_substr($exception->getMessage(), 0, 1000),
@@ -205,7 +208,7 @@ final class ProvisioningAttemptService
     private function safeReferences(array $references): array
     {
         return collect($references)->only([
-            'moodle_user_id', 'moodle_user_name', 'moodle_course_id', 'login_path', 'provisioned_at',
+            'moodle_user_id', 'moodle_user_name', 'moodle_course_id', 'ims_student_id', 'ims_enrollment_id', 'course_code', 'login_path', 'provisioned_at',
         ])->all();
     }
 }
