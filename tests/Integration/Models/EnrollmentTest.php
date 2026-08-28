@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Enums\EnrollmentStatusEnum;
+use App\Enums\ProvisioningStatusEnum;
+use Illuminate\Validation\ValidationException;
+
 it('to array', function (): void {
 
     $enrollment = App\Models\Enrollment::factory()->create();
@@ -51,4 +55,20 @@ test('customer relationship', function (): void {
 
     expect($customer)->toBeInstanceOf(App\Models\User::class)
         ->and($customer->id)->toBe($enrollment->customer_id);
+});
+
+it('does not allow persisted activation before provisioning succeeds', function (): void {
+    $enrollment = App\Models\Enrollment::factory()->create();
+    $enrollment->update([
+        'provisioning_plan' => [
+            'version'   => 1,
+            'providers' => [['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready']],
+            'status'    => ProvisioningStatusEnum::READY->value,
+        ],
+        'provisioning_data' => [],
+        'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING,
+    ]);
+
+    expect(fn () => $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]))
+        ->toThrow(ValidationException::class, 'cannot be activated');
 });

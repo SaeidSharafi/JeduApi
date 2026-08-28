@@ -19,6 +19,11 @@ final readonly class SkyroomProvisioningProvider implements ProvisioningProvider
         return ProvisioningProviderEnum::SKYROOM;
     }
 
+    public function supportsAccessReconciliation(): bool
+    {
+        return false;
+    }
+
     public function provision(Enrollment $enrollment): array
     {
         if (! $this->isApplicable($enrollment)) {

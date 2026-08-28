@@ -16,6 +16,7 @@ final class EnrollmentUpdateData extends Data
         public ?string $access_end_date,
         public ?int $external_enrollment_id,
         public ?string $notes,
+        public ?string $reason = null,
     ) {}
 
     public static function prepareForPipeline(array $properties): array
@@ -29,10 +30,14 @@ final class EnrollmentUpdateData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'access_start_date'      => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
-            'access_end_date'        => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after_or_equal:access_start_date'],
+            'access_start_date' => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
+            'access_end_date'   => [
+                'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
+                'after_or_equal:access_start_date',
+            ],
             'external_enrollment_id' => ['nullable', 'integer'],
             'notes'                  => ['nullable', 'string', 'max:1000'],
+            'reason'                 => ['nullable', 'string', 'max:500'],
         ];
     }
 
@@ -59,6 +64,10 @@ final class EnrollmentUpdateData extends Data
             'notes' => [
                 'description' => 'Admin notes for the enrollment.',
                 'example'     => 'Extended access due to technical issues.',
+            ],
+            'reason' => [
+                'description' => 'Reason recorded in the access-change audit trail.',
+                'example'     => 'Extended access after support approval.',
             ],
         ];
     }

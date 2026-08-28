@@ -20,10 +20,11 @@ final class Enrollment extends Model
     /** @use HasFactory<EnrollmentFactory> */
     use HasFactory;
 
-    protected $attributes = [
-        'provisioning_plan'   => '{"version":1,"providers":[],"status":"healthy"}',
-        'provisioning_status' => 'healthy',
-    ];
+    protected $attributes
+        = [
+            'provisioning_plan'   => '{"version":1,"providers":[],"status":"healthy"}',
+            'provisioning_status' => 'healthy',
+        ];
 
     protected $fillable
         = [
@@ -113,6 +114,22 @@ final class Enrollment extends Model
         ])->save();
     }
 
+    public function hasHealthyProvisioningOutcomes(): bool
+    {
+        foreach ($this->provisioning_plan['providers'] ?? [] as $provider) {
+            $status = data_get($this->provisioning_data, "providers.{$provider['provider']}.status");
+
+            $isReady              = ($provider['readiness'] ?? null) === 'ready';
+            $hasSuccessfulOutcome = in_array($status, ['success', 'waived'], true);
+
+            if (! $isReady || ! $hasSuccessfulOutcome) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     protected static function boot(): void
     {
         parent::boot();
@@ -127,6 +144,17 @@ final class Enrollment extends Model
             ) {
                 EnrollmentStatusChanged::dispatch($enrollment);
             }
+        });
+
+        self::saving(function (Enrollment $enrollment): void {
+            if (! $enrollment->requiresProvisioningBeforeActivation()
+                || $enrollment->hasHealthyProvisioningOutcomes()) {
+                return;
+            }
+
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'enrollment_status' => 'Enrollment cannot be activated before provisioning is healthy.',
+            ]);
         });
 
         self::deleting(function (Enrollment $enrollment): void {
@@ -152,9 +180,18 @@ final class Enrollment extends Model
     {
         return Attribute::make(
             get: fn (): array => [
-                'status' => $this->provisioning_status,
-                'plan'   => $this->provisioning_plan,
+                'status'                => $this->provisioning_status,
+                'plan'                  => $this->provisioning_plan,
+                'reconciliation_status' => data_get($this->provisioning_data, 'reconciliation.status'),
             ],
         );
+    }
+
+    private function requiresProvisioningBeforeActivation(): bool
+    {
+        return $this->exists
+            && $this->isDirty('enrollment_status')
+            && $this->enrollment_status === EnrollmentStatusEnum::ACTIVE
+            && $this->hasRequiredProvisioningProviders();
     }
 }

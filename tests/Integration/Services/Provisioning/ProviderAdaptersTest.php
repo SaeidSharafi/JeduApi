@@ -13,6 +13,7 @@ use App\Services\Integrations\MoodleService;
 use App\Services\Integrations\SkyroomService;
 use App\Services\Integrations\SpotPlayerService;
 use App\Services\Provisioning\Providers\BbbProvisioningProvider;
+use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleQuizProvisioningProvider;
 use App\Services\Provisioning\Providers\SkyroomProvisioningProvider;
 use App\Services\Provisioning\Providers\SpotPlayerProvisioningProvider;
@@ -58,7 +59,8 @@ it('marks an uncertain SpotPlayer response as manual action', function (): void 
     $service    = $this->mock(SpotPlayerService::class);
     $service->shouldReceive('isEnabled')->andReturnTrue();
     $service->shouldReceive('assertConfigured');
-    $service->shouldReceive('issueLicense')->andThrow(new RecoverableProvisioningException('timeout', 0, null, ['http_status' => 504]));
+    $service->shouldReceive('issueLicense')->andThrow(new RecoverableProvisioningException('timeout', 0, null,
+        ['http_status' => 504]));
 
     expect(fn () => (new SpotPlayerProvisioningProvider($service))->provision($enrollment))
         ->toThrow(UnrecoverableProvisioningException::class, 'ambiguous');
@@ -105,4 +107,25 @@ it('rejects a missing staff-created room as manual action', function (): void {
 
     expect(fn () => (new SkyroomProvisioningProvider($service))->provision($enrollment))
         ->toThrow(UnrecoverableProvisioningException::class);
+});
+
+it('revokes Moodle access for suspended lifecycle changes', function (): void {
+    $enrollment = adapterEnrollment('moodle', []);
+    $enrollment->update([
+        'provisioning_data' => [
+            'providers' => [
+                'moodle' => [
+                    'status' => 'success', 'data' => [
+                        'moodle_user_id' => 42, 'moodle_course_id' => 99,
+                    ],
+                ],
+            ],
+        ],
+    ]);
+    $service = $this->mock(MoodleService::class);
+    $service->shouldReceive('unenrollUser')->once()->with(42, 99);
+
+    expect((new MoodleProvisioningProvider($service))->reconcileAccess($enrollment, [
+        'requested_status' => EnrollmentStatusEnum::SUSPENDED->value,
+    ]))->toBe(['moodle_user_id' => 42, 'moodle_course_id' => 99]);
 });

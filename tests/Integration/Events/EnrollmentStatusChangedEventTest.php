@@ -150,6 +150,9 @@ it('increments enrolled_count when status changes from CANCELLED to ACTIVE', fun
         'product_delivery_option_id' => $deliveryOption->id,
         'enrollment_status'          => EnrollmentStatusEnum::CANCELLED,
     ]);
+    $enrollment->updateQuietly([
+        'provisioning_plan' => ['version' => 1, 'providers' => [], 'status' => 'healthy'],
+    ]);
 
     expect($deliveryOption->fresh()->enrolled_count)->toBe(0);
 

@@ -7,6 +7,7 @@ namespace App\Actions\Admin\Enrollment;
 use App\Data\Admin\Enrollment\EnrollmentStatusChangeData;
 use App\Enums\EnrollmentStatusEnum;
 use App\Models\Enrollment;
+use App\Services\Provisioning\ProvisioningAttemptService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -18,7 +19,8 @@ final readonly class ChangeEnrollmentStatusAction
                 EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::CANCELLED,
             ],
             EnrollmentStatusEnum::PENDING_PROVISIONING->value => [
-                EnrollmentStatusEnum::ACTIVE, EnrollmentStatusEnum::PROVISIONING_FAILED, EnrollmentStatusEnum::CANCELLED,
+                EnrollmentStatusEnum::ACTIVE, EnrollmentStatusEnum::PROVISIONING_FAILED,
+                EnrollmentStatusEnum::CANCELLED,
             ],
             EnrollmentStatusEnum::ACTIVE->value => [
                 EnrollmentStatusEnum::SUSPENDED, EnrollmentStatusEnum::EXPIRED, EnrollmentStatusEnum::CANCELLED,
@@ -33,6 +35,8 @@ final readonly class ChangeEnrollmentStatusAction
             EnrollmentStatusEnum::CANCELLED->value => [],
         ];
 
+    public function __construct(private ProvisioningAttemptService $attempts) {}
+
     /**
      * Execute the action.
      */
@@ -41,14 +45,27 @@ final readonly class ChangeEnrollmentStatusAction
         return DB::transaction(function () use ($enrollment, $data): Enrollment {
             $newStatus = EnrollmentStatusEnum::from($data->new_status);
             $this->validateTransition($enrollment->enrollment_status, $newStatus);
+            if ($newStatus === EnrollmentStatusEnum::ACTIVE && ! $this->canActivateEnrollment($enrollment)) {
+                throw ValidationException::withMessages([
+                    'enrollment_status' => 'Enrollment cannot be activated before provisioning is healthy.',
+                ]);
+            }
 
             $enrollment->update([
                 'enrollment_status' => $newStatus,
             ]);
+            if ($newStatus !== EnrollmentStatusEnum::PENDING_PROVISIONING) {
+                $this->attempts->recordAccessReconciliation(
+                    $enrollment,
+                    ['reason' => "Enrollment status changed to {$newStatus->value}.", 'status' => $newStatus->value],
+                    auth('staff')->id(),
+                );
+            }
 
             if ($data->reason !== null && $data->reason !== '') {
                 $timestamp   = now()->format('Y-m-d H:i:s');
-                $newNote     = "[{$timestamp}] Status changed to {$newStatus->value}: {$data->reason}";
+                $staffId     = auth('staff')->id();
+                $newNote     = "[{$timestamp}] Status changed to {$newStatus->value} by staff {$staffId}: {$data->reason}";
                 $currentNote = $enrollment->notes ?? '';
                 $updatedNote = $currentNote === '' ? $newNote : $currentNote.PHP_EOL.$newNote;
 
@@ -57,6 +74,12 @@ final readonly class ChangeEnrollmentStatusAction
 
             return $enrollment->fresh();
         });
+    }
+
+    private function canActivateEnrollment(Enrollment $enrollment): bool
+    {
+        return ! $enrollment->hasRequiredProvisioningProviders()
+            || $enrollment->hasHealthyProvisioningOutcomes();
     }
 
     /**

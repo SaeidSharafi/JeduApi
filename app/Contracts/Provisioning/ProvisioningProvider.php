@@ -11,6 +11,8 @@ interface ProvisioningProvider
 {
     public function provider(): ProvisioningProviderEnum;
 
+    public function supportsAccessReconciliation(): bool;
+
     /** @return array<string, mixed> Canonical safe references only. */
     public function provision(Enrollment $enrollment): array;
 }

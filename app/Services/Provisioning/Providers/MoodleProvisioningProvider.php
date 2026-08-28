@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Provisioning\Providers;
 
 use App\Contracts\Provisioning\ProvisioningProvider;
+use App\Enums\EnrollmentStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
@@ -18,6 +19,11 @@ final readonly class MoodleProvisioningProvider implements ProvisioningProvider
     public function provider(): ProvisioningProviderEnum
     {
         return ProvisioningProviderEnum::MOODLE;
+    }
+
+    public function supportsAccessReconciliation(): bool
+    {
+        return true;
     }
 
     public function provision(Enrollment $enrollment): array
@@ -51,5 +57,34 @@ final readonly class MoodleProvisioningProvider implements ProvisioningProvider
             'login_path'       => $this->moodle->getLoginPath(),
             'provisioned_at'   => Carbon::now()->toISOString(),
         ];
+    }
+
+    /** @param  array<string, mixed>  $context */
+    public function reconcileAccess(Enrollment $enrollment, array $context): array
+    {
+        $references = data_get($enrollment->provisioning_data, 'providers.moodle.data', []);
+        $userId     = data_get($references, 'moodle_user_id');
+        $courseId   = data_get($references, 'moodle_course_id');
+        if (! is_numeric($userId) || ! is_numeric($courseId)) {
+            throw new UnrecoverableProvisioningException('Moodle enrollment references are missing.');
+        }
+
+        $requestedStatus = $context['requested_status'] ?? null;
+        if ($requestedStatus === EnrollmentStatusEnum::ACTIVE->value) {
+            $this->moodle->enrollUser((int) $userId, (int) $courseId,
+                strtotime((string) ($context['access_start_date'] ?? '')) ?: null,
+                strtotime((string) ($context['access_end_date'] ?? '')) ?: null, $this->moodle->getDefaultRoleId());
+        } elseif (in_array($requestedStatus, [
+            EnrollmentStatusEnum::SUSPENDED->value,
+            EnrollmentStatusEnum::EXPIRED->value,
+            EnrollmentStatusEnum::CANCELLED->value,
+        ], true)
+        ) {
+            $this->moodle->unenrollUser((int) $userId, (int) $courseId);
+        } else {
+            throw new UnrecoverableProvisioningException('Moodle access reconciliation requires manual action.');
+        }
+
+        return $references;
     }
 }

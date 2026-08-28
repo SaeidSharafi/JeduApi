@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
+use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
+use App\Models\ProvisioningAttempt;
 use App\Services\Provisioning\ProvisioningAttemptService;
 use App\Services\Provisioning\ProvisioningProviderRegistry;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -41,7 +43,8 @@ final class ProvisionEnrollmentProviderJob implements ShouldBeUnique, ShouldQueu
         }
 
         try {
-            $references = $providers->resolve($attempt->provider)->provision($attempt->enrollment);
+            $provider   = $providers->resolve($attempt->provider);
+            $references = $this->reconcileOrProvision($attempt, $provider);
             $attempts->succeed($attempt, $references);
         } catch (UnrecoverableProvisioningException $exception) {
             $attempts->fail($attempt, $exception, true, $exception->metaData);
@@ -51,9 +54,26 @@ final class ProvisionEnrollmentProviderJob implements ShouldBeUnique, ShouldQueu
             if ($this->attempts() < $this->tries) {
                 $attempts->scheduleRetry($attempt);
             } else {
-                $attempts->fail($attempt, $exception, false, property_exists($exception, 'metaData') ? $exception->metaData : []);
+                $attempts->fail($attempt, $exception, false,
+                    property_exists($exception, 'metaData') ? $exception->metaData : []);
             }
             throw $exception;
         }
+    }
+
+    /** @return array<string, mixed> */
+    private function reconcileOrProvision(ProvisioningAttempt $attempt, ProvisioningProvider $provider): array
+    {
+        if ($this->shouldReconcile($attempt, $provider)) {
+            return $provider->reconcileAccess($attempt->enrollment, $attempt->failure_metadata);
+        }
+
+        return $provider->provision($attempt->enrollment);
+    }
+
+    private function shouldReconcile(ProvisioningAttempt $attempt, ProvisioningProvider $provider): bool
+    {
+        return data_get($attempt->failure_metadata, 'kind') === 'access_reconciliation'
+            && $provider->supportsAccessReconciliation();
     }
 }

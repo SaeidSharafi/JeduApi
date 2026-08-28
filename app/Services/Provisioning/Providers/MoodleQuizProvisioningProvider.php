@@ -19,6 +19,11 @@ final readonly class MoodleQuizProvisioningProvider implements ProvisioningProvi
         return ProvisioningProviderEnum::MOODLE_QUIZ;
     }
 
+    public function supportsAccessReconciliation(): bool
+    {
+        return false;
+    }
+
     public function provision(Enrollment $enrollment): array
     {
         if (! $this->moodle->isEnabled()) {

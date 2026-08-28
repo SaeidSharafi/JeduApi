@@ -17,5 +17,6 @@ final class ProvisioningSummaryData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ProvisioningStatusEnum $status,
         public ProvisioningPlanData $plan,
+        public ?string $reconciliation_status = null,
     ) {}
 }

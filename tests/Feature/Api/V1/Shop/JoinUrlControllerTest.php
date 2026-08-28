@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Models\Enrollment;
 use App\Services\Integrations\BbbService;
 use App\Services\Integrations\SkyroomService;
 
@@ -27,6 +28,15 @@ it('returns 404 when enrollment belongs to another user', function (): void {
 
 it('returns join url for BBB live session', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
+    markEnrollmentProvidersReady($enrollment);
+    $enrollment->provisioning_data = [
+        'providers' => [
+            'bbb' => [
+                'status' => 'success', 'data' => ['meeting_id' => 'meeting-abc-123'],
+            ],
+        ],
+    ];
+    $enrollment->save();
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
     $enrollment->provisioning_data = [
         'providers' => [
@@ -55,6 +65,15 @@ it('returns join url for BBB live session', function (): void {
 
 it('returns 503 when BBB meeting is not provisioned yet', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
+    markEnrollmentProvidersReady($enrollment);
+    $enrollment->provisioning_data = [
+        'providers' => [
+            'bbb' => [
+                'status' => 'success', 'data' => ['meeting_id' => 'meeting-abc-123'],
+            ],
+        ],
+    ];
+    $enrollment->save();
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
     // provisioning_data has no bbb meeting_id
     $enrollment->provisioning_data = [
@@ -76,6 +95,15 @@ it('returns 503 when BBB meeting is not provisioned yet', function (): void {
 
 it('returns join url for Skyroom live session', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM);
+    markEnrollmentProvidersReady($enrollment);
+    $enrollment->provisioning_data = [
+        'providers' => [
+            'skyroom' => [
+                'status' => 'success', 'data' => ['room_id' => 456],
+            ],
+        ],
+    ];
+    $enrollment->save();
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
     $enrollment->provisioning_data = [
         'providers' => [
@@ -104,6 +132,15 @@ it('returns join url for Skyroom live session', function (): void {
 
 it('returns 503 when Skyroom room is not provisioned yet', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM);
+    markEnrollmentProvidersReady($enrollment);
+    $enrollment->provisioning_data = [
+        'providers' => [
+            'skyroom' => [
+                'status' => 'success', 'data' => ['room_id' => 456],
+            ],
+        ],
+    ];
+    $enrollment->save();
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
     // provisioning_data has no skyroom room_id
     $enrollment->provisioning_data = [
@@ -135,6 +172,15 @@ it('returns 422 when delivery method does not support join URLs', function (): v
 
 it('returns 500 when an unexpected error occurs', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
+    markEnrollmentProvidersReady($enrollment);
+    $enrollment->provisioning_data = [
+        'providers' => [
+            'bbb' => [
+                'status' => 'success', 'data' => ['meeting_id' => 'meeting-abc-123'],
+            ],
+        ],
+    ];
+    $enrollment->save();
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
     $enrollment->provisioning_data = [
         'providers' => [
@@ -155,3 +201,14 @@ it('returns 500 when an unexpected error occurs', function (): void {
     $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertServerError();
 });
+
+function markEnrollmentProvidersReady(Enrollment $enrollment): void
+{
+    $plan = $enrollment->provisioning_plan;
+
+    foreach ($plan['providers'] ?? [] as $index => $provider) {
+        $plan['providers'][$index]['readiness'] = 'ready';
+    }
+
+    $enrollment->updateQuietly(['provisioning_plan' => $plan]);
+}

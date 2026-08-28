@@ -20,6 +20,11 @@ final readonly class SpotPlayerProvisioningProvider implements ProvisioningProvi
         return ProvisioningProviderEnum::SPOTPLAYER;
     }
 
+    public function supportsAccessReconciliation(): bool
+    {
+        return false;
+    }
+
     public function provision(Enrollment $enrollment): array
     {
         if (! $this->spotPlayer->isEnabled()) {

@@ -14,5 +14,6 @@ final class ProvisioningDiagnosticsData extends Data
         public string $status,
         #[DataCollectionOf(ProvisioningDiagnosticData::class)]
         public DataCollection $providers,
+        public ?string $reconciliation_status = null,
     ) {}
 }

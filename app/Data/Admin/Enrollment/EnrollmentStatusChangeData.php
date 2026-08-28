@@ -20,7 +20,7 @@ final class EnrollmentStatusChangeData extends Data
     {
         return [
             'new_status' => ['required', 'string', Rule::enum(EnrollmentStatusEnum::class)],
-            'reason'     => ['nullable', 'string', 'max:500'],
+            'reason'     => ['nullable', 'string', 'max:500', 'required_if:new_status,suspended,expired,cancelled'],
         ];
     }
 

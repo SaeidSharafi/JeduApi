@@ -31,7 +31,11 @@ final class ProvisioningDiagnosticsService
 
             return new ProvisioningDiagnosticData($provider, $status, (bool) ($attempt?->retryable ?? $status === 'failed'), $status === 'succeeded' || $status === 'waived' ? 'none' : ($status === 'failed' ? 'retry_or_manual_review' : 'await_provisioning'), $this->safeError(data_get($outcome, 'last_error')), $references, $attempt?->updated_at?->toISOString() ?? data_get($outcome, 'updated_at'));
         })->values()->all();
-        $summary = new ProvisioningDiagnosticsData((string) $enrollment->provisioning_status->value, new DataCollection(ProvisioningDiagnosticData::class, $providers));
+        $summary = new ProvisioningDiagnosticsData(
+            (string) $enrollment->provisioning_status->value,
+            new DataCollection(ProvisioningDiagnosticData::class, $providers),
+            data_get($data, 'reconciliation.status'),
+        );
         if (! $advanced) {
             return $summary;
         }

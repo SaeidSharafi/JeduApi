@@ -6,11 +6,12 @@ use App\Actions\Admin\Enrollment\ChangeEnrollmentStatusAction;
 use App\Data\Admin\Enrollment\EnrollmentStatusChangeData;
 use App\Enums\EnrollmentStatusEnum;
 use App\Models\Enrollment;
+use App\Services\Provisioning\ProvisioningAttemptService;
 use Illuminate\Validation\ValidationException;
 
 describe('ChangeEnrollmentStatusAction', function (): void {
     beforeEach(function (): void {
-        $this->action = new ChangeEnrollmentStatusAction();
+        $this->action = new ChangeEnrollmentStatusAction(app(ProvisioningAttemptService::class));
     });
 
     it('changes enrollment status with valid transition', function (): void {
@@ -64,13 +65,20 @@ describe('ChangeEnrollmentStatusAction', function (): void {
 
         expect(fn () => $this->action->handle($enrollment, $data))
             ->toThrow(ValidationException::class, __('messages.enrollments.invalid_status_transition',
-                ['from' => EnrollmentStatusEnum::EXPIRED->translate(), 'to' => EnrollmentStatusEnum::ACTIVE->translate()]));
+                [
+                    'from' => EnrollmentStatusEnum::EXPIRED->translate(),
+                    'to'   => EnrollmentStatusEnum::ACTIVE->translate(),
+                ]));
     });
 
     it('handles empty reason without modifying notes', function (): void {
         $enrollment = Enrollment::factory()->create([
             'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING,
             'notes'             => 'Original notes',
+        ]);
+        $enrollment->update([
+            'provisioning_plan'   => ['version' => 1, 'providers' => []],
+            'provisioning_status' => 'healthy',
         ]);
 
         $data = EnrollmentStatusChangeData::from([
@@ -83,4 +91,5 @@ describe('ChangeEnrollmentStatusAction', function (): void {
         expect($result->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE)
             ->and($result->notes)->toBe('Original notes');
     });
+
 });

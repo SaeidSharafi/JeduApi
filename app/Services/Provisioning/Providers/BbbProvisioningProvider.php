@@ -19,6 +19,11 @@ final readonly class BbbProvisioningProvider implements ProvisioningProvider
         return ProvisioningProviderEnum::BBB;
     }
 
+    public function supportsAccessReconciliation(): bool
+    {
+        return false;
+    }
+
     public function provision(Enrollment $enrollment): array
     {
         if (! $this->isApplicable($enrollment)) {

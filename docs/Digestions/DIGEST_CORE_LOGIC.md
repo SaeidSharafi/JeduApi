@@ -241,13 +241,13 @@
 
 #### Enrollment Actions (`app/Actions/Admin/Enrollment/`)
 - **ChangeEnrollmentStatusAction** (`app/Actions/Admin/Enrollment/ChangeEnrollmentStatusAction.php`)
-  - `handle(Enrollment $enrollment, EnrollmentStatusChangeData $data): Enrollment`: Validates status transitions against an allowed transition matrix (e.g., `awaiting_payment → pending_provisioning|cancelled`). Appends timestamped status change notes to the enrollment record. Throws `ValidationException` on invalid transitions.
+  - `handle(Enrollment $enrollment, EnrollmentStatusChangeData $data): Enrollment`: Validates status transitions against an allowed transition matrix (e.g., `awaiting_payment → pending_provisioning|cancelled`). Activation (`→ active`) is blocked until initial provisioning is healthy (provider plan ready and every required provider succeeded/waived). Non-`pending_provisioning` transitions trigger `ProvisioningAttemptService::recordAccessReconciliation()` so applicable providers receive remote reconciliation attempts and unsupported ones become manual-action-required. Appends timestamped, staff-attributed status change notes to the enrollment record. Throws `ValidationException` on invalid transitions.
 - **DeleteEnrollmentAction** (`app/Actions/Admin/Enrollment/DeleteEnrollmentAction.php`)
   - `handle(Enrollment $enrollment): void`: Deletes enrollment only if status is not `ACTIVE` — prevents deletion of active enrollments.
 - **RetryProvisioningAction** (`app/Actions/Admin/Enrollment/RetryProvisioningAction.php`)
   - `handle(Enrollment $enrollment): void`: Re-dispatches provisioning jobs for enrollment when `provisioning_data` contains partial/null provider states. Used for recovery from provisioning failures.
 - **UpdateEnrollmentAction** (`app/Actions/Admin/Enrollment/UpdateEnrollmentAction.php`)
-  - `handle(EnrollmentUpdateData $data, Enrollment $enrollment): Enrollment`: Updates enrollment metadata including access dates, notes, and survey completion status.
+  - `handle(EnrollmentUpdateData $data, Enrollment $enrollment): Enrollment`: Updates enrollment metadata including access dates, notes, and survey completion status. Access-date changes trigger `recordAccessReconciliation()` (remote re-enrollment with new dates for providers supporting it, manual-action otherwise) and append a staff-attributed audit note when a reason is supplied.
 
 #### Enrollment Provisioning Plan (`app/Services/Enrollment/ProvisioningPlanResolver.php`)
 - Resolves the sole canonical provider matrix at Enrollment creation. IMS applies when `ims_course_code` is present; the delivery method selects Moodle, SpotPlayer, BBB, or Skyroom; a separate numeric `moodle_quiz_course_id` selects Moodle Quiz for non-Moodle delivery methods.
@@ -262,6 +262,10 @@
 BBB/Niliroom and Skyroom also run through `ProvisionEnrollmentProviderJob` using dedicated adapters. Their adapters consume only the canonical plan and staff-created room references (`meeting_id`/`nili_room_id` or `room_id`); they never create provider rooms. Missing or invalid references become manual-action-required attempt failures. The legacy live-session jobs are no longer dispatched by order completion or retry flows.
 
 Authorized staff can manually resolve or waive a canonical provider through `ManualProvisioningRecoveryAction`. Resolution requires provider-specific safe references and a reason; waiver requires a separate permission and reason. Both append staff-attributed manual attempts and recalculate aggregate health. Plan rebuilds expose an explicit provider diff, require confirmation, increment the plan version, and preserve the prior snapshot and all attempts.
+
+#### Access Reconciliation
+
+Administrative status and access-date changes reconcile deliberately with applicable providers while local `Enrollment` state stays authoritative. `recordAccessReconciliation()` (in `ProvisioningAttemptService`) marks `provisioning_data.reconciliation.status` and creates one attempt per planned provider: providers whose adapter `supportsAccessReconciliation()` and whose references resolve dispatch `ProvisionEnrollmentProviderJob` with `failure_metadata.kind = access_reconciliation`; the rest become manual-action-required. The job's `reconcileOrProvision()` routes to `reconcileAccess()` for such attempts; `MoodleProvisioningProvider::reconcileAccess()` re-enrolls on `active` and un-enrolls on `suspended`/`expired`/`cancelled` (Moodle `unenrollUser`), while IMS and others report `supportsAccessReconciliation() = false` so they stay manual. Reconciliation outcomes update `reconciliation.status` (`in_progress`, `succeeded`, `failed`, `manual_action_required`, `not_applicable`) but never flip local status to `PROVISIONING_FAILED` — aggregate health distinguishes initial provisioning failures from later access-reconciliation problems.
 
 #### Student Story Actions (`app/Actions/Admin/Setting/StudentStory/`)
 - **CreateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/CreateStudentStoryAction.php`)

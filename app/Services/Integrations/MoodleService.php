@@ -226,6 +226,14 @@ final class MoodleService extends AbstractIntegrationService
         $this->call('enrol_manual_enrol_users', $params);
     }
 
+    public function unenrollUser(int $moodleUserId, int $moodleCourseId): void
+    {
+        $this->call('enrol_manual_unenrol_users', [
+            'enrolments[0][userid]'   => $moodleUserId,
+            'enrolments[0][courseid]' => $moodleCourseId,
+        ]);
+    }
+
     public function createUserKey(string $username, ?string $token = null): string
     {
         $result = $this->call('auth_userkey_request_login_url', [
@@ -389,7 +397,8 @@ final class MoodleService extends AbstractIntegrationService
      * Batch-fetch grades and completion states for student courses.
      *
      * @param  array<int>  $courseIds
-     * @return array{course_completed: array<int, bool>, completion_statuses: array<int, array>, grades: array<int, array>}
+     * @return array{course_completed: array<int, bool>, completion_statuses: array<int, array>, grades: array<int,
+     *     array>}
      */
     private function loadStudentCourseContext(array $courseIds, int $moodleUserId): array
     {
@@ -407,7 +416,8 @@ final class MoodleService extends AbstractIntegrationService
             }
 
             try {
-                $context['completion_statuses'][$courseId] = $this->getActivityCompletionStatus($courseId, $moodleUserId);
+                $context['completion_statuses'][$courseId] = $this->getActivityCompletionStatus($courseId,
+                    $moodleUserId);
             } catch (UnrecoverableProvisioningException|RecoverableProvisioningException) {
                 $context['completion_statuses'][$courseId] = [];
             }
@@ -491,14 +501,17 @@ final class MoodleService extends AbstractIntegrationService
         if ($response->failed()) {
             $status = $response->status();
             if ($status >= 500) {
-                throw new RecoverableProvisioningException(__('messages.integration.moodle.server_error', ['function' => $function]), $status);
+                throw new RecoverableProvisioningException(__('messages.integration.moodle.server_error',
+                    ['function' => $function]), $status);
             }
-            throw new UnrecoverableProvisioningException(__('messages.integration.moodle.request_failed', ['function' => $function]), $status);
+            throw new UnrecoverableProvisioningException(__('messages.integration.moodle.request_failed',
+                ['function' => $function]), $status);
         }
 
         $json = $response->json();
         if (is_array($json) && isset($json['exception'])) {
-            $message = __('messages.integration.moodle.exception_response', ['message' => ((string) $json['message'] ?? 'Unknown error')]);
+            $message = __('messages.integration.moodle.exception_response',
+                ['message' => ((string) $json['message'] ?? 'Unknown error')]);
             // metaData['errorcode'] is what getMoodleErrorCode() reads — must be preserved
             throw new UnrecoverableProvisioningException($message, 0, null, $json);
         }

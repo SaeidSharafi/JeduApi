@@ -5,10 +5,11 @@ declare(strict_types=1);
 use App\Actions\Admin\Enrollment\UpdateEnrollmentAction;
 use App\Data\Admin\Enrollment\EnrollmentUpdateData;
 use App\Models\Enrollment;
+use App\Services\Provisioning\ProvisioningAttemptService;
 
 describe('UpdateEnrollmentAction', function (): void {
     beforeEach(function (): void {
-        $this->action = new UpdateEnrollmentAction();
+        $this->action = new UpdateEnrollmentAction(app(ProvisioningAttemptService::class));
     });
 
     it('updates enrollment with all fields', function (): void {

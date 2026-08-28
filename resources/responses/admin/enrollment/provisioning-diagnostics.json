@@ -1,6 +1,7 @@
 {
     "data": {
         "status": "degraded",
+        "reconciliation_status": "failed",
         "providers": [
             {
                 "provider": "moodle",
