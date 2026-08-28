@@ -36,7 +36,7 @@ final class ProvisioningAttemptService
             }
             $sequence = ((int) ProvisioningAttempt::query()
                 ->where('enrollment_id', $enrollment->id)
-                ->where('provider', 'moodle')
+                ->where('provider', $provider->value)
                 ->max('sequence')) + 1;
 
             return ProvisioningAttempt::query()->create([

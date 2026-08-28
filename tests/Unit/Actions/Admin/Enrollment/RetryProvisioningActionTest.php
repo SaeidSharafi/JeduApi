@@ -73,8 +73,7 @@ describe('RetryProvisioningAction', function (): void {
         expect($result['message'])->toContain('Initial provisioning dispatched');
         expect($result['providers'])->toContain('ims', 'moodle');
 
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 2);
     });
 
     it('dispatches IMS provisioning job for failed IMS provider', function (): void {
@@ -244,8 +243,7 @@ describe('RetryProvisioningAction', function (): void {
         expect($result['message'])->toBe('Retry dispatched for 2 provider(s)')
             ->and($result['providers'])->toBe(['ims', 'moodle']);
 
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 2);
     });
 
     it('works with pending provisioning status', function (): void {

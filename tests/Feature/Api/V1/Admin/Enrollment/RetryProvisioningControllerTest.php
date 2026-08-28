@@ -107,8 +107,7 @@ describe('RetryProvisioningController', function (): void {
             ->assertJsonPath('data.message', 'Retry dispatched for 2 provider(s)')
             ->assertJsonPath('data.providers', ['ims', 'moodle']);
 
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 2);
     });
 
     it('works with pending provisioning status', function (): void {

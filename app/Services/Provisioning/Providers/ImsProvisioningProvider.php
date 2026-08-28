@@ -14,6 +14,7 @@ use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
 use App\Services\Integrations\ImsService;
 use Illuminate\Support\Carbon;
+use InvalidArgumentException;
 
 final readonly class ImsProvisioningProvider implements ProvisioningProvider
 {
@@ -40,15 +41,19 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
             throw new UnrecoverableProvisioningException(__('messages.provisioning.completed_payment_required'));
         }
         $customer = $enrollment->customer;
-        $student  = $this->ims->storeStudent([
-            'external_user_id' => (string) $customer->uuid, 'first_name' => $customer->first_name,
-            'last_name'        => $customer->last_name, 'phone' => $customer->phone, 'email' => $customer->email,
-            'civil_id'         => $customer->civil_id, 'civil_id_type' => $customer->civil_id_type,
-            'father_name'      => $customer->father_name, 'gender' => $customer->gender === GenderEnum::MALE ? 1 : 0,
-            'field_of_study'   => $customer->field_of_study, 'education_level' => $customer->education_level?->value,
-            'education_status' => $customer->education_status?->value, 'date_of_birth' => $customer->date_of_birth?->format('Y-m-d'),
-            'update_student'   => false,
-        ]);
+        try {
+            $student = $this->ims->storeStudent([
+                'external_user_id' => (string) $customer->uuid, 'first_name' => $customer->first_name,
+                'last_name'        => $customer->last_name, 'phone' => $customer->phone, 'email' => $customer->email,
+                'civil_id'         => $customer->civil_id, 'civil_id_type' => $customer->civil_id_type,
+                'father_name'      => $customer->father_name, 'gender' => $customer->gender === GenderEnum::MALE ? 1 : 0,
+                'field_of_study'   => $customer->field_of_study, 'education_level' => $customer->education_level?->value,
+                'education_status' => $customer->education_status?->value, 'date_of_birth' => $customer->date_of_birth?->format('Y-m-d'),
+                'update_student'   => false,
+            ]);
+        } catch (RecoverableProvisioningException $exception) {
+            throw new UnrecoverableProvisioningException('IMS student outcome is ambiguous; manual verification required.', 0, $exception, array_merge($exception->metaData, ['ambiguous_outcome' => true]));
+        }
         try {
             $result = $this->ims->storeEnrollment($customer, [
                 'civil_id' => $customer->civil_id, 'civil_id_type' => $customer->civil_id_type, 'course_code' => $code,
@@ -58,7 +63,7 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
                     'discount_amount'     => (int) ($enrollment->orderItem?->discount_amount ?? 0),
                     'discount_code'       => $enrollment->order?->applied_coupon_code,
                     'tracking_code'       => $payment->last_gateway_reference ?? data_get($payment->data, 'transaction_id') ?? $enrollment->order?->increment_id,
-                    'date'                => $payment->created_at?->toDateString(),
+                    'date'                => $this->resolvePaymentDate($payment->data, $payment->created_at),
                     'bank_account_number' => match ($payment->method) {
                         PaymentMethodEnum::MELLAT_GATEWAY => config('payments.mellat.ims_bank_account_number'),
                         PaymentMethodEnum::BANK_TRANSFER  => config('payments.bank_transfer.ims_bank_account_number'),
@@ -66,7 +71,9 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
                         default                           => null,
                     },
                 ],
-                'note' => __('messages.online_enrollment'),
+                'note' => __('messages.online_enrollment').PHP_EOL.
+                    __('messages.order.order_number', ['order_id' => $enrollment->order?->increment_id]).PHP_EOL.
+                    $enrollment->notes,
             ]);
         } catch (RecoverableProvisioningException $exception) {
             throw new UnrecoverableProvisioningException('IMS outcome is ambiguous; manual verification required.', 0, $exception, array_merge($exception->metaData, ['ambiguous_outcome' => true]));
@@ -75,8 +82,32 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
         return [
             'course_code'       => $code,
             'ims_student_id'    => data_get($student, 'data.student_id'),
-            'ims_enrollment_id' => data_get($result, 'data.enrollment_id'),
+            'ims_enrollment_id' => $this->normalizeExternalId(data_get($result, 'data.enrollment_id')),
             'provisioned_at'    => Carbon::now()->toISOString(),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $data
+     */
+    private function resolvePaymentDate(?array $data, ?Carbon $createdAt): ?string
+    {
+        $transactionDate = data_get($data, 'transaction_date');
+        if (is_string($transactionDate) && $transactionDate !== '') {
+            try {
+                return Carbon::parse($transactionDate)->toDateString();
+            } catch (InvalidArgumentException) {
+                // Fall back to the payment creation timestamp.
+            }
+        }
+
+        return $createdAt?->toDateString();
+    }
+
+    private function normalizeExternalId(mixed $value): ?int
+    {
+        $id = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+
+        return $id === false ? null : $id;
     }
 }
