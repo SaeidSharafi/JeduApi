@@ -4,12 +4,29 @@ declare(strict_types=1);
 
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
+use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
+use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
+use \Illuminate\Support\Facades\Queue;
+use function Pest\Laravel\getJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
 beforeEach(function (): void {
     $this->customer = App\Models\User::factory()->create();
+    Queue::fake([
+        ProvisionImsEnrollmentJob::class,
+        ProvisionEnrollmentProviderJob::class,
+        ProvisionMoodleQuizJob::class,
+        ProvisionSkyroomEnrollmentJob::class,
+        ProvisionSpotPlayerEnrollmentJob::class,
+        ProvisionBbbEnrollmentJob::class,
+    ]);
 });
+
 it('returns order payments list', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
     $order   = App\Models\Order::factory()->create();
@@ -26,7 +43,7 @@ it('returns order payments list', function (): void {
     App\Models\Payment::factory()->create([
         'order_id' => $order->id,
     ]);
-    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$order->id}/payments");
+    $response = getJson("/api/v1/admin/orders/{$order->id}/payments");
     $response->assertOk();
     $response->assertJsonStructure([
         'message',
@@ -68,7 +85,7 @@ it('returns order payment detail', function (): void {
         'status'      => PaymentStatusEnum::COMPLETED,
         'admin_notes' => 'Test payment',
     ]);
-    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$order->id}/payments/{$payment->id}");
+    $response = getJson("/api/v1/admin/orders/{$order->id}/payments/{$payment->id}");
     $response->assertOk();
     $response->assertJsonStructure([
         'message',
@@ -107,7 +124,7 @@ it('returns 404 when payment does not belong to routed order', function (): void
         'order_id' => $orderB->id,
     ]);
 
-    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$orderA->id}/payments/{$payment->id}");
+    $response = getJson("/api/v1/admin/orders/{$orderA->id}/payments/{$payment->id}");
 
     $response->assertNotFound();
 });
