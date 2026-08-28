@@ -45,7 +45,7 @@ final readonly class RetryProvisioningAction
         // If provisioning_data is null, this enrollment was never provisioned
         // (queue failure, event listener crash, etc.). Dispatch all required providers.
         if ($enrollment->provisioning_data === null) {
-            $dispatchedProviders = $this->dispatchAllRequiredProviders($enrollment);
+            $dispatchedProviders = $this->dispatchAllRequiredProviders($enrollment, $provider);
 
             return [
                 'message'   => __('messages.enrollments.initial_provisioning_dispatched', ['count' => count($dispatchedProviders)]),
@@ -161,11 +161,14 @@ final readonly class RetryProvisioningAction
      *
      * @return array<int, string>
      */
-    private function dispatchAllRequiredProviders(Enrollment $enrollment): array
+    private function dispatchAllRequiredProviders(Enrollment $enrollment, ?string $provider = null): array
     {
         $dispatched       = [];
         $plannedProviders = $this->plannedProviders($enrollment)
             ->pluck('provider');
+        if ($provider !== null) {
+            $plannedProviders = $plannedProviders->filter(fn (string $planned): bool => $planned === $provider);
+        }
 
         if ($plannedProviders->contains('ims')) {
             $paymentId = $this->resolvePaymentId($enrollment);

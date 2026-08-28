@@ -76,4 +76,5 @@ Route::post('enrollments/{enrollment}/change-status', ChangeEnrollmentStatusCont
 Route::post('enrollments/{enrollment}/retry-provisioning', RetryProvisioningController::class)
     ->name('enrollments.retry-provisioning');
 Route::post('enrollments/{enrollment}/retry-provisioning/{provider}', RetryProvisioningController::class)
-    ->name('enrollments.retry-provisioning.provider');
+    ->name('enrollments.retry-provisioning.provider')
+    ->whereIn('provider', ['ims', 'moodle', 'spotplayer', 'bbb', 'skyroom', 'moodle_quiz']);
