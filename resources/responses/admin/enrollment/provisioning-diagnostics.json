@@ -1,0 +1,18 @@
+{
+    "data": {
+        "status": "degraded",
+        "providers": [
+            {
+                "provider": "moodle",
+                "status": "failed",
+                "retryable": true,
+                "recommended_action": "retry_or_manual_review",
+                "safe_error": "Provider returned a validation error.",
+                "references": {
+                    "moodle_user_id": 42
+                },
+                "updated_at": "2026-01-01T12:00:00Z"
+            }
+        ]
+    }
+}

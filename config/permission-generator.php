@@ -163,6 +163,7 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
             'retry_provision',
+            'diagnostics_view',
         ],
         'refund' => [
             PermissionAction::VIEW_SCOPED,

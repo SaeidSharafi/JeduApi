@@ -61,6 +61,7 @@ enum PermissionEnum: string
     case DISCOUNT_VIEW_ANY                = 'discounts.view_any';
     case ENROLLMENT_CREATE                = 'enrollments.create';
     case ENROLLMENT_DELETE                = 'enrollments.delete';
+    case ENROLLMENT_DIAGNOSTICS_VIEW      = 'enrollments.diagnostics_view';
     case ENROLLMENT_RETRY_PROVISION       = 'enrollments.retry_provision';
     case ENROLLMENT_WAIVE_PROVISION       = 'enrollments.waive_provision';
     case ENROLLMENT_UPDATE                = 'enrollments.update';

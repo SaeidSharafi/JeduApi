@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Admin\Enrollment\AdvancedProvisioningDiagnosticsController;
 use App\Http\Controllers\Api\Admin\Enrollment\ChangeEnrollmentStatusController;
 use App\Http\Controllers\Api\Admin\Enrollment\EnrollmentController;
+use App\Http\Controllers\Api\Admin\Enrollment\ProvisioningDiagnosticsController;
 use App\Http\Controllers\Api\Admin\Enrollment\ProvisioningPlanController;
 use App\Http\Controllers\Api\Admin\Enrollment\ResolveProvisioningController;
 use App\Http\Controllers\Api\Admin\Enrollment\RetryProvisioningController;
@@ -85,6 +87,10 @@ Route::post('enrollments/{enrollment}/provisioning/resolve', ResolveProvisioning
     ->name('enrollments.provisioning.resolve');
 Route::post('enrollments/{enrollment}/provisioning/waive', WaiveProvisioningController::class)
     ->name('enrollments.provisioning.waive');
+Route::get('enrollments/{enrollment}/provisioning/diagnostics', ProvisioningDiagnosticsController::class)
+    ->name('enrollments.provisioning.diagnostics');
+Route::get('enrollments/{enrollment}/provisioning/diagnostics/advanced', AdvancedProvisioningDiagnosticsController::class)
+    ->name('enrollments.provisioning.diagnostics.advanced');
 Route::get('enrollments/{enrollment}/provisioning-plan/preview', [ProvisioningPlanController::class, 'preview'])
     ->name('enrollments.provisioning-plan.preview');
 Route::post('enrollments/{enrollment}/provisioning-plan/apply', [ProvisioningPlanController::class, 'apply'])

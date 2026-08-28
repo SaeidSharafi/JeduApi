@@ -48,6 +48,16 @@ final class EnrollmentPolicy
         return $user->can(PermissionEnum::ENROLLMENT_WAIVE_PROVISION->value);
     }
 
+    public function viewDiagnostics(Staff $user, Enrollment $enrollment): bool
+    {
+        return $user->can(PermissionEnum::ENROLLMENT_DIAGNOSTICS_VIEW->value);
+    }
+
+    public function viewProvisioningDiagnostics(Staff $user, Enrollment $enrollment): bool
+    {
+        return $user->can(PermissionEnum::ENROLLMENT_VIEW->value);
+    }
+
     public function delete(Staff $user, Enrollment $enrollment): bool
     {
         return $user->can(PermissionEnum::ENROLLMENT_DELETE->value);
