@@ -53,7 +53,7 @@ it('throws ValidationException when payment status is neither PENDING nor COMPLE
 
     $action = new VerifyPaymentAction($factory);
 
-    expect(fn (): \App\Models\Payment => $action->handle($payment, ['SaleReferenceId' => '987654']))
+    expect(fn (): Payment => $action->handle($payment, ['SaleReferenceId' => '987654']))
         ->toThrow(ValidationException::class);
 
 });

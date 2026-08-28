@@ -9,10 +9,10 @@ use App\Models\User;
 use App\Notifications\Auth\OtpSmsNotification;
 use App\Notifications\SmsChannel;
 use App\Notifications\SmsMessage;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use \Illuminate\Http\Client\Request;
 
 describe('SmsChannel Sending Logic', function (): void {
     beforeEach(function (): void {
@@ -198,7 +198,7 @@ describe('SmsChannel Sending Logic', function (): void {
         $this->user->notify($standardSmsNotification);
 
         Http::assertSent(function (Request $request): bool {
-            return $request->url()     === 'https://api2.ippanel.com/api/v1/sms/send/webservice/single'
+            return $request->url()             === 'https://api2.ippanel.com/api/v1/sms/send/webservice/single'
                 && $request->data()['message'] === 'Hello world';
         });
 

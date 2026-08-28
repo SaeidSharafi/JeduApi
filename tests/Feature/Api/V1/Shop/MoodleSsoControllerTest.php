@@ -117,7 +117,7 @@ describe('Student Moodle SSO', function (): void {
     });
 
     it('uses moodle_username provisioning key fallback', function (): void {
-        $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
+        $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
         $enrollment->provisioning_data = [
             'providers' => [
                 'moodle' => [
@@ -161,7 +161,7 @@ describe('Student Moodle SSO', function (): void {
         $this->mock(MoodleService::class, function ($mock): void {
             $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->with('testuser', \Mockery::any())
+                ->with('testuser', Mockery::any())
                 ->andReturnNull();
         });
 
@@ -224,7 +224,6 @@ describe('Teacher Moodle SSO', function (): void {
         $this->customer($this->user->fresh());
 
         $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
-
 
         $pdo = ProductDeliveryOption::factory()->create([
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
@@ -304,7 +303,7 @@ describe('Teacher Moodle SSO', function (): void {
         $this->mock(MoodleService::class, function ($mock): void {
             $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->with($this->user->civil_id, \Mockery::any())
+                ->with($this->user->civil_id, Mockery::any())
                 ->andReturnNull();
         });
 

@@ -113,7 +113,7 @@ describe('DigipayAdminService', function (): void {
 
         Http::assertSent(function (Illuminate\Http\Client\Request $request): bool {
             return str_contains($request->url(), '/digipay/api/refunds')
-                && $request['amount'] === 300_000
+                && $request['amount']           === 300_000
                 && $request['saleTrackingCode'] === 'DGP-TRK-SERVICE';
         });
     });
@@ -194,7 +194,7 @@ describe('DigipayAdminService', function (): void {
 
         Http::assertSent(function (Illuminate\Http\Client\Request $request) use ($payment): bool {
             return str_contains($request->url(), '/digipay/api/purchases/deliver')
-                && $request['trackingCode'] === 'DGP-TRK-DELIVER'
+                && $request['trackingCode']  === 'DGP-TRK-DELIVER'
                 && $request['invoiceNumber'] === (string) $payment->order->id
                 && isset($request['deliveryDate']);
         });
@@ -234,7 +234,7 @@ describe('DigipayAdminService', function (): void {
         Http::assertSent(function (Illuminate\Http\Client\Request $request): bool {
             return str_contains($request->url(), '/digipay/api/reverse')
                 && $request['purchaseTrackingCode'] === 'DGP-TRK-SERVICE'
-                && $request['providerId'] === 'PROV-123';
+                && $request['providerId']           === 'PROV-123';
         });
     });
 

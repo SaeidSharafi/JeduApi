@@ -279,8 +279,8 @@ final class GenerateComplianceReportAction
     }
 
     /**
-     * @param Collection<int, WalletTransaction> $transactions
-     * @param Collection<int, AdminActionLog> $adminActions
+     * @param  Collection<int, WalletTransaction>  $transactions
+     * @param  Collection<int, AdminActionLog>  $adminActions
      * @return array<string, array<string, mixed>>
      */
     private function calculateRiskFactors(Collection $transactions, Collection $adminActions): array
@@ -353,7 +353,7 @@ final class GenerateComplianceReportAction
     }
 
     /**
-     * @param array<string, array{risk_level: string}> $riskFactors
+     * @param  array<string, array{risk_level: string}>  $riskFactors
      */
     private function calculateOverallRiskScore(array $riskFactors): int
     {
@@ -383,7 +383,7 @@ final class GenerateComplianceReportAction
     }
 
     /**
-     * @param array<string, array{risk_level: string}> $riskFactors
+     * @param  array<string, array{risk_level: string}>  $riskFactors
      * @return array<int, array<string, string>>
      */
     private function generateRiskRecommendations(array $riskFactors, int $overallRiskScore): array
@@ -458,7 +458,7 @@ final class GenerateComplianceReportAction
     }
 
     /**
-     * @param array{int, int} $thresholds
+     * @param  array{int, int}  $thresholds
      */
     private function getRiskLevel(float $percentage, array $thresholds): string
     {

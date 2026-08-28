@@ -11,9 +11,9 @@ use App\Services\Discounts\Product\Conditions\VendorIsCondition;
 describe('VendorIsCondition', function (): void {
     test('it passes when the product belongs to the specified vendor', function (): void {
         $condition = new VendorIsCondition();
-        $vendor = Vendor::factory()->create();
-        $product = Product::factory()->create(['vendor_id' => $vendor->id]);
-        $option = ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
+        $vendor    = Vendor::factory()->create();
+        $product   = Product::factory()->create(['vendor_id' => $vendor->id]);
+        $option    = ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
 
         $config = new VendorIsData(vendor_ids: [$vendor->id]);
 
@@ -22,11 +22,11 @@ describe('VendorIsCondition', function (): void {
 
     test('it fails when the product does not belong to the specified vendor', function (): void {
         $condition = new VendorIsCondition();
-        $vendor1 = Vendor::factory()->create();
-        $vendor2 = Vendor::factory()->create();
+        $vendor1   = Vendor::factory()->create();
+        $vendor2   = Vendor::factory()->create();
 
         $product = Product::factory()->create(['vendor_id' => $vendor2->id]);
-        $option = ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
+        $option  = ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
 
         $config = new VendorIsData(vendor_ids: [$vendor1->id]);
 

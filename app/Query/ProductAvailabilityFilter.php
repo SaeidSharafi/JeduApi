@@ -17,8 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 final class ProductAvailabilityFilter
 {
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyPublishedAndVisible(Builder $query): Builder
@@ -28,8 +27,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyHasPublishedDeliveryOption(Builder $query): Builder
@@ -43,8 +41,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyPublishedProductable(Builder $query): Builder
@@ -58,8 +55,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyActiveTerm(Builder $query): Builder
@@ -76,8 +72,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyAvailableNow(Builder $query): Builder
@@ -108,8 +103,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyContentAvailableNow(Builder $query): Builder
@@ -133,8 +127,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyEventStatus(Builder $query, AvailabilityStatusEnum $status): Builder
@@ -143,8 +136,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyEventNotEnded(Builder $query): Builder
@@ -153,8 +145,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyRegistrationWindow(Builder $query, ?Carbon $from, ?Carbon $to): Builder
@@ -180,8 +171,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyAvailabilityWindow(Builder $query, ?Carbon $from, ?Carbon $to): Builder
@@ -207,8 +197,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public static function applyNearCapacity(Builder $query, float $threshold = 0.8): Builder
@@ -226,7 +215,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<ProductDeliveryOption> $query
+     * @param  Builder<ProductDeliveryOption>  $query
      */
     private static function applyOptionDateWindow(Builder $query, string $startColumn, string $endColumn, CarbonInterface $date): void
     {
@@ -239,8 +228,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<Product> $query
-     *
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     private static function applySnapshotWindow(Builder $query, string $startColumn, string $endColumn, ?Carbon $from, ?Carbon $to): Builder
@@ -261,8 +249,7 @@ final class ProductAvailabilityFilter
     }
 
     /**
-     * @param Builder<ProductDeliveryOption> $query
-     *
+     * @param  Builder<ProductDeliveryOption>  $query
      * @return Builder<ProductDeliveryOption>
      */
     private static function applyRelationshipWindow(Builder $query, string $startColumn, string $endColumn, ?Carbon $from, ?Carbon $to): Builder

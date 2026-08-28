@@ -21,16 +21,16 @@ return [
 
     'digipay' => [
         'errors' => [
-            'ticket_creation_failed'      => 'ایجاد تیکت دیجی‌پی با شکست مواجه شد: :details',
-            'verification_failed'         => 'تأیید دیجی‌پی با شکست مواجه شد: :details',
-            'refund_failed'               => 'بازپرداخت دیجی‌پی با شکست مواجه شد: :details',
+            'ticket_creation_failed'       => 'ایجاد تیکت دیجی‌پی با شکست مواجه شد: :details',
+            'verification_failed'          => 'تأیید دیجی‌پی با شکست مواجه شد: :details',
+            'refund_failed'                => 'بازپرداخت دیجی‌پی با شکست مواجه شد: :details',
             'delivery_confirmation_failed' => 'تأیید تحویل دیجی‌پی با شکست مواجه شد: :details',
-            'refund_inquiry_failed'       => 'استعلام بازپرداخت دیجی‌پی با شکست مواجه شد: :details',
-            'reverse_failed'              => 'برگشت تراکنش دیجی‌پی با شکست مواجه شد: :details',
-            'http_error'                  => 'خطای HTTP دیجی‌پی: :status',
-            'authentication_failed'       => 'احراز هویت دیجی‌پی با شکست مواجه شد',
-            'config_missing'              => 'پیکربندی دیجی‌پی ناقص است: :key',
-            'no_tracking_code'            => 'پرداخت #:id دارای کد رهگیری دیجی‌پی در داده‌های تراکنش نیست',
+            'refund_inquiry_failed'        => 'استعلام بازپرداخت دیجی‌پی با شکست مواجه شد: :details',
+            'reverse_failed'               => 'برگشت تراکنش دیجی‌پی با شکست مواجه شد: :details',
+            'http_error'                   => 'خطای HTTP دیجی‌پی: :status',
+            'authentication_failed'        => 'احراز هویت دیجی‌پی با شکست مواجه شد',
+            'config_missing'               => 'پیکربندی دیجی‌پی ناقص است: :key',
+            'no_tracking_code'             => 'پرداخت #:id دارای کد رهگیری دیجی‌پی در داده‌های تراکنش نیست',
         ],
         'status' => [
             '0'    => 'عملیات با موفقیت انجام شد',
@@ -54,13 +54,13 @@ return [
 
     'mellat' => [
         'errors' => [
-            'invalid_callback'                      => 'داده‌های بازگشتی از درگاه ملت نامعتبر است',
-            'invalid_response'                      => 'پاسخ نامعتبر از درگاه ملت',
-            'verification_failed'                   => 'تأیید تراکنش درگاه با شکست مواجه شد: :message',
-            'settlement_failed'                     => 'تسویه تراکنش درگاه با شکست مواجه شد: :message',
-            'amount_mismatch'                       => 'عدم تطابق مبلغ: مبلغ مورد انتظار :expected، مبلغ دریافتی :actual',
-            'verification_failed_short'             => 'تأیید تراکنش درگاه با شکست مواجه شد',
-            'settlement_after_verification_failed'  => 'تسویه حساب پس از تأیید موفق با شکست مواجه شد',
+            'invalid_callback'                     => 'داده‌های بازگشتی از درگاه ملت نامعتبر است',
+            'invalid_response'                     => 'پاسخ نامعتبر از درگاه ملت',
+            'verification_failed'                  => 'تأیید تراکنش درگاه با شکست مواجه شد: :message',
+            'settlement_failed'                    => 'تسویه تراکنش درگاه با شکست مواجه شد: :message',
+            'amount_mismatch'                      => 'عدم تطابق مبلغ: مبلغ مورد انتظار :expected، مبلغ دریافتی :actual',
+            'verification_failed_short'            => 'تأیید تراکنش درگاه با شکست مواجه شد',
+            'settlement_after_verification_failed' => 'تسویه حساب پس از تأیید موفق با شکست مواجه شد',
         ],
         'error_codes' => [
             '11'  => 'شماره کارت نامعتبر است',

@@ -41,7 +41,7 @@ final class PartnerController extends Controller
             ->allowedFilters([
                 'title',
                 AllowedFilter::exact('show_in'),
-                AllowedFilter::exact('is_active')
+                AllowedFilter::exact('is_active'),
             ])
             ->allowedSorts('order', 'title', 'created_at')
             ->paginate(request()->integer('per_page', config('app.page_size')))

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Discounts\Product\Actions;
 
 use App\Attributes\DiscountHandlerKey;
@@ -9,7 +11,7 @@ use App\Services\Discounts\Configs\ApplyTieredPercentageOffProductData;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('apply_tiered_percentage_off_product')]
-class ApplyTieredPercentageOffProductAction implements ProductDiscountActionContract
+final class ApplyTieredPercentageOffProductAction implements ProductDiscountActionContract
 {
     public static function getConfigClass(): string
     {

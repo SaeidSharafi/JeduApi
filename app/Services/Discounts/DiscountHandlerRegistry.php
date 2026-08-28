@@ -10,11 +10,13 @@ use App\Contracts\Discounts\DiscountConditionContract;
 use App\Contracts\Discounts\ProductDiscountActionContract;
 use App\Contracts\Discounts\ProductDiscountConditionContract;
 use App\Enums\Order\DiscountTypeEnum;
+use Exception;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use ReflectionClass;
+use ReflectionException;
 
 /**
  * Centralized registry for all discount handlers to eliminate code duplication
@@ -242,7 +244,7 @@ final class DiscountHandlerRegistry
                 $this->registerHandlerIfApplicable($reflection, $className);
             }
             // @codeCoverageIgnoreStart
-            catch (\ReflectionException $e) {
+            catch (ReflectionException $e) {
                 Log::warning('Could not reflect class for discount handler discovery.', [
                     'class'     => $className,
                     'exception' => $e->getMessage(),
@@ -285,7 +287,7 @@ final class DiscountHandlerRegistry
                 }
             }
             // @codeCoverageIgnoreStart
-            catch (\Exception $e) {
+            catch (Exception $e) {
                 Log::warning('Discount handler config discovery failed.', [
                     'class'     => $handlerClass,
                     'exception' => $e->getMessage(),

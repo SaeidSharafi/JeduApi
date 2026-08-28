@@ -162,7 +162,7 @@ describe('Discount Promotion Actions', function (): void {
         // Arrange
         $promotion = DiscountPromotion::factory()->create(
             [
-                'type'          => DiscountTypeEnum::CART_CHECKOUT->value,
+                'type' => DiscountTypeEnum::CART_CHECKOUT->value,
             ]
         );
 

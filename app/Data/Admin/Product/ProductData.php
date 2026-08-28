@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Data\Admin\Product;
 
 use App\Contracts\ProductableDataContract;
-use App\Data\Admin\Category\CategorizableListItemData;
 use App\Data\Admin\Term\ShowTermData;
 use App\Data\Casts\ProductableCast;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Product;
 use Hekmatinasser\Verta\Verta;
-use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;

@@ -32,10 +32,10 @@ describe('ApplyTieredPercentageOffAction', function (): void {
 
         // Subtotal is 15000. It hits the 10000 tier (10%), but misses the 20000 tier.
         $context = OrderContextData::from([
-            'customer' => User::factory()->make(),
-            'items' => [$item1, $item2],
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$item1, $item2],
             'subtotal_full_payment_items' => 15000,
-            'subtotal_all_items' => 15000,
+            'subtotal_all_items'          => 15000,
         ]);
 
         $action->apply($context, $config);
@@ -62,10 +62,10 @@ describe('ApplyTieredPercentageOffAction', function (): void {
         );
 
         $context = OrderContextData::from([
-            'customer' => User::factory()->make(),
-            'items' => [$item1],
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$item1],
             'subtotal_full_payment_items' => 10000,
-            'subtotal_all_items' => 10000,
+            'subtotal_all_items'          => 10000,
         ]);
 
         $action->apply($context, $config);

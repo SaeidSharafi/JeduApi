@@ -1,18 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Wallet\WalletStatusEnum;
+
 use function Pest\Laravel\getJson;
 
 it('should return wallet information for authenticated user', function (): void {
 
     $this->customer();
-    /** @var \App\Models\Wallet $wallet */
+    /** @var App\Models\Wallet $wallet */
     $wallet = $this->user->wallet;
     $wallet->update(
         [
-            'balance' => 10_000,
+            'balance'      => 10_000,
             'gift_balance' => 20_000,
-            'status' => WalletStatusEnum::ACTIVE,
+            'status'       => WalletStatusEnum::ACTIVE,
         ]
     );
     $response = getJson(route('api.v1.shop.wallet.info'));

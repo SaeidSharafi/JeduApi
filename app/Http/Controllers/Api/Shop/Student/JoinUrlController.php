@@ -9,8 +9,8 @@ use App\Contracts\ApiResponseInterface;
 use App\Exceptions\Integrations\ResourceNotProvisionedException;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
-use InvalidArgumentException;
 use Exception;
+use InvalidArgumentException;
 
 /**
  * @group Shop - Student - Courses

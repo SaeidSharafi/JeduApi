@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Discounts\Cart\Conditions;
 
+use App\Attributes\DiscountHandlerKey;
+use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Order\OrderStatusEnum;
-use App\Services\Discounts\Configs\FirstOrderOnlyData;
-use App\Contracts\Discounts\DiscountConditionContract;
 use App\Models\Order;
-use App\Attributes\DiscountHandlerKey;
+use App\Services\Discounts\Configs\FirstOrderOnlyData;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('first_order_only')]
-class FirstOrderOnlyCondition implements DiscountConditionContract
+final class FirstOrderOnlyCondition implements DiscountConditionContract
 {
     public static function getConfigClass(): string
     {
@@ -20,7 +22,7 @@ class FirstOrderOnlyCondition implements DiscountConditionContract
 
     public function passes(OrderContextData $context, Data $configuration): bool
     {
-        if (!$context->customer?->id) {
+        if (! $context->customer?->id) {
             return false;
         }
 

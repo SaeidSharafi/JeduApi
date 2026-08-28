@@ -29,5 +29,4 @@ final class CartValueConditionConfigData extends Data
             'include_prepayments' => ['boolean'],
         ];
     }
-
 }

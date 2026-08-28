@@ -222,7 +222,7 @@ describe('CreatePaymentAction', function (): void {
 
         // BankTransferPaymentData is missing required fields
         $paymentData = new PaymentCreateData(
-            data: new BankTransferPaymentData(transaction_id: "123", transaction_date: verta()->formatDate(), sender_name: "John Doe",
+            data: new BankTransferPaymentData(transaction_id: '123', transaction_date: verta()->formatDate(), sender_name: 'John Doe',
                 notes: null),
             admin_notes: null);
 

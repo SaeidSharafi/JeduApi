@@ -13,7 +13,7 @@ use App\Services\Discounts\Configs\CartItemCountOverData;
 describe('CartItemCountOverCondition', function (): void {
     test('it counts distinct items correctly', function (): void {
         $condition = new CartItemCountOverCondition();
-        $config = new CartItemCountOverData(min_count: 1, count_quantities: false);
+        $config    = new CartItemCountOverData(min_count: 1, count_quantities: false);
 
         $item1 = new CalculatedOrderItemData(
             product_delivery_option: ProductDeliveryOption::factory()->make(),
@@ -25,10 +25,10 @@ describe('CartItemCountOverCondition', function (): void {
         $item2 = clone $item1;
 
         $context = OrderContextData::from([
-            'customer' => User::factory()->make(),
-            'items' => [$item1, $item2], // 2 distinct items
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$item1, $item2], // 2 distinct items
             'subtotal_full_payment_items' => 10000,
-            'subtotal_all_items' => 10000,
+            'subtotal_all_items'          => 10000,
         ]);
 
         expect($condition->passes($context, $config))->toBeTrue();
@@ -40,7 +40,7 @@ describe('CartItemCountOverCondition', function (): void {
 
     test('it counts quantities correctly', function (): void {
         $condition = new CartItemCountOverCondition();
-        $config = new CartItemCountOverData(min_count: 3, count_quantities: true);
+        $config    = new CartItemCountOverData(min_count: 3, count_quantities: true);
 
         $item = new CalculatedOrderItemData(
             product_delivery_option: ProductDeliveryOption::factory()->make(),
@@ -51,10 +51,10 @@ describe('CartItemCountOverCondition', function (): void {
         );
 
         $context = OrderContextData::from([
-            'customer' => User::factory()->make(),
-            'items' => [$item], // Only 1 distinct item, but 4 qty
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$item], // Only 1 distinct item, but 4 qty
             'subtotal_full_payment_items' => 4000,
-            'subtotal_all_items' => 4000,
+            'subtotal_all_items'          => 4000,
         ]);
 
         expect($condition->passes($context, $config))->toBeTrue();

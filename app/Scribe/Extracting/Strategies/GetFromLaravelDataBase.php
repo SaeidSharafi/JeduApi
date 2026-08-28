@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Scribe\Extracting\Strategies;
 
+use Exception;
 use Illuminate\Routing\Route;
 use Knuckles\Camel\Extraction\ExtractedEndpointData;
 use Knuckles\Scribe\Extracting\ParsesValidationRules;
@@ -14,7 +15,6 @@ use ReflectionException;
 use ReflectionFunctionAbstract;
 use ReflectionUnionType;
 use Spatie\LaravelData\Data;
-use Exception;
 
 abstract class GetFromLaravelDataBase extends Strategy
 {

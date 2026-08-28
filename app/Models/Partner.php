@@ -6,13 +6,13 @@ namespace App\Models;
 
 use App\Data\Admin\MediaData;
 use App\Enums\Content\PartnerShowInEnum;
+use Database\Factories\PartnerFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
-use Database\Factories\PartnerFactory;
 
 final class Partner extends Model
 {
@@ -32,16 +32,6 @@ final class Partner extends Model
             'is_active',
         ];
 
-    /**
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    #[Scope]
-    protected function active(Builder $query): Builder
-    {
-        return $query->where('is_active', true);
-    }
-
     public function getImage(): ?MediaData
     {
         if ($this->relationLoaded('media')) {
@@ -51,6 +41,16 @@ final class Partner extends Model
         }
 
         return null;
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function active(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
     }
 
     protected function casts(): array

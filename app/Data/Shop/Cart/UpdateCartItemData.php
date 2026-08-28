@@ -19,8 +19,8 @@ final class UpdateCartItemData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'quantity' => ['required', 'integer', 'min:1', 'max:100'],
-            'payment_type' => ['required', Rule::enum(OrderItemPaymentTypeEnum::class),],
+            'quantity'     => ['required', 'integer', 'min:1', 'max:100'],
+            'payment_type' => ['required', Rule::enum(OrderItemPaymentTypeEnum::class)],
         ];
     }
 

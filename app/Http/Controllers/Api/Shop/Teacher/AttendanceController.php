@@ -11,8 +11,6 @@ use App\Data\Shop\Teacher\StoreAttendanceData;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Http\Controllers\Controller;
 use App\Services\Integrations\ImsService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -41,7 +39,7 @@ final class AttendanceController extends Controller
         $teacher = Auth::user()?->teacherData;
         abort_unless((bool) $teacher, 403);
 
-        $teacherCivilId = Auth::user()?->civil_id;
+        $teacherCivilId  = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
         $data = $this->imsService->getAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $request->all());
@@ -64,12 +62,12 @@ final class AttendanceController extends Controller
         $teacher = Auth::user()?->teacherData;
         abort_unless((bool) $teacher, 403);
 
-        $teacherCivilId = Auth::user()?->civil_id;
+        $teacherCivilId  = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
         try {
             $response = $this->imsService->storeAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $data->toArray());
-        }catch (UnrecoverableProvisioningException $e){
+        } catch (UnrecoverableProvisioningException $e) {
             return apiResponse()->validationErrors(
                 $e->getValidationErrors()
             );
@@ -93,12 +91,12 @@ final class AttendanceController extends Controller
         $teacher = Auth::user()?->teacherData;
         abort_unless((bool) $teacher, 403);
 
-        $teacherCivilId = Auth::user()?->civil_id;
+        $teacherCivilId  = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
         try {
             $response = $this->imsService->updateAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $data->toArray());
-        }catch (UnrecoverableProvisioningException $e){
+        } catch (UnrecoverableProvisioningException $e) {
             return apiResponse()->validationErrors(
                 $e->getValidationErrors()
             );
@@ -119,7 +117,7 @@ final class AttendanceController extends Controller
         $teacher = Auth::user()?->teacherData;
         abort_unless((bool) $teacher, 403);
 
-        $teacherCivilId = Auth::user()?->civil_id;
+        $teacherCivilId  = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
         $response = $this->imsService->destroyAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $attendanceData->toArray());

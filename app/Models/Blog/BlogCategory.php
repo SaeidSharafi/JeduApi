@@ -11,12 +11,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Plank\Mediable\Mediable;
-use Database\Factories\Blog\BlogCategoryFactory;
 
 final class BlogCategory extends Model
 {
     /** @use HasFactory<\Database\Factories\Blog\BlogCategoryFactory> */
     use HasFactory;
+
     use HasMedia;
     use Mediable;
 

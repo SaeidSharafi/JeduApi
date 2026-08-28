@@ -21,16 +21,16 @@ return [
 
     'digipay' => [
         'errors' => [
-            'ticket_creation_failed'      => 'Digipay ticket creation failed: :details',
-            'verification_failed'         => 'Digipay verification failed: :details',
-            'refund_failed'               => 'Digipay refund failed: :details',
+            'ticket_creation_failed'       => 'Digipay ticket creation failed: :details',
+            'verification_failed'          => 'Digipay verification failed: :details',
+            'refund_failed'                => 'Digipay refund failed: :details',
             'delivery_confirmation_failed' => 'Digipay delivery confirmation failed: :details',
-            'refund_inquiry_failed'       => 'Digipay refund inquiry failed: :details',
-            'reverse_failed'              => 'Digipay reverse failed: :details',
-            'http_error'                  => 'Digipay HTTP error: :status',
-            'authentication_failed'       => 'Digipay authentication failed',
-            'config_missing'              => 'Digipay configuration missing: :key',
-            'no_tracking_code'            => 'Payment #:id has no Digipay tracking code in transaction data',
+            'refund_inquiry_failed'        => 'Digipay refund inquiry failed: :details',
+            'reverse_failed'               => 'Digipay reverse failed: :details',
+            'http_error'                   => 'Digipay HTTP error: :status',
+            'authentication_failed'        => 'Digipay authentication failed',
+            'config_missing'               => 'Digipay configuration missing: :key',
+            'no_tracking_code'             => 'Payment #:id has no Digipay tracking code in transaction data',
         ],
         'status' => [
             '0'    => 'Operation completed successfully',
@@ -54,13 +54,13 @@ return [
 
     'mellat' => [
         'errors' => [
-            'invalid_callback'                      => 'Invalid callback data from Mellat',
-            'invalid_response'                      => 'Invalid response from Mellat gateway',
-            'verification_failed'                   => 'Gateway verification failed: :message',
-            'settlement_failed'                     => 'Gateway settlement failed: :message',
-            'amount_mismatch'                       => 'Amount mismatch: expected :expected, got :actual',
-            'verification_failed_short'             => 'Gateway verification failed',
-            'settlement_after_verification_failed'  => 'Settlement failed after successful verification',
+            'invalid_callback'                     => 'Invalid callback data from Mellat',
+            'invalid_response'                     => 'Invalid response from Mellat gateway',
+            'verification_failed'                  => 'Gateway verification failed: :message',
+            'settlement_failed'                    => 'Gateway settlement failed: :message',
+            'amount_mismatch'                      => 'Amount mismatch: expected :expected, got :actual',
+            'verification_failed_short'            => 'Gateway verification failed',
+            'settlement_after_verification_failed' => 'Settlement failed after successful verification',
         ],
         'error_codes' => [
             '11'  => 'Invalid card number',

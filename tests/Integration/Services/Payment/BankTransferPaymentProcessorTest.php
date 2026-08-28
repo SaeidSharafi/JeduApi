@@ -39,7 +39,7 @@ describe('BankTransferPaymentProcessor', function (): void {
             'order_id' => $order->id,
             'method'   => PaymentMethodEnum::BANK_TRANSFER->value,
             'amount'   => 200_000,
-            'status' => PaymentStatusEnum::PENDING
+            'status'   => PaymentStatusEnum::PENDING,
         ]);
 
         $processor = new BankTransferPaymentProcessor();
@@ -105,7 +105,7 @@ describe('BankTransferPaymentProcessor', function (): void {
 
         $processor = new BankTransferPaymentProcessor();
 
-        expect(fn (): \App\Data\Admin\Payment\PaymentProcessResultData => $processor->process($payment))
+        expect(fn (): App\Data\Admin\Payment\PaymentProcessResultData => $processor->process($payment))
             ->toThrow(InvalidPaymentPurposeException::class);
     });
 

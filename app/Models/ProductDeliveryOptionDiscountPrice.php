@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\ProductDeliveryOptionDiscountPriceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Database\Factories\ProductDeliveryOptionDiscountPriceFactory;
 
 final class ProductDeliveryOptionDiscountPrice extends Model
 {

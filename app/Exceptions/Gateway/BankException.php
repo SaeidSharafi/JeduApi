@@ -6,6 +6,7 @@ namespace App\Exceptions\Gateway;
 
 use App\Exceptions\Payment\PaymentException;
 use Exception;
+use Throwable;
 
 /**
  * This exception when throws, user try to submit a payment request who submitted before
@@ -16,7 +17,8 @@ abstract class BankException extends PaymentException
     protected $code = -100;
 
     protected $message;
-    public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null)
+
+    public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null)
     {
         if ($message === '') {
             $message = (string) __('messages.bank_error');

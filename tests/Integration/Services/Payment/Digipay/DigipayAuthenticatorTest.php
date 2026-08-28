@@ -46,8 +46,8 @@ it('fetches and caches a new token when cache is empty', function (): void {
     Http::assertSent(function (Illuminate\Http\Client\Request $request): bool {
         return $request->url() === 'https://api.digipay.test/digipay/api/oauth/token'
             && $request->isForm()
-            && $request['username'] === 'test-user'
-            && $request['password'] === 'test-pass'
+            && $request['username']   === 'test-user'
+            && $request['password']   === 'test-pass'
             && $request['grant_type'] === 'password';
     });
 

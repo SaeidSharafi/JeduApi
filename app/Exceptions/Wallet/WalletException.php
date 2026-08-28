@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions\Wallet;
 
-abstract class WalletException extends \Exception
+use Exception;
+
+abstract class WalletException extends Exception
 {
     abstract public function errorCode(): string;
 

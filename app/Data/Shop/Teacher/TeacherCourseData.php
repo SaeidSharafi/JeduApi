@@ -7,7 +7,6 @@ namespace App\Data\Shop\Teacher;
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Content\PublicationStatusEnum;
-use App\Enums\EnrollmentStatusEnum;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 use Hekmatinasser\Verta\Verta;
@@ -19,7 +18,6 @@ use Spatie\LaravelData\Data;
 
 final class TeacherCourseData extends Data
 {
-
     public function __construct(
         public string $uuid,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]

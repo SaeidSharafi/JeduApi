@@ -29,7 +29,6 @@ return new class extends Migration
             $table->boolean('stop_processing_subsequent_rules')->default(false); // If true, prevents discount stacking
             $table->boolean('requires_coupon')->default(false);
 
-
             // Usage Limits & Tracking
             $table->unsignedInteger('usage_limit_total')->nullable(); // Max uses across all customers (null = unlimited)
             $table->unsignedInteger('usage_limit_per_customer')->nullable(); // Max uses for a single customer (null = unlimited)

@@ -60,16 +60,16 @@ test('admin without permission cannot create wallet via controller', function ()
 
 test('validation error on missing fields', function (): void {
     $admin   = $this->authorized_user([PermissionEnum::WALLET_CREATE]);
-    $user  = User::factory()->create();
+    $user    = User::factory()->create();
     $payload = [
-        'status'  => WalletStatusEnum::ACTIVE->value,
+        'status' => WalletStatusEnum::ACTIVE->value,
     ];
     $response = postJson(route('api.v1.admin.users.wallet.store', ['user' => $user->id]), $payload);
     $response->assertUnprocessable();
     $response->assertJsonValidationErrors(['balance']);
 
     $payload = [
-        'balance'  => 0,
+        'balance' => 0,
     ];
     $response = postJson(route('api.v1.admin.users.wallet.store', ['user' => $user->id]), $payload);
     $response->assertUnprocessable();

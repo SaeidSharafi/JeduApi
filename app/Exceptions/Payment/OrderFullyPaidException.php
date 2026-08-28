@@ -6,7 +6,6 @@ namespace App\Exceptions\Payment;
 
 use App\Contracts\ApiResponseInterface;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 final class OrderFullyPaidException extends PaymentException
 {
@@ -21,21 +20,21 @@ final class OrderFullyPaidException extends PaymentException
         return 'ORDER_FULLY_PAID';
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    protected function customMetadata(): array
-    {
-        return array_filter([
-            'increment_id'   => $this->orderIncrementId,
-        ]);
-    }
-
     public function render(Request $request): ApiResponseInterface
     {
         return apiResponse()->validationErrors(
             [$this->getMessage()],
             metadata: $this->metadata(),
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function customMetadata(): array
+    {
+        return array_filter([
+            'increment_id' => $this->orderIncrementId,
+        ]);
     }
 }

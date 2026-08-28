@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 use App\Data\Shop\Search\SearchData;
-use App\Models\Category;
+use App\Models\Blog\BlogPost;
 use App\Models\Product;
 use App\Models\ProductPrice;
-use App\Models\Blog\BlogPost;
 use App\Services\GlobalSearchService;
 
 describe('Searchable Arrays Schema Integrity', function (): void {
@@ -125,7 +124,7 @@ describe('Database Search Fallback & Filter Verification', function (): void {
             [
                 'available_from' => $now->clone()->subDays(10),
                 'available_to'   => $now->clone()->subDays(2),
-            ]
+            ],
         ])->create(['name' => 'Legacy Course']);
 
         // 2. Active Course (Available now)
@@ -133,7 +132,7 @@ describe('Database Search Fallback & Filter Verification', function (): void {
             [
                 'available_from' => $now->clone()->subDays(1),
                 'available_to'   => $now->clone()->addDays(5),
-            ]
+            ],
         ])->create(['name' => 'Modern Course']);
 
         $service = app(GlobalSearchService::class);

@@ -8,7 +8,6 @@ use App\Enums\Wallet\WalletStatusEnum;
 use App\Exceptions\Wallet\WalletNotFoundException;
 use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
-use Exception;
 
 final class GetWalletBalanceAction
 {

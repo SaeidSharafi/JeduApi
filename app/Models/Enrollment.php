@@ -6,12 +6,12 @@ namespace App\Models;
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Events\EnrollmentStatusChanged;
+use Database\Factories\EnrollmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Str;
-use Database\Factories\EnrollmentFactory;
 
 final class Enrollment extends Model
 {

@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Discounts\Cart\Conditions;
 
+use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Services\Discounts\Configs\CartItemCountOverData;
-use App\Attributes\DiscountHandlerKey;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('cart_item_count_over')]
-class CartItemCountOverCondition implements DiscountConditionContract
+final class CartItemCountOverCondition implements DiscountConditionContract
 {
     public static function getConfigClass(): string
     {

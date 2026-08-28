@@ -7,7 +7,6 @@ namespace App\Data\Admin\SelectOptions;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use Illuminate\Support\Collection;
-use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Data;
 
 final class FulfillmentDeliveryOptionsSelectOptionData extends Data
@@ -31,7 +30,7 @@ final class FulfillmentDeliveryOptionsSelectOptionData extends Data
                     ),
                     $fulfillmentType->getDeliveryMethods(),
                 ),
-                ),
+            ),
         );
     }
 }

@@ -8,9 +8,7 @@ use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Services\Integrations\MoodleService;
-use App\Services\SWRCacheService;
-use Laravel\Sanctum\Sanctum;
-
+use Mockery;
 
 it('unauthenticated user cannot access teacher quizzes', function (): void {
     $this->getJson('/api/v1/shop/teacher/quizzes')
@@ -55,7 +53,7 @@ it('returns list of quizzes for authenticated teacher', function (): void {
     $moodleService = $this->mock(MoodleService::class);
     $moodleService->shouldReceive('findOrCreateUser')
         ->once()
-        ->with(\Mockery::on(fn (User $user): bool => $user->id === $teacherUser->id))
+        ->with(Mockery::on(fn (User $user): bool => $user->id === $teacherUser->id))
         ->andReturn([55, 'teacher_username']);
 
     $moodleService->shouldReceive('getTeacherQuizzes')

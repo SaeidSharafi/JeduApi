@@ -13,9 +13,9 @@ use App\Services\Discounts\Configs\SpecificProductsInCartData;
 
 describe('SpecificProductsInCartCondition', function (): void {
     test('it passes when the cart contains a specified product id', function (): void {
-        $condition = new SpecificProductsInCartCondition();
+        $condition     = new SpecificProductsInCartCondition();
         $targetProduct = Product::factory()->create();
-        $otherProduct = Product::factory()->create();
+        $otherProduct  = Product::factory()->create();
 
         $config = new SpecificProductsInCartData(product_ids: [$targetProduct->id]);
 
@@ -25,19 +25,19 @@ describe('SpecificProductsInCartCondition', function (): void {
         );
 
         $context = OrderContextData::from([
-            'customer' => User::factory()->make(),
-            'items' => collect([$item]),
+            'customer'                    => User::factory()->make(),
+            'items'                       => collect([$item]),
             'subtotal_full_payment_items' => 1000,
-            'subtotal_all_items' => 1000,
+            'subtotal_all_items'          => 1000,
         ]);
 
         expect($condition->passes($context, $config))->toBeTrue();
     });
 
     test('it fails when the cart does not contain the specified product id', function (): void {
-        $condition = new SpecificProductsInCartCondition();
+        $condition     = new SpecificProductsInCartCondition();
         $targetProduct = Product::factory()->create();
-        $otherProduct = Product::factory()->create();
+        $otherProduct  = Product::factory()->create();
 
         $config = new SpecificProductsInCartData(product_ids: [$targetProduct->id]);
 
@@ -47,10 +47,10 @@ describe('SpecificProductsInCartCondition', function (): void {
         );
 
         $context = OrderContextData::from([
-            'customer' => User::factory()->make(),
-            'items' => collect([$item]),
+            'customer'                    => User::factory()->make(),
+            'items'                       => collect([$item]),
             'subtotal_full_payment_items' => 1000,
-            'subtotal_all_items' => 1000,
+            'subtotal_all_items'          => 1000,
         ]);
 
         expect($condition->passes($context, $config))->toBeFalse();

@@ -22,8 +22,8 @@ final readonly class CreateDigitalAssetAction
     {
         DB::transaction(function () use ($data): void {
             $attachments                    = $data->attachments;
-            $categoriesToAttach             = $data->categories ;
-            $mediaToAttach                  = $data->media      ;
+            $categoriesToAttach             = $data->categories;
+            $mediaToAttach                  = $data->media;
             $valdiatedData                  = $data->except('media', 'attachments', 'categories')->toArray();
             $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
             $digitalAsset                   = DigitalAsset::query()

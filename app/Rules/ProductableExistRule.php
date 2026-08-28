@@ -53,7 +53,7 @@ final class ProductableExistRule implements DataAwareRule, ValidationRule
     /**
      * @param  array<string, mixed>  $data
      */
-        public function setData(array $data): self
+    public function setData(array $data): self
     {
         $this->data = $data;
 

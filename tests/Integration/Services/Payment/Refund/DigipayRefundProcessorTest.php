@@ -274,7 +274,7 @@ it('serializes cumulative cap check with payment-level lock', function (): void 
         'amount'        => 50000,
     ]);
 
-    $lockMock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
+    $lockMock = Mockery::mock(Illuminate\Contracts\Cache\Lock::class);
     $lockMock->shouldReceive('block')
         ->once()
         ->with(5, Mockery::type(Closure::class))

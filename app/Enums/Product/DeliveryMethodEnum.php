@@ -24,6 +24,24 @@ enum DeliveryMethodEnum: string
     case LIVE_SESSION_BBB          = 'live_session_bbb';
     case LIVE_SESSION_SKYROOM      = 'live_session_skyroom';
 
+    /**
+     * @return array<int, self|string>
+     */
+    public static function getSeminars(bool $asString = false): array
+    {
+        if ($asString) {
+            return [
+                self::LIVE_SESSION_BBB->value,
+                self::LIVE_SESSION_SKYROOM->value,
+            ];
+        }
+
+        return [
+            self::LIVE_SESSION_BBB,
+            self::LIVE_SESSION_SKYROOM,
+        ];
+    }
+
     public function getDetailsDtoClass(): string
     {
         return match ($this) {
@@ -57,22 +75,5 @@ enum DeliveryMethodEnum: string
             self::LIVE_SESSION_SKYROOM             => true,
             self::DIRECT_DOWNLOAD, self::IN_PERSON => false,
         };
-    }
-
-    /**
-     * @return array<int, self|string>
-     */
-    public static function getSeminars(bool $asString = false): array
-    {
-        if ($asString){
-            return [
-                self::LIVE_SESSION_BBB->value,
-                self::LIVE_SESSION_SKYROOM->value,
-            ];
-        }
-        return [
-            self::LIVE_SESSION_BBB,
-            self::LIVE_SESSION_SKYROOM,
-        ];
     }
 }

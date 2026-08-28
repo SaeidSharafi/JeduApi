@@ -118,7 +118,7 @@ final readonly class CartService
         $deliveryOption = $cartItem->productDeliveryOption()->with('product')->firstOrFail();
         $this->validateQuantity($deliveryOption, $data->quantity, $cartItem);
         $cartItem->update([
-            'quantity' => $data->quantity,
+            'quantity'     => $data->quantity,
             'payment_type' => $data->payment_type,
         ]);
 

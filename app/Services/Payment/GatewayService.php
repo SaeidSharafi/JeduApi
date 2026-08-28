@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Payment;
 
 use App\Data\Shop\Payment\GatewayData;
@@ -8,11 +10,9 @@ use App\Services\SettingsService;
 
 final readonly class GatewayService
 {
-
     public function __construct(
         private SettingsService $settings,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<GatewayData>
@@ -26,12 +26,12 @@ final readonly class GatewayService
             }
 
             $gatewayData = $this->settings->get($method->settingKey(), $method->defaultConfig());
-            if (!$gatewayData) {
+            if (! $gatewayData) {
                 continue;
             }
 
             $gatewayData['key'] = $method->value;
-            $gatewayData = GatewayData::from($gatewayData);
+            $gatewayData        = GatewayData::from($gatewayData);
             if ($gatewayData->enabled && $gatewayData->shop_enabled) {
                 $gateways[] = $gatewayData->toArray();
             }
@@ -51,7 +51,7 @@ final readonly class GatewayService
                 continue;
             }
             $gatewayData = $this->settings->get($method->settingKey(), $method->defaultConfig());
-            if (!$gatewayData) {
+            if (! $gatewayData) {
                 continue;
             }
 
@@ -59,7 +59,7 @@ final readonly class GatewayService
                 $gateways[] = $method->value;
             }
         }
+
         return $gateways;
     }
-
 }

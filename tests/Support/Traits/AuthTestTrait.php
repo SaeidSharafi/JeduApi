@@ -49,7 +49,7 @@ trait AuthTestTrait
         return $this->actingAs($this->user->fresh(), 'user');
     }
 
-    public function admin_user(?Staff $staff = null ): self
+    public function admin_user(?Staff $staff = null): self
     {
         $this->user = $staff ?: Staff::forceCreate(
             Staff::factory()->make([

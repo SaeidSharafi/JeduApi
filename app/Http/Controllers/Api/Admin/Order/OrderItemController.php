@@ -9,7 +9,6 @@ use App\Data\Admin\Order\OrderItemData;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -24,7 +23,6 @@ final class OrderItemController extends Controller
 {
     /**
      * Display a listing of the order items for a specific order.
-     *
      */
     public function index(Order $order): ApiResponseInterface
     {

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Services\Integrations\MoodleService;
-use App\Services\SWRCacheService;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
@@ -17,12 +16,12 @@ it('returns quizzes for authenticated user', function (): void {
             'completed'  => false,
             'activities' => [
                 [
-                    'url'     => '/mod/quiz/view.php?id=10',
-                    'cid'     => 10,
-                    'name'    => 'Quiz 1',
-                    'type'    => 'quiz',
-                    'state'   => ['value' => 0, 'label' => 'incomplete'],
-                    'grade'   => '-',
+                    'url'           => '/mod/quiz/view.php?id=10',
+                    'cid'           => 10,
+                    'name'          => 'Quiz 1',
+                    'type'          => 'quiz',
+                    'state'         => ['value' => 0, 'label' => 'incomplete'],
+                    'grade'         => '-',
                     'timecompleted' => null,
                 ],
             ],

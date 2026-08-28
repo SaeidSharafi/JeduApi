@@ -9,12 +9,12 @@ use function Pest\Laravel\getJson;
 it('returns list of active gateways', function (): void {
     $mockGateways = [
         [
-            'key'         => 'mellat_gateway',
-            'enabled'     => true,
+            'key'          => 'mellat_gateway',
+            'enabled'      => true,
             'shop_enabled' => true,
-            'label'       => 'Mellat Gateway',
-            'description' => 'Pay via Mellat',
-            'icon_url'    => null,
+            'label'        => 'Mellat Gateway',
+            'description'  => 'Pay via Mellat',
+            'icon_url'     => null,
         ],
         [
             'key'          => 'digipay',

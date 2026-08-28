@@ -21,11 +21,12 @@ final class QuizController extends Controller
      * List of Quizzes
      *
      * Return list of Quizzes on Moodle with Teacher Access for the authenticated user.
+     *
      * @responseFile 200 resources/responses/shop/student/quizzes.json
      */
     public function __invoke(MoodleService $moodleService): ApiResponseInterface
     {
-        $user    = Auth::user();
+        $user = Auth::user();
         abort_unless(Auth::user()?->is_teacher, 403);
         $quizzes = SWRCacheService::remember('teacher_quizzes:'.$user->id, function () use ($moodleService, $user): array {
             [$moodleUserId] = $moodleService->findOrCreateUser($user);

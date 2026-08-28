@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Discounts\Configs;
 
 use Spatie\LaravelData\Data;
 
-class LowCapacityRemainingData extends Data
+final class LowCapacityRemainingData extends Data
 {
     public function __construct(
         public int $threshold

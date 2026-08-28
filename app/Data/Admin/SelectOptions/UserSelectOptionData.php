@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\SelectOptions;
 
-use App\Data\Admin\MediaData;
-use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\Computed;
-use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
 final class UserSelectOptionData extends Data

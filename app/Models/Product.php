@@ -29,8 +29,10 @@ use Laravel\Scout\Searchable;
 final class Product extends Model
 {
     use HasCategories;
+
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
+
     use HasProductListingPresets;
     use Searchable {
         search as scoutSearch;
@@ -99,7 +101,7 @@ final class Product extends Model
             'earliest_availability_start_ts' => $this->earliest_availability_start?->startOfDay()->timestamp ?? 0,
             'latest_availability_end_ts'     => $this->latest_availability_end?->endOfDay()->timestamp       ?? self::OPEN_END_TIMESTAMP,
 
-            'earliest_event_start_ts' => $this->event_start_at->timestamp             ?? 0,
+            'earliest_event_start_ts' => $this->event_start_at->timestamp              ?? 0,
             'latest_event_ended_ts'   => $this->event_ended_at?->endOfDay()->timestamp ?? self::OPEN_END_TIMESTAMP,
 
             'price'             => (int) ($this->productPrice->min_price ?? ($this->price_data_cache['min_price'] ?? 0)),
@@ -126,8 +128,7 @@ final class Product extends Model
     /**
      * @codeCoverageIgnore
      *
-     * @param Collection<int, self> $models
-     *
+     * @param  Collection<int, self>  $models
      * @return Collection<int, self>
      */
     public function makeSearchableUsing(Collection $models): Collection
@@ -269,8 +270,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -281,8 +281,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -293,8 +292,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -307,8 +305,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -321,8 +318,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -333,8 +329,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -349,8 +344,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -365,8 +359,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -384,8 +377,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -433,8 +425,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -467,8 +458,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -478,8 +468,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]
@@ -490,8 +479,7 @@ final class Product extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[Scope]

@@ -43,7 +43,7 @@ final class GradeController extends Controller
         $teacher = Auth::user()?->teacherData;
         abort_unless((bool) $teacher, 403);
 
-        $teacherCivilId = Auth::user()?->civil_id;
+        $teacherCivilId  = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
         $data = $this->imsService->getGrades($courseCode, $teacherCivilId, $civilIdTypeEnum, $request->query());
@@ -66,7 +66,7 @@ final class GradeController extends Controller
         $teacher = Auth::user()?->teacherData;
         abort_unless((bool) $teacher, 403);
 
-        $teacherCivilId = Auth::user()?->civil_id;
+        $teacherCivilId  = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
         $response = $this->imsService->storeGrade($courseCode, $teacherCivilId, $civilIdTypeEnum, $data->toArray());
@@ -90,12 +90,12 @@ final class GradeController extends Controller
         $teacher = Auth::user()?->teacherData;
         abort_unless((bool) $teacher, 403);
 
-        $teacherCivilId = Auth::user()?->civil_id;
+        $teacherCivilId  = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
         try {
             $response = $this->imsService->storeBulkGrades($courseCode, $teacherCivilId, $civilIdTypeEnum, $data->toArray());
-        }catch (UnrecoverableProvisioningException $e){
+        } catch (UnrecoverableProvisioningException $e) {
             return apiResponse()->validationErrors(
                 $e->getValidationErrors()
             );
@@ -108,12 +108,10 @@ final class GradeController extends Controller
      * Delete a course grade record.
      *
      * <aside class="notice">NOT IMPLEMENTED YET</aside>
-     *
      */
     public function destroy(int $gradeId): Response
     {
-        //TODO implement the grade delete
+        // TODO implement the grade delete
         return response()->noContent();
     }
-
 }

@@ -8,7 +8,6 @@ use App\Services\Integrations\MoodleService;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-
 describe('Admin / Staff Moodle SSO', function (): void {
     it('returns 401 for unauthenticated request', function (): void {
         $this->postJson(route('api.v1.admin.moodle.sso'))
@@ -28,7 +27,7 @@ describe('Admin / Staff Moodle SSO', function (): void {
         $this->mock(MoodleService::class, function ($mock) use ($staff, $ssoData): void {
             $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->with($staff->email, \Mockery::any())
+                ->with($staff->email, Mockery::any())
                 ->andReturn($ssoData);
         });
 
@@ -72,7 +71,7 @@ describe('Admin / Staff Moodle SSO', function (): void {
         $this->mock(MoodleService::class, function ($mock) use ($staff): void {
             $mock->shouldReceive('generateSsoUrl')
                 ->once()
-                ->with($staff->email, \Mockery::any())
+                ->with($staff->email, Mockery::any())
                 ->andReturnNull();
         });
 

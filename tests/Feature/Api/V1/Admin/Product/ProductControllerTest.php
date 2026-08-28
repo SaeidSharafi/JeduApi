@@ -120,7 +120,7 @@ describe('list filters', function (): void {
 
 describe('Controller Tests', function (): void {
     beforeEach(function (): void {
-        $this->category = App\Models\Category::factory()->create();
+        $this->category = Category::factory()->create();
     });
     it('should return a list of products', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
@@ -157,7 +157,7 @@ describe('Controller Tests', function (): void {
 
     it('should show a product', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW]);
-        $product  = Product::factory()->create()->fresh();
+        $product   = Product::factory()->create()->fresh();
         $category1 = Category::factory()->create();
         $category2 = Category::factory()->create();
         $category3 = Category::factory()->create();
@@ -306,7 +306,7 @@ describe('Controller Tests', function (): void {
 
 describe('Product Creation tests', function (): void {
     beforeEach(function (): void {
-        $this->category = App\Models\Category::factory()->create();
+        $this->category = Category::factory()->create();
     });
     it('should not create a published  product when another published product with same productable exist',
         function (): void {

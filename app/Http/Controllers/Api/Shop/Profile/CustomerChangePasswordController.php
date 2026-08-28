@@ -40,6 +40,7 @@ final class CustomerChangePasswordController extends Controller
         abort_unless($user !== null, 404);
 
         $action->handle($user, $request);
-        return apiResponse()->success(message:__('messages.auth.password_reset'));
+
+        return apiResponse()->success(message: __('messages.auth.password_reset'));
     }
 }

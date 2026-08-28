@@ -27,7 +27,7 @@ final class UpdateDiscountPromotionAction
                 'stop_processing_subsequent_rules' => $data->stop_processing_subsequent_rules,
                 'usage_limit_total'                => $data->usage_limit_total,
                 'usage_limit_per_customer'         => $data->usage_limit_per_customer,
-                'requires_coupon'                  => $isCartSpecific && !empty($data->coupons)
+                'requires_coupon'                  => $isCartSpecific && ! empty($data->coupons),
             ]);
 
             // Delete existing rules and create new ones

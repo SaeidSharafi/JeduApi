@@ -10,15 +10,15 @@ use App\Services\Discounts\Configs\GiftProductData;
 
 describe('GiftProductAction', function (): void {
     test('it adds a gift item to the cart context successfully', function (): void {
-        $action = new GiftProductAction();
+        $action     = new GiftProductAction();
         $giftOption = ProductDeliveryOption::factory()->create(['price' => 5000]);
-        $config = new GiftProductData(product_delivery_option_id: $giftOption->id);
+        $config     = new GiftProductData(product_delivery_option_id: $giftOption->id);
 
         $context = OrderContextData::from([
-            'customer' => User::factory()->make(),
-            'items' => collect([]),
+            'customer'                    => User::factory()->make(),
+            'items'                       => collect([]),
             'subtotal_full_payment_items' => 10000,
-            'subtotal_all_items' => 10000,
+            'subtotal_all_items'          => 10000,
         ]);
 
         $action->apply($context, $config);
@@ -32,15 +32,15 @@ describe('GiftProductAction', function (): void {
     });
 
     test('it prevents adding the exact same gift twice', function (): void {
-        $action = new GiftProductAction();
+        $action     = new GiftProductAction();
         $giftOption = ProductDeliveryOption::factory()->create(['price' => 5000]);
-        $config = new GiftProductData(product_delivery_option_id: $giftOption->id);
+        $config     = new GiftProductData(product_delivery_option_id: $giftOption->id);
 
         $context = OrderContextData::from([
-            'customer' => User::factory()->make(),
-            'items' => collect([]),
+            'customer'                    => User::factory()->make(),
+            'items'                       => collect([]),
             'subtotal_full_payment_items' => 0,
-            'subtotal_all_items' => 0,
+            'subtotal_all_items'          => 0,
         ]);
 
         // Apply twice

@@ -6,17 +6,18 @@ namespace App\Models;
 
 use App\Data\Admin\MediaData;
 use App\Enums\System\SettingKeyEnum;
+use Database\Factories\SettingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
-use Database\Factories\SettingFactory;
 
 final class Setting extends Model
 {
     /** @use HasFactory<SettingFactory> */
     use HasFactory;
+
     use Mediable;
 
     protected $fillable

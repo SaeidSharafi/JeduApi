@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Discounts\Product\Conditions;
 
 use App\Contracts\Discounts\ProductDiscountConditionContract;
@@ -7,9 +9,8 @@ use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\Configs\VendorIsData;
 use Spatie\LaravelData\Data;
 
-class VendorIsCondition implements ProductDiscountConditionContract
+final class VendorIsCondition implements ProductDiscountConditionContract
 {
-
     public static function getConfigClass(): string
     {
         return VendorIsData::class;

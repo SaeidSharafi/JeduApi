@@ -1,11 +1,11 @@
 <?php
 
-use App\Models\User;
+declare(strict_types=1);
+
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
-use App\Enums\Payment\PaymentPurposeEnum;
-use App\Enums\Payment\PaymentStatusEnum;
-use App\Enums\Payment\PaymentMethodEnum;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -83,38 +83,38 @@ it('payments are returned with the correct structure and relationships', functio
     $response->assertStatus(200)
         ->assertJsonStructure([
             'data' => [
-            'data' => [
-                '*' => [
-                    'uuid',
-                    'id',
-                    'amount',
-                    'method',
-                    'status',
-                    'purpose',
-                    'last_gateway_reference',
-                    'attempt_count',
-                    'transactions' => [
-                        '*' => [
-                            'status',
-                            'initiated_at',
-                            'completed_at',
-                        ]
-                    ]
-                ]
-            ]
-            ]
+                'data' => [
+                    '*' => [
+                        'uuid',
+                        'id',
+                        'amount',
+                        'method',
+                        'status',
+                        'purpose',
+                        'last_gateway_reference',
+                        'attempt_count',
+                        'transactions' => [
+                            '*' => [
+                                'status',
+                                'initiated_at',
+                                'completed_at',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ]);
 });
 
 it('payments are sorted from newest to oldest', function (): void {
     $oldPayment = Payment::factory()->create([
         'customer_id' => $this->user->id,
-        'created_at' => now()->subDays(2),
+        'created_at'  => now()->subDays(2),
     ]);
 
     $newPayment = Payment::factory()->create([
         'customer_id' => $this->user->id,
-        'created_at' => now(),
+        'created_at'  => now(),
     ]);
 
     $response = $this->customer($this->user)
@@ -140,12 +140,12 @@ it('it filters payments by valid purpose', function (): void {
 
     Payment::factory()->create([
         'customer_id' => $this->user->id,
-        'purpose' => $purposeA,
+        'purpose'     => $purposeA,
     ]);
 
     Payment::factory()->create([
         'customer_id' => $this->user->id,
-        'purpose' => $purposeB,
+        'purpose'     => $purposeB,
     ]);
 
     $response = $this->customer($this->user)
@@ -204,17 +204,17 @@ it('an authenticated user can view their specific payment details', function ():
     $response->assertStatus(200)
         ->assertJson([
             'data' => [
-                'uuid' => $payment->uuid,
-                'id' => $payment->id,
+                'uuid'   => $payment->uuid,
+                'id'     => $payment->id,
                 'amount' => $payment->amount,
-            ]
+            ],
         ])
         ->assertJsonStructure([
             'data' => [
                 'transactions' => [
-                    '*' => ['status', 'initiated_at', 'completed_at']
-                ]
-            ]
+                    '*' => ['status', 'initiated_at', 'completed_at'],
+                ],
+            ],
         ]);
 });
 
@@ -234,7 +234,7 @@ it('an authenticated user cannot view another users payment', function (): void 
 
 it('viewing a non-existent payment uuid returns 404', function (): void {
     $response = $this->actingAs($this->user, 'user')
-        ->getJson(route('api.v1.shop.student.payments.show', \Illuminate\Support\Str::uuid7()));
+        ->getJson(route('api.v1.shop.student.payments.show', Illuminate\Support\Str::uuid7()));
 
     $response->assertStatus(404);
 });

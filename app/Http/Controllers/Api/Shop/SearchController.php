@@ -27,7 +27,6 @@ final class SearchController extends Controller
      * Perform a global search across products and blog posts with faceted filtering.
      *
      * @responseFile 200 resources/responses/shop/search.json
-     *
      */
     public function __invoke(SearchData $searchData, GlobalSearchService $service, ProductPriceService $priceService): ApiResponseInterface
     {

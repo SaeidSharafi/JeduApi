@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\AdminActionLogFactory;
 use Carbon\CarbonInterface;
+use Database\Factories\AdminActionLogFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -89,8 +89,7 @@ final class AdminActionLog extends Model
 
     // Scopes
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
@@ -100,8 +99,7 @@ final class AdminActionLog extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
@@ -114,8 +112,7 @@ final class AdminActionLog extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
@@ -125,10 +122,7 @@ final class AdminActionLog extends Model
     }
 
     /**
-     * @param Builder<self>                          $query
-     * @param string|CarbonInterface                 $startDate
-     * @param string|CarbonInterface                 $endDate
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
@@ -138,8 +132,7 @@ final class AdminActionLog extends Model
     }
 
     /**
-     * @param Builder<self> $query
-     *
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     #[\Illuminate\Database\Eloquent\Attributes\Scope]

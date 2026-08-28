@@ -95,7 +95,7 @@ describe('index', function (): void {
 
         $response->assertOk();
 
-        $data = $response->json('data');
+        $data         = $response->json('data');
         $bankTransfer = collect($data)->firstWhere('key', PaymentMethodEnum::BANK_TRANSFER->value);
 
         expect($bankTransfer['settings']['icon'])->toHaveKeys(['id', 'url', 'size', 'file_name', 'alt', 'mime_type', 'extension', 'tag', 'thumbnail']);

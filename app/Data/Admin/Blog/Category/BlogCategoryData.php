@@ -7,7 +7,6 @@ namespace App\Data\Admin\Blog\Category;
 use App\Data\Admin\MediaData;
 use App\Models\Blog\BlogCategory;
 use Hekmatinasser\Verta\Verta;
-use Illuminate\Support\Arr;
 use Spatie\LaravelData\Data;
 
 final class BlogCategoryData extends Data
@@ -30,6 +29,7 @@ final class BlogCategoryData extends Data
     public static function fromModel(BlogCategory $category): self
     {
         $icon = $category->getAllMedia(false, ['icon']);
+
         return self::from(
             [
                 'id'               => $category->id,
@@ -40,7 +40,7 @@ final class BlogCategoryData extends Data
                 'meta_title'       => $category->meta_title,
                 'meta_description' => $category->meta_description,
                 'meta_keywords'    => $category->meta_keywords,
-                'icon'             => data_get($icon,'icon.0'),
+                'icon'             => data_get($icon, 'icon.0'),
                 'posts_count'      => $category->posts_count ?? null,
             ]
         );

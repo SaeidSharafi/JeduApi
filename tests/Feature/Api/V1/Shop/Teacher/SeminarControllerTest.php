@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Teacher;
+
 use function Pest\Laravel\getJson;
 
 it('return list of paginted seminars for authenticated teacher', function (): void {
@@ -16,7 +19,7 @@ it('return list of paginted seminars for authenticated teacher', function (): vo
             'user_id' => $this->user->id,
         ]);
 
-   $teahcerPdos =  ProductDeliveryOption::factory()
+    $teahcerPdos = ProductDeliveryOption::factory()
         ->count(5)
         ->for(Product::factory()->withSeminar())
         ->afterCreating(function (ProductDeliveryOption $deliveryOption) use ($teacher): void {
@@ -25,10 +28,10 @@ it('return list of paginted seminars for authenticated teacher', function (): vo
         ->create(
             [
                 'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
-                'delivery_method' => array_rand(array_flip(DeliveryMethodEnum::getSeminars(true))),
+                'delivery_method'  => array_rand(array_flip(DeliveryMethodEnum::getSeminars(true))),
             ]
         );
-   $otherPdos =  ProductDeliveryOption::factory()
+    $otherPdos = ProductDeliveryOption::factory()
         ->count(5)
         ->for(Product::factory()->withSeminar())
         ->create();
@@ -45,7 +48,7 @@ it('return list of paginted seminars for authenticated teacher', function (): vo
                     'short_name',
                     'description',
                 ],
-            ]
+            ],
         ],
     ]);
     $response->assertJsonFragment([

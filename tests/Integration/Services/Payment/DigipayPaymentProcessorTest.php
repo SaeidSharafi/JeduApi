@@ -44,7 +44,7 @@ describe('DigipayPaymentProcessor', function (): void {
 
     it('creates Digipay ticket and returns redirect details for order payment', function (): void {
         // Arrange
-        $user = User::factory()->create(['phone' => '09121234567']);
+        $user  = User::factory()->create(['phone' => '09121234567']);
         $order = Order::factory()->create([
             'customer_id'            => $user->id,
             'customer_phone'         => $user->phone,
@@ -173,8 +173,8 @@ describe('DigipayPaymentProcessor', function (): void {
         // Arrange
         Event::fake([PaymentCompletedEvent::class]);
 
-        $user  = User::factory()->create();
-        $order = Order::factory()->create(['customer_id' => $user->id]);
+        $user    = User::factory()->create();
+        $order   = Order::factory()->create(['customer_id' => $user->id]);
         $payment = Payment::factory()->create([
             'order_id'    => $order->id,
             'customer_id' => $user->id,
@@ -197,23 +197,23 @@ describe('DigipayPaymentProcessor', function (): void {
 
         Http::fake([
             'api.digipay.test/digipay/api/purchases/verify*' => Http::response([
-                'trackingCode'  => 'TRK-SUCCESS-999',
-                'providerId'    => $transactionRef,
-                'amount'        => 520_000,
-                'rrn'           => '123456789012',
-                'maskedPan'     => '603799******1234',
-                'pspName'       => 'TestPSP',
-                'terminalId'    => 'TERM001',
+                'trackingCode'   => 'TRK-SUCCESS-999',
+                'providerId'     => $transactionRef,
+                'amount'         => 520_000,
+                'rrn'            => '123456789012',
+                'maskedPan'      => '603799******1234',
+                'pspName'        => 'TestPSP',
+                'terminalId'     => 'TERM001',
                 'paymentGateway' => 2,
-                'result'        => [
+                'result'         => [
                     'status'  => 0,
                     'message' => 'Verified',
                 ],
             ], 200),
         ]);
 
-        $processor     = app(DigipayPaymentProcessor::class);
-        $callbackData  = [
+        $processor    = app(DigipayPaymentProcessor::class);
+        $callbackData = [
             'amount'       => 520_000,
             'providerId'   => $transactionRef,
             'trackingCode' => 'TRK-SUCCESS-999',
@@ -329,8 +329,8 @@ describe('DigipayPaymentProcessor', function (): void {
 
     it('marks payment as failed when callback amount mismatches payment amount', function (): void {
         // Arrange
-        $user  = User::factory()->create();
-        $order = Order::factory()->create(['customer_id' => $user->id]);
+        $user    = User::factory()->create();
+        $order   = Order::factory()->create(['customer_id' => $user->id]);
         $payment = Payment::factory()->create([
             'order_id'    => $order->id,
             'customer_id' => $user->id,
@@ -449,8 +449,8 @@ describe('DigipayPaymentProcessor', function (): void {
 
     it('rethrows DigipayException when client verify fails', function (): void {
         // Arrange
-        $user  = User::factory()->create();
-        $order = Order::factory()->create(['customer_id' => $user->id]);
+        $user    = User::factory()->create();
+        $order   = Order::factory()->create(['customer_id' => $user->id]);
         $payment = Payment::factory()->create([
             'order_id'    => $order->id,
             'customer_id' => $user->id,

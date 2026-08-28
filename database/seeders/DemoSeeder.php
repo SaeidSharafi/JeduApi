@@ -457,6 +457,7 @@ final class DemoSeeder extends Seeder
             $teacher->save();
         }
     }
+
     private function seedUserMedia(array $collection): void
     {
         $avatars = [

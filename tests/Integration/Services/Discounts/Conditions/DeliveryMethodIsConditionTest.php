@@ -10,10 +10,10 @@ use App\Services\Discounts\Product\Conditions\DeliveryMethodIsCondition;
 describe('DeliveryMethodIsCondition', function (): void {
     test('it passes when delivery method matches', function (): void {
         $condition = new DeliveryMethodIsCondition();
-        $config = new DeliveryMethodIsData(delivery_methods: [DeliveryMethodEnum::LMS_MOODLE->value]);
+        $config    = new DeliveryMethodIsData(delivery_methods: [DeliveryMethodEnum::LMS_MOODLE->value]);
 
         $option = ProductDeliveryOption::factory()->make([
-            'delivery_method' => DeliveryMethodEnum::LMS_MOODLE->value
+            'delivery_method' => DeliveryMethodEnum::LMS_MOODLE->value,
         ]);
 
         expect($condition->passes($option, $config))->toBeTrue();
@@ -21,10 +21,10 @@ describe('DeliveryMethodIsCondition', function (): void {
 
     test('it fails when delivery method does not match', function (): void {
         $condition = new DeliveryMethodIsCondition();
-        $config = new DeliveryMethodIsData(delivery_methods: [DeliveryMethodEnum::LMS_MOODLE->value]);
+        $config    = new DeliveryMethodIsData(delivery_methods: [DeliveryMethodEnum::LMS_MOODLE->value]);
 
         $option = ProductDeliveryOption::factory()->make([
-            'delivery_method' => DeliveryMethodEnum::IN_PERSON->value
+            'delivery_method' => DeliveryMethodEnum::IN_PERSON->value,
         ]);
 
         expect($condition->passes($option, $config))->toBeFalse();

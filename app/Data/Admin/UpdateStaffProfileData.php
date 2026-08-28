@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Data\Admin;
 
 use App\Rules\IranMobilePhoneRule;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -30,9 +29,9 @@ final class UpdateStaffProfileData extends Data
                 ),
             ],
             'phone' => ['required', new IranMobilePhoneRule(),
-                        Rule::unique('staff', 'phone')->ignore(
-                            auth('staff')->user()
-                        ),
+                Rule::unique('staff', 'phone')->ignore(
+                    auth('staff')->user()
+                ),
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
@@ -57,7 +56,7 @@ final class UpdateStaffProfileData extends Data
             'phone' => [
                 'description' => 'The phone number of the admin.',
                 'example'     => '09123456789',
-            ]
+            ],
         ];
     }
 }

@@ -13,12 +13,13 @@ final class RefundProcessorFactory
     public function make(string $paymentMethod): RefundProcessorInterface
     {
         $paymentMethodEnum = PaymentMethodEnum::tryFrom($paymentMethod);
+
         return match ($paymentMethodEnum) {
             PaymentMethodEnum::DIGIPAY => app(DigipayRefundProcessor::class),
             PaymentMethodEnum::WALLET  => app(WalletRefundProcessor::class),
             PaymentMethodEnum::BANK_TRANSFER,
             PaymentMethodEnum::MELLAT_GATEWAY => app(ManualRefundProcessor::class),
-            default          => throw new InvalidArgumentException(
+            default                           => throw new InvalidArgumentException(
                 __('messages.payment.refund_processor_not_found', ['pm' => $paymentMethod])
             ),
         };

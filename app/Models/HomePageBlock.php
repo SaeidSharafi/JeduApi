@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Content\HomePageBlockTypeEnum;
+use Database\Factories\HomePageBlockFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Mediable;
-use Database\Factories\HomePageBlockFactory;
 
 final class HomePageBlock extends Model
 {
     /** @use HasFactory<HomePageBlockFactory> */
     use HasFactory;
+
     use Mediable;
 
     protected $fillable = [

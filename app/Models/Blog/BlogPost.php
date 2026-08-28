@@ -23,12 +23,12 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
 use Laravel\Scout\Searchable;
 use Plank\Mediable\Mediable;
-use Database\Factories\Blog\BlogPostFactory;
 
 final class BlogPost extends Model
 {
     /** @use HasFactory<\Database\Factories\Blog\BlogPostFactory> */
     use HasFactory;
+
     use HasMedia;
     use HasReview;
     use Mediable;

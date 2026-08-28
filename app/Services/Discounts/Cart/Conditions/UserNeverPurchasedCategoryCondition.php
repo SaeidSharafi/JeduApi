@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Discounts\Cart\Conditions;
 
-use App\Data\Admin\Discounts\OrderContextData;
-use App\Services\Discounts\Configs\UserNeverPurchasedCategoryData;
-use App\Contracts\Discounts\DiscountConditionContract;
-use App\Models\Enrollment;
 use App\Attributes\DiscountHandlerKey;
+use App\Contracts\Discounts\DiscountConditionContract;
+use App\Data\Admin\Discounts\OrderContextData;
+use App\Models\Enrollment;
+use App\Services\Discounts\Configs\UserNeverPurchasedCategoryData;
 use Illuminate\Database\Eloquent\Builder;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('user_never_purchased_category')]
-class UserNeverPurchasedCategoryCondition implements DiscountConditionContract
+final class UserNeverPurchasedCategoryCondition implements DiscountConditionContract
 {
     public static function getConfigClass(): string
     {
@@ -20,7 +22,7 @@ class UserNeverPurchasedCategoryCondition implements DiscountConditionContract
 
     public function passes(OrderContextData $context, Data $configuration): bool
     {
-        if (!$context->customer?->id) {
+        if (! $context->customer?->id) {
             return false;
         }
 
@@ -31,6 +33,6 @@ class UserNeverPurchasedCategoryCondition implements DiscountConditionContract
             })
             ->exists();
 
-        return !$hasPurchased;
+        return ! $hasPurchased;
     }
 }

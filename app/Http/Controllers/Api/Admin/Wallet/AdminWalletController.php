@@ -11,10 +11,7 @@ use App\Data\Admin\Wallet\WalletData;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Wallet;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\QueryBuilder;
 
 /**
  * @group Admin - Wallet Management
@@ -44,7 +41,7 @@ final class AdminWalletController extends Controller
      * @responseFile 201 resources/responses/admin/wallet/create.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function store(CreateWalletData $data,User $user, CreateWalletAction $action): ApiResponseInterface
+    public function store(CreateWalletData $data, User $user, CreateWalletAction $action): ApiResponseInterface
     {
         Gate::authorize('create', Wallet::class);
         $wallet = $action->handle($data, $user);

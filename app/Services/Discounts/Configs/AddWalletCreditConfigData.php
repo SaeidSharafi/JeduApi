@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Discounts\Configs;
 
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class AddWalletCreditConfigData extends Data
 {

@@ -48,6 +48,7 @@ final class ImsService extends AbstractIntegrationService
 
         return (array) ($response->json() ?? []);
     }
+
     /**
      * @param  array<string, mixed>  $queryParams
      * @return array<string, mixed>

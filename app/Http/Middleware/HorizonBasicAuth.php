@@ -19,8 +19,8 @@ final class HorizonBasicAuth
         $expectedPassword = config('horizon.auth.password');
 
         if (
-            ! is_string($expectedUsername) || $expectedUsername === ''
-            || ! is_string($expectedPassword) || $expectedPassword === ''
+            ! is_string($expectedUsername) || $expectedUsername    === ''
+                                           || ! is_string($expectedPassword) || $expectedPassword === ''
         ) {
             return $this->unauthorized();
         }
@@ -30,8 +30,8 @@ final class HorizonBasicAuth
 
         if (
             is_string($providedUsername) && is_string($providedPassword)
-            && hash_equals($expectedUsername, $providedUsername)
-            && hash_equals($expectedPassword, $providedPassword)
+                                         && hash_equals($expectedUsername, $providedUsername)
+                                         && hash_equals($expectedPassword, $providedPassword)
         ) {
             return $next($request);
         }

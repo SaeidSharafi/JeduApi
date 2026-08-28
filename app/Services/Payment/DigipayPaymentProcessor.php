@@ -16,7 +16,6 @@ use App\Exceptions\Payment\PaymentTransactionNotFoundException;
 use App\Models\Payment;
 use App\Services\Payment\Digipay\Data\CallbackPayload;
 use App\Services\Payment\Digipay\DigipayClient;
-use App\Services\Payment\Digipay\DigipayConfigRepository;
 use App\Services\PaymentTransactionReferenceService;
 use Illuminate\Support\Facades\Log;
 

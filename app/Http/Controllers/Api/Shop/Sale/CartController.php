@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Sale;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Cart\AddCartItemData;
 use App\Data\Shop\Cart\ApplyCouponData;
 use App\Data\Shop\Cart\UpdateCartItemData;
 use App\Http\Controllers\Controller;
-use App\Contracts\ApiResponseInterface;
 use App\Models\CartItem;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;

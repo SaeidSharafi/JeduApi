@@ -56,8 +56,8 @@ describe('SuspiciousActivityController', function (): void {
     it('requires permission to detect suspicious activity', function (): void {
         $response = $this->authorized_user([])
             ->postJson($this->baseUrl, [
-                'date_from' => $this->dateFrom,
-                'date_to'   => $this->dateTo,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
                 'large_amount_threshold'   => 5000000,
                 'high_frequency_threshold' => 10,
             ]);
@@ -133,11 +133,11 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'              => $this->dateFrom,
-                'date_to'                => $this->dateTo,
-                'large_amount_threshold' => 50000000,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
+                'large_amount_threshold'   => 50000000,
                 'high_frequency_threshold' => 10,
-                'include_large_amounts'  => true,
+                'include_large_amounts'    => true,
             ]);
 
         $response->assertSuccessful();
@@ -163,9 +163,9 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'         => verta('2025-1-14')->format('Y-m-d'),
-                'date_to'           => verta('2025-1-16')->format('Y-m-d'),
-                'include_off_hours' => true,
+                'date_from'                => verta('2025-1-14')->format('Y-m-d'),
+                'date_to'                  => verta('2025-1-16')->format('Y-m-d'),
+                'include_off_hours'        => true,
                 'large_amount_threshold'   => 5000000,
                 'high_frequency_threshold' => 10,
             ]);
@@ -232,9 +232,9 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'             => $this->dateFrom,
-                'date_to'               => $this->dateTo,
-                'include_round_numbers' => true,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
+                'include_round_numbers'    => true,
                 'large_amount_threshold'   => 5000000,
                 'high_frequency_threshold' => 10,
             ]);
@@ -271,8 +271,8 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from' => $this->dateFrom,
-                'date_to'   => $this->dateTo,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
                 'large_amount_threshold'   => 5000000,
                 'high_frequency_threshold' => 10,
             ]);
@@ -295,8 +295,8 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from' => $this->dateFrom,
-                'date_to'   => $this->dateTo,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
                 'large_amount_threshold'   => 5000000,
                 'high_frequency_threshold' => 10,
             ]);
@@ -337,10 +337,10 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'              => $this->dateFrom,
-                'date_to'                => $this->dateTo,
-                'large_amount_threshold' => 50000000,
-                'include_large_amounts'  => true,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
+                'large_amount_threshold'   => 50000000,
+                'include_large_amounts'    => true,
                 'high_frequency_threshold' => 10,
             ]);
 
@@ -356,12 +356,12 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'              => $this->dateFrom,
-                'date_to'                => $this->dateTo,
-                'include_large_amounts'  => true,
-                'include_off_hours'      => true,
-                'include_high_frequency' => true,
-                'include_round_numbers'  => true,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
+                'include_large_amounts'    => true,
+                'include_off_hours'        => true,
+                'include_high_frequency'   => true,
+                'include_round_numbers'    => true,
                 'large_amount_threshold'   => 5000000,
                 'high_frequency_threshold' => 10,
             ]);
@@ -388,10 +388,10 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'              => $this->dateFrom,
-                'date_to'                => $this->dateTo,
-                'large_amount_threshold' => 50000000,
-                'include_large_amounts'  => true,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
+                'large_amount_threshold'   => 50000000,
+                'include_large_amounts'    => true,
                 'high_frequency_threshold' => 10,
             ]);
 
@@ -410,9 +410,9 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'             => $this->dateFrom,
-                'date_to'               => $this->dateTo,
-                'include_large_amounts' => true,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
+                'include_large_amounts'    => true,
                 'large_amount_threshold'   => 5000000,
                 'high_frequency_threshold' => 10,
             ]);
@@ -432,10 +432,10 @@ describe('SuspiciousActivityController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'              => $this->dateFrom,
-                'date_to'                => $this->dateTo,
-                'large_amount_threshold' => 25000000, // Lower threshold
-                'include_large_amounts'  => true,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
+                'large_amount_threshold'   => 25000000, // Lower threshold
+                'include_large_amounts'    => true,
                 'high_frequency_threshold' => 10,
             ]);
 
@@ -449,12 +449,12 @@ describe('SuspiciousActivityController', function (): void {
     it('handles boolean flags correctly', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'              => $this->dateFrom,
-                'date_to'                => $this->dateTo,
-                'include_large_amounts'  => false,
-                'include_off_hours'      => false,
-                'include_high_frequency' => false,
-                'include_round_numbers'  => false,
+                'date_from'                => $this->dateFrom,
+                'date_to'                  => $this->dateTo,
+                'include_large_amounts'    => false,
+                'include_off_hours'        => false,
+                'include_high_frequency'   => false,
+                'include_round_numbers'    => false,
                 'large_amount_threshold'   => 5000000,
                 'high_frequency_threshold' => 10,
             ]);

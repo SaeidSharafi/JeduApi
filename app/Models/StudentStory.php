@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Traits\HasCategories;
+use Database\Factories\StudentStoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Plank\Mediable\Mediable;
-use Database\Factories\StudentStoryFactory;
 
 final class StudentStory extends Model
 {
@@ -31,6 +31,14 @@ final class StudentStory extends Model
         ];
 
     /**
+     * @return BelongsToMany<Course, $this>
+     */
+    public function courses(): BelongsToMany
+    {
+        return $this->belongsToMany(Course::class);
+    }
+
+    /**
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
@@ -48,14 +56,6 @@ final class StudentStory extends Model
     protected function featured(Builder $query): Builder
     {
         return $query->where('is_featured', true);
-    }
-
-    /**
-     * @return BelongsToMany<Course, $this>
-     */
-    public function courses(): BelongsToMany
-    {
-        return $this->belongsToMany(Course::class);
     }
 
     protected function casts(): array

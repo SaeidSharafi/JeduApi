@@ -258,7 +258,6 @@ final class MoodleService extends AbstractIntegrationService
         }
     }
 
-
     /**
      * Build the relative Moodle course URL from enrollment details.
      */

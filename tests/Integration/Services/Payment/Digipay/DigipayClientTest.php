@@ -6,8 +6,8 @@ use App\Exceptions\Gateway\DigipayException;
 use App\Services\Payment\Digipay\DigipayAuthenticator;
 use App\Services\Payment\Digipay\DigipayClient;
 use App\Services\Payment\Digipay\DigipayConfigRepository;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use \Illuminate\Http\Client\Request;
 
 beforeEach(function (): void {
     config()->set('payments.digipay.base_url', 'https://api.digipay.test');
@@ -183,7 +183,7 @@ it('successfully refunds a payment via Digipay API', function (): void {
         ->and($response->trackingCode)->toBe('DGP-REF-SUCCESS');
 
     Http::assertSent(function (Request $request): bool {
-        return $request->url()              === 'https://api.digipay.test/digipay/api/refunds?type=0'
+        return $request->url()                      === 'https://api.digipay.test/digipay/api/refunds?type=0'
             && $request->data()['providerId']       === 'PROV-123'
             && $request->data()['amount']           === 500000
             && $request->data()['saleTrackingCode'] === 'DGP-SALE-123';

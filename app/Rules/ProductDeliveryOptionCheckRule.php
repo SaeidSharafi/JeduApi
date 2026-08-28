@@ -36,7 +36,7 @@ final class ProductDeliveryOptionCheckRule implements DataAwareRule, ValidationR
     /**
      * @param  array<string, mixed>  $data
      */
-        public function setData(array $data): self
+    public function setData(array $data): self
     {
         $this->data = $data;
 

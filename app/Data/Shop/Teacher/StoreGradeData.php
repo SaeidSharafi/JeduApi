@@ -12,16 +12,16 @@ final class StoreGradeData extends Data
     public function __construct(
         public int $enrolment_id,
         public array $grades,
-    ) {
-    }
+    ) {}
 
     public static function prepareForPipeline(array $properties): array
     {
-        if (!empty($properties['grades'])) {
+        if (! empty($properties['grades'])) {
             $properties['grades'] = collect($properties['grades'])
-                ->reject(fn($value, $key): bool => str_starts_with((string) $key, '_'))
+                ->reject(fn ($value, $key): bool => str_starts_with((string) $key, '_'))
                 ->toArray();
         }
+
         return $properties;
     }
 
@@ -41,7 +41,7 @@ final class StoreGradeData extends Data
                 'description' => 'the IMS enrolment ID.',
                 'example'     => 456,
             ],
-            'grades.*'       => [
+            'grades.*' => [
                 'description' => 'An array of grade values. The structure is taken from the get grade response. Example: {midterm: 20, final: 70}',
                 'example'     => [
                     [

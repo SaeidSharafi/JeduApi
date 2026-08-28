@@ -46,7 +46,7 @@ final class DigipayPaymentStatus
      */
     public static function getMessage(int $code, ?string $default = null): string
     {
-        $key = 'payment_gateways.digipay.status.'.$code;
+        $key        = 'payment_gateways.digipay.status.'.$code;
         $translated = __($key);
 
         if ($translated === $key) {

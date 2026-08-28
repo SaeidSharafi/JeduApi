@@ -28,13 +28,13 @@ describe('Cart Discount Integration', function (): void {
         $this->user = User::factory()->create();
 
         $this->promotion = DiscountPromotion::factory()->create([
-            'name'      => 'Test Discount',
-            'type'      => App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT,
-            'is_active' => true,
-            'starts_at' => now()->subDay(),
-            'ends_at'   => now()->addDay(),
-            'priority'  => 1,
-            'requires_coupon' => true
+            'name'            => 'Test Discount',
+            'type'            => App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'       => true,
+            'starts_at'       => now()->subDay(),
+            'ends_at'         => now()->addDay(),
+            'priority'        => 1,
+            'requires_coupon' => true,
         ]);
 
         DiscountPromotionRule::create([

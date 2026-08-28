@@ -66,7 +66,7 @@ final class ProductQueryService
     }
 
     /**
-     * @param Builder<Product> $query
+     * @param  Builder<Product>  $query
      */
     public function setQuery(Builder $query): self
     {
@@ -318,7 +318,7 @@ final class ProductQueryService
     }
 
     /**
-     * @param int[] $categoryIds
+     * @param  int[]  $categoryIds
      */
     public function inCategoryIds(array $categoryIds): self
     {
@@ -332,7 +332,7 @@ final class ProductQueryService
     }
 
     /**
-     * @param string[] $categorySlugs
+     * @param  string[]  $categorySlugs
      */
     public function goodForStart(array $categorySlugs): self
     {
@@ -373,7 +373,7 @@ final class ProductQueryService
     /**
      * Filter by fulfillment type. (Applies to 'productable')
      *
-     * @param string[] $fulfillmentTypes
+     * @param  string[]  $fulfillmentTypes
      */
     public function byFulfillmentTypes(array $fulfillmentTypes): self
     {

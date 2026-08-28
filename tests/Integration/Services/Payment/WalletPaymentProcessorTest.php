@@ -8,12 +8,12 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\PaymentCompletedEvent;
+use App\Exceptions\Payment\DuplicatePaymentException;
+use App\Exceptions\Payment\InvalidPaymentPurposeException;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\WalletTransaction;
-use App\Exceptions\Payment\DuplicatePaymentException;
-use App\Exceptions\Payment\InvalidPaymentPurposeException;
 use App\Services\Payment\WalletPaymentProcessor;
 use Illuminate\Support\Facades\Event;
 
@@ -103,7 +103,7 @@ describe('WalletPaymentProcessor', function (): void {
         );
 
         $processor->process($payment);
-    })->throws(\App\Exceptions\Wallet\WalletInsufficientBalanceException::class);
+    })->throws(App\Exceptions\Wallet\WalletInsufficientBalanceException::class);
 
     it('throws bad method call when verify is invoked', function (): void {
         $payment = Payment::factory()->create([
@@ -139,7 +139,7 @@ describe('WalletPaymentProcessor', function (): void {
         // Act & Assert
         expect(fn (): PaymentProcessResultData => $processor->process($payment))
             ->toThrow(InvalidPaymentPurposeException::class)
-            ->and(fn (): \App\Data\Admin\Payment\PaymentProcessResultData => $processor->process($payment))
+            ->and(fn (): PaymentProcessResultData => $processor->process($payment))
             ->toThrow(InvalidPaymentPurposeException::class, "This payment processor requires purpose 'order', got 'wallet_topup'.");
     });
 

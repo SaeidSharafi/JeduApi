@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Discounts\Product\Actions;
 
 use App\Attributes\DiscountHandlerKey;
@@ -9,7 +11,7 @@ use App\Services\Discounts\Configs\ApplyFixedPriceProductData;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('apply_fixed_price_product')]
-class ApplyFixedPriceProductAction implements ProductDiscountActionContract
+final class ApplyFixedPriceProductAction implements ProductDiscountActionContract
 {
     public static function getConfigClass(): string
     {

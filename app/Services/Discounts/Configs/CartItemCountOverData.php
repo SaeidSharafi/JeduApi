@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Discounts\Configs;
 
 use Spatie\LaravelData\Data;
 
-class CartItemCountOverData extends Data
+final class CartItemCountOverData extends Data
 {
     public function __construct(
         public int $min_count,

@@ -403,11 +403,11 @@ it('returns quizzes with completion and grade data', function (): void {
     // 4. gradereport_user_get_grade_items — quiz cmid=10 has grade
     $sequence->push([
         'usergrades' => [[
-                             'gradeitems' => [
-                                 ['itemtype' => 'course', 'gradeformatted' => '92.00'],
-                                 ['itemtype' => 'mod', 'cmid' => 10, 'gradeformatted' => '88.00'],
-                             ],
-                         ]],
+            'gradeitems' => [
+                ['itemtype' => 'course', 'gradeformatted' => '92.00'],
+                ['itemtype' => 'mod', 'cmid' => 10, 'gradeformatted' => '88.00'],
+            ],
+        ]],
     ], 200);
 
     // 5. mod_quiz_get_quizzes_by_courses — 1 quiz matching cmid=10

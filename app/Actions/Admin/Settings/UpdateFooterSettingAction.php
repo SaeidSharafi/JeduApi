@@ -24,7 +24,7 @@ final class UpdateFooterSettingAction
         }
 
         $validated['logo_url'] = $logo?->getUrl() ?? null;
-        $validated['logo_alt'] = $logo->alt ?? null;
+        $validated['logo_alt'] = $logo->alt       ?? null;
 
         $setting = $this->settingsService->set(SettingKeyEnum::FOOTER, $validated, 'json', 'site');
         $setting->syncMedia($logo, 'logo');

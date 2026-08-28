@@ -1,19 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Auth;
 
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class ChagePasswordData extends Data
+final class ChagePasswordData extends Data
 {
     public function __construct(
         public ?string $current_password,
         public string $password,
         public string $password_confirmation
-    )
-    {
-    }
+    ) {}
 
     /**
      * Define validation rules for the request.
@@ -39,7 +39,7 @@ class ChagePasswordData extends Data
                 'required'    => true,
                 'example'     => 'current_password',
             ],
-            'password'              => [
+            'password' => [
                 'description' => 'The new password for the user.',
                 'required'    => true,
                 'example'     => '12345678',

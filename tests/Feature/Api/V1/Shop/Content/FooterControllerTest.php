@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Category;
-use App\Models\Setting;
 use App\Services\SettingsService;
 
 describe('FooterController', function (): void {
@@ -17,8 +16,8 @@ describe('FooterController', function (): void {
                 ['name' => 'Photography', 'slug' => 'photography'],
                 ['name' => 'Technology', 'slug' => 'technology'],
             )->create();
-       app(SettingsService::class)->set(SettingKeyEnum::FOOTER,
-           [
+        app(SettingsService::class)->set(SettingKeyEnum::FOOTER,
+            [
                 'logo'                  => 'logo-tech.svg',
                 'logo_url'              => 'logo-tech.svg',
                 'logo_alt'              => 'جهاددانشگاهی قزوین',
@@ -58,7 +57,7 @@ describe('FooterController', function (): void {
             ],
         );
 
-        App\Models\Category::factory()->create(['name' => 'Fashion', 'slug' => 'fashion']);
+        Category::factory()->create(['name' => 'Fashion', 'slug' => 'fashion']);
 
         $response = $this->getJson(route('api.v1.shop.footer.index'));
 

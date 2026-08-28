@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Discounts\Product\Conditions;
 
-use App\Contracts\Discounts\ProductDiscountConditionContract;
-use App\Services\Discounts\Configs\DeliveryMethodIsData;
-use App\Models\ProductDeliveryOption;
 use App\Attributes\DiscountHandlerKey;
+use App\Contracts\Discounts\ProductDiscountConditionContract;
+use App\Models\ProductDeliveryOption;
+use App\Services\Discounts\Configs\DeliveryMethodIsData;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('delivery_method_is')]
-class DeliveryMethodIsCondition implements ProductDiscountConditionContract
+final class DeliveryMethodIsCondition implements ProductDiscountConditionContract
 {
     public static function getConfigClass(): string
     {

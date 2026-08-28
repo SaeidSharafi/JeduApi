@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Actions\Admin;
 
 use App\Actions\Admin\Refund\CreateRefundAction;
+use App\Contracts\Payment\RefundProcessorInterface;
 use App\Data\Admin\Refund\RefundCreateData;
 use App\Data\Admin\Refund\RefundTransactionData;
-use App\Contracts\Payment\RefundProcessorInterface;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
@@ -25,6 +25,7 @@ use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
+use Mockery;
 use Mockery\MockInterface;
 
 describe('CreateRefundAction', function (): void {
@@ -414,10 +415,10 @@ describe('CreateRefundAction', function (): void {
         $orderItem = $order->items->first();
         $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
 
-        config()->set('payments.digipay.allow_partial_refund',true);
+        config()->set('payments.digipay.allow_partial_refund', true);
 
         $this->mock(RefundProcessorFactory::class, function (MockInterface $mock): void {
-            $processor = \Mockery::mock(RefundProcessorInterface::class);
+            $processor = Mockery::mock(RefundProcessorInterface::class);
             $processor->shouldReceive('process')
                 ->once()
                 ->andThrow(new DigipayException('Gateway connection failed', 500));
@@ -505,7 +506,7 @@ describe('CreateRefundAction', function (): void {
         $orderItem = $order->items->first();
         $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
 
-        $mockProcessor = \Mockery::mock(RefundProcessorInterface::class);
+        $mockProcessor = Mockery::mock(RefundProcessorInterface::class);
         $mockProcessor->shouldReceive('process')
             ->once()
             ->andReturnNull();
@@ -556,7 +557,7 @@ describe('CreateRefundAction', function (): void {
         $orderItem = $order->items->first();
         $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
 
-        config()->set('payments.digipay.allow_partial_refund',false);
+        config()->set('payments.digipay.allow_partial_refund', false);
 
         $refundData = new RefundCreateData(
             order_item_id: $orderItem->id,
@@ -572,8 +573,8 @@ describe('CreateRefundAction', function (): void {
             admin_notes: 'Test',
         );
 
-            expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData))
-                ->toThrow(RefundValidationException::class, __('messages.order.refund.digipay_partial_refund_not_supported'));
+        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData))
+            ->toThrow(RefundValidationException::class, __('messages.order.refund.digipay_partial_refund_not_supported'));
 
     });
 });

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Actions\Payment\PreparePendingPaymentAction;
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
@@ -60,11 +59,11 @@ it('creates payment transaction record when initiating Mellat gateway payment', 
     ]);
 
     $payment = Payment::factory()->create([
-        'status' => PaymentStatusEnum::PENDING,
+        'status'      => PaymentStatusEnum::PENDING,
         'order_id'    => $order->id,
         'customer_id' => $customer->id,
         'amount'      => 1000000,
-        'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
     ]);
 
     // Mock successful gateway response
@@ -105,7 +104,7 @@ it('increments attempt number for subsequent Mellat payment attempts', function 
         'full_value_grand_total' => 1000000,
     ]);
 
-    $payment= Payment::factory()->create([
+    $payment = Payment::factory()->create([
         'order_id'      => $order->id,
         'customer_id'   => $customer->id,
         'method'        => PaymentMethodEnum::MELLAT_GATEWAY,
@@ -320,13 +319,13 @@ it('generates unique transaction references for multiple Mellat payments', funct
         'order_id'    => $order->id,
         'customer_id' => $customer->id,
         'amount'      => 2000000,
-        'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
     ]);
     $payment2 = Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $customer->id,
         'amount'      => 2000000,
-        'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
     ]);
 
     // Mock gateway responses
