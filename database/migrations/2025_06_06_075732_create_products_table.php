@@ -36,6 +36,15 @@ return new class extends Migration
             $table->index('status');
             $table->index('is_visible');
             $table->index('is_featured');
+            $table->boolean('has_published_delivery_option')->default(false)->index();
+            $table->string('productable_status')->default('draft')->index();
+            $table->boolean('is_term_active')->default(true)->index();
+            $table->date('earliest_registration_start')->nullable();
+            $table->date('latest_registration_end')->nullable();
+            $table->date('earliest_availability_start')->nullable();
+            $table->date('latest_availability_end')->nullable();
+            $table->boolean('near_capacity')->default(false)->index();
+            $table->decimal('max_capacity_utilization', 5, 2)->default(0);
             $table->index(['productable_type', 'productable_id']);
             $table->index(['vendor_id', 'term_id']);
             $table->index(['status', 'is_visible']);

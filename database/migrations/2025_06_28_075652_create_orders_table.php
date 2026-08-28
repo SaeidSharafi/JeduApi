@@ -42,6 +42,7 @@ return new class extends Migration
             $table->string('applied_coupon_code')->nullable();
             $table->text('admin_notes')->nullable();
             $table->json('applied_cart_discounts_json')->nullable();
+            $table->timestamp('discount_usage_incremented_at')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
 
             $table->timestamps();

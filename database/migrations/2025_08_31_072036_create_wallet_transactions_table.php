@@ -31,6 +31,10 @@ return new class extends Migration
                 ->comment('Snapshot of total balance after transaction');
             $table->unsignedBigInteger('gift_balance_after')
                 ->comment('Snapshot of gift balance after transaction');
+            $table->unsignedBigInteger('remaining_amount')
+                ->nullable()
+                ->after('amount')
+                ->comment('Unspent slice of a gift/bonus credit; null for non-gift transactions');
             $table->string('source_type')
                 ->comment('Source type: order, admin, promotion, refund, manual, system');
             $table->unsignedBigInteger('source_id')

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -47,6 +48,11 @@ return new class extends Migration
             $table->timestamp('ends_at')
                 ->nullable()
                 ->comment('Campaign end date');
+            $table->string('threshold_scope')
+                ->default(ThresholdScopeEnum::LIFETIME->value)
+                ->index()
+                ->after('type')
+                ->comment('Threshold measurement scope: lifetime (all history) or windowed (within campaign dates)');
 
             // Configuration
             $table->jsonb('metadata')

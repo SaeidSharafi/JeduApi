@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
+            $table->boolean('is_banned')->default(false);
+            $table->timestamp('banned_at')->nullable();
             $table->string('civil_id')->nullable();
             $table->string('civil_id_type')
                 ->nullable()->comment('e.g., national_code, passport');
