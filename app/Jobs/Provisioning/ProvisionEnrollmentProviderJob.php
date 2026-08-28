@@ -7,15 +7,18 @@ namespace App\Jobs\Provisioning;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Services\Provisioning\ProvisioningAttemptService;
 use App\Services\Provisioning\ProvisioningProviderRegistry;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Throwable;
 
-final class ProvisionEnrollmentProviderJob implements ShouldQueue
+final class ProvisionEnrollmentProviderJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
     public int $tries = 3;
+
+    public int $uniqueFor = 3600;
 
     public function __construct(public readonly int $attemptId) {}
 
@@ -23,6 +26,11 @@ final class ProvisionEnrollmentProviderJob implements ShouldQueue
     public function backoff(): array
     {
         return [60, 180, 600];
+    }
+
+    public function uniqueId(): string
+    {
+        return (string) $this->attemptId;
     }
 
     public function handle(ProvisioningAttemptService $attempts, ProvisioningProviderRegistry $providers): void

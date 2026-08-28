@@ -75,3 +75,5 @@ Route::post('enrollments/{enrollment}/change-status', ChangeEnrollmentStatusCont
     ->name('enrollments.change-status');
 Route::post('enrollments/{enrollment}/retry-provisioning', RetryProvisioningController::class)
     ->name('enrollments.retry-provisioning');
+Route::post('enrollments/{enrollment}/retry-provisioning/{provider}', RetryProvisioningController::class)
+    ->name('enrollments.retry-provisioning.provider');

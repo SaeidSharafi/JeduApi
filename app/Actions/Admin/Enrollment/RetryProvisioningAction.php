@@ -30,7 +30,7 @@ final readonly class RetryProvisioningAction
      *
      * @return array{message: string, providers: array<int, string>}
      */
-    public function handle(Enrollment $enrollment): array
+    public function handle(Enrollment $enrollment, ?string $provider = null): array
     {
         if (
             $enrollment->enrollment_status    !== EnrollmentStatusEnum::PROVISIONING_FAILED
@@ -54,6 +54,14 @@ final readonly class RetryProvisioningAction
         }
 
         $failedProviders = $this->getFailedProviders($enrollment);
+        if ($provider !== null) {
+            if (! in_array($provider, $failedProviders, true)) {
+                throw ValidationException::withMessages([
+                    'provider' => __('messages.enrollments.no_failed_providers'),
+                ]);
+            }
+            $failedProviders = [$provider];
+        }
 
         if (empty($failedProviders)) {
             throw ValidationException::withMessages([
@@ -195,7 +203,11 @@ final readonly class RetryProvisioningAction
 
     private function dispatchMoodle(Enrollment $enrollment): void
     {
-        $attempt = $this->attemptService->queue($enrollment, ProvisioningTriggerEnum::RETRY);
+        $attempt = $this->attemptService->queue(
+            $enrollment,
+            ProvisioningTriggerEnum::RETRY,
+            auth('staff')->id(),
+        );
         ProvisionEnrollmentProviderJob::dispatch($attempt->id);
     }
 

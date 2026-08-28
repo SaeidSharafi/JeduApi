@@ -28,11 +28,11 @@ final class RetryProvisioningController extends Controller
      * @responseFile 403 resources/responses/403.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function __invoke(Enrollment $enrollment, RetryProvisioningAction $action): ApiResponseInterface
+    public function __invoke(Enrollment $enrollment, RetryProvisioningAction $action, ?string $provider = null): ApiResponseInterface
     {
         Gate::authorize('retryProvisioning', $enrollment);
 
-        $result = $action->handle($enrollment);
+        $result = $action->handle($enrollment, $provider);
 
         return apiResponse()->success(
             data: $result,

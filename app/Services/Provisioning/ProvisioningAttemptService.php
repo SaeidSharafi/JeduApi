@@ -20,6 +20,19 @@ final class ProvisioningAttemptService
     {
         return DB::transaction(function () use ($enrollment, $trigger, $staffId): ProvisioningAttempt {
             Enrollment::query()->lockForUpdate()->findOrFail($enrollment->id);
+            $active = ProvisioningAttempt::query()
+                ->where('enrollment_id', $enrollment->id)
+                ->where('provider', 'moodle')
+                ->whereIn('status', [
+                    ProvisioningAttemptStatusEnum::QUEUED,
+                    ProvisioningAttemptStatusEnum::RUNNING,
+                    ProvisioningAttemptStatusEnum::RETRY_SCHEDULED,
+                ])
+                ->latest('id')
+                ->first();
+            if ($active) {
+                return $active;
+            }
             $sequence = ((int) ProvisioningAttempt::query()
                 ->where('enrollment_id', $enrollment->id)
                 ->where('provider', 'moodle')

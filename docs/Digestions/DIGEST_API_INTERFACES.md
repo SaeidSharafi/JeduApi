@@ -326,6 +326,7 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
   - `__invoke(Enrollment $enrollment, EnrollmentStatusChangeData $data, ChangeEnrollmentStatusAction $action)`: **Route:** `POST /api/v1/admin/enrollments/{enrollment}/change-status` - **Request DTO:** EnrollmentStatusChangeData (new_status, reason) - **Response DTO:** EnrollmentData
 - **RetryProvisioningController** (`app/Http/Controllers/Api/Admin/Enrollment/RetryProvisioningController.php`):
   - `__invoke(Enrollment $enrollment, RetryProvisioningAction $action)`: **Route:** `POST /api/v1/admin/enrollments/{enrollment}/retry-provisioning` - **Authorization:** `Gate::authorize('retryProvision', $enrollment)` via `PermissionEnum::ENROLLMENT_RETRY_PROVISION` - Delegates to RetryProvisioningAction
+  - The same controller accepts an optional provider route segment at `POST /api/v1/admin/enrollments/{enrollment}/retry-provisioning/{provider}` for provider-specific retries; duplicate active Moodle attempts are deduplicated transactionally and at the queue boundary.
 
 ### Review Management Controllers
 
