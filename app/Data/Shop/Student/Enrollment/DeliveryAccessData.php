@@ -10,6 +10,7 @@ final class DeliveryAccessData extends Data
 {
     public function __construct(
         public string $type,
+        public bool $is_ready,
         public ?string $session_label = null,
         public ?string $join_url_path = null,
         public ?string $course_url = null,

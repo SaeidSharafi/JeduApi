@@ -223,6 +223,9 @@ final readonly class GetEnrollmentDetailAction
                 type: $deliveryMethod->value,
                 session_label: 'کلاس آنلاین',
                 join_url_path: '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
+                is_ready: $deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_BBB
+                    ? filled(data_get($provisioning, 'bbb.data.meeting_id'))
+                    : filled(data_get($provisioning, 'skyroom.data.room_id')),
             ),
             DeliveryMethodEnum::LMS_MOODLE => new DeliveryAccessData(
                 type: $deliveryMethod->value,
@@ -233,19 +236,23 @@ final readonly class GetEnrollmentDetailAction
                 ),
                 course_grade: data_get($provisioning, 'moodle.sync.course_grade')
                     ?? data_get($provisioning, 'moodle.data.course_info.course_grade'),
+                is_ready: filled(data_get($provisioning, 'moodle.data.moodle_course_id')),
             ),
             DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 license_key: data_get($provisioning, 'spotplayer.data.license_key'),
                 player_url: data_get($provisioning, 'spotplayer.data.player_url'),
+                is_ready: filled(data_get($provisioning, 'spotplayer.data.player_url')),
             ),
             DeliveryMethodEnum::IN_PERSON => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 address: data_get($details, 'address'),
                 map_url: data_get($details, 'map_url'),
+                is_ready: filled(data_get($details, 'address')),
             ),
             DeliveryMethodEnum::DIRECT_DOWNLOAD => new DeliveryAccessData(
                 type: $deliveryMethod->value,
+                is_ready: true,
             ),
         };
     }

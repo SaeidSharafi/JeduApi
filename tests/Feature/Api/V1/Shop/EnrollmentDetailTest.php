@@ -54,6 +54,7 @@ it('show returns bbb delivery_access for live_session_bbb enrollment', function 
         ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
     $access = $response->json('data.delivery_access');
     expect($access)->toHaveKey('type')
+        ->and($access)->toHaveKey('is_ready')
         ->and($access)->toHaveKey('join_url_path');
 });
 
@@ -67,6 +68,7 @@ it('show returns moodle delivery_access for lms_moodle enrollment', function ():
     $access = $response->json('data.delivery_access');
     expect($access)
         ->toHaveKey('type')
+        ->and($access)->toHaveKey('is_ready')
         ->and($access)->toHaveKey('course_url')
         ->and($access)->toHaveKey('completed')
         ->and($access)->toHaveKey('course_grade');
@@ -81,6 +83,7 @@ it('show returns spotplayer delivery_access for video_platform_spotplayer enroll
         ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
     $access = $response->json('data.delivery_access');
     expect($access)->toHaveKey('type')
+        ->and($access)->toHaveKey('is_ready')
         ->and($access)->toHaveKey('license_key')
         ->and($access)->toHaveKey('player_url');
 });
@@ -94,6 +97,7 @@ it('show returns in_person delivery_access for in_person enrollment', function (
         ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
     $access = $response->json('data.delivery_access');
     expect($access)->toHaveKey('type')
+        ->and($access)->toHaveKey('is_ready')
         ->and($access)->toHaveKey('address')
         ->and($access)->toHaveKey('map_url');
 });
