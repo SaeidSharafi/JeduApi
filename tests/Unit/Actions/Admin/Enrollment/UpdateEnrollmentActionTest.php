@@ -14,63 +14,55 @@ describe('UpdateEnrollmentAction', function (): void {
 
     it('updates enrollment with all fields', function (): void {
         $enrollment = Enrollment::factory()->create([
-            'access_start_date'      => '2025-01-01',
-            'access_end_date'        => '2025-12-31',
-            'external_enrollment_id' => 12345,
-            'notes'                  => 'Old notes',
+            'access_start_date' => '2025-01-01',
+            'access_end_date'   => '2025-12-31',
+            'notes'             => 'Old notes',
         ]);
 
         $data = EnrollmentUpdateData::from([
-            'access_start_date'      => '1404-10-11',
-            'access_end_date'        => '1405-10-10',
-            'external_enrollment_id' => 67890,
-            'notes'                  => 'New notes',
+            'access_start_date' => '1404-10-11',
+            'access_end_date'   => '1405-10-10',
+            'notes'             => 'New notes',
         ]);
 
         $result = $this->action->handle($enrollment, $data);
 
         expect($result->access_start_date->format('Y-m-d'))->toBe('2026-01-01')
             ->and($result->access_end_date->format('Y-m-d'))->toBe('2026-12-31')
-            ->and($result->external_enrollment_id)->toBe(67890)
             ->and($result->notes)->toBe('New notes');
 
         $this->assertDatabaseHas('enrollments', [
-            'id'                     => $enrollment->id,
-            'access_start_date'      => '2026-01-01',
-            'access_end_date'        => '2026-12-31',
-            'external_enrollment_id' => 67890,
-            'notes'                  => 'New notes',
+            'id'                => $enrollment->id,
+            'access_start_date' => '2026-01-01',
+            'access_end_date'   => '2026-12-31',
+            'notes'             => 'New notes',
         ]);
     });
 
     it('updates enrollment with nullable fields', function (): void {
         $enrollment = Enrollment::factory()->create([
-            'access_start_date'      => '2025-01-01',
-            'access_end_date'        => '2025-12-31',
-            'external_enrollment_id' => 99999,
-            'notes'                  => 'Some notes',
+            'access_start_date' => '2025-01-01',
+            'access_end_date'   => '2025-12-31',
+            'notes'             => 'Some notes',
         ]);
 
         $data = EnrollmentUpdateData::from([
-            'access_start_date'      => null,
-            'access_end_date'        => null,
-            'external_enrollment_id' => null,
-            'notes'                  => null,
+            'access_start_date' => null,
+            'access_end_date'   => null,
+            'notes'             => null,
         ]);
 
         $result = $this->action->handle($enrollment, $data);
 
         expect($result->access_start_date)->toBeNull()
             ->and($result->access_end_date)->toBeNull()
-            ->and($result->external_enrollment_id)->toBeNull()
             ->and($result->notes)->toBeNull();
 
         $this->assertDatabaseHas('enrollments', [
-            'id'                     => $enrollment->id,
-            'access_start_date'      => null,
-            'access_end_date'        => null,
-            'external_enrollment_id' => null,
-            'notes'                  => null,
+            'id'                => $enrollment->id,
+            'access_start_date' => null,
+            'access_end_date'   => null,
+            'notes'             => null,
         ]);
     });
 
@@ -80,10 +72,9 @@ describe('UpdateEnrollmentAction', function (): void {
         ]);
 
         $data = EnrollmentUpdateData::from([
-            'access_start_date'      => null,
-            'access_end_date'        => null,
-            'external_enrollment_id' => null,
-            'notes'                  => 'Updated notes',
+            'access_start_date' => null,
+            'access_end_date'   => null,
+            'notes'             => 'Updated notes',
         ]);
 
         $result = $this->action->handle($enrollment, $data);

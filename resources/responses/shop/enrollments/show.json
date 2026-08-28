@@ -8,7 +8,6 @@
     },
     "access_start_date": "1403-01-01",
     "access_end_date": "1403-12-29",
-    "external_enrollment_id": "65526150",
     "notes": "maiores",
     "product": {
       "id": 107,
@@ -70,8 +69,30 @@
         "download_url": "http://jedu.test/api/v1/shop/enrollments/019803f5-0dbc-7325-aa7e-852eed356839/download/1"
       }
     ],
-    "quizzes": [],
-    "delivery_access": null
+    "quizzes": [
+      {
+        "cmid": 1,
+        "name": "کوییز فصل اول",
+        "type": "quiz",
+        "url": "https://lms.example.com/mod/quiz/view.php?id=1",
+        "state": 0,
+        "score": null,
+        "timecompleted": null
+      }
+    ],
+    "delivery_access": {
+      "type": "lms_moodle",
+      "is_ready": true,
+      "session_label": null,
+      "join_url_path": null,
+      "course_url": "https://lms.example.com/course/view.php?id=1",
+      "completed": false,
+      "course_grade": null,
+      "license_key": null,
+      "player_url": null,
+      "address": null,
+      "map_url": null
+    }
   },
   "metadata": []
 }

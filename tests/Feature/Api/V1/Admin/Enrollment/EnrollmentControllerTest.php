@@ -127,17 +127,15 @@ describe('EnrollmentController', function (): void {
         $this->authorized_user([PermissionEnum::ENROLLMENT_UPDATE->value]);
 
         $enrollment = Enrollment::factory()->create([
-            'access_start_date'      => '2025-01-01',
-            'access_end_date'        => '2025-12-31',
-            'external_enrollment_id' => 11111,
-            'notes'                  => 'Old notes',
+            'access_start_date' => '2025-01-01',
+            'access_end_date'   => '2025-12-31',
+            'notes'             => 'Old notes',
         ]);
 
         $updateData = [
-            'access_start_date'      => '1404-10-11',
-            'access_end_date'        => '1405-10-10',
-            'external_enrollment_id' => 22222,
-            'notes'                  => 'Updated notes',
+            'access_start_date' => '1404-10-11',
+            'access_end_date'   => '1405-10-10',
+            'notes'             => 'Updated notes',
         ];
 
         $response = $this->putJson(route('api.v1.admin.enrollments.update', ['enrollment' => $enrollment->id]), $updateData);
@@ -145,15 +143,13 @@ describe('EnrollmentController', function (): void {
         $response->assertOk()
             ->assertJsonPath('data.access_start_date', '1404-10-11')
             ->assertJsonPath('data.access_end_date', '1405-10-10')
-            ->assertJsonPath('data.external_enrollment_id', 22222)
             ->assertJsonPath('data.notes', 'Updated notes');
 
         $this->assertDatabaseHas('enrollments', [
-            'id'                     => $enrollment->id,
-            'access_start_date'      => '2026-01-01',
-            'access_end_date'        => '2026-12-31',
-            'external_enrollment_id' => 22222,
-            'notes'                  => 'Updated notes',
+            'id'                => $enrollment->id,
+            'access_start_date' => '2026-01-01',
+            'access_end_date'   => '2026-12-31',
+            'notes'             => 'Updated notes',
         ]);
     });
 

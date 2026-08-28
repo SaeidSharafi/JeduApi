@@ -206,7 +206,6 @@ test('product createion with all combinations',
                 ],
                 'access_start_date',
                 'access_end_date',
-                'external_enrollment_id',
                 'notes',
                 'product',
                 'teachers' => [
@@ -262,6 +261,7 @@ function getDeliveryBlock(
         ],
         'live_session_bbb', 'live_session_skyroom' => [
             'type'          => $deliveryMethod,
+            'is_ready'      => false,
             'session_label' => 'کلاس آنلاین',
             'join_url_path' => '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
             'course_url'    => null,
@@ -274,6 +274,7 @@ function getDeliveryBlock(
         ],
         'lms_moodle' => [
             'type'          => $deliveryMethod,
+            'is_ready'      => filled($data['moodle_course_id'] ?? null),
             'session_label' => null,
             'join_url_path' => null,
             'course_url'    => null,
@@ -286,6 +287,7 @@ function getDeliveryBlock(
         ],
         'video_platform_spotplayer' => [
             'type'          => $deliveryMethod,
+            'is_ready'      => true,
             'session_label' => null,
             'join_url_path' => null,
             'course_url'    => null,
@@ -298,6 +300,7 @@ function getDeliveryBlock(
         ],
         'in_person' => [
             'type'          => $deliveryMethod,
+            'is_ready'      => true,
             'session_label' => null,
             'join_url_path' => null,
             'course_url'    => null,
@@ -320,7 +323,8 @@ function getProvisioningData(
     return match ($deliveryMethod) {
         'lms_moodle' => [
             'moodle' => [
-                'data' => [
+                'status' => 'success',
+                'data'   => [
                     'moodle_course_id' => $data['moodle_course_id'],
                     'moodle_user_id'   => 123,
                 ],
@@ -328,7 +332,8 @@ function getProvisioningData(
         ],
         'video_platform_spotplayer' => [
             'spotplayer' => [
-                'data' => [
+                'status' => 'success',
+                'data'   => [
                     'license_key' => 'XYZ',
                     'player_url'  => 'spotplayer.example.com/player/12345',
                 ],

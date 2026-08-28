@@ -21,7 +21,6 @@ it('to array', function (): void {
             'enrollment_status',
             'access_start_date',
             'access_end_date',
-            'external_enrollment_id',
             'provisioning_data',
             'notes',
             'created_at',

@@ -11,9 +11,21 @@
         },
         "access_start_date": null,
         "access_end_date": null,
-        "external_enrollment_id": "65526150",
         "notes": "maiores",
-        "provisioning_data": [],
+        "provisioning_data": {
+          "providers": {
+            "spotplayer": {
+              "status": "success",
+              "attempt_sequence": 1,
+              "data": {
+                "spot_id": "SPOT-123",
+                "license_key": "0001a4c3e2f1b8d7c6e5a4b3f2e1d0c9b8",
+                "player_url": "https://app.spotplayer.ir/player/SPOT-123/",
+                "provisioned_at": "2025-09-01T08:00:00Z"
+              }
+            }
+          }
+        },
         "is_virtual": true,
         "product": {
           "id": 107,
@@ -51,7 +63,6 @@
         },
         "access_start_date": "1398-05-12 15:26:51",
         "access_end_date": "1399-01-07 15:26:51",
-        "external_enrollment_id": "891341940",
         "notes": "iste",
         "provisioning_data": [],
         "is_virtual": false,
@@ -95,7 +106,6 @@
         },
         "access_start_date": "1392-08-07 14:26:51",
         "access_end_date": "1393-05-28 15:26:51",
-        "external_enrollment_id": "28257414",
         "notes": "non",
         "provisioning_data": [],
         "is_virtual": false,
@@ -135,7 +145,6 @@
         },
         "access_start_date": null,
         "access_end_date": null,
-        "external_enrollment_id": "18",
         "notes": "in",
         "provisioning_data": [],
         "is_virtual": false,
@@ -175,7 +184,6 @@
         },
         "access_start_date": null,
         "access_end_date": null,
-        "external_enrollment_id": "8166",
         "notes": "ea",
         "provisioning_data": [],
         "is_virtual": false,
@@ -215,7 +223,6 @@
         },
         "access_start_date": "1383-04-06 15:26:51",
         "access_end_date": "1384-01-14 15:26:51",
-        "external_enrollment_id": "71143",
         "notes": "voluptas",
         "provisioning_data": [],
         "is_virtual": true,

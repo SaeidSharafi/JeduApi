@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\ProvisioningOutcomeStatusEnum;
 use App\Enums\ProvisioningStatusEnum;
 use App\Events\EnrollmentStatusChanged;
 use Database\Factories\EnrollmentFactory;
@@ -35,7 +36,6 @@ final class Enrollment extends Model
             'enrollment_status',
             'access_start_date',
             'access_end_date',
-            'external_enrollment_id',
             'provisioning_data',
             'provisioning_plan',
             'provisioning_status',
@@ -119,7 +119,10 @@ final class Enrollment extends Model
             $status = data_get($this->provisioning_data, "providers.{$provider['provider']}.status");
 
             $isReady              = ($provider['readiness'] ?? null) === 'ready';
-            $hasSuccessfulOutcome = in_array($status, ['success', 'waived'], true);
+            $hasSuccessfulOutcome = in_array($status, [
+                ProvisioningOutcomeStatusEnum::SUCCESS->value,
+                ProvisioningOutcomeStatusEnum::WAIVED->value,
+            ], true);
 
             if (! $isReady || ! $hasSuccessfulOutcome) {
                 return false;

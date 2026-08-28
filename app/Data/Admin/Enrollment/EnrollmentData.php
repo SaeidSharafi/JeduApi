@@ -27,7 +27,6 @@ final class EnrollmentData extends Data
         public ?Verta $access_start_date,
         #[WithTransformer(AdvancedDateTimeInterfaceTransformer::class, format: 'Y-m-d')]
         public ?Verta $access_end_date,
-        public ?int $external_enrollment_id,
         public ProvisioningSummaryData $provisioning_summary,
         public ?string $notes,
         #[WithTransformer(AdvancedDateTimeInterfaceTransformer::class)]

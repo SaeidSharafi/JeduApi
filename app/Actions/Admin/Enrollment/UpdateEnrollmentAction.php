@@ -18,10 +18,9 @@ final readonly class UpdateEnrollmentAction
     public function handle(Enrollment $enrollment, EnrollmentUpdateData $data): Enrollment
     {
         $enrollment->update([
-            'access_start_date'      => $data->access_start_date,
-            'access_end_date'        => $data->access_end_date,
-            'external_enrollment_id' => $data->external_enrollment_id,
-            'notes'                  => $data->notes,
+            'access_start_date' => $data->access_start_date,
+            'access_end_date'   => $data->access_end_date,
+            'notes'             => $data->notes,
         ]);
 
         if ($data->reason !== null && $data->reason !== '') {

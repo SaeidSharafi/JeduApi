@@ -26,7 +26,6 @@ return new class extends Migration
             $table->string('enrollment_status')->default(EnrollmentStatusEnum::ACTIVE->value);
             $table->date('access_start_date')->nullable();
             $table->date('access_end_date')->nullable();
-            $table->unsignedBigInteger('external_enrollment_id')->nullable();
             $table->jsonb('provisioning_data')->nullable();
             $table->text('notes')->nullable();
             $table->timestamp('survey_completed_at')->nullable();

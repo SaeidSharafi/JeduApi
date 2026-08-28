@@ -28,7 +28,6 @@ final class EnrollmentDetailData extends Data
         public ?Verta $access_start_date,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Verta $access_end_date,
-        public ?string $external_enrollment_id,
         public ?string $notes,
         public ProductDeliveryOptionCardData $product,
         /** @var DataCollection<int, TeacherDetailData> */

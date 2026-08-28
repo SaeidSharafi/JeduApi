@@ -9,11 +9,31 @@
         },
         "access_start_date": "2025-09-01",
         "access_end_date": "2025-12-31",
-        "external_enrollment_id": 12345,
-        "provisioning_data": {
-            "lms_user_id": 42,
-            "course_id": 101,
-            "enrolled_at": "2025-09-01T00:00:00Z"
+        "provisioning_summary": {
+            "status": {
+                "value": "healthy",
+                "label": "enums.ProvisioningStatusEnum.healthy"
+            },
+            "plan": {
+                "version": 1,
+                "providers": [
+                    {
+                        "provider": "moodle",
+                        "applicable": true,
+                        "readiness": {
+                            "value": "ready",
+                            "label": "enums.ProvisioningReadinessEnum.ready"
+                        },
+                        "configuration_issue": null
+                    }
+                ],
+                "status": {
+                    "value": "ready",
+                    "label": "enums.ProvisioningStatusEnum.ready"
+                },
+                "resolved_at": "2025-09-01T08:00:00Z"
+            },
+            "reconciliation_status": null
         },
         "notes": "Student requested early access.",
         "survey_completed_at": null,

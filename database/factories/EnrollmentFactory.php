@@ -29,11 +29,10 @@ final class EnrollmentFactory extends Factory
             'access_start_date' => $startData,
             'access_end_date'   => $startData ? Carbon::parse($startData)
                 ->addDays($this->faker->numberBetween(1, 365)) : null,
-            'external_enrollment_id' => $this->faker->randomNumber(),
-            'provisioning_data'      => [],
-            'notes'                  => $this->faker->word(),
-            'created_at'             => Carbon::now(),
-            'updated_at'             => Carbon::now(),
+            'provisioning_data' => [],
+            'notes'             => $this->faker->word(),
+            'created_at'        => Carbon::now(),
+            'updated_at'        => Carbon::now(),
         ];
     }
 }
