@@ -1,17 +1,29 @@
-# Jalali Dates in Request DTOs
+# Jalali Dates in Data DTOs
 
 Glob: `app/Data/**`
 
 Every date supplied by an API client is Jalali. This applies to mutation, query, filter, and report request DTOs; there are no Gregorian request-date exceptions. Persist and compare dates internally as Gregorian, and return dates to clients as Jalali.
 
-## Mutation input pipeline
+## Data date handling
 
-- In create, update, store, and delete Data classes, convert Jalali input to Gregorian in `prepareForPipeline()` with `JalaliDateHelper::toGregorian()` before validation.
+- In create, update, store, and delete request Data classes with date fields, explicitly implement `prepareForPipeline()` with `JalaliDateHelper::toGregorian()` before validation. Use the input field names and their expected Jalali formats, for example:
+
+  ```php
+  public static function prepareForPipeline(array $properties): array
+  {
+      return JalaliDateHelper::toGregorian($properties, [
+          'published_at' => 'Y-m-d H:i:s',
+      ]);
+  }
+  ```
+
+  API clients send Jalali dates, so this normalization must happen before validation; validation then receives Gregorian values.
 - Declare every converted field explicitly beside the DTO. Use dot notation for nested fields and map fields to their input format when it is not `Y-m-d`.
 - Pair each converted field with `bail`, `ValidNormalizedJalaliDateRule`, and Laravel's Gregorian `date_format` rule. This preserves distinct errors for malformed input and impossible Jalali calendar dates.
 - Use Laravel's data-aware comparison rules on the normalized field names: `after`, `after_or_equal`, `before`, `before_or_equal`, and `date_equals`. Reference the other field by name; do not concatenate request values into rule strings.
 - When a property remains typed as `Carbon`, cast the normalized value with Spatie's `DateTimeInterfaceCast` using the Gregorian format expected by the property.
 - Query, filter, and report DTOs must also document and validate every client date as Jalali, even when their existing conversion mechanism differs from mutation DTOs.
+- In response Data classes, type every date field as nullable `?Verta`. Verta automatically converts the Gregorian value to the formatted Jalali date for the API response. Response date fields must not use `Carbon` or raw date strings.
 - Keep Gregorian-to-Jalali response transformation in response DTOs. Request normalization does not belong in response casts.
 
 ## Delivery-option detail dates
