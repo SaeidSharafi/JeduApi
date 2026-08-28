@@ -9,6 +9,7 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
 use App\Models\Enrollment;
@@ -16,8 +17,19 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Services\OrderStatusService;
+use Illuminate\Support\Facades\Queue;
 
 describe('OrderStatusService', function (): void {
+
+    beforeEach(function (): void {
+        // Payment completion cascades through OrderStatusUpdateListener, which
+        // dispatches ProvisionEnrollmentProviderJob. Those jobs hit real
+        // integration services (disabled in tests); fake the queue so the
+        // order-status cascade is tested in isolation, like CheckoutTest does.
+        Queue::fake([
+            ProvisionEnrollmentProviderJob::class,
+        ]);
+    });
 
     it('sets order status to PENDING when there is no item', function (): void {
         $order = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
