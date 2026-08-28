@@ -626,7 +626,11 @@
 - **Purpose:** Finds/creates Moodle user and enrolls in course. Tries: 3, backoff: [60, 180, 600]s.
 
 #### ProvisionSpotPlayerEnrollmentJob (`app/Jobs/Provisioning/ProvisionSpotPlayerEnrollmentJob.php`)
-- **Purpose:** Issues SpotPlayer license for a user. Tries: 3, backoff: [60, 180, 600]s.
+- **Purpose:** Legacy job retained for compatibility; authoritative SpotPlayer provisioning runs through `SpotPlayerProvisioningProvider` and `ProvisionEnrollmentProviderJob` with a provider-scoped provisioning attempt.
+
+#### Provisioning Provider Adapters (`app/Services/Provisioning/Providers/`)
+- **SpotPlayerProvisioningProvider:** Issues a SpotPlayer licence from the canonical delivery-option plan and returns safe licence references; uncertain issuance outcomes require manual verification.
+- **MoodleQuizProvisioningProvider:** Finds/creates the Moodle user and enrolls them in the canonical quiz course without a date window.
 
 #### ProvisionBbbEnrollmentJob (`app/Jobs/Provisioning/ProvisionBbbEnrollmentJob.php`)
 - **Purpose:** Optionally auto-creates BBB meeting and generates join URL. Tries: 3, backoff: [60, 180, 600]s.
@@ -640,9 +644,10 @@
 - **Purpose:** Dispatches provisioning jobs after Order completion based on delivery method
 - **Trigger:** Listens on `OrderStatusUpdatedEvent` (queued)
 - **Logic:** For each order item with completed status, dispatches jobs based on:
-  - `ims_course_code` in details → `ProvisionImsEnrollmentJob`
-  - `LMS_MOODLE` delivery → `ProvisionMoodleEnrollmentJob`
-  - `VIDEO_PLATFORM_SPOTPLAYER` delivery → `ProvisionSpotPlayerEnrollmentJob`
+  - `ims_course_code` in details → shared `ProvisionEnrollmentProviderJob` with the IMS adapter
+  - `LMS_MOODLE` delivery → shared `ProvisionEnrollmentProviderJob` with the Moodle adapter
+  - `VIDEO_PLATFORM_SPOTPLAYER` delivery → shared `ProvisionEnrollmentProviderJob` with the SpotPlayer adapter
+  - applicable `moodle_quiz_course_id` → shared `ProvisionEnrollmentProviderJob` with the Moodle Quiz adapter
   - `LIVE_SESSION_BBB` delivery → `ProvisionBbbEnrollmentJob`
   - `LIVE_SESSION_SKYROOM` delivery → (handled via `GetJoinUrlAction` at request time, not async)
 

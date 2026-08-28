@@ -8,18 +8,27 @@ use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\ProvisioningProviderEnum;
 use App\Services\Provisioning\Providers\ImsProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
+use App\Services\Provisioning\Providers\MoodleQuizProvisioningProvider;
+use App\Services\Provisioning\Providers\SpotPlayerProvisioningProvider;
 use InvalidArgumentException;
 
 final readonly class ProvisioningProviderRegistry
 {
-    public function __construct(private MoodleProvisioningProvider $moodle, private ImsProvisioningProvider $ims) {}
+    public function __construct(
+        private MoodleProvisioningProvider $moodle,
+        private ImsProvisioningProvider $ims,
+        private SpotPlayerProvisioningProvider $spotPlayer,
+        private MoodleQuizProvisioningProvider $moodleQuiz,
+    ) {}
 
     public function resolve(ProvisioningProviderEnum $provider): ProvisioningProvider
     {
         return match ($provider) {
-            ProvisioningProviderEnum::MOODLE => $this->moodle,
-            ProvisioningProviderEnum::IMS    => $this->ims,
-            default                          => throw new InvalidArgumentException("Provider [{$provider->value}] has no adapter yet."),
+            ProvisioningProviderEnum::MOODLE      => $this->moodle,
+            ProvisioningProviderEnum::IMS         => $this->ims,
+            ProvisioningProviderEnum::SPOTPLAYER  => $this->spotPlayer,
+            ProvisioningProviderEnum::MOODLE_QUIZ => $this->moodleQuiz,
+            default                               => throw new InvalidArgumentException("Provider [{$provider->value}] has no adapter yet."),
         };
     }
 }

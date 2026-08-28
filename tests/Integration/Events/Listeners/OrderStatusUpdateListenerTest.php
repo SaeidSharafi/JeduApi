@@ -6,18 +6,18 @@ namespace Tests\Unit\Listeners;
 
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Events\EnrollmentStatusChanged;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
-use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Listeners\OrderStatusUpdateListener;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
+use App\Models\Setting;
 use App\Services\Enrollment\ProvisioningPlanResolver;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -25,10 +25,14 @@ use Illuminate\Support\Facades\Queue;
 describe('OrderStatusUpdateListener', function (): void {
 
     beforeEach(function (): void {
+        Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
+            'enabled' => true, 'endpoint' => 'https://spot.test', 'api_key' => 'spot-key',
+        ], 'json', 'integrations');
+        Setting::setValue(SettingKeyEnum::MOODLE, [
+            'enabled' => true, 'base_url' => 'https://moodle.test', 'token' => 'moodle-key',
+        ], 'json', 'integrations');
         Queue::fake([
             ProvisionEnrollmentProviderJob::class,
-            ProvisionMoodleQuizJob::class,
-            ProvisionSpotPlayerEnrollmentJob::class,
             ProvisionBbbEnrollmentJob::class,
         ]);
     });
@@ -99,8 +103,7 @@ describe('OrderStatusUpdateListener', function (): void {
 
         (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))->handle($event);
 
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 6);
-        Queue::assertPushed(ProvisionSpotPlayerEnrollmentJob::class, 1);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 7);
         Queue::assertPushed(ProvisionBbbEnrollmentJob::class, 1);
     });
 
@@ -123,7 +126,7 @@ describe('OrderStatusUpdateListener', function (): void {
         $this->assertTrue(true);
     });
 
-    it('dispatches ProvisionMoodleQuizJob when moodle_quiz_course_id is set on non-Moodle delivery', function (): void {
+    it('dispatches the generic provider job when moodle_quiz_course_id is set on non-Moodle delivery', function (): void {
         Event::fake([
             EnrollmentStatusChanged::class,
         ]);
@@ -146,6 +149,6 @@ describe('OrderStatusUpdateListener', function (): void {
         $event = new OrderStatusUpdatedEvent($order);
         (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))->handle($event);
 
-        Queue::assertPushed(ProvisionMoodleQuizJob::class, 1);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 2);
     });
 });

@@ -10,9 +10,7 @@ use App\Enums\ProvisioningTriggerEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Order;
 use App\Services\Enrollment\ProvisioningPlanResolver;
 use App\Services\Provisioning\ProvisioningAttemptService;
@@ -75,8 +73,9 @@ final class OrderStatusUpdateListener implements ShouldQueue
                 ProvisionEnrollmentProviderJob::dispatch($attempt->id);
             }
 
-            if ($plannedProviders->contains('spotplayer')) {
-                ProvisionSpotPlayerEnrollmentJob::dispatch($item->enrollment->id);
+            if ($plannedProviders->contains('spotplayer') && $this->isProviderReady($plan, 'spotplayer')) {
+                $attempt = $this->attemptService->queue($item->enrollment, ProvisioningTriggerEnum::PAYMENT, provider: ProvisioningProviderEnum::SPOTPLAYER);
+                ProvisionEnrollmentProviderJob::dispatch($attempt->id);
             }
 
             if ($plannedProviders->contains('bbb')) {
@@ -87,9 +86,20 @@ final class OrderStatusUpdateListener implements ShouldQueue
                 ProvisionSkyroomEnrollmentJob::dispatch($item->enrollment->id);
             }
 
-            if ($plannedProviders->contains('moodle_quiz')) {
-                ProvisionMoodleQuizJob::dispatch($item->enrollment->id);
+            if ($plannedProviders->contains('moodle_quiz') && $this->isProviderReady($plan, 'moodle_quiz')) {
+                $attempt = $this->attemptService->queue($item->enrollment, ProvisioningTriggerEnum::PAYMENT, provider: ProvisioningProviderEnum::MOODLE_QUIZ);
+                ProvisionEnrollmentProviderJob::dispatch($attempt->id);
             }
         }
+    }
+
+    /** @param array<string, mixed> $plan */
+    private function isProviderReady(array $plan, string $provider): bool
+    {
+        return collect($plan['providers'] ?? [])->contains(
+            fn (array $planned): bool => ($planned['provider'] ?? null) === $provider
+                && ($planned['readiness'] ?? null)                      === 'ready'
+                && ($planned['applicable'] ?? false)                    === true,
+        );
     }
 }

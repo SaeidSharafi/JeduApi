@@ -8,9 +8,7 @@ use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
@@ -146,7 +144,7 @@ describe('RetryProvisioningAction', function (): void {
 
         expect($result['providers'])->toBe(['spotplayer']);
 
-        Queue::assertPushed(ProvisionSpotPlayerEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('dispatches BBB provisioning job for failed BBB provider', function (): void {
@@ -213,7 +211,7 @@ describe('RetryProvisioningAction', function (): void {
 
         expect($result['providers'])->toBe(['moodle_quiz']);
 
-        Queue::assertPushed(ProvisionMoodleQuizJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('dispatches multiple provisioning jobs for multiple failed providers', function (): void {

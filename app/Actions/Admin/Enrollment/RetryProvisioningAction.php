@@ -9,9 +9,7 @@ use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningTriggerEnum;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Enrollment;
 use App\Services\Enrollment\ProvisioningPlanResolver;
 use App\Services\Provisioning\ProvisioningAttemptService;
@@ -121,7 +119,7 @@ final readonly class RetryProvisioningAction
                 $this->dispatchProvider($enrollment, ProvisioningProviderEnum::MOODLE);
                 $dispatched[] = 'moodle';
             } elseif ($provider === 'spotplayer') {
-                ProvisionSpotPlayerEnrollmentJob::dispatch($enrollment->id);
+                $this->dispatchProvider($enrollment, ProvisioningProviderEnum::SPOTPLAYER);
                 $dispatched[] = 'spotplayer';
             } elseif ($provider === 'bbb') {
                 ProvisionBbbEnrollmentJob::dispatch($enrollment->id);
@@ -130,7 +128,7 @@ final readonly class RetryProvisioningAction
                 ProvisionSkyroomEnrollmentJob::dispatch($enrollment->id);
                 $dispatched[] = 'skyroom';
             } elseif ($provider === 'moodle_quiz') {
-                ProvisionMoodleQuizJob::dispatch($enrollment->id);
+                $this->dispatchProvider($enrollment, ProvisioningProviderEnum::MOODLE_QUIZ);
                 $dispatched[] = 'moodle_quiz';
             }
         }
@@ -166,7 +164,7 @@ final readonly class RetryProvisioningAction
         }
 
         if ($plannedProviders->contains('spotplayer')) {
-            ProvisionSpotPlayerEnrollmentJob::dispatch($enrollment->id);
+            $this->dispatchProvider($enrollment, ProvisioningProviderEnum::SPOTPLAYER);
             $dispatched[] = 'spotplayer';
         }
 
@@ -181,7 +179,7 @@ final readonly class RetryProvisioningAction
         }
 
         if ($plannedProviders->contains('moodle_quiz')) {
-            ProvisionMoodleQuizJob::dispatch($enrollment->id);
+            $this->dispatchProvider($enrollment, ProvisioningProviderEnum::MOODLE_QUIZ);
             $dispatched[] = 'moodle_quiz';
         }
 
