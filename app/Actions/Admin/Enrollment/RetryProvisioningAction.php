@@ -7,9 +7,7 @@ namespace App\Actions\Admin\Enrollment;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningTriggerEnum;
-use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Models\Enrollment;
 use App\Services\Enrollment\ProvisioningPlanResolver;
 use App\Services\Provisioning\ProvisioningAttemptService;
@@ -86,7 +84,10 @@ final readonly class RetryProvisioningAction
 
         $failed = [];
         foreach ($providers as $key => $providerData) {
-            if (is_array($providerData) && ($providerData['status'] ?? null) === 'failed') {
+            if (is_array($providerData) && in_array($providerData['status'] ?? null, [
+                'failed',
+                'manual_action_required',
+            ], true)) {
                 $failed[] = $key;
             }
         }
@@ -122,10 +123,10 @@ final readonly class RetryProvisioningAction
                 $this->dispatchProvider($enrollment, ProvisioningProviderEnum::SPOTPLAYER);
                 $dispatched[] = 'spotplayer';
             } elseif ($provider === 'bbb') {
-                ProvisionBbbEnrollmentJob::dispatch($enrollment->id);
+                $this->dispatchProvider($enrollment, ProvisioningProviderEnum::BBB);
                 $dispatched[] = 'bbb';
             } elseif ($provider === 'skyroom') {
-                ProvisionSkyroomEnrollmentJob::dispatch($enrollment->id);
+                $this->dispatchProvider($enrollment, ProvisioningProviderEnum::SKYROOM);
                 $dispatched[] = 'skyroom';
             } elseif ($provider === 'moodle_quiz') {
                 $this->dispatchProvider($enrollment, ProvisioningProviderEnum::MOODLE_QUIZ);
@@ -169,12 +170,12 @@ final readonly class RetryProvisioningAction
         }
 
         if ($plannedProviders->contains('bbb')) {
-            ProvisionBbbEnrollmentJob::dispatch($enrollment->id);
+            $this->dispatchProvider($enrollment, ProvisioningProviderEnum::BBB);
             $dispatched[] = 'bbb';
         }
 
         if ($plannedProviders->contains('skyroom')) {
-            ProvisionSkyroomEnrollmentJob::dispatch($enrollment->id);
+            $this->dispatchProvider($enrollment, ProvisioningProviderEnum::SKYROOM);
             $dispatched[] = 'skyroom';
         }
 

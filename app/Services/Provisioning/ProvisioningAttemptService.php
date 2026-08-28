@@ -208,7 +208,7 @@ final class ProvisioningAttemptService
     private function safeReferences(array $references): array
     {
         return collect($references)->only([
-            'moodle_user_id', 'moodle_user_name', 'moodle_username', 'moodle_course_id', 'ims_student_id', 'ims_enrollment_id', 'course_code', 'spot_id', 'license_key', 'player_url', 'login_path', 'provisioned_at',
+            'moodle_user_id', 'moodle_user_name', 'moodle_username', 'moodle_course_id', 'ims_student_id', 'ims_enrollment_id', 'course_code', 'spot_id', 'license_key', 'player_url', 'login_path', 'meeting_id', 'nili_room_id', 'room_id', 'skyroom_user_id', 'provisioned_at',
         ])->all();
     }
 }

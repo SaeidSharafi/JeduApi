@@ -8,9 +8,13 @@ use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
 use App\Models\ProductDeliveryOption;
+use App\Services\Integrations\BbbService;
 use App\Services\Integrations\MoodleService;
+use App\Services\Integrations\SkyroomService;
 use App\Services\Integrations\SpotPlayerService;
+use App\Services\Provisioning\Providers\BbbProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleQuizProvisioningProvider;
+use App\Services\Provisioning\Providers\SkyroomProvisioningProvider;
 use App\Services\Provisioning\Providers\SpotPlayerProvisioningProvider;
 
 function adapterEnrollment(string $provider, array $details): Enrollment
@@ -68,4 +72,37 @@ it('rejects a Moodle Quiz provider that is not in the canonical plan', function 
 
     expect(fn () => (new MoodleQuizProvisioningProvider($service))->provision($enrollment))
         ->toThrow(UnrecoverableProvisioningException::class, 'not applicable');
+});
+
+it('provisions BBB from a staff-created room without creating it', function (): void {
+    $enrollment = adapterEnrollment('bbb', ['meeting_id' => 'NILI-ROOM-1']);
+    $service    = $this->mock(BbbService::class);
+    $service->shouldReceive('isEnabled')->andReturnTrue();
+    $service->shouldReceive('assertConfigured');
+    $service->shouldNotReceive('createMeeting');
+
+    expect((new BbbProvisioningProvider($service))->provision($enrollment))
+        ->toBe(['meeting_id' => 'NILI-ROOM-1']);
+});
+
+it('provisions Skyroom into a staff-created room', function (): void {
+    $enrollment = adapterEnrollment('skyroom', ['room_id' => 10]);
+    $service    = $this->mock(SkyroomService::class);
+    $service->shouldReceive('isEnabled')->andReturnTrue();
+    $service->shouldReceive('assertConfigured');
+    $service->shouldReceive('findOrCreateUser')->once()->andReturn(['skyroom_user_id' => 42]);
+    $service->shouldReceive('addUserToRoom')->once()->with(10, 42);
+
+    expect((new SkyroomProvisioningProvider($service))->provision($enrollment))
+        ->toBe(['room_id' => 10, 'skyroom_user_id' => 42]);
+});
+
+it('rejects a missing staff-created room as manual action', function (): void {
+    $enrollment = adapterEnrollment('skyroom', ['room_id' => null]);
+    $service    = $this->mock(SkyroomService::class);
+    $service->shouldReceive('isEnabled')->andReturnTrue();
+    $service->shouldReceive('assertConfigured');
+
+    expect(fn () => (new SkyroomProvisioningProvider($service))->provision($enrollment))
+        ->toThrow(UnrecoverableProvisioningException::class);
 });

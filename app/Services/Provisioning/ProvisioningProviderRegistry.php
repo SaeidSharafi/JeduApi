@@ -6,9 +6,11 @@ namespace App\Services\Provisioning;
 
 use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\ProvisioningProviderEnum;
+use App\Services\Provisioning\Providers\BbbProvisioningProvider;
 use App\Services\Provisioning\Providers\ImsProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleQuizProvisioningProvider;
+use App\Services\Provisioning\Providers\SkyroomProvisioningProvider;
 use App\Services\Provisioning\Providers\SpotPlayerProvisioningProvider;
 use InvalidArgumentException;
 
@@ -19,6 +21,8 @@ final readonly class ProvisioningProviderRegistry
         private ImsProvisioningProvider $ims,
         private SpotPlayerProvisioningProvider $spotPlayer,
         private MoodleQuizProvisioningProvider $moodleQuiz,
+        private BbbProvisioningProvider $bbb,
+        private SkyroomProvisioningProvider $skyroom,
     ) {}
 
     public function resolve(ProvisioningProviderEnum $provider): ProvisioningProvider
@@ -28,6 +32,8 @@ final readonly class ProvisioningProviderRegistry
             ProvisioningProviderEnum::IMS         => $this->ims,
             ProvisioningProviderEnum::SPOTPLAYER  => $this->spotPlayer,
             ProvisioningProviderEnum::MOODLE_QUIZ => $this->moodleQuiz,
+            ProvisioningProviderEnum::BBB         => $this->bbb,
+            ProvisioningProviderEnum::SKYROOM     => $this->skyroom,
             default                               => throw new InvalidArgumentException("Provider [{$provider->value}] has no adapter yet."),
         };
     }

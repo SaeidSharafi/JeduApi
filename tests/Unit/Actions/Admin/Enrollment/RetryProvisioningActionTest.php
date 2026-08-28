@@ -6,9 +6,7 @@ use App\Actions\Admin\Enrollment\RetryProvisioningAction;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
-use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
@@ -166,7 +164,7 @@ describe('RetryProvisioningAction', function (): void {
 
         expect($result['providers'])->toBe(['bbb']);
 
-        Queue::assertPushed(ProvisionBbbEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('dispatches Skyroom provisioning job for failed Skyroom provider', function (): void {
@@ -188,7 +186,7 @@ describe('RetryProvisioningAction', function (): void {
 
         expect($result['providers'])->toBe(['skyroom']);
 
-        Queue::assertPushed(ProvisionSkyroomEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('dispatches Moodle Quiz provisioning job for failed Moodle Quiz provider', function (): void {

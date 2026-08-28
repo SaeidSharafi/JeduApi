@@ -9,7 +9,6 @@ use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\System\SettingKeyEnum;
 use App\Events\EnrollmentStatusChanged;
 use App\Events\OrderStatusUpdatedEvent;
-use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Listeners\OrderStatusUpdateListener;
 use App\Models\Enrollment;
@@ -31,9 +30,11 @@ describe('OrderStatusUpdateListener', function (): void {
         Setting::setValue(SettingKeyEnum::MOODLE, [
             'enabled' => true, 'base_url' => 'https://moodle.test', 'token' => 'moodle-key',
         ], 'json', 'integrations');
+        Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, [
+            'enabled' => true, 'base_url' => 'https://bbb.test', 'secret' => 'bbb-key',
+        ], 'json', 'integrations');
         Queue::fake([
             ProvisionEnrollmentProviderJob::class,
-            ProvisionBbbEnrollmentJob::class,
         ]);
     });
 
@@ -103,8 +104,7 @@ describe('OrderStatusUpdateListener', function (): void {
 
         (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))->handle($event);
 
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 7);
-        Queue::assertPushed(ProvisionBbbEnrollmentJob::class, 1);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 8);
     });
 
     it('handles an order with no items gracefully', function (): void {

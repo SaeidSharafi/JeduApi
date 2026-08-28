@@ -8,9 +8,7 @@ use App\Enums\Order\OrderStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningTriggerEnum;
 use App\Events\OrderStatusUpdatedEvent;
-use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Models\Order;
 use App\Services\Enrollment\ProvisioningPlanResolver;
 use App\Services\Provisioning\ProvisioningAttemptService;
@@ -78,12 +76,11 @@ final class OrderStatusUpdateListener implements ShouldQueue
                 ProvisionEnrollmentProviderJob::dispatch($attempt->id);
             }
 
-            if ($plannedProviders->contains('bbb')) {
-                ProvisionBbbEnrollmentJob::dispatch($item->enrollment->id);
-            }
-
-            if ($plannedProviders->contains('skyroom')) {
-                ProvisionSkyroomEnrollmentJob::dispatch($item->enrollment->id);
+            foreach ([ProvisioningProviderEnum::BBB, ProvisioningProviderEnum::SKYROOM] as $provider) {
+                if ($plannedProviders->contains($provider->value) && $this->isProviderReady($plan, $provider->value)) {
+                    $attempt = $this->attemptService->queue($item->enrollment, ProvisioningTriggerEnum::PAYMENT, provider: $provider);
+                    ProvisionEnrollmentProviderJob::dispatch($attempt->id);
+                }
             }
 
             if ($plannedProviders->contains('moodle_quiz') && $this->isProviderReady($plan, 'moodle_quiz')) {

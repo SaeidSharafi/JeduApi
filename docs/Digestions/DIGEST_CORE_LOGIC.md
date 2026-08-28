@@ -252,12 +252,14 @@
 #### Enrollment Provisioning Plan (`app/Services/Enrollment/ProvisioningPlanResolver.php`)
 - Resolves the sole canonical provider matrix at Enrollment creation. IMS applies when `ims_course_code` is present; the delivery method selects Moodle, SpotPlayer, BBB, or Skyroom; a separate numeric `moodle_quiz_course_id` selects Moodle Quiz for non-Moodle delivery methods.
 - Each applicable provider records `ready`, `disabled`, or `invalid` readiness. Disabled or invalid required providers remain visible and produce aggregate `manual_action_required` health instead of being omitted.
-- The persisted aggregate status is `healthy`, `ready`, `in_progress`, `degraded`, or `manual_action_required`. Legacy provisioning jobs update this aggregate while the provider adapter migration proceeds.
+- The persisted aggregate status is `healthy`, `ready`, `in_progress`, `degraded`, or `manual_action_required`. Provider adapters update this aggregate through the shared attempt lifecycle.
 - Paid Enrollments with no applicable providers transition to `ACTIVE` immediately. `PROVISIONING_FAILED` remains an occupying status until recovery or an explicit administrative lifecycle change.
 
 #### Provisioning Attempt Lifecycle
 
 `ProvisioningAttemptService` records queued, running, succeeded, retry-scheduled, failed, and manual-action-required states for provider executions. `ProvisionEnrollmentProviderJob` runs Moodle and IMS through provider adapters and `ProvisioningProviderRegistry`; lifecycle transitions and enrollment snapshot merges lock fresh rows in short transactions, with external calls outside those locks. Failure metadata is whitelisted and canonical provider references are persisted without raw provider payloads.
+
+BBB/Niliroom and Skyroom also run through `ProvisionEnrollmentProviderJob` using dedicated adapters. Their adapters consume only the canonical plan and staff-created room references (`meeting_id`/`nili_room_id` or `room_id`); they never create provider rooms. Missing or invalid references become manual-action-required attempt failures. The legacy live-session jobs are no longer dispatched by order completion or retry flows.
 
 #### Student Story Actions (`app/Actions/Admin/Setting/StudentStory/`)
 - **CreateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/CreateStudentStoryAction.php`)
