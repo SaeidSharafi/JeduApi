@@ -6,8 +6,8 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
@@ -44,7 +44,7 @@ describe('RetryProvisioningController', function (): void {
             ->assertJsonPath('data.message', 'Retry dispatched for 1 provider(s)')
             ->assertJsonPath('data.providers', ['moodle']);
 
-        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('returns 422 for enrollment not in failed status', function (): void {
@@ -109,7 +109,7 @@ describe('RetryProvisioningController', function (): void {
             ->assertJsonPath('data.providers', ['ims', 'moodle']);
 
         Queue::assertPushed(ProvisionImsEnrollmentJob::class);
-        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('works with pending provisioning status', function (): void {
@@ -133,7 +133,7 @@ describe('RetryProvisioningController', function (): void {
 
         $response->assertOk();
 
-        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('cannot retry provisioning without permissions', function (): void {

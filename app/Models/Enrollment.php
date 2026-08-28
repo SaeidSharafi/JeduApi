@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 final class Enrollment extends Model
@@ -85,6 +86,12 @@ final class Enrollment extends Model
             'product_delivery_option_id', // Local key on Enrollment table
             'product_id' // Local key on ProductDeliveryOption table
         );
+    }
+
+    /** @return HasMany<ProvisioningAttempt, $this> */
+    public function provisioningAttempts(): HasMany
+    {
+        return $this->hasMany(ProvisioningAttempt::class);
     }
 
     public function hasRequiredProvisioningProviders(): bool

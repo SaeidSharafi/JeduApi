@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\ProvisioningTriggerEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Order;
 use App\Services\Enrollment\ProvisioningPlanResolver;
+use App\Services\Provisioning\ProvisioningAttemptService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
@@ -21,7 +23,10 @@ final class OrderStatusUpdateListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public function __construct(private readonly ProvisioningPlanResolver $planResolver) {}
+    public function __construct(
+        private readonly ProvisioningPlanResolver $planResolver,
+        private readonly ProvisioningAttemptService $attemptService,
+    ) {}
 
     public function handle(OrderStatusUpdatedEvent $event): void
     {
@@ -65,7 +70,8 @@ final class OrderStatusUpdateListener implements ShouldQueue
             }
 
             if ($plannedProviders->contains('moodle')) {
-                ProvisionMoodleEnrollmentJob::dispatch($item->enrollment->id);
+                $attempt = $this->attemptService->queue($item->enrollment, ProvisioningTriggerEnum::PAYMENT);
+                ProvisionEnrollmentProviderJob::dispatch($attempt->id);
             }
 
             if ($plannedProviders->contains('spotplayer')) {

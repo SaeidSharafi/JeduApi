@@ -163,6 +163,12 @@
   - `hasOneThrough(Product::class, ProductDeliveryOption::class)` - product
 - **Special Features:** UUID (`uuid7`) generation on create for external references; `ProvisioningPlanResolver` creates the canonical versioned provider matrix; enum-backed `enrollment_status` and `provisioning_status`; date casting for access window; JSON provisioning payloads and plan snapshots; no-provider paid enrollments can activate immediately. Provisioning failures remain occupying until recovery, so a paid Customer's capacity is not released. Dispatches `EnrollmentStatusChanged` on save/delete to keep projections synchronized. Dispatch is narrowed to occupancy-relevant changes only — the event fires when the enrollment is newly created or when `enrollment_status`/`product_delivery_option_id` change; access-date, notes, and provisioning metadata updates do not dispatch (they do not affect `enrolled_count`/availability).
 
+### ProvisioningAttempt (`app/Models/ProvisioningAttempt.php`)
+- **Purpose:** Durable lifecycle record for one queued provider execution.
+- **Key Fields:** `uuid`, `enrollment_id`, `provider`, `trigger`, `status`, `sequence`, `retryable`, safe failure fields/metadata, `correlation_id`, optional `staff_id`, and lifecycle timestamps.
+- **Relationships:** `belongsTo(Enrollment)` and optional `belongsTo(Staff)`.
+- **Special Features:** Moodle attempts use the provider adapter boundary and generic queued job; attempt and enrollment updates are serialized with row locks, while provider HTTP calls execute outside those locks. Only canonical safe references are written to enrollment provisioning data.
+
 ### Payment (`app/Models/Payment.php`)
 - **Purpose:** Financial transaction handling with multi-attempt transaction tracking
 - **Key Fields:** `uuid`, `order_id` (nullable), `customer_id`, `amount`, `method`, `purpose` (PaymentPurposeEnum: ORDER, WALLET_TOPUP), `status`, `admin_notes`, `data`, `created_by`, `last_gateway_reference` (latest gateway ref), `attempt_count` (sequential attempt counter), `last_attempted_at`, `ip_address`, `user_agent`

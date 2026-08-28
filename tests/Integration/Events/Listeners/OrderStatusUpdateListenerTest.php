@@ -9,8 +9,8 @@ use App\Enums\Product\DeliveryMethodEnum;
 use App\Events\EnrollmentStatusChanged;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Listeners\OrderStatusUpdateListener;
@@ -28,7 +28,7 @@ describe('OrderStatusUpdateListener', function (): void {
     beforeEach(function (): void {
         Queue::fake([
             ProvisionImsEnrollmentJob::class,
-            ProvisionMoodleEnrollmentJob::class,
+            ProvisionEnrollmentProviderJob::class,
             ProvisionMoodleQuizJob::class,
             ProvisionSpotPlayerEnrollmentJob::class,
             ProvisionBbbEnrollmentJob::class,
@@ -99,10 +99,10 @@ describe('OrderStatusUpdateListener', function (): void {
         OrderItem::factory()->for($order)->create();
         $event = new OrderStatusUpdatedEvent($order);
 
-        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class)))->handle($event);
+        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))->handle($event);
 
         Queue::assertPushed(ProvisionImsEnrollmentJob::class, 5);
-        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class, 1);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 1);
         Queue::assertPushed(ProvisionSpotPlayerEnrollmentJob::class, 1);
         Queue::assertPushed(ProvisionBbbEnrollmentJob::class, 1);
     });
@@ -111,7 +111,7 @@ describe('OrderStatusUpdateListener', function (): void {
         $order = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
 
         $event = new OrderStatusUpdatedEvent($order);
-        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class)))->handle($event);
+        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))->handle($event);
 
         $this->assertTrue(true);
     });
@@ -121,7 +121,7 @@ describe('OrderStatusUpdateListener', function (): void {
         $order = new Order(); // A fake payment object in memory without a real order
         $event = new OrderStatusUpdatedEvent($order);
 
-        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class)))->handle($event);
+        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))->handle($event);
 
         $this->assertTrue(true);
     });
@@ -147,7 +147,7 @@ describe('OrderStatusUpdateListener', function (): void {
         Enrollment::factory()->for($item)->create();
 
         $event = new OrderStatusUpdatedEvent($order);
-        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class)))->handle($event);
+        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))->handle($event);
 
         Queue::assertPushed(ProvisionMoodleQuizJob::class, 1);
     });

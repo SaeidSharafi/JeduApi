@@ -7,8 +7,8 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
@@ -21,7 +21,10 @@ use Illuminate\Validation\ValidationException;
 
 describe('RetryProvisioningAction', function (): void {
     beforeEach(function (): void {
-        $this->action = new RetryProvisioningAction(app(ProvisioningPlanResolver::class));
+        $this->action = new RetryProvisioningAction(
+            app(ProvisioningPlanResolver::class),
+            app(App\Services\Provisioning\ProvisioningAttemptService::class),
+        );
         Queue::fake();
     });
 
@@ -72,7 +75,7 @@ describe('RetryProvisioningAction', function (): void {
         expect($result['providers'])->toContain('ims', 'moodle');
 
         Queue::assertPushed(ProvisionImsEnrollmentJob::class);
-        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('dispatches IMS provisioning job for failed IMS provider', function (): void {
@@ -125,7 +128,7 @@ describe('RetryProvisioningAction', function (): void {
 
         expect($result['providers'])->toBe(['moodle']);
 
-        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('dispatches SpotPlayer provisioning job for failed SpotPlayer provider', function (): void {
@@ -245,7 +248,7 @@ describe('RetryProvisioningAction', function (): void {
             ->and($result['providers'])->toBe(['ims', 'moodle']);
 
         Queue::assertPushed(ProvisionImsEnrollmentJob::class);
-        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('works with pending provisioning status', function (): void {
@@ -266,6 +269,6 @@ describe('RetryProvisioningAction', function (): void {
         $result = $this->action->handle($enrollment);
 
         expect($result['providers'])->toBe(['moodle']);
-        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 });

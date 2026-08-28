@@ -6,19 +6,24 @@ namespace App\Actions\Admin\Enrollment;
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\ProvisioningTriggerEnum;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Enrollment;
 use App\Services\Enrollment\ProvisioningPlanResolver;
+use App\Services\Provisioning\ProvisioningAttemptService;
 use Illuminate\Validation\ValidationException;
 
 final readonly class RetryProvisioningAction
 {
-    public function __construct(private ProvisioningPlanResolver $planResolver) {}
+    public function __construct(
+        private ProvisioningPlanResolver $planResolver,
+        private ProvisioningAttemptService $attemptService,
+    ) {}
 
     /**
      * Execute the action.
@@ -107,7 +112,7 @@ final readonly class RetryProvisioningAction
                 ProvisionImsEnrollmentJob::dispatch($enrollment->id, $paymentId);
                 $dispatched[] = 'ims';
             } elseif ($provider === 'moodle') {
-                ProvisionMoodleEnrollmentJob::dispatch($enrollment->id);
+                $this->dispatchMoodle($enrollment);
                 $dispatched[] = 'moodle';
             } elseif ($provider === 'spotplayer') {
                 ProvisionSpotPlayerEnrollmentJob::dispatch($enrollment->id);
@@ -161,7 +166,7 @@ final readonly class RetryProvisioningAction
         }
 
         if ($plannedProviders->contains('moodle')) {
-            ProvisionMoodleEnrollmentJob::dispatch($enrollment->id);
+            $this->dispatchMoodle($enrollment);
             $dispatched[] = 'moodle';
         }
 
@@ -186,6 +191,12 @@ final readonly class RetryProvisioningAction
         }
 
         return $dispatched;
+    }
+
+    private function dispatchMoodle(Enrollment $enrollment): void
+    {
+        $attempt = $this->attemptService->queue($enrollment, ProvisioningTriggerEnum::RETRY);
+        ProvisionEnrollmentProviderJob::dispatch($attempt->id);
     }
 
     /**

@@ -255,6 +255,10 @@
 - The persisted aggregate status is `healthy`, `ready`, `in_progress`, `degraded`, or `manual_action_required`. Legacy provisioning jobs update this aggregate while the provider adapter migration proceeds.
 - Paid Enrollments with no applicable providers transition to `ACTIVE` immediately. `PROVISIONING_FAILED` remains an occupying status until recovery or an explicit administrative lifecycle change.
 
+#### Provisioning Attempt Lifecycle
+
+`ProvisioningAttemptService` records queued, running, succeeded, retry-scheduled, failed, and manual-action-required states for provider executions. `ProvisionEnrollmentProviderJob` runs Moodle through `MoodleProvisioningProvider` and `ProvisioningProviderRegistry`; lifecycle transitions and enrollment snapshot merges lock fresh rows in short transactions, with external Moodle calls outside those locks. Failure metadata is whitelisted and canonical provider references are persisted without raw Moodle payloads.
+
 #### Student Story Actions (`app/Actions/Admin/Setting/StudentStory/`)
 - **CreateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/CreateStudentStoryAction.php`)
   - `handle(StudentStoryCreateData $data): StudentStory`: Creates new student success stories

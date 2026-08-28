@@ -368,6 +368,12 @@
 - Indexes: UNIQUE(uuid), INDEX(uuid)
 
 ---
+### Table: `provisioning_attempts`
+- Purpose: Provider execution attempts and their durable lifecycle state.
+- Columns: `uuid`, `enrollment_id`, `provider`, `trigger`, `status`, `sequence`, `retryable`, safe failure code/message/metadata, `correlation_id`, optional `staff_id`, lifecycle timestamps, and `created_at`/`updated_at`.
+- Indexes: UNIQUE(uuid), `(enrollment_id, provider, sequence)`, `(enrollment_id, provider, status)`, and INDEX(correlation_id).
+
+---
 ## Discount & Wallet System
 
 ### Table: `discount_promotions`
