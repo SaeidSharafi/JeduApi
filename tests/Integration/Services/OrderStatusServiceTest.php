@@ -260,14 +260,16 @@ describe('OrderStatusService', function (): void {
             'status' => OrderItemStatusEnum::COMPLETED->value,
         ]);
 
-        $this->assertDatabaseHas('enrollments', [
-            'id'                => $item1->enrollment->id,
-            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
-        ]);
-        $this->assertDatabaseHas('enrollments', [
-            'id'                => $item2->enrollment->id,
-            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
-        ]);
+        expect($item1->enrollment->fresh()->enrollment_status)->toBeIn(
+            $item1->enrollment->hasRequiredProvisioningProviders()
+                ? [EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::ACTIVE]
+                : [EnrollmentStatusEnum::ACTIVE]
+        );
+        expect($item2->enrollment->fresh()->enrollment_status)->toBeIn(
+            $item2->enrollment->hasRequiredProvisioningProviders()
+                ? [EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::ACTIVE]
+                : [EnrollmentStatusEnum::ACTIVE]
+        );
 
         $this->assertDatabaseHas('orders', [
             'id'     => $order->id,

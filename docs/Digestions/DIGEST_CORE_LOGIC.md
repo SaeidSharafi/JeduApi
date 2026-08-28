@@ -249,6 +249,12 @@
 - **UpdateEnrollmentAction** (`app/Actions/Admin/Enrollment/UpdateEnrollmentAction.php`)
   - `handle(EnrollmentUpdateData $data, Enrollment $enrollment): Enrollment`: Updates enrollment metadata including access dates, notes, and survey completion status.
 
+#### Enrollment Provisioning Plan (`app/Services/Enrollment/ProvisioningPlanResolver.php`)
+- Resolves the sole canonical provider matrix at Enrollment creation. IMS applies when `ims_course_code` is present; the delivery method selects Moodle, SpotPlayer, BBB, or Skyroom; a separate numeric `moodle_quiz_course_id` selects Moodle Quiz for non-Moodle delivery methods.
+- Each applicable provider records `ready`, `disabled`, or `invalid` readiness. Disabled or invalid required providers remain visible and produce aggregate `manual_action_required` health instead of being omitted.
+- The persisted aggregate status is `healthy`, `ready`, `in_progress`, `degraded`, or `manual_action_required`. Legacy provisioning jobs update this aggregate while the provider adapter migration proceeds.
+- Paid Enrollments with no applicable providers transition to `ACTIVE` immediately. `PROVISIONING_FAILED` remains an occupying status until recovery or an explicit administrative lifecycle change.
+
 #### Student Story Actions (`app/Actions/Admin/Setting/StudentStory/`)
 - **CreateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/CreateStudentStoryAction.php`)
   - `handle(StudentStoryCreateData $data): StudentStory`: Creates new student success stories

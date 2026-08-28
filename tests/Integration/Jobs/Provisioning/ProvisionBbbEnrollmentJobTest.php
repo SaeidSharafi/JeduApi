@@ -182,7 +182,6 @@ function createBbbEnrollmentForJob(array $detailsOverrides = []): Enrollment
     $details = array_merge([
         'meeting_id'          => 'BBB-DEFAULT',
         'auto_create_meeting' => false,
-        'ims_course_code'     => 'IMS-BBB-1',
     ], $detailsOverrides);
 
     $deliveryOption = ProductDeliveryOption::factory()->create([

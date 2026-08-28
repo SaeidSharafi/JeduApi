@@ -29,6 +29,7 @@ final class EnrollmentData extends Data
         public ?Verta $access_end_date,
         public ?int $external_enrollment_id,
         public ?array $provisioning_data,
+        public ProvisioningSummaryData $provisioning_summary,
         public ?string $notes,
         #[WithTransformer(AdvancedDateTimeInterfaceTransformer::class)]
         public ?Verta $survey_completed_at,

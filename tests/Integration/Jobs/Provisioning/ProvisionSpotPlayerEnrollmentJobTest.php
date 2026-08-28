@@ -143,8 +143,7 @@ function createSpotPlayerEnrollmentForJob(array $detailsOverrides = []): Enrollm
     $order    = Order::factory()->for($customer, 'customer')->create();
 
     $details = array_merge([
-        'spot_id'         => 'SPOT-DEFAULT',
-        'ims_course_code' => 'IMS-SPOT-1',
+        'spot_id' => 'SPOT-DEFAULT',
     ], $detailsOverrides);
 
     $deliveryOption = ProductDeliveryOption::factory()->create([

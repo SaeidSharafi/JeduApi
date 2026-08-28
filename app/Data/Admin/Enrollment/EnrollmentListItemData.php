@@ -28,6 +28,7 @@ final class EnrollmentListItemData extends Data
         #[WithTransformer(AdvancedDateTimeInterfaceTransformer::class, format: 'Y-m-d')]
         public ?Verta $access_end_date,
         public ?Verta $created_at,
+        public ProvisioningSummaryData $provisioning_summary,
         public OrderListItemData $order,
         public ShowUserData $customer,
         public ProductDeliveryOptionShowData $productDeliveryOption,

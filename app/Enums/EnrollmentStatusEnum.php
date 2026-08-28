@@ -30,6 +30,7 @@ enum EnrollmentStatusEnum: string
             self::ACTIVE,
             self::PENDING_PROVISIONING,
             self::SUSPENDED,
+            self::PROVISIONING_FAILED,
         ];
     }
 
@@ -45,7 +46,6 @@ enum EnrollmentStatusEnum: string
             self::AWAITING_PAYMENT,
             self::CANCELLED,
             self::EXPIRED,
-            self::PROVISIONING_FAILED,
         ];
     }
 }

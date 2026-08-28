@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Enums\Order\OrderStatusEnum;
-use App\Enums\Product\DeliveryMethodEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
@@ -14,12 +13,15 @@ use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Order;
+use App\Services\Enrollment\ProvisioningPlanResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
 final class OrderStatusUpdateListener implements ShouldQueue
 {
     use InteractsWithQueue;
+
+    public function __construct(private readonly ProvisioningPlanResolver $planResolver) {}
 
     public function handle(OrderStatusUpdatedEvent $event): void
     {
@@ -43,30 +45,42 @@ final class OrderStatusUpdateListener implements ShouldQueue
                 continue;
             }
 
-            if (isset($item->productDeliveryOption->details_json['ims_course_code'])) {
+            $plan = $item->enrollment->provisioning_plan;
+            if (! is_array($plan) || ! array_key_exists('version', $plan)) {
+                $plan = $this->planResolver->resolve($item->productDeliveryOption);
+                $item->enrollment->forceFill([
+                    'provisioning_plan'   => $plan,
+                    'provisioning_status' => $plan['status'],
+                ])->saveQuietly();
+            }
+
+            $plannedProviders = collect($plan['providers'] ?? [])->pluck('provider');
+
+            if ($plannedProviders->isEmpty()) {
+                $item->enrollment->activateIfNoProvisioningRequired();
+            }
+
+            if ($plannedProviders->contains('ims')) {
                 ProvisionImsEnrollmentJob::dispatch($item->enrollment->id, $order->firstPayment?->id);
             }
 
-            $deliveryMethod = $item->productDeliveryOption->delivery_method;
-            if ($deliveryMethod === DeliveryMethodEnum::LMS_MOODLE) {
+            if ($plannedProviders->contains('moodle')) {
                 ProvisionMoodleEnrollmentJob::dispatch($item->enrollment->id);
             }
 
-            if ($deliveryMethod === DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER) {
+            if ($plannedProviders->contains('spotplayer')) {
                 ProvisionSpotPlayerEnrollmentJob::dispatch($item->enrollment->id);
             }
 
-            if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_BBB) {
+            if ($plannedProviders->contains('bbb')) {
                 ProvisionBbbEnrollmentJob::dispatch($item->enrollment->id);
             }
 
-            if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_SKYROOM) {
+            if ($plannedProviders->contains('skyroom')) {
                 ProvisionSkyroomEnrollmentJob::dispatch($item->enrollment->id);
             }
 
-            if ($deliveryMethod !== DeliveryMethodEnum::LMS_MOODLE
-                && isset($item->productDeliveryOption->details_json['moodle_quiz_course_id'])
-            ) {
+            if ($plannedProviders->contains('moodle_quiz')) {
                 ProvisionMoodleQuizJob::dispatch($item->enrollment->id);
             }
         }

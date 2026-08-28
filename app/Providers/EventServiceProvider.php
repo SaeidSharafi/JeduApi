@@ -7,10 +7,12 @@ namespace App\Providers;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\Enrollment;
 use App\Models\Seminar;
 use App\Models\Setting;
 use App\Models\Term;
 use App\Observers\CategorySearchIndexObserver;
+use App\Observers\EnrollmentObserver;
 use App\Observers\InvalidationObserver;
 use App\Observers\ProductableAvailabilityObserver;
 use App\Observers\SettingObserver;
@@ -41,5 +43,6 @@ final class EventServiceProvider extends ServiceProvider
         Seminar::observe(ProductableAvailabilityObserver::class);
         DigitalAsset::observe(ProductableAvailabilityObserver::class);
         Term::observe(TermAvailabilityObserver::class);
+        Enrollment::observe(EnrollmentObserver::class);
     }
 }

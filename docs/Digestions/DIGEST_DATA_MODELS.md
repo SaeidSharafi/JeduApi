@@ -154,14 +154,14 @@
 
 ### Enrollment (`app/Models/Enrollment.php`)
 - **Purpose:** Student access records linking customers to purchased delivery options
-- **Key Fields:** `uuid`, `order_id`, `order_item_id`, `customer_id`, `product_delivery_option_id`, `enrollment_status`, `access_start_date`, `access_end_date`, `external_enrollment_id`, `provisioning_data` (JSONB — stores per-provider provisioning state for IMS, Moodle, SpotPlayer, BBB)
+- **Key Fields:** `uuid`, `order_id`, `order_item_id`, `customer_id`, `product_delivery_option_id`, `enrollment_status`, `access_start_date`, `access_end_date`, `external_enrollment_id`, `provisioning_data` (legacy JSONB execution data), `provisioning_plan` (non-null versioned JSONB provider applicability/readiness snapshot), `provisioning_status` (aggregate provisioning health)
 - **Relationships:**
   - `belongsTo(User::class, 'customer_id')` - customer
   - `belongsTo(Order::class)` - order
   - `belongsTo(OrderItem::class)` - orderItem
   - `belongsTo(ProductDeliveryOption::class, 'product_delivery_option_id')` - productDeliveryOption
   - `hasOneThrough(Product::class, ProductDeliveryOption::class)` - product
-- **Special Features:** UUID (`uuid7`) generation on create for external references, enum-backed `enrollment_status`, date casting for access window, JSON provisioning payloads, and dispatches `EnrollmentStatusChanged` on save/delete to keep projections synchronized. Dispatch is narrowed to occupancy-relevant changes only — the event fires when the enrollment is newly created or when `enrollment_status`/`product_delivery_option_id` change; access-date, notes, and provisioning metadata updates do not dispatch (they do not affect `enrolled_count`/availability).
+- **Special Features:** UUID (`uuid7`) generation on create for external references; `ProvisioningPlanResolver` creates the canonical versioned provider matrix; enum-backed `enrollment_status` and `provisioning_status`; date casting for access window; JSON provisioning payloads and plan snapshots; no-provider paid enrollments can activate immediately. Provisioning failures remain occupying until recovery, so a paid Customer's capacity is not released. Dispatches `EnrollmentStatusChanged` on save/delete to keep projections synchronized. Dispatch is narrowed to occupancy-relevant changes only — the event fires when the enrollment is newly created or when `enrollment_status`/`product_delivery_option_id` change; access-date, notes, and provisioning metadata updates do not dispatch (they do not affect `enrolled_count`/availability).
 
 ### Payment (`app/Models/Payment.php`)
 - **Purpose:** Financial transaction handling with multi-attempt transaction tracking

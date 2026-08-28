@@ -360,7 +360,9 @@
   - access_start_date (DATE nullable)
   - access_end_date (DATE nullable)
   - external_enrollment_id (BIGINT nullable)
-  - provisioning_data (JSONB nullable)
+  - provisioning_data (JSONB nullable) — legacy per-provider execution payload
+  - provisioning_plan (JSONB not null, default version 1 empty provider plan) — canonical versioned applicability/readiness snapshot
+  - provisioning_status (VARCHAR, default `healthy`, indexed) — aggregate provisioning health (`ready`, `in_progress`, `healthy`, `degraded`, `manual_action_required`)
   - notes (TEXT nullable)
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: UNIQUE(uuid), INDEX(uuid)

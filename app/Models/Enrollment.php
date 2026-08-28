@@ -5,18 +5,24 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\ProvisioningStatusEnum;
 use App\Events\EnrollmentStatusChanged;
 use Database\Factories\EnrollmentFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
-use Illuminate\Support\Str;
 
 final class Enrollment extends Model
 {
     /** @use HasFactory<EnrollmentFactory> */
     use HasFactory;
+
+    protected $attributes = [
+        'provisioning_plan'   => '{"version":1,"providers":[],"status":"healthy"}',
+        'provisioning_status' => 'healthy',
+    ];
 
     protected $fillable
         = [
@@ -29,6 +35,8 @@ final class Enrollment extends Model
             'access_end_date',
             'external_enrollment_id',
             'provisioning_data',
+            'provisioning_plan',
+            'provisioning_status',
             'notes',
         ];
 
@@ -79,13 +87,28 @@ final class Enrollment extends Model
         );
     }
 
+    public function hasRequiredProvisioningProviders(): bool
+    {
+        return ($this->provisioning_plan['providers'] ?? []) !== [];
+    }
+
+    public function activateIfNoProvisioningRequired(): void
+    {
+        if (! array_key_exists('version', $this->provisioning_plan ?? [])
+            || $this->hasRequiredProvisioningProviders()
+        ) {
+            return;
+        }
+
+        $this->forceFill([
+            'enrollment_status'   => EnrollmentStatusEnum::ACTIVE,
+            'provisioning_status' => ProvisioningStatusEnum::HEALTHY,
+        ])->save();
+    }
+
     protected static function boot(): void
     {
         parent::boot();
-
-        self::creating(function ($model): void {
-            $model->uuid = (string) Str::uuid7();
-        });
 
         self::saved(function (Enrollment $enrollment): void {
             // Only dispatch when occupancy-relevant data changed. Access dates,
@@ -107,12 +130,24 @@ final class Enrollment extends Model
     protected function casts(): array
     {
         return [
-            'enrollment_status' => EnrollmentStatusEnum::class,
-            'access_start_date' => 'date:Y-m-d',
-            'access_end_date'   => 'date:Y-m-d',
-            'provisioning_data' => 'array',
-            'created_at'        => 'datetime',
-            'updated_at'        => 'datetime',
+            'enrollment_status'   => EnrollmentStatusEnum::class,
+            'access_start_date'   => 'date:Y-m-d',
+            'access_end_date'     => 'date:Y-m-d',
+            'provisioning_data'   => 'array',
+            'provisioning_plan'   => 'array',
+            'provisioning_status' => ProvisioningStatusEnum::class,
+            'created_at'          => 'datetime',
+            'updated_at'          => 'datetime',
         ];
+    }
+
+    protected function provisioningSummary(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): array => [
+                'status' => $this->provisioning_status,
+                'plan'   => $this->provisioning_plan,
+            ],
+        );
     }
 }

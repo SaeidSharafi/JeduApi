@@ -97,7 +97,7 @@ it('does nothing when transitioning within occupying (PENDING_PROVISIONING -> AC
     expect($pdo->enrolled_count)->toBe(1);
 });
 
-it('does nothing when transitioning within non-occupying (AWAITING_PAYMENT -> PROVISIONING_FAILED)', function (): void {
+it('keeps the seat reserved when provisioning fails', function (): void {
     $enrollment = Enrollment::factory()->create([
         'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
     ]);
@@ -110,7 +110,7 @@ it('does nothing when transitioning within non-occupying (AWAITING_PAYMENT -> PR
         new EnrollmentStatusChanged($enrollment)
     );
     $pdo->refresh();
-    expect($pdo->enrolled_count)->toBe(0);
+    expect($pdo->enrolled_count)->toBe(1);
 });
 
 it('increments on creation when new status is occupying (oldStatus = null, new = PENDING_PROVISIONING)', function (): void {

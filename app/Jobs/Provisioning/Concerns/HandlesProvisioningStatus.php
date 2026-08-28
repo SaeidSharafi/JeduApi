@@ -5,14 +5,8 @@ declare(strict_types=1);
 namespace App\Jobs\Provisioning\Concerns;
 
 use App\Enums\EnrollmentStatusEnum;
-use App\Enums\Product\DeliveryMethodEnum;
-use App\Enums\System\SettingKeyEnum;
+use App\Enums\ProvisioningStatusEnum;
 use App\Models\Enrollment;
-use App\Services\Integrations\BbbService;
-use App\Services\Integrations\MoodleService;
-use App\Services\Integrations\SkyroomService;
-use App\Services\Integrations\SpotPlayerService;
-use App\Services\SettingsService;
 
 trait HandlesProvisioningStatus
 {
@@ -48,7 +42,8 @@ trait HandlesProvisioningStatus
             $enrollment->enrollment_status = EnrollmentStatusEnum::ACTIVE;
         }
 
-        $enrollment->provisioning_data = $provisioningData;
+        $enrollment->provisioning_data   = $provisioningData;
+        $enrollment->provisioning_status = $this->aggregateStatus($enrollment, $providersData)->value;
         $enrollment->save();
     }
 
@@ -67,9 +62,10 @@ trait HandlesProvisioningStatus
             'metadata'   => $metadata,
         ];
 
-        $provisioningData['providers'] = $providersData;
-        $enrollment->provisioning_data = $provisioningData;
-        $enrollment->enrollment_status = EnrollmentStatusEnum::PROVISIONING_FAILED;
+        $provisioningData['providers']   = $providersData;
+        $enrollment->provisioning_data   = $provisioningData;
+        $enrollment->enrollment_status   = EnrollmentStatusEnum::PROVISIONING_FAILED;
+        $enrollment->provisioning_status = $this->aggregateStatus($enrollment, $providersData)->value;
         $enrollment->save();
     }
 
@@ -78,36 +74,31 @@ trait HandlesProvisioningStatus
      */
     private function requiredProviders(Enrollment $enrollment): array
     {
-        $isImsActive    = data_get(app(SettingsService::class)->get(SettingKeyEnum::IMS), 'enabled', false);
-        $providers      = $isImsActive ? ['ims'] : [];
-        $deliveryMethod = $enrollment->productDeliveryOption?->delivery_method;
-        $moodleService  = app(MoodleService::class);
+        return collect($enrollment->provisioning_plan['providers'] ?? [])
+            ->pluck('provider')
+            ->values()
+            ->all();
+    }
 
-        if ($deliveryMethod === DeliveryMethodEnum::LMS_MOODLE && $moodleService->isEnabled()) {
-            $providers[] = 'moodle';
+    private function aggregateStatus(Enrollment $enrollment, array $providersData): ProvisioningStatusEnum
+    {
+        $plannedProviders = $enrollment->provisioning_plan['providers'] ?? [];
+        if ($plannedProviders === []) {
+            return ProvisioningStatusEnum::HEALTHY;
         }
 
-        if ($deliveryMethod === DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER && app(SpotPlayerService::class)->isEnabled()) {
-            $providers[] = 'spotplayer';
+        if (collect($plannedProviders)->contains(fn (array $provider): bool => $provider['readiness'] !== 'ready')) {
+            return ProvisioningStatusEnum::MANUAL_ACTION_REQUIRED;
         }
 
-        if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_BBB && app(BbbService::class)->isEnabled()) {
-            $providers[] = 'bbb';
+        if (collect($providersData)->contains(fn (array $provider): bool => ($provider['status'] ?? null) === 'failed')) {
+            return ProvisioningStatusEnum::DEGRADED;
         }
 
-        if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_SKYROOM && app(SkyroomService::class)->isEnabled()) {
-            $providers[] = 'skyroom';
+        if (collect($plannedProviders)->every(fn (array $provider): bool => ($providersData[$provider['provider']]['status'] ?? null) === 'success')) {
+            return ProvisioningStatusEnum::HEALTHY;
         }
 
-        $details = $enrollment->productDeliveryOption->details_json ?? [];
-
-        if ($deliveryMethod !== DeliveryMethodEnum::LMS_MOODLE
-            && isset($details['moodle_quiz_course_id'])
-            && $moodleService->isEnabled()
-        ) {
-            $providers[] = 'moodle_quiz';
-        }
-
-        return $providers;
+        return ProvisioningStatusEnum::IN_PROGRESS;
     }
 }

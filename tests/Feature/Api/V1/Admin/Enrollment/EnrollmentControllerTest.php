@@ -22,7 +22,7 @@ describe('EnrollmentController', function (): void {
             ->assertJsonStructure([
                 'data' => [
                     'data' => [
-                        '*' => ['id', 'enrollment_status', 'customer', 'order'],
+                        '*' => ['id', 'enrollment_status', 'customer', 'order', 'provisioning_summary'],
                     ],
                 ],
             ]);
@@ -116,7 +116,7 @@ describe('EnrollmentController', function (): void {
             ->assertJsonStructure([
                 'data' => [
                     'uuid', 'enrollment_status', 'customer', 'order',
-                    'productDeliveryOption', 'notes', 'created_at',
+                    'productDeliveryOption', 'notes', 'created_at', 'provisioning_summary',
                 ],
             ])
             ->assertJsonPath('data.uuid', $enrollment->uuid)

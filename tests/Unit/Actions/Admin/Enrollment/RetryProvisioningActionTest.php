@@ -15,12 +15,13 @@ use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
+use App\Services\Enrollment\ProvisioningPlanResolver;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 
 describe('RetryProvisioningAction', function (): void {
     beforeEach(function (): void {
-        $this->action = new RetryProvisioningAction();
+        $this->action = new RetryProvisioningAction(app(ProvisioningPlanResolver::class));
         Queue::fake();
     });
 

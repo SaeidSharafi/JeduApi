@@ -19,6 +19,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
+use App\Services\Enrollment\ProvisioningPlanResolver;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
@@ -98,7 +99,7 @@ describe('OrderStatusUpdateListener', function (): void {
         OrderItem::factory()->for($order)->create();
         $event = new OrderStatusUpdatedEvent($order);
 
-        (new OrderStatusUpdateListener())->handle($event);
+        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class)))->handle($event);
 
         Queue::assertPushed(ProvisionImsEnrollmentJob::class, 5);
         Queue::assertPushed(ProvisionMoodleEnrollmentJob::class, 1);
@@ -110,7 +111,7 @@ describe('OrderStatusUpdateListener', function (): void {
         $order = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
 
         $event = new OrderStatusUpdatedEvent($order);
-        (new OrderStatusUpdateListener())->handle($event);
+        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class)))->handle($event);
 
         $this->assertTrue(true);
     });
@@ -120,7 +121,7 @@ describe('OrderStatusUpdateListener', function (): void {
         $order = new Order(); // A fake payment object in memory without a real order
         $event = new OrderStatusUpdatedEvent($order);
 
-        (new OrderStatusUpdateListener())->handle($event);
+        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class)))->handle($event);
 
         $this->assertTrue(true);
     });
@@ -146,7 +147,7 @@ describe('OrderStatusUpdateListener', function (): void {
         Enrollment::factory()->for($item)->create();
 
         $event = new OrderStatusUpdatedEvent($order);
-        (new OrderStatusUpdateListener())->handle($event);
+        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class)))->handle($event);
 
         Queue::assertPushed(ProvisionMoodleQuizJob::class, 1);
     });

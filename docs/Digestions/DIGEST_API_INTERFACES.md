@@ -318,9 +318,10 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 ### Enrollment Management Endpoints
 - **EnrollmentController** (`app/Http/Controllers/Api/Admin/Enrollment/EnrollmentController.php`):
   - `index()`: **Route:** `GET /api/v1/admin/enrollments` - **Query Filters:** `filter[customer_id]`, `filter[enrollment_status]`, `filter[order_id]`, `filter[product_delivery_option_id]`, `filter[productable_type]` - **Response DTO:** `EnrollmentListItemData` paginated collection
-  - `show(Enrollment $enrollment)`: **Route:** `GET /api/v1/admin/enrollments/{enrollment}` - **Response DTO:** `EnrollmentData` with nested order, customer, delivery option
+  - `show(Enrollment $enrollment)`: **Route:** `GET /api/v1/admin/enrollments/{enrollment}` - **Response DTO:** `EnrollmentData` with nested order, customer, delivery option, and typed `provisioning_summary` (aggregate status plus versioned provider plan/readiness)
   - `update(EnrollmentUpdateData $request, Enrollment $enrollment)`: **Route:** `PUT /api/v1/admin/enrollments/{enrollment}` - **Request DTO:** EnrollmentUpdateData - **Response DTO:** EnrollmentData
   - `destroy(Enrollment $enrollment)`: **Route:** `DELETE /api/v1/admin/enrollments/{enrollment}` - **Authorization:** `Gate::authorize('delete', $enrollment)` via `PermissionEnum::ENROLLMENT_DELETE` - **Delegates to:** DeleteEnrollmentAction
+- `index()` also includes the same typed `provisioning_summary` on each `EnrollmentListItemData` item. The summary is safe operational data; raw provider payloads remain in the legacy backend JSON and are not part of this typed summary.
 - **ChangeEnrollmentStatusController** (`app/Http/Controllers/Api/Admin/Enrollment/ChangeEnrollmentStatusController.php`):
   - `__invoke(Enrollment $enrollment, EnrollmentStatusChangeData $data, ChangeEnrollmentStatusAction $action)`: **Route:** `POST /api/v1/admin/enrollments/{enrollment}/change-status` - **Request DTO:** EnrollmentStatusChangeData (new_status, reason) - **Response DTO:** EnrollmentData
 - **RetryProvisioningController** (`app/Http/Controllers/Api/Admin/Enrollment/RetryProvisioningController.php`):
