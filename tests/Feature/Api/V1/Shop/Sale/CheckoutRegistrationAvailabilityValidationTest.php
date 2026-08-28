@@ -5,12 +5,7 @@ declare(strict_types=1);
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\System\MorphTypeEnum;
-use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
-use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Course;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
@@ -26,12 +21,7 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 
 beforeEach(function (): void {
     Queue::fake([
-        ProvisionImsEnrollmentJob::class,
         ProvisionEnrollmentProviderJob::class,
-        ProvisionMoodleQuizJob::class,
-        ProvisionSkyroomEnrollmentJob::class,
-        ProvisionSpotPlayerEnrollmentJob::class,
-        ProvisionBbbEnrollmentJob::class,
     ]);
 });
 describe('Checkout registration & availability window validation', function (): void {

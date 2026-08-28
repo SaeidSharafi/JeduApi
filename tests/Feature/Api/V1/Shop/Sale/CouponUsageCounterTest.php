@@ -10,12 +10,7 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\System\MorphTypeEnum;
-use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
-use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Course;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
@@ -41,12 +36,7 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 
 beforeEach(function (): void {
     Queue::fake([
-        ProvisionImsEnrollmentJob::class,
         ProvisionEnrollmentProviderJob::class,
-        ProvisionMoodleQuizJob::class,
-        ProvisionSkyroomEnrollmentJob::class,
-        ProvisionSpotPlayerEnrollmentJob::class,
-        ProvisionBbbEnrollmentJob::class,
     ]);
 });
 

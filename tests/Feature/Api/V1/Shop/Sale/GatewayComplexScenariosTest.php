@@ -6,12 +6,7 @@ use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\System\MorphTypeEnum;
-use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
-use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Course;
 use App\Models\Order;
 use App\Models\Payment;
@@ -29,12 +24,7 @@ use function Pest\Laravel\postJson;
 uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     Queue::fake([
-        ProvisionImsEnrollmentJob::class,
         ProvisionEnrollmentProviderJob::class,
-        ProvisionMoodleQuizJob::class,
-        ProvisionSkyroomEnrollmentJob::class,
-        ProvisionSpotPlayerEnrollmentJob::class,
-        ProvisionBbbEnrollmentJob::class,
     ]);
 });
 describe('Gateway Payment Complex Scenarios', function (): void {

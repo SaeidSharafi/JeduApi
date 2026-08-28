@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
-use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
-use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
-use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
-use \Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Queue;
+
 use function Pest\Laravel\getJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
@@ -18,12 +14,7 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     $this->customer = App\Models\User::factory()->create();
     Queue::fake([
-        ProvisionImsEnrollmentJob::class,
         ProvisionEnrollmentProviderJob::class,
-        ProvisionMoodleQuizJob::class,
-        ProvisionSkyroomEnrollmentJob::class,
-        ProvisionSpotPlayerEnrollmentJob::class,
-        ProvisionBbbEnrollmentJob::class,
     ]);
 });
 

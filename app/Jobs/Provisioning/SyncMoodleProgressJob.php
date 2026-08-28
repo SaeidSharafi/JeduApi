@@ -14,9 +14,10 @@ use Throwable;
 /**
  * Syncs Moodle course progress back into the local enrollment record.
  *
- * This is intentionally NOT an AbstractProvisioningJob. It is a background
- * sync task, not a provisioning task, so it has no markProvisioningSuccess/
- * Failure calls, no AdminActionLog, and no delivery-option lookup.
+ * This is a background sync task, not a provisioning task. Provisioning
+ * runs exclusively through ProvisionEnrollmentProviderJob and the provider
+ * adapters; this job only refreshes progress data into
+ * provisioning_data.providers.<key>.sync.
  */
 final class SyncMoodleProgressJob implements ShouldQueue
 {
