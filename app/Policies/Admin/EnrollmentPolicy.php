@@ -38,6 +38,16 @@ final class EnrollmentPolicy
         return $user->can(PermissionEnum::ENROLLMENT_RETRY_PROVISION->value);
     }
 
+    public function resolveProvisioning(Staff $user, Enrollment $enrollment): bool
+    {
+        return $user->can(PermissionEnum::ENROLLMENT_RETRY_PROVISION->value);
+    }
+
+    public function waiveProvisioning(Staff $user, Enrollment $enrollment): bool
+    {
+        return $user->can(PermissionEnum::ENROLLMENT_WAIVE_PROVISION->value);
+    }
+
     public function delete(Staff $user, Enrollment $enrollment): bool
     {
         return $user->can(PermissionEnum::ENROLLMENT_DELETE->value);

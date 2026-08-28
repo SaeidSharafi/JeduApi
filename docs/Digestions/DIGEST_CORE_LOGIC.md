@@ -261,6 +261,8 @@
 
 BBB/Niliroom and Skyroom also run through `ProvisionEnrollmentProviderJob` using dedicated adapters. Their adapters consume only the canonical plan and staff-created room references (`meeting_id`/`nili_room_id` or `room_id`); they never create provider rooms. Missing or invalid references become manual-action-required attempt failures. The legacy live-session jobs are no longer dispatched by order completion or retry flows.
 
+Authorized staff can manually resolve or waive a canonical provider through `ManualProvisioningRecoveryAction`. Resolution requires provider-specific safe references and a reason; waiver requires a separate permission and reason. Both append staff-attributed manual attempts and recalculate aggregate health. Plan rebuilds expose an explicit provider diff, require confirmation, increment the plan version, and preserve the prior snapshot and all attempts.
+
 #### Student Story Actions (`app/Actions/Admin/Setting/StudentStory/`)
 - **CreateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/CreateStudentStoryAction.php`)
   - `handle(StudentStoryCreateData $data): StudentStory`: Creates new student success stories

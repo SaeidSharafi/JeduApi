@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\Enrollment\ChangeEnrollmentStatusController;
 use App\Http\Controllers\Api\Admin\Enrollment\EnrollmentController;
+use App\Http\Controllers\Api\Admin\Enrollment\ProvisioningPlanController;
+use App\Http\Controllers\Api\Admin\Enrollment\ResolveProvisioningController;
 use App\Http\Controllers\Api\Admin\Enrollment\RetryProvisioningController;
+use App\Http\Controllers\Api\Admin\Enrollment\WaiveProvisioningController;
 use App\Http\Controllers\Api\Admin\Order\ApproveOrderController;
 use App\Http\Controllers\Api\Admin\Order\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\Order\OrderCalculationController;
@@ -78,3 +81,11 @@ Route::post('enrollments/{enrollment}/retry-provisioning', RetryProvisioningCont
 Route::post('enrollments/{enrollment}/retry-provisioning/{provider}', RetryProvisioningController::class)
     ->name('enrollments.retry-provisioning.provider')
     ->whereIn('provider', ['ims', 'moodle', 'spotplayer', 'bbb', 'skyroom', 'moodle_quiz']);
+Route::post('enrollments/{enrollment}/provisioning/resolve', ResolveProvisioningController::class)
+    ->name('enrollments.provisioning.resolve');
+Route::post('enrollments/{enrollment}/provisioning/waive', WaiveProvisioningController::class)
+    ->name('enrollments.provisioning.waive');
+Route::get('enrollments/{enrollment}/provisioning-plan/preview', [ProvisioningPlanController::class, 'preview'])
+    ->name('enrollments.provisioning-plan.preview');
+Route::post('enrollments/{enrollment}/provisioning-plan/apply', [ProvisioningPlanController::class, 'apply'])
+    ->name('enrollments.provisioning-plan.apply');

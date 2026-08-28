@@ -124,6 +124,54 @@ final class ProvisioningAttemptService
         });
     }
 
+    /** @param array<string, mixed> $references */
+    public function manuallyResolve(Enrollment $enrollment, ProvisioningProviderEnum $provider, array $references, string $reason, int $staffId): ProvisioningAttempt
+    {
+        return DB::transaction(function () use ($enrollment, $provider, $references, $reason, $staffId): ProvisioningAttempt {
+            $attempt = ProvisioningAttempt::query()->create([
+                'enrollment_id'    => $enrollment->id,
+                'provider'         => $provider,
+                'trigger'          => ProvisioningTriggerEnum::MANUAL,
+                'status'           => ProvisioningAttemptStatusEnum::SUCCEEDED,
+                'sequence'         => ((int) ProvisioningAttempt::query()->where('enrollment_id', $enrollment->id)->where('provider', $provider->value)->max('sequence')) + 1,
+                'retryable'        => false,
+                'staff_id'         => $staffId,
+                'succeeded_at'     => now(),
+                'failure_metadata' => ['reason' => mb_substr($reason, 0, 500)],
+            ]);
+            $this->mergeManualProviderOutcome($enrollment, $provider, 'success', $references);
+
+            return $attempt;
+        });
+    }
+
+    public function waive(Enrollment $enrollment, ProvisioningProviderEnum $provider, string $reason, int $staffId): ProvisioningAttempt
+    {
+        return DB::transaction(function () use ($enrollment, $provider, $reason, $staffId): ProvisioningAttempt {
+            $attempt = ProvisioningAttempt::query()->create([
+                'enrollment_id'             => $enrollment->id,
+                'provider'                  => $provider,
+                'trigger'                   => ProvisioningTriggerEnum::MANUAL,
+                'status'                    => ProvisioningAttemptStatusEnum::MANUAL_ACTION_REQUIRED,
+                'sequence'                  => ((int) ProvisioningAttempt::query()->where('enrollment_id', $enrollment->id)->where('provider', $provider->value)->max('sequence')) + 1,
+                'retryable'                 => false,
+                'staff_id'                  => $staffId,
+                'failure_message'           => mb_substr($reason, 0, 1000),
+                'failure_metadata'          => ['waived' => true],
+                'failed_at'                 => now(),
+                'manual_action_required_at' => now(),
+            ]);
+            $this->mergeManualProviderOutcome($enrollment, $provider, 'waived', []);
+
+            return $attempt;
+        });
+    }
+
+    public function recalculate(Enrollment $enrollment): void
+    {
+        $this->resolveEnrollment($enrollment);
+    }
+
     /** @param array<string, mixed> $metadata */
     public function fail(ProvisioningAttempt $attempt, Throwable $exception, bool $manualAction = false, array $metadata = []): void
     {
@@ -168,11 +216,26 @@ final class ProvisioningAttemptService
         });
     }
 
+    /** @param array<string, mixed> $references */
+    private function mergeManualProviderOutcome(Enrollment $enrollment, ProvisioningProviderEnum $provider, string $status, array $references): void
+    {
+        $enrollment->refresh();
+        $data = $enrollment->provisioning_data ?? [];
+        data_set($data, "providers.{$provider->value}", [
+            'status'           => $status,
+            'attempt_sequence' => ((int) data_get($data, "providers.{$provider->value}.attempt_sequence", 0)) + 1,
+            'data'             => $this->safeReferences($references),
+        ]);
+        $enrollment->provisioning_data = $data;
+        $this->resolveEnrollment($enrollment);
+        $enrollment->save();
+    }
+
     private function resolveEnrollment(Enrollment $enrollment): void
     {
         $planned       = $enrollment->provisioning_plan['providers'] ?? [];
         $allSuccessful = $planned !== [] && collect($planned)->every(
-            fn (array $provider): bool => data_get($enrollment->provisioning_data, "providers.{$provider['provider']}.status") === 'success'
+            fn (array $provider): bool => in_array(data_get($enrollment->provisioning_data, "providers.{$provider['provider']}.status"), ['success', 'waived'], true)
         );
         if ($allSuccessful) {
             $enrollment->enrollment_status   = EnrollmentStatusEnum::ACTIVE;
@@ -181,8 +244,13 @@ final class ProvisioningAttemptService
             $enrollment->enrollment_status   = EnrollmentStatusEnum::ACTIVE;
             $enrollment->provisioning_status = ProvisioningStatusEnum::HEALTHY;
         } elseif (collect($planned)->contains(fn (array $provider): bool => ($provider['readiness'] ?? null) !== ProvisioningReadinessEnum::READY->value)) {
+            $enrollment->enrollment_status   = EnrollmentStatusEnum::PROVISIONING_FAILED;
             $enrollment->provisioning_status = ProvisioningStatusEnum::MANUAL_ACTION_REQUIRED;
+        } elseif (collect($planned)->contains(fn (array $provider): bool => data_get($enrollment->provisioning_data, "providers.{$provider['provider']}.status") === 'failed')) {
+            $enrollment->enrollment_status   = EnrollmentStatusEnum::PROVISIONING_FAILED;
+            $enrollment->provisioning_status = ProvisioningStatusEnum::DEGRADED;
         } else {
+            $enrollment->enrollment_status   = EnrollmentStatusEnum::PROVISIONING_FAILED;
             $enrollment->provisioning_status = ProvisioningStatusEnum::IN_PROGRESS;
         }
     }
