@@ -99,69 +99,47 @@ final class OrderItemFactory extends Factory
                 $provisionData['providers'] = match ($orderItem->productDeliveryOption->delivery_method) {
                     DeliveryMethodEnum::LMS_MOODLE => [
                         'moodle' => [
-                            'status'         => 'success',
-                            'provisioned_at' => now()->toDateTimeString(),
-                            'data'           => [
-                                'moodle_user_id'   => '1',
+                            'status'           => \App\Enums\ProvisioningOutcomeStatusEnum::SUCCESS->value,
+                            'attempt_sequence' => 1,
+                            'data'             => [
+                                'moodle_user_id'   => 1,
                                 'moodle_user_name' => 'moodle-user',
-                                'moodle_course_id' => '1',
+                                'moodle_course_id' => 1,
+                                'course_url'       => 'https://lsm.example.com/course/view.php?id=1',
                                 'login_path'       => '/my',
-                                'course_info'      => [
-                                    'visible'    => false,
-                                    'name'       => 'moodle-course',
-                                    'course_url' => 'https://lsm.example.com/course/view.php?id=1',
-                                    'completed'  => false,
-                                    'activities' => [
-                                        [
-                                            'url'   => 'https://lsm.example.com/mod/quiz/view.php?id=1',
-                                            'cid'   => 1,
-                                            'name'  => 'moodle-quiz',
-                                            'type'  => 'quiz',
-                                            'state' => 0,
-                                        ],
-                                    ],
-                                ],
+                                'provisioned_at'   => now()->toISOString(),
                             ],
                         ],
                     ],
                     DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => [
                         'spotplayer' => [
-                            'status'         => 'success',
-                            'provisioned_at' => now()->toDateTimeString(),
-                            'data'           => [
-                                'spot_id'      => 'SPOT_ID',
-                                'license_key'  => 'LICENSE_KEY',
-                                'player_url'   => 'https://app.spotplayer.ir/SPOT_ID/STRING/',
-                                'raw_response' => [
-                                    '_id' => 'SPOT_ID',
-                                    'key' => 'LICENSE_KEY',
-                                    'url' => '/SPOT_ID/STRING/',
-                                ],
+                            'status'           => \App\Enums\ProvisioningOutcomeStatusEnum::SUCCESS->value,
+                            'attempt_sequence' => 1,
+                            'data'             => [
+                                'spot_id'        => 'SPOT_ID',
+                                'license_key'    => 'LICENSE_KEY',
+                                'player_url'     => 'https://app.spotplayer.ir/SPOT_ID/STRING/',
+                                'provisioned_at' => now()->toISOString(),
                             ],
                         ],
                     ],
                     DeliveryMethodEnum::LIVE_SESSION_BBB => [
                         'bbb' => [
-                            'status'         => 'success',
-                            'provisioned_at' => now()->toDateTimeString(),
-                            'data'           => [
-                                'meeting_id'          => 'MEETING_ID',
-                                'auto_create_meeting' => false,
-                                'attendee_join_url'   => 'https://lsm.example.com/meeting/attendee/join/',
+                            'status'           => \App\Enums\ProvisioningOutcomeStatusEnum::SUCCESS->value,
+                            'attempt_sequence' => 1,
+                            'data'             => [
+                                'meeting_id'     => 'MEETING_ID',
+                                'provisioned_at' => now()->toISOString(),
                             ],
                         ],
                     ],
                 };
-                if (isset($item->productDeliveryOption->details_json['ims_course_code'])) {
+                if (isset($orderItem->productDeliveryOption->details_json['ims_course_code'])) {
                     $provisionData['providers']['ims'] = [
-                        'status'         => 'success',
-                        'provisioned_at' => now()->toDateTimeString(),
-                        'data'           => [
+                        'status'           => \App\Enums\ProvisioningOutcomeStatusEnum::SUCCESS->value,
+                        'attempt_sequence' => 1,
+                        'data'             => [
                             'course_code' => 'IMS_COURSE',
-                            'resonse'     => [
-                                'status'  => 200,
-                                'message' => 'Enrollment successful',
-                            ],
                         ],
                     ];
                 }

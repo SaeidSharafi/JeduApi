@@ -69,7 +69,7 @@
 #### CancelAbandonedOrdersCommand (`app/Console/Commands/CancelAbandonedOrdersCommand.php`)
 - **Purpose:** Cancels abandoned pending orders that never received any payment attempt
 - **Signature:** `orders:cancel-abandoned {--timeout=30} {--dry-run}`
-- **Functionality:** Selects PENDING orders older than `--timeout` minutes with no payment records at all (orders with failed/pending attempts are excluded so users can retry). For each order, within a DB transaction: sets status to CANCELLED, releases reserved seats via `ProductReservationService::release()` per item, cancels AWAITING_PAYMENT / PENDING_PROVISIONING enrollments, and dispatches `OrderStatusUpdatedEvent`.
+- **Functionality:** Selects PENDING orders older than `--timeout` minutes with no payment records at all (orders with failed/pending attempts are excluded so users can retry). For each order, within a DB transaction: sets status to CANCELLED, releases reserved seats via `ProductReservationService::release()` per item, cancels AWAITING_PAYMENT enrollments, and dispatches `OrderStatusUpdatedEvent`.
 - **Options:**
   - `--timeout`: Minutes after which a pending order is considered abandoned (default 30)
   - `--dry-run`: Show orders that would be cancelled without making changes
@@ -241,11 +241,11 @@
 
 #### Enrollment Actions (`app/Actions/Admin/Enrollment/`)
 - **ChangeEnrollmentStatusAction** (`app/Actions/Admin/Enrollment/ChangeEnrollmentStatusAction.php`)
-  - `handle(Enrollment $enrollment, EnrollmentStatusChangeData $data): Enrollment`: Validates status transitions against an allowed transition matrix (e.g., `awaiting_payment → pending_provisioning|cancelled`). Activation (`→ active`) is blocked until initial provisioning is healthy (provider plan ready and every required provider succeeded/waived). Non-`pending_provisioning` transitions trigger `ProvisioningAttemptService::recordAccessReconciliation()` so applicable providers receive remote reconciliation attempts and unsupported ones become manual-action-required. Appends timestamped, staff-attributed status change notes to the enrollment record. Throws `ValidationException` on invalid transitions.
+  - `handle(Enrollment $enrollment, EnrollmentStatusChangeData $data): Enrollment`: Validates status transitions against an allowed transition matrix (`awaiting_payment → cancelled`, `active → suspended|expired|cancelled`, `suspended → active|cancelled`). Every transition triggers `ProvisioningAttemptService::recordAccessReconciliation()` so applicable providers receive remote reconciliation attempts and unsupported ones become manual-action-required. Appends timestamped, staff-attributed status change notes to the enrollment record. Throws `ValidationException` on invalid transitions.
 - **DeleteEnrollmentAction** (`app/Actions/Admin/Enrollment/DeleteEnrollmentAction.php`)
   - `handle(Enrollment $enrollment): void`: Deletes enrollment only if status is not `ACTIVE` — prevents deletion of active enrollments.
 - **RetryProvisioningAction** (`app/Actions/Admin/Enrollment/RetryProvisioningAction.php`)
-  - `handle(Enrollment $enrollment): void`: Re-dispatches provisioning jobs for enrollment when `provisioning_data` contains partial/null provider states. Used for recovery from provisioning failures.
+  - `handle(Enrollment $enrollment): void`: Re-dispatches canonical provisioning jobs when `provisioning_data` contains failed/manual-action providers, or dispatches the full required set when provisioning was never attempted (`provisioning_data` null). Retry eligibility is owned by the provisioning state, not the lifecycle status.
 - **UpdateEnrollmentAction** (`app/Actions/Admin/Enrollment/UpdateEnrollmentAction.php`)
   - `handle(EnrollmentUpdateData $data, Enrollment $enrollment): Enrollment`: Updates enrollment metadata including access dates, notes, and survey completion status. Access-date changes trigger `recordAccessReconciliation()` (remote re-enrollment with new dates for providers supporting it, manual-action otherwise) and append a staff-attributed audit note when a reason is supplied.
 
@@ -253,7 +253,7 @@
 - Resolves the sole canonical provider matrix at Enrollment creation. IMS applies when `ims_course_code` is present; the delivery method selects Moodle, SpotPlayer, BBB, or Skyroom; a separate numeric `moodle_quiz_course_id` selects Moodle Quiz for non-Moodle delivery methods.
 - Each applicable provider records `ready`, `disabled`, or `invalid` readiness. Disabled or invalid required providers remain visible and produce aggregate `manual_action_required` health instead of being omitted.
 - The persisted aggregate status is `healthy`, `ready`, `in_progress`, `degraded`, or `manual_action_required`. Provider adapters update this aggregate through the shared attempt lifecycle.
-- Paid Enrollments with no applicable providers transition to `ACTIVE` immediately. `PROVISIONING_FAILED` remains an occupying status until recovery or an explicit administrative lifecycle change.
+- Payment grants the local entitlement (`ACTIVE`) immediately; no-provider paid enrollments are already active. Lifecycle status is `awaiting_payment | active | suspended | expired | cancelled` — provisioning-pending and provisioning-failed lifecycle cases are removed; aggregate provisioning health owns that concern. Occupying statuses are `ACTIVE` and `SUSPENDED`.
 
 #### Provisioning Attempt Lifecycle
 
@@ -265,7 +265,7 @@ Authorized staff can manually resolve or waive a canonical provider through `Man
 
 #### Access Reconciliation
 
-Administrative status and access-date changes reconcile deliberately with applicable providers while local `Enrollment` state stays authoritative. `recordAccessReconciliation()` (in `ProvisioningAttemptService`) marks `provisioning_data.reconciliation.status` and creates one attempt per planned provider: providers whose adapter `supportsAccessReconciliation()` and whose references resolve dispatch `ProvisionEnrollmentProviderJob` with `failure_metadata.kind = access_reconciliation`; the rest become manual-action-required. The job's `reconcileOrProvision()` routes to `reconcileAccess()` for such attempts; `MoodleProvisioningProvider::reconcileAccess()` re-enrolls on `active` and un-enrolls on `suspended`/`expired`/`cancelled` (Moodle `unenrollUser`), while IMS and others report `supportsAccessReconciliation() = false` so they stay manual. Reconciliation outcomes update `reconciliation.status` (`in_progress`, `succeeded`, `failed`, `manual_action_required`, `not_applicable`) but never flip local status to `PROVISIONING_FAILED` — aggregate health distinguishes initial provisioning failures from later access-reconciliation problems.
+Administrative status and access-date changes reconcile deliberately with applicable providers while local `Enrollment` state stays authoritative. `recordAccessReconciliation()` (in `ProvisioningAttemptService`) marks `provisioning_data.reconciliation.status` and creates one attempt per planned provider: providers whose adapter `supportsAccessReconciliation()` and whose references resolve dispatch `ProvisionEnrollmentProviderJob` with `failure_metadata.kind = access_reconciliation`; the rest become manual-action-required. The job's `reconcileOrProvision()` routes to `reconcileAccess()` for such attempts; `MoodleProvisioningProvider::reconcileAccess()` re-enrolls on `active` and un-enrolls on `suspended`/`expired`/`cancelled` (Moodle `unenrollUser`), while IMS and others report `supportsAccessReconciliation() = false` so they stay manual. Reconciliation outcomes update `reconciliation.status` (`in_progress`, `succeeded`, `failed`, `manual_action_required`, `not_applicable`) but never flip the local lifecycle status — aggregate health distinguishes initial provisioning failures from later access-reconciliation problems.
 
 #### Student Story Actions (`app/Actions/Admin/Setting/StudentStory/`)
 - **CreateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/CreateStudentStoryAction.php`)
@@ -449,7 +449,7 @@ Administrative status and access-date changes reconcile deliberately with applic
    - `any_payment` (default): Immediately completes items/enrollments
    - `full_payment`: Provisions only when `balance_due <= 0`
    - `manual_approval`: Never auto-provisions — sets order to PROCESSING, requiring staff to call `ApproveOrderAction`
-   - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items move enrolments into `PENDING_PROVISIONING`). Uses `save()` to fire model events for `enrolled_count` synchronization.
+   - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items set enrolments to `ACTIVE`, setting `access_start_date` when first activated; refunded/cancelled items set `CANCELLED`). Uses `save()` to fire model events for `enrolled_count` synchronization.
   - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates. Creates enrollment via `firstOrCreate()` if none exists (status `ACTIVE`), then calls `updateEnrollmentStatus()`.
   - `updateParentOrderStatus(Order $order): void`: Determines parent order status from collective item states: all refunded → REFUNDED, all cancelled → CANCELLED, any refunded → PARTIALLY_REFUNDED, all completed → COMPLETED, default → PROCESSING
 - **Reservations:** Depends on `ProductReservationService` — consumes reservations (`consume()`) for items reaching a paid/completed state so `enrolled_count + reserved_count` stays within capacity.
@@ -621,43 +621,33 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 ### Provisioning Jobs (`app/Jobs/Provisioning/`)
 
-#### HandlesProvisioningStatus Trait (`app/Jobs/Provisioning/Concerns/HandlesProvisioningStatus.php`)
-- **Purpose:** Shared trait for all provisioning jobs providing success/failure marking and provider requirement detection
-- `markProvisioningSuccess(Enrollment $enrollment, string $provider, array $data): void`: Updates `provisioning_data` JSONB with provider status
-- `markProvisioningFailed(Enrollment $enrollment, string $provider, string $error): void`: Sets provisioning failure state
-- `requiresProvisioning(string $provider): bool`: Checks if a provider is enabled via SettingsService
-
-#### ProvisionImsEnrollmentJob (`app/Jobs/Provisioning/ProvisionImsEnrollmentJob.php`)
-- **Purpose:** Provisions student + enrollment via IMS. Resolves payment info for IMS bank account mapping. Tries: 3, backoff: [60, 180, 600]s. Creates `AdminActionLog` on failure.
-
-#### ProvisionMoodleEnrollmentJob (`app/Jobs/Provisioning/ProvisionMoodleEnrollmentJob.php`)
-- **Purpose:** Finds/creates Moodle user and enrolls in course. Tries: 3, backoff: [60, 180, 600]s.
-
-#### ProvisionSpotPlayerEnrollmentJob (`app/Jobs/Provisioning/ProvisionSpotPlayerEnrollmentJob.php`)
-- **Purpose:** Legacy job retained for compatibility; authoritative SpotPlayer provisioning runs through `SpotPlayerProvisioningProvider` and `ProvisionEnrollmentProviderJob` with a provider-scoped provisioning attempt.
-
-#### Provisioning Provider Adapters (`app/Services/Provisioning/Providers/`)
-- **SpotPlayerProvisioningProvider:** Issues a SpotPlayer licence from the canonical delivery-option plan and returns safe licence references; uncertain issuance outcomes require manual verification.
-- **MoodleQuizProvisioningProvider:** Finds/creates the Moodle user and enrolls them in the canonical quiz course without a date window.
-
-#### ProvisionBbbEnrollmentJob (`app/Jobs/Provisioning/ProvisionBbbEnrollmentJob.php`)
-- **Purpose:** Optionally auto-creates BBB meeting and generates join URL. Tries: 3, backoff: [60, 180, 600]s.
+#### ProvisionEnrollmentProviderJob (`app/Jobs/Provisioning/ProvisionEnrollmentProviderJob.php`)
+- **Purpose:** Generic canonical provisioning worker. Starts a `ProvisioningAttempt`, resolves the provider adapter via `ProvisioningProviderRegistry`, runs `provision()` (or `reconcileAccess()` for attempts tagged `kind = access_reconciliation`), then records success, schedules a retry, or fails the attempt. Tries: 3, backoff: [60, 180, 600]s, unique per attempt.
 
 #### SyncMoodleProgressJob (`app/Jobs/Provisioning/SyncMoodleProgressJob.php`)
-- **Purpose:** Syncs Moodle course completion, activity statuses, and grades into enrollment `provisioning_data`. Triggered on enrollment detail view (rate-limited to 5-min throttle per enrollment).
+- **Purpose:** Syncs Moodle course completion, activity statuses, and grades into enrollment `provisioning_data.providers.<key>.sync`. Triggered on enrollment detail view (rate-limited to 5-min throttle per enrollment). This is a background sync task, not a provisioning task.
+
+#### Provisioning Provider Adapters (`app/Services/Provisioning/Providers/`)
+- **MoodleProvisioningProvider:** Finds/creates the Moodle user, validates the course, and enrolls them; returns safe canonical references (`moodle_user_id`, `moodle_user_name`, `moodle_course_id`, `course_url`, `login_path`, `provisioned_at`). Supports access reconciliation (re-enroll on `active`, un-enroll on `suspended`/`expired`/`cancelled`).
+- **ImsProvisioningProvider:** Creates/updates the IMS student and stores the enrollment with payment details; ambiguous outcomes require manual verification. Does not support access reconciliation.
+- **SpotPlayerProvisioningProvider:** Issues a SpotPlayer licence from the canonical delivery-option plan and returns safe licence references; uncertain issuance outcomes require manual verification.
+- **MoodleQuizProvisioningProvider:** Finds/creates the Moodle user and enrolls them in the canonical quiz course without a date window.
+- **BbbProvisioningProvider / SkyroomProvisioningProvider:** Consume only the canonical plan and staff-created room references; they never create provider rooms. Missing or invalid references become manual-action-required attempt failures.
 
 ### Provisioning Orchestration
 
 #### OrderStatusUpdateListener (`app/Listeners/OrderStatusUpdateListener.php`)
-- **Purpose:** Dispatches provisioning jobs after Order completion based on delivery method
+- **Purpose:** Dispatches provisioning after Order completion through the canonical entry point
 - **Trigger:** Listens on `OrderStatusUpdatedEvent` (queued)
-- **Logic:** For each order item with completed status, dispatches jobs based on:
-  - `ims_course_code` in details → shared `ProvisionEnrollmentProviderJob` with the IMS adapter
-  - `LMS_MOODLE` delivery → shared `ProvisionEnrollmentProviderJob` with the Moodle adapter
-  - `VIDEO_PLATFORM_SPOTPLAYER` delivery → shared `ProvisionEnrollmentProviderJob` with the SpotPlayer adapter
-  - applicable `moodle_quiz_course_id` → shared `ProvisionEnrollmentProviderJob` with the Moodle Quiz adapter
-  - `LIVE_SESSION_BBB` delivery → `ProvisionBbbEnrollmentJob`
-  - `LIVE_SESSION_SKYROOM` delivery → (handled via `GetJoinUrlAction` at request time, not async)
+- **Logic:** For each order item with completed status, resolves the canonical plan, then for each planned provider calls `ProvisioningAttemptService::queue()` and dispatches `ProvisionEnrollmentProviderJob`:
+  - `ims_course_code` in details → IMS adapter
+  - `LMS_MOODLE` delivery → Moodle adapter
+  - `VIDEO_PLATFORM_SPOTPLAYER` delivery → SpotPlayer adapter
+  - applicable `moodle_quiz_course_id` → Moodle Quiz adapter
+  - `LIVE_SESSION_BBB` delivery → BBB adapter
+  - `LIVE_SESSION_SKYROOM` delivery → Skyroom adapter (join URL generated lazily via `GetJoinUrlAction` at request time)
+  - No planned providers → `activateIfNoProvisioningRequired()` (keeps `provisioning_status` healthy)
+- The legacy per-provider jobs (ProvisionMoodleEnrollmentJob, ProvisionImsEnrollmentJob, ProvisionSpotPlayerEnrollmentJob, ProvisionBbbEnrollmentJob, ProvisionSkyroomEnrollmentJob, ProvisionMoodleQuizJob), `AbstractProvisioningJob`, and the `HandlesProvisioningStatus` trait are removed — provisioning runs exclusively through the canonical job and adapters.
 
 #### UpdateStatusesAfterPaymentListener (`app/Listeners/UpdateStatusesAfterPaymentListener.php`)
 - **Purpose:** Routes payment completion events based on payment purpose:
@@ -964,9 +954,8 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Behavior:** Copies seed media files to `public/fake-media/`, imports via `MediaUploader::importPath()`, creates 8 media entries (3 video, 5 image variants) for use in feature tests
 - **Usage:** Applied in test classes that need real media attachments rather than mock IDs
 
-### HandlesProvisioningStatus Trait (`app/Jobs/Provisioning/Concerns/HandlesProvisioningStatus.php`)
-- **Purpose:** Shared provisioning job logic for success/failure marking and provider detection
-- **Methods:** `markProvisioningSuccess()`, `markProvisioningFailed()`, `requiresProvisioning()`
+### ProvisionEnrollmentProviderJob (`app/Jobs/Provisioning/ProvisionEnrollmentProviderJob.php`)
+- **Purpose:** Generic canonical provisioning worker — starts a `ProvisioningAttempt`, resolves the provider adapter via `ProvisioningProviderRegistry`, runs `provision()` or `reconcileAccess()`, then records success/failure through `ProvisioningAttemptService`.
 
 ### HasMedia Trait — `getAllMedia()` 
 - **Method:** `getAllMedia(bool $urlOnly = false, array $onlyTags = []): array` — optional `$onlyTags` parameter filters media by specific tags (e.g., BlogPostCardData uses cover only).

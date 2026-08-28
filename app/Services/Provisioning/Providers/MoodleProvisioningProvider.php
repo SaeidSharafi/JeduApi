@@ -47,13 +47,14 @@ final readonly class MoodleProvisioningProvider implements ProvisioningProvider
         $startTime           = is_string($startDate) && strtotime($startDate) !== false ? strtotime($startDate) : null;
         $endTime             = is_string($endDate)   && strtotime($endDate)   !== false ? strtotime($endDate) : null;
 
-        $this->moodle->getCourse((int) $courseId);
+        $courseInfo = $this->moodle->getCourse((int) $courseId);
         $this->moodle->enrollUser($userId, (int) $courseId, $startTime, $endTime, $this->moodle->getDefaultRoleId());
 
         return [
             'moodle_user_id'   => $userId,
             'moodle_user_name' => $username,
             'moodle_course_id' => (int) $courseId,
+            'course_url'       => $courseInfo->course_url,
             'login_path'       => $this->moodle->getLoginPath(),
             'provisioned_at'   => Carbon::now()->toISOString(),
         ];

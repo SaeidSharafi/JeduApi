@@ -356,11 +356,10 @@
   - order_item_id (BIGINT) FK -> order_items(id) CASCADE
   - customer_id (BIGINT) FK -> users(id) CASCADE
   - product_delivery_option_id (BIGINT) FK -> product_delivery_options(id) CASCADE
-  - enrollment_status (VARCHAR default pending_provisioning)
+  - enrollment_status (VARCHAR default active)
   - access_start_date (DATE nullable)
   - access_end_date (DATE nullable)
-  - external_enrollment_id (BIGINT nullable)
-  - provisioning_data (JSONB nullable) — legacy per-provider execution payload
+  - provisioning_data (JSONB nullable) — per-provider execution payload with canonical references
   - provisioning_plan (JSONB not null, default version 1 empty provider plan) — canonical versioned applicability/readiness snapshot
   - provisioning_status (VARCHAR, default `healthy`, indexed) — aggregate provisioning health (`ready`, `in_progress`, `healthy`, `degraded`, `manual_action_required`)
   - notes (TEXT nullable)

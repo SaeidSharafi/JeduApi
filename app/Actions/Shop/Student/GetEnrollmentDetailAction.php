@@ -15,6 +15,7 @@ use App\Data\Shop\Student\Enrollment\EnrollmentSurveyBlockData;
 use App\Data\Shop\Teacher\TeacherDetailData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\ProvisioningOutcomeStatusEnum;
 use App\Enums\User\GenderEnum;
 use App\Models\DigitalAsset;
 use App\Models\Enrollment;
@@ -52,8 +53,6 @@ final readonly class GetEnrollmentDetailAction
             access_end_date: $enrollment->access_end_date
                 ? Verta::instance($enrollment->access_end_date)
                 : null,
-            external_enrollment_id: $enrollment->external_enrollment_id !== null
-                ? (string) $enrollment->external_enrollment_id : null,
             notes: $enrollment->notes,
             product: $product,
             teachers: $teachers,
@@ -184,11 +183,6 @@ final readonly class GetEnrollmentDetailAction
             ?? data_get($provisioning, 'moodle_quiz.sync.activities')
             ?? [];
 
-        // Backwards compat: old format stored activities inside course_info
-        if (empty($activities)) {
-            $activities = data_get($provisioning, 'moodle.data.course_info.activities', []);
-        }
-
         if (! is_array($activities)) {
             $activities = [];
         }
@@ -217,32 +211,30 @@ final readonly class GetEnrollmentDetailAction
         $details        = $deliveryOption->details_json               ?? [];
         $provisioning   = $enrollment->provisioning_data['providers'] ?? [];
 
+        // Readiness is the canonical provider outcome status — never field
+        // presence — so the frontend derives "در حال آمادهسازی" from one signal.
         return match ($deliveryMethod) {
             DeliveryMethodEnum::LIVE_SESSION_BBB,
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 session_label: 'کلاس آنلاین',
                 join_url_path: '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
-                is_ready: $deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_BBB
-                    ? filled(data_get($provisioning, 'bbb.data.meeting_id'))
-                    : filled(data_get($provisioning, 'skyroom.data.room_id')),
+                is_ready: $deliveryMethod                       === DeliveryMethodEnum::LIVE_SESSION_BBB
+                    ? data_get($provisioning, 'bbb.status')     === ProvisioningOutcomeStatusEnum::SUCCESS->value
+                    : data_get($provisioning, 'skyroom.status') === ProvisioningOutcomeStatusEnum::SUCCESS->value,
             ),
             DeliveryMethodEnum::LMS_MOODLE => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 course_url: data_get($provisioning, 'moodle.data.course_url'),
-                completed: (bool) (
-                    data_get($provisioning, 'moodle.sync.completed')
-                    ?? data_get($provisioning, 'moodle.data.course_info.completed', false)
-                ),
-                course_grade: data_get($provisioning, 'moodle.sync.course_grade')
-                    ?? data_get($provisioning, 'moodle.data.course_info.course_grade'),
-                is_ready: filled(data_get($provisioning, 'moodle.data.moodle_course_id')),
+                completed: (bool) data_get($provisioning, 'moodle.sync.completed', false),
+                course_grade: data_get($provisioning, 'moodle.sync.course_grade'),
+                is_ready: data_get($provisioning, 'moodle.status') === ProvisioningOutcomeStatusEnum::SUCCESS->value,
             ),
             DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 license_key: data_get($provisioning, 'spotplayer.data.license_key'),
                 player_url: data_get($provisioning, 'spotplayer.data.player_url'),
-                is_ready: filled(data_get($provisioning, 'spotplayer.data.player_url')),
+                is_ready: data_get($provisioning, 'spotplayer.status') === ProvisioningOutcomeStatusEnum::SUCCESS->value,
             ),
             DeliveryMethodEnum::IN_PERSON => new DeliveryAccessData(
                 type: $deliveryMethod->value,

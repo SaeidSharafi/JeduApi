@@ -7,6 +7,7 @@ namespace App\Services\Provisioning;
 use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\ProvisioningAttemptStatusEnum;
+use App\Enums\ProvisioningOutcomeStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningReadinessEnum;
 use App\Enums\ProvisioningStatusEnum;
@@ -111,7 +112,7 @@ final class ProvisioningAttemptService
             }
 
             data_set($data, "providers.{$provider}", [
-                'status'           => 'success',
+                'status'           => ProvisioningOutcomeStatusEnum::SUCCESS->value,
                 'attempt_sequence' => $lockedAttempt->sequence,
                 'data'             => $this->safeReferences($references),
             ]);
@@ -168,7 +169,8 @@ final class ProvisioningAttemptService
                 'succeeded_at'     => now(),
                 'failure_metadata' => ['reason' => mb_substr($reason, 0, 500)],
             ]);
-            $this->mergeManualProviderOutcome($enrollment, $provider, 'success', $references);
+            $this->mergeManualProviderOutcome($enrollment, $provider, ProvisioningOutcomeStatusEnum::SUCCESS->value,
+                $references);
 
             return $attempt;
         });
@@ -196,7 +198,7 @@ final class ProvisioningAttemptService
                 'failed_at'                 => now(),
                 'manual_action_required_at' => now(),
             ]);
-            $this->mergeManualProviderOutcome($enrollment, $provider, 'waived', []);
+            $this->mergeManualProviderOutcome($enrollment, $provider, ProvisioningOutcomeStatusEnum::WAIVED->value, []);
 
             return $attempt;
         });
@@ -299,7 +301,9 @@ final class ProvisioningAttemptService
                 return;
             }
             data_set($data, "providers.{$provider}", [
-                'status'           => $manualAction ? 'manual_action_required' : 'failed',
+                'status' => $manualAction
+                    ? ProvisioningOutcomeStatusEnum::MANUAL_ACTION_REQUIRED->value
+                    : ProvisioningOutcomeStatusEnum::FAILED->value,
                 'attempt_sequence' => $locked->sequence,
                 'last_error'       => mb_substr($exception->getMessage(), 0, 1000),
             ]);
@@ -408,7 +412,7 @@ final class ProvisioningAttemptService
     {
         foreach ($planned as $provider) {
             $status = data_get($enrollment->provisioning_data, "providers.{$provider['provider']}.status");
-            if ($status === 'failed') {
+            if ($status === ProvisioningOutcomeStatusEnum::FAILED->value) {
                 return true;
             }
         }
@@ -473,9 +477,9 @@ final class ProvisioningAttemptService
     private function safeReferences(array $references): array
     {
         return collect($references)->only([
-            'moodle_user_id', 'moodle_user_name', 'moodle_username', 'moodle_course_id', 'ims_student_id',
-            'ims_enrollment_id', 'course_code', 'spot_id', 'license_key', 'player_url', 'login_path', 'meeting_id',
-            'nili_room_id', 'room_id', 'skyroom_user_id', 'provisioned_at',
+            'moodle_user_id', 'moodle_user_name', 'moodle_username', 'moodle_course_id', 'course_url',
+            'ims_student_id', 'ims_enrollment_id', 'course_code', 'spot_id', 'license_key', 'player_url',
+            'login_path', 'meeting_id', 'nili_room_id', 'room_id', 'skyroom_user_id', 'provisioned_at',
         ])->all();
     }
 }

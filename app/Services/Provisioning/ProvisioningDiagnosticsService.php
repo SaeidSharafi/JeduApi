@@ -8,6 +8,7 @@ use App\Data\Admin\Enrollment\AdvancedProvisioningDiagnosticsData;
 use App\Data\Admin\Enrollment\ProvisioningAttemptDiagnosticData;
 use App\Data\Admin\Enrollment\ProvisioningDiagnosticData;
 use App\Data\Admin\Enrollment\ProvisioningDiagnosticsData;
+use App\Enums\ProvisioningOutcomeStatusEnum;
 use App\Models\Enrollment;
 use App\Models\ProvisioningAttempt;
 use Illuminate\Support\Str;
@@ -24,7 +25,7 @@ final class ProvisioningDiagnosticsService
             $provider   = (string) $plan['provider'];
             $outcome    = data_get($data, "providers.{$provider}", []);
             $status     = (string) ($outcome['status'] ?? 'pending');
-            $status     = $status === 'success' ? 'succeeded' : $status;
+            $status     = $status === ProvisioningOutcomeStatusEnum::SUCCESS->value ? 'succeeded' : $status;
             $references = collect(data_get($outcome, 'data', []))->only(['moodle_user_id', 'moodle_course_id', 'ims_student_id', 'ims_enrollment_id', 'course_code', 'spot_id', 'player_url', 'login_path', 'meeting_id', 'nili_room_id', 'room_id', 'skyroom_user_id'])->all();
 
             $attempt = $latestAttempts->get($provider)?->first();
