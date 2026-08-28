@@ -181,7 +181,7 @@ describe('OrderStatusService', function (): void {
         expect($order->fresh()->status)->toBe(OrderStatusEnum::CANCELLED);
     });
 
-    it('updates enrollment to PENDING_PROVISIONING when item becomes COMPLETED', function (): void {
+    it('updates enrollment to ACTIVE when item becomes COMPLETED', function (): void {
         $item       = OrderItem::factory()->create(['status' => OrderItemStatusEnum::COMPLETED]);
         $enrollment = Enrollment::factory()->for($item)->create([
             'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
@@ -190,7 +190,7 @@ describe('OrderStatusService', function (): void {
         app(OrderStatusService::class)->updateEnrollmentStatus($item);
 
         $enrollment->refresh();
-        expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::PENDING_PROVISIONING)
+        expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE)
             ->and($enrollment->access_start_date)->not->toBeNull();
     });
 
@@ -272,16 +272,8 @@ describe('OrderStatusService', function (): void {
             'status' => OrderItemStatusEnum::COMPLETED->value,
         ]);
 
-        expect($item1->enrollment->fresh()->enrollment_status)->toBeIn(
-            $item1->enrollment->hasRequiredProvisioningProviders()
-                ? [EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::ACTIVE]
-                : [EnrollmentStatusEnum::ACTIVE]
-        );
-        expect($item2->enrollment->fresh()->enrollment_status)->toBeIn(
-            $item2->enrollment->hasRequiredProvisioningProviders()
-                ? [EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::ACTIVE]
-                : [EnrollmentStatusEnum::ACTIVE]
-        );
+        expect($item1->enrollment->fresh()->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
+        expect($item2->enrollment->fresh()->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
 
         $this->assertDatabaseHas('orders', [
             'id'     => $order->id,

@@ -109,7 +109,6 @@ final class Enrollment extends Model
         }
 
         $this->forceFill([
-            'enrollment_status'   => EnrollmentStatusEnum::ACTIVE,
             'provisioning_status' => ProvisioningStatusEnum::HEALTHY,
         ])->save();
     }
@@ -146,16 +145,11 @@ final class Enrollment extends Model
             }
         });
 
-        self::saving(function (Enrollment $enrollment): void {
-            if (! $enrollment->requiresProvisioningBeforeActivation()
-                || $enrollment->hasHealthyProvisioningOutcomes()) {
-                return;
-            }
-
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'enrollment_status' => 'Enrollment cannot be activated before provisioning is healthy.',
-            ]);
-        });
+        // No saving guard here: payment grants local entitlement (ACTIVE) and
+        // provisioning readiness is owned by provisioning_status, not the
+        // lifecycle status. Initial provisioning health is enforced by the
+        // canonical ProvisioningAttemptService::resolveEnrollment() and by
+        // provisioning diagnostics, not by blocking status transitions.
 
         self::deleting(function (Enrollment $enrollment): void {
             EnrollmentStatusChanged::dispatch($enrollment);
@@ -185,13 +179,5 @@ final class Enrollment extends Model
                 'reconciliation_status' => data_get($this->provisioning_data, 'reconciliation.status'),
             ],
         );
-    }
-
-    private function requiresProvisioningBeforeActivation(): bool
-    {
-        return $this->exists
-            && $this->isDirty('enrollment_status')
-            && $this->enrollment_status === EnrollmentStatusEnum::ACTIVE
-            && $this->hasRequiredProvisioningProviders();
     }
 }

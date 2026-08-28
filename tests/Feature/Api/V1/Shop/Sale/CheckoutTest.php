@@ -849,30 +849,6 @@ describe('Duplicate Purchase Prevention', function (): void {
         expect($response->json('errors.items.0'))->toContain('already purchased');
     });
 
-    test('checkout fails when user has pending provisioning enrollment', function (): void {
-        $user = User::factory()->create();
-        $this->customer($user);
-
-        // Create a pending enrollment
-        App\Models\Enrollment::factory()->create([
-            'customer_id'                => $user->id,
-            'product_delivery_option_id' => $this->deliveryOption->id,
-            'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
-        ]);
-
-        postJson(route('api.v1.shop.cart.items.store'), [
-            'product_delivery_option_uuid' => $this->deliveryOption->uuid,
-            'quantity'                     => 1,
-        ])->assertOk();
-
-        $response = postJson(route('api.v1.shop.checkout'), [
-            'payment_method' => 'bank_transfer',
-        ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['items']);
-    });
-
     test('checkout succeeds when user has cancelled enrollment (refunded)', function (): void {
         $user = User::factory()->create();
         $this->customer($user);

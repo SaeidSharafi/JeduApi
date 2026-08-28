@@ -17,10 +17,7 @@ final readonly class DeleteEnrollmentAction
      */
     public function handle(Enrollment $enrollment): void
     {
-        if (
-            $enrollment->enrollment_status    === EnrollmentStatusEnum::ACTIVE
-            || $enrollment->enrollment_status === EnrollmentStatusEnum::PENDING_PROVISIONING
-        ) {
+        if ($enrollment->enrollment_status === EnrollmentStatusEnum::ACTIVE) {
             throw ValidationException::withMessages([
                 'enrollment_status' => __(
                     'messages.enrollments.cannot_delete_enrollment',

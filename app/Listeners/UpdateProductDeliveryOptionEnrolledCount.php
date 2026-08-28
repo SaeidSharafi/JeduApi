@@ -27,9 +27,7 @@ final class UpdateProductDeliveryOptionEnrolledCount implements ShouldQueue
      *
      * Occupying statuses (count towards capacity):
      * - ACTIVE: User has active access
-     * - PENDING_PROVISIONING: Access being set up, seat reserved
      * - SUSPENDED: Temporary block by admin, seat still reserved
-     * - PROVISIONING_FAILED: Setup failed, seat remains reserved for recovery
      *
      * Non-occupying statuses (do not count towards capacity):
      * - AWAITING_PAYMENT: Order created, not paid yet

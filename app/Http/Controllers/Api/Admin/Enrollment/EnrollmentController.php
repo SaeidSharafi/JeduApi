@@ -32,7 +32,7 @@ final class EnrollmentController extends Controller
      * Display a listing of the enrollments.
      *
      * @queryParam filter[enrollment_status] string Filter by enrollment status.
-     *             available values: `awaiting_payment`, `pending_provisioning`, `active`, `suspended`, `expired`, `cancelled`, `provisioning_failed`. Example: active
+     *             available values: `awaiting_payment`, `active`, `suspended`, `expired`, `cancelled`. Example: active
      * @queryParam filter[customer_id] string Filter by customer ID. Example: 1
      * @queryParam filter[order_id] string Filter by order ID. Example: 1
      * @queryParam filter[product_id] string Filter by product ID. Example: 1

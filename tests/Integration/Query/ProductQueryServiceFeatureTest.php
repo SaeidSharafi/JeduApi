@@ -773,7 +773,7 @@ describe('ProductQueryService integration', function (): void {
                     'order_item_id'              => $orderItem->id,
                     'order_id'                   => $order->id,
                     'product_delivery_option_id' => $deliveryOption->id,
-                    'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+                    'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
                 ]);
             Product::factory()
                 ->withCategory()

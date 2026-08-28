@@ -106,8 +106,7 @@ final class CancelAbandonedOrdersCommand extends Command
                         $this->productReservationService->release($item->product_delivery_option_id, $item->qty_ordered);
 
                         if ($item->enrollment && (
-                            $item->enrollment->enrollment_status    === EnrollmentStatusEnum::AWAITING_PAYMENT
-                            || $item->enrollment->enrollment_status === EnrollmentStatusEnum::PENDING_PROVISIONING
+                            $item->enrollment->enrollment_status === EnrollmentStatusEnum::AWAITING_PAYMENT
                         )) {
                             $item->enrollment->enrollment_status = EnrollmentStatusEnum::CANCELLED;
                             $item->enrollment->save();

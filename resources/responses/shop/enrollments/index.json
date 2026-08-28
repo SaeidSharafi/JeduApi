@@ -46,8 +46,8 @@
       {
         "uuid": "019803f5-0dc3-7346-a108-cd51e023d3c7",
         "enrollment_status": {
-          "value": "provisioning_failed",
-          "label": "enums.EnrollmentStatusEnum.provisioning_failed"
+          "value": "active",
+          "label": "enums.EnrollmentStatusEnum.active"
         },
         "access_start_date": "1398-05-12 15:26:51",
         "access_end_date": "1399-01-07 15:26:51",
@@ -130,8 +130,8 @@
       {
         "uuid": "019803f5-2fbb-7273-bffc-16f6441a8d5b",
         "enrollment_status": {
-          "value": "pending_provisioning",
-          "label": "enums.EnrollmentStatusEnum.pending_provisioning"
+          "value": "active",
+          "label": "enums.EnrollmentStatusEnum.active"
         },
         "access_start_date": null,
         "access_end_date": null,
@@ -170,8 +170,8 @@
       {
         "uuid": "019803f5-2fc0-724e-8703-4cd6f08111b7",
         "enrollment_status": {
-          "value": "pending_provisioning",
-          "label": "enums.EnrollmentStatusEnum.pending_provisioning"
+          "value": "active",
+          "label": "enums.EnrollmentStatusEnum.active"
         },
         "access_start_date": null,
         "access_end_date": null,
@@ -210,8 +210,8 @@
       {
         "uuid": "019803f5-2fc6-717d-9b09-c3b4ffa1d793",
         "enrollment_status": {
-          "value": "provisioning_failed",
-          "label": "enums.EnrollmentStatusEnum.provisioning_failed"
+          "value": "active",
+          "label": "enums.EnrollmentStatusEnum.active"
         },
         "access_start_date": "1383-04-06 15:26:51",
         "access_end_date": "1384-01-14 15:26:51",

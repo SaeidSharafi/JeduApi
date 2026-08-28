@@ -93,13 +93,11 @@ return [
         'job_seeker' => 'Job Seeker',
     ],
     'EnrollmentStatusEnum' => [
-        'awaiting_payment'     => 'Awaiting Payment',
-        'pending_provisioning' => 'Pending Provisioning',
-        'active'               => 'Active',
-        'suspended'            => 'Suspended',
-        'expired'              => 'Expired',
-        'cancelled'            => 'Cancelled',
-        'provisioning_failed'  => 'Provisioning Failed',
+        'awaiting_payment' => 'Awaiting Payment',
+        'active'           => 'Active',
+        'suspended'        => 'Suspended',
+        'expired'          => 'Expired',
+        'cancelled'        => 'Cancelled',
     ],
     'FulfillmentTypeEnum' => [
         'digital'           => 'Digital',

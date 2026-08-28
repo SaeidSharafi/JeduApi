@@ -16,10 +16,6 @@ final readonly class ChangeEnrollmentStatusAction
     private const array ALLOWED_TRANSITIONS
         = [
             EnrollmentStatusEnum::AWAITING_PAYMENT->value => [
-                EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::CANCELLED,
-            ],
-            EnrollmentStatusEnum::PENDING_PROVISIONING->value => [
-                EnrollmentStatusEnum::ACTIVE, EnrollmentStatusEnum::PROVISIONING_FAILED,
                 EnrollmentStatusEnum::CANCELLED,
             ],
             EnrollmentStatusEnum::ACTIVE->value => [
@@ -27,9 +23,6 @@ final readonly class ChangeEnrollmentStatusAction
             ],
             EnrollmentStatusEnum::SUSPENDED->value => [
                 EnrollmentStatusEnum::ACTIVE, EnrollmentStatusEnum::CANCELLED,
-            ],
-            EnrollmentStatusEnum::PROVISIONING_FAILED->value => [
-                EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::CANCELLED,
             ],
             EnrollmentStatusEnum::EXPIRED->value   => [],
             EnrollmentStatusEnum::CANCELLED->value => [],
@@ -45,22 +38,15 @@ final readonly class ChangeEnrollmentStatusAction
         return DB::transaction(function () use ($enrollment, $data): Enrollment {
             $newStatus = EnrollmentStatusEnum::from($data->new_status);
             $this->validateTransition($enrollment->enrollment_status, $newStatus);
-            if ($newStatus === EnrollmentStatusEnum::ACTIVE && ! $this->canActivateEnrollment($enrollment)) {
-                throw ValidationException::withMessages([
-                    'enrollment_status' => 'Enrollment cannot be activated before provisioning is healthy.',
-                ]);
-            }
 
             $enrollment->update([
                 'enrollment_status' => $newStatus,
             ]);
-            if ($newStatus !== EnrollmentStatusEnum::PENDING_PROVISIONING) {
-                $this->attempts->recordAccessReconciliation(
-                    $enrollment,
-                    ['reason' => "Enrollment status changed to {$newStatus->value}.", 'status' => $newStatus->value],
-                    auth('staff')->id(),
-                );
-            }
+            $this->attempts->recordAccessReconciliation(
+                $enrollment,
+                ['reason' => "Enrollment status changed to {$newStatus->value}.", 'status' => $newStatus->value],
+                auth('staff')->id(),
+            );
 
             if ($data->reason !== null && $data->reason !== '') {
                 $timestamp   = now()->format('Y-m-d H:i:s');
@@ -74,12 +60,6 @@ final readonly class ChangeEnrollmentStatusAction
 
             return $enrollment->fresh();
         });
-    }
-
-    private function canActivateEnrollment(Enrollment $enrollment): bool
-    {
-        return ! $enrollment->hasRequiredProvisioningProviders()
-            || $enrollment->hasHealthyProvisioningOutcomes();
     }
 
     /**

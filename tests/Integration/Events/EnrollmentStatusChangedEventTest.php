@@ -66,18 +66,6 @@ it('increments enrolled_count when enrollment is created with ACTIVE status', fu
     expect($deliveryOption->fresh()->enrolled_count)->toBe(1);
 });
 
-it('increments enrolled_count when enrollment is created with PENDING_PROVISIONING status', function (): void {
-
-    $deliveryOption = ProductDeliveryOption::factory()->create(['capacity' => 10, 'enrolled_count' => 0]);
-
-    Enrollment::factory()->create([
-        'product_delivery_option_id' => $deliveryOption->id,
-        'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
-    ]);
-
-    expect($deliveryOption->fresh()->enrolled_count)->toBe(1);
-});
-
 it('does not increment enrolled_count when enrollment is created with CANCELLED status', function (): void {
 
     $deliveryOption = ProductDeliveryOption::factory()->create(['capacity' => 10, 'enrolled_count' => 0]);
@@ -107,13 +95,13 @@ it('decrements enrolled_count when status changes from ACTIVE to CANCELLED', fun
     expect($deliveryOption->fresh()->enrolled_count)->toBe(0);
 });
 
-it('decrements enrolled_count when status changes from PENDING_PROVISIONING to EXPIRED', function (): void {
+it('decrements enrolled_count when status changes from ACTIVE to EXPIRED', function (): void {
 
     $deliveryOption = ProductDeliveryOption::factory()->create(['capacity' => 10, 'enrolled_count' => 0]);
 
     $enrollment = Enrollment::factory()->create([
         'product_delivery_option_id' => $deliveryOption->id,
-        'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+        'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
     ]);
 
     expect($deliveryOption->fresh()->enrolled_count)->toBe(1);

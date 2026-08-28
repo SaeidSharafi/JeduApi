@@ -38,18 +38,6 @@ describe('DeleteEnrollmentAction', function (): void {
             ));
     });
 
-    it('throws exception when deleting pending provisioning enrollment', function (): void {
-        $enrollment = Enrollment::factory()->create([
-            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING,
-        ]);
-
-        expect(fn () => $this->action->handle($enrollment))
-            ->toThrow(ValidationException::class, __(
-                'messages.enrollments.cannot_delete_enrollment',
-                ['status' => EnrollmentStatusEnum::PENDING_PROVISIONING->translate()]
-            ));
-    });
-
     it('allows deletion of expired enrollment', function (): void {
         $enrollment = Enrollment::factory()->create([
             'enrollment_status' => EnrollmentStatusEnum::EXPIRED,

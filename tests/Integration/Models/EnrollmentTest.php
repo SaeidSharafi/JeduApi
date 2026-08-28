@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\ProvisioningStatusEnum;
-use Illuminate\Validation\ValidationException;
 
 it('to array', function (): void {
 
@@ -57,18 +56,23 @@ test('customer relationship', function (): void {
         ->and($customer->id)->toBe($enrollment->customer_id);
 });
 
-it('does not allow persisted activation before provisioning succeeds', function (): void {
-    $enrollment = App\Models\Enrollment::factory()->create();
+it('does not tie lifecycle status to provisioning readiness', function (): void {
+    $enrollment = App\Models\Enrollment::factory()->create([
+        'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
+    ]);
     $enrollment->update([
         'provisioning_plan' => [
             'version'   => 1,
             'providers' => [['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready']],
             'status'    => ProvisioningStatusEnum::READY->value,
         ],
-        'provisioning_data' => [],
-        'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING,
+        'provisioning_data'   => [],
+        'provisioning_status' => ProvisioningStatusEnum::IN_PROGRESS,
     ]);
 
-    expect(fn () => $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]))
-        ->toThrow(ValidationException::class, 'cannot be activated');
+    // Provisioning readiness is owned by provisioning_status; the lifecycle
+    // status stays ACTIVE (payment granted the entitlement).
+    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
+
+    expect($enrollment->fresh()->provisioning_status)->toBe(ProvisioningStatusEnum::IN_PROGRESS);
 });

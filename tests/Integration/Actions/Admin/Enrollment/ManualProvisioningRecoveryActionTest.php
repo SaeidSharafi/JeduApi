@@ -14,7 +14,7 @@ use App\Models\Staff;
 use Illuminate\Validation\ValidationException;
 
 it('records a staff-attributed manual provider resolution', function (): void {
-    $enrollment = Enrollment::factory()->create(['enrollment_status' => EnrollmentStatusEnum::PROVISIONING_FAILED]);
+    $enrollment = Enrollment::factory()->create(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
     $enrollment->update([
         'provisioning_plan' => ['version' => 1, 'providers' => [['provider' => 'skyroom', 'applicable' => true, 'readiness' => 'ready']], 'status' => 'manual_action_required'],
         'provisioning_data' => ['providers' => ['skyroom' => ['status' => 'manual_action_required']]],
@@ -32,7 +32,7 @@ it('records a staff-attributed manual provider resolution', function (): void {
 });
 
 it('waives a provider and activates only after all requirements are resolved', function (): void {
-    $enrollment = Enrollment::factory()->create(['enrollment_status' => EnrollmentStatusEnum::PROVISIONING_FAILED]);
+    $enrollment = Enrollment::factory()->create(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
     $enrollment->update([
         'provisioning_plan' => ['version' => 1, 'providers' => [['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready']], 'status' => 'manual_action_required'],
         'provisioning_data' => ['providers' => ['moodle' => ['status' => 'manual_action_required']]],

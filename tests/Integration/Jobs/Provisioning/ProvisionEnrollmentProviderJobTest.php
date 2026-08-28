@@ -36,7 +36,7 @@ function reconciliationEnrollment(string $provider, array $data = []): Enrollmen
 
 it('runs Moodle through the provider boundary and activates the enrollment', function (): void {
     $enrollment = Enrollment::factory()->create([
-        'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING,
+        'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
     ]);
     $enrollment->update([
         'provisioning_plan' => [
@@ -80,7 +80,7 @@ it('runs Moodle through the provider boundary and activates the enrollment', fun
 
 it('runs SpotPlayer through the provider boundary and stores only safe references', function (): void {
     $enrollment = Enrollment::factory()->create([
-        'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING,
+        'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
         'provisioning_plan' => [
             'version'     => 1,
             'providers'   => [['provider' => 'spotplayer', 'applicable' => true, 'readiness' => 'ready']],
@@ -108,7 +108,7 @@ it('runs SpotPlayer through the provider boundary and stores only safe reference
 
 it('runs Moodle Quiz through the provider boundary', function (): void {
     $enrollment = Enrollment::factory()->create([
-        'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING,
+        'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
         'provisioning_plan' => [
             'version'     => 1,
             'providers'   => [['provider' => 'moodle_quiz', 'applicable' => true, 'readiness' => 'ready']],

@@ -916,11 +916,7 @@ describe('Order & Payment Flow', function (): void {
         expect($enrollment)->not->toBeNull();
         expect($enrollment->customer_id)->toBe($customer->id);
         expect($enrollment->product_delivery_option_id)->toBe($option->id);
-        $allowedStatuses = $enrollment->hasRequiredProvisioningProviders()
-            ? [EnrollmentStatusEnum::PENDING_PROVISIONING, EnrollmentStatusEnum::ACTIVE]
-            : [EnrollmentStatusEnum::ACTIVE];
-
-        expect($allowedStatuses)->toContain($enrollment->enrollment_status);
+        expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
 
         // Cart deleted after successful checkout
         $this->assertDatabaseMissing('carts', ['user_id' => $customer->id]);

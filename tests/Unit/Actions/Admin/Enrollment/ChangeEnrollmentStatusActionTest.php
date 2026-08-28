@@ -20,17 +20,17 @@ describe('ChangeEnrollmentStatusAction', function (): void {
         ]);
 
         $data = EnrollmentStatusChangeData::from([
-            'new_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
+            'new_status' => EnrollmentStatusEnum::CANCELLED->value,
             'reason'     => null,
         ]);
 
         $result = $this->action->handle($enrollment, $data);
 
-        expect($result->enrollment_status)->toBe(EnrollmentStatusEnum::PENDING_PROVISIONING);
+        expect($result->enrollment_status)->toBe(EnrollmentStatusEnum::CANCELLED);
 
         $this->assertDatabaseHas('enrollments', [
             'id'                => $enrollment->id,
-            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
+            'enrollment_status' => EnrollmentStatusEnum::CANCELLED->value,
         ]);
     });
 
@@ -73,7 +73,7 @@ describe('ChangeEnrollmentStatusAction', function (): void {
 
     it('handles empty reason without modifying notes', function (): void {
         $enrollment = Enrollment::factory()->create([
-            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING,
+            'enrollment_status' => EnrollmentStatusEnum::SUSPENDED,
             'notes'             => 'Original notes',
         ]);
         $enrollment->update([

@@ -27,7 +27,7 @@ function adapterEnrollment(string $provider, array $details): Enrollment
 
     $enrollment = Enrollment::factory()->create([
         'product_delivery_option_id' => $option->id,
-        'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+        'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
     ]);
 
     $enrollment->update([

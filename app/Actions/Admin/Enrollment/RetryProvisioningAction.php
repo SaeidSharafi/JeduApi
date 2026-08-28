@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Enrollment;
 
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningTriggerEnum;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
@@ -27,18 +26,9 @@ final readonly class RetryProvisioningAction
      */
     public function handle(Enrollment $enrollment, ?string $provider = null): array
     {
-        if (
-            $enrollment->enrollment_status    !== EnrollmentStatusEnum::PROVISIONING_FAILED
-            && $enrollment->enrollment_status !== EnrollmentStatusEnum::PENDING_PROVISIONING
-        ) {
-            throw ValidationException::withMessages([
-                'enrollment_status' => __('messages.enrollments.retry_provisioning_not_allowed',
-                    ['status' => $enrollment->enrollment_status->translate()]),
-            ]);
-        }
-
-        // If provisioning_data is null, this enrollment was never provisioned
-        // (queue failure, event listener crash, etc.). Dispatch all required providers.
+        // Retry eligibility is owned by the provisioning state, not the
+        // lifecycle status: an enrollment may be retried while it has failed
+        // providers or when provisioning was never attempted.
         if ($enrollment->provisioning_data === null) {
             $dispatchedProviders = $this->dispatchAllRequiredProviders($enrollment, $provider);
 

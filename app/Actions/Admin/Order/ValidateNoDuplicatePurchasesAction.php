@@ -35,11 +35,10 @@ final class ValidateNoDuplicatePurchasesAction
             ];
         });
 
-        // Check if user has any active/pending enrollments for these Productables
+        // Check if user has any active enrollments for these Productables
         $existingEnrollments = Enrollment::query()
             ->where('customer_id', $customer->id)
             ->whereIn('enrollment_status', [
-                EnrollmentStatusEnum::PENDING_PROVISIONING,
                 EnrollmentStatusEnum::ACTIVE,
             ])
             ->whereHas('productDeliveryOption.product', function ($query) use ($cartProductables): void {

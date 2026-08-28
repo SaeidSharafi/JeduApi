@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\EnrollmentStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -22,8 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('product_delivery_option_id');
             $table->foreign('product_delivery_option_id', 'pdo_id_foreign')->references('id')->on('product_delivery_options')
                 ->onDelete('cascade');
-            $table->string('enrollment_status')
-                ->default(App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING->value);
+            $table->string('enrollment_status')->default(EnrollmentStatusEnum::ACTIVE->value);
             $table->date('access_start_date')->nullable();
             $table->date('access_end_date')->nullable();
             $table->unsignedBigInteger('external_enrollment_id')->nullable();

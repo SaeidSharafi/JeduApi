@@ -311,7 +311,6 @@ final class ProvisioningAttemptService
                 $enrollment->provisioning_status = $manualAction
                     ? ProvisioningStatusEnum::MANUAL_ACTION_REQUIRED
                     : ProvisioningStatusEnum::DEGRADED;
-                $enrollment->enrollment_status = EnrollmentStatusEnum::PROVISIONING_FAILED;
             }
             $enrollment->save();
         });
@@ -340,20 +339,17 @@ final class ProvisioningAttemptService
     {
         $planned = $enrollment->provisioning_plan['providers'] ?? [];
 
+        // Lifecycle status stays as-is (payment granted ACTIVE); this method
+        // only derives aggregate provisioning health.
         if ($planned !== [] && $enrollment->hasHealthyProvisioningOutcomes()) {
-            $enrollment->enrollment_status   = EnrollmentStatusEnum::ACTIVE;
             $enrollment->provisioning_status = ProvisioningStatusEnum::HEALTHY;
         } elseif ($planned === []) {
-            $enrollment->enrollment_status   = EnrollmentStatusEnum::ACTIVE;
             $enrollment->provisioning_status = ProvisioningStatusEnum::HEALTHY;
         } elseif ($this->hasUnreadyProvider($planned)) {
-            $enrollment->enrollment_status   = EnrollmentStatusEnum::PROVISIONING_FAILED;
             $enrollment->provisioning_status = ProvisioningStatusEnum::MANUAL_ACTION_REQUIRED;
         } elseif ($this->hasFailedProvider($enrollment, $planned)) {
-            $enrollment->enrollment_status   = EnrollmentStatusEnum::PROVISIONING_FAILED;
             $enrollment->provisioning_status = ProvisioningStatusEnum::DEGRADED;
         } else {
-            $enrollment->enrollment_status   = EnrollmentStatusEnum::PROVISIONING_FAILED;
             $enrollment->provisioning_status = ProvisioningStatusEnum::IN_PROGRESS;
         }
     }

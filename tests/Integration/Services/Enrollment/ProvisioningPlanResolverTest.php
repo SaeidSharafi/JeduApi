@@ -41,10 +41,10 @@ it('includes applicable providers even when their integration is disabled', func
         ->and($plan['status'])->toBe(ProvisioningStatusEnum::MANUAL_ACTION_REQUIRED->value);
 });
 
-it('activates an enrollment when the canonical plan has no providers', function (): void {
+it('keeps an enrollment healthy when the canonical plan has no providers', function (): void {
     $enrollment = Enrollment::factory()->create();
     $enrollment->update([
-        'enrollment_status' => 'pending_provisioning',
+        'enrollment_status' => 'active',
         'provisioning_plan' => [
             'version'     => 1,
             'providers'   => [],

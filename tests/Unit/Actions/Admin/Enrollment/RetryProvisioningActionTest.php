@@ -23,18 +23,9 @@ describe('RetryProvisioningAction', function (): void {
         Queue::fake();
     });
 
-    it('throws exception for enrollment not in failed or pending provisioning status', function (): void {
-        $enrollment = Enrollment::factory()->create([
-            'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
-        ]);
-
-        expect(fn () => $this->action->handle($enrollment))
-            ->toThrow(ValidationException::class);
-    });
-
     it('throws exception when no failed providers found', function (): void {
         $enrollment = Enrollment::factory()->create([
-            'enrollment_status' => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data' => [
                 'providers' => [
                     'ims'    => ['status' => 'success'],
@@ -54,7 +45,7 @@ describe('RetryProvisioningAction', function (): void {
         ]);
 
         $enrollment = Enrollment::factory()->create([
-            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'product_delivery_option_id' => $pdo->id,
             'provisioning_data'          => null, // Never provisioned
         ]);
@@ -80,7 +71,7 @@ describe('RetryProvisioningAction', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'ims' => ['status' => 'failed', 'error' => 'Connection timeout'],
@@ -108,7 +99,7 @@ describe('RetryProvisioningAction', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'moodle' => ['status' => 'failed'],
@@ -130,7 +121,7 @@ describe('RetryProvisioningAction', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'spotplayer' => ['status' => 'failed'],
@@ -152,7 +143,7 @@ describe('RetryProvisioningAction', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'bbb' => ['status' => 'failed'],
@@ -174,7 +165,7 @@ describe('RetryProvisioningAction', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'skyroom' => ['status' => 'failed'],
@@ -197,7 +188,7 @@ describe('RetryProvisioningAction', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'moodle_quiz' => ['status' => 'failed'],
@@ -220,7 +211,7 @@ describe('RetryProvisioningAction', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'ims'    => ['status' => 'failed'],
@@ -249,7 +240,7 @@ describe('RetryProvisioningAction', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'moodle' => ['status' => 'failed'],

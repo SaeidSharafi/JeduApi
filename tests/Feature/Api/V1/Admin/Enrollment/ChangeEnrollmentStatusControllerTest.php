@@ -18,16 +18,16 @@ describe('ChangeEnrollmentStatusController', function (): void {
         ]);
 
         $response = $this->postJson(route('api.v1.admin.enrollments.change-status', ['enrollment' => $enrollment->id]), [
-            'new_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
+            'new_status' => EnrollmentStatusEnum::CANCELLED->value,
             'reason'     => 'Payment received',
         ]);
 
         $response->assertOk()
-            ->assertJsonPath('data.enrollment_status.value', EnrollmentStatusEnum::PENDING_PROVISIONING->value);
+            ->assertJsonPath('data.enrollment_status.value', EnrollmentStatusEnum::CANCELLED->value);
 
         $this->assertDatabaseHas('enrollments', [
             'id'                => $enrollment->id,
-            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
+            'enrollment_status' => EnrollmentStatusEnum::CANCELLED->value,
         ]);
 
         $enrollment->refresh();
@@ -93,7 +93,7 @@ describe('ChangeEnrollmentStatusController', function (): void {
         ]);
 
         $response = $this->postJson(route('api.v1.admin.enrollments.change-status', ['enrollment' => $enrollment->id]), [
-            'new_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
+            'new_status' => EnrollmentStatusEnum::ACTIVE->value,
         ]);
 
         $response->assertForbidden();

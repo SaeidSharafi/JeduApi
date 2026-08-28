@@ -29,7 +29,7 @@ describe('RetryProvisioningController', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'moodle' => ['status' => 'failed', 'error' => 'Connection timeout'],
@@ -46,24 +46,11 @@ describe('RetryProvisioningController', function (): void {
         Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
-    it('returns 422 for enrollment not in failed status', function (): void {
-        $this->authorized_user([PermissionEnum::ENROLLMENT_RETRY_PROVISION->value]);
-
-        $enrollment = Enrollment::factory()->create([
-            'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
-        ]);
-
-        $response = $this->postJson(route('api.v1.admin.enrollments.retry-provisioning', ['enrollment' => $enrollment->id]));
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['enrollment_status']);
-    });
-
     it('returns 422 when no failed providers found', function (): void {
         $this->authorized_user([PermissionEnum::ENROLLMENT_RETRY_PROVISION->value]);
 
         $enrollment = Enrollment::factory()->create([
-            'enrollment_status' => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data' => [
                 'providers' => [
                     'moodle' => ['status' => 'success'],
@@ -87,7 +74,7 @@ describe('RetryProvisioningController', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'ims'    => ['status' => 'failed'],
@@ -119,7 +106,7 @@ describe('RetryProvisioningController', function (): void {
 
         $enrollment = Enrollment::factory()->create([
             'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data'          => [
                 'providers' => [
                     'moodle' => ['status' => 'failed'],
@@ -138,7 +125,7 @@ describe('RetryProvisioningController', function (): void {
         $this->unauthorized_user();
 
         $enrollment = Enrollment::factory()->create([
-            'enrollment_status' => EnrollmentStatusEnum::PROVISIONING_FAILED,
+            'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
             'provisioning_data' => [
                 'providers' => [
                     'moodle' => ['status' => 'failed'],

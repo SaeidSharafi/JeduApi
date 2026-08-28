@@ -93,13 +93,11 @@ return [
         'job_seeker' => 'جویای کار',
     ],
     'EnrollmentStatusEnum' => [
-        'awaiting_payment'     => 'در انتظار پرداخت',
-        'pending_provisioning' => 'در حال آماده‌سازی دسترسی',
-        'active'               => 'فعال',
-        'suspended'            => 'معلق',
-        'expired'              => 'منقضی شده',
-        'cancelled'            => 'لغو شده',
-        'provisioning_failed'  => 'خطا در آماده‌سازی دسترسی',
+        'awaiting_payment' => 'در انتظار پرداخت',
+        'active'           => 'فعال',
+        'suspended'        => 'معلق',
+        'expired'          => 'منقضی شده',
+        'cancelled'        => 'لغو شده',
     ],
     'FulfillmentTypeEnum' => [
         'digital'           => 'دیجیتال',

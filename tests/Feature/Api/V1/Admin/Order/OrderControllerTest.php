@@ -325,7 +325,7 @@ describe('OrderController', function (): void {
                     'customer_id'                => $user->id,
                     'order_id'                   => $item->order_id,
                     'product_delivery_option_id' => $item->product_delivery_option_id,
-                    'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
+                    'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
                 ]);
             });
 
@@ -393,7 +393,7 @@ describe('OrderController', function (): void {
                 'customer_id'                => $user->id,
                 'order_id'                   => $item->order_id,
                 'product_delivery_option_id' => $item->product_delivery_option_id,
-                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
             $response = $this->deleteJson(route('api.v1.admin.orders.destroy', ['order' => $order->id]));
             $response->assertStatus(204);
@@ -443,7 +443,7 @@ describe('OrderController', function (): void {
                 'customer_id'                => $user->id,
                 'order_id'                   => $item->order_id,
                 'product_delivery_option_id' => $item->product_delivery_option_id,
-                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
             $response = $this->deleteJson(route('api.v1.admin.orders.destroy', ['order' => $order->id]));
             $response->assertStatus(422);

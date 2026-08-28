@@ -74,17 +74,21 @@ final class OrderStatusService
         $newStatus = match ($item->status) {
             // If the item is refunded or cancelled, the student loses access.
             OrderItemStatusEnum::REFUNDED, OrderItemStatusEnum::CANCELLED => EnrollmentStatusEnum::CANCELLED,
-            // If the item is completed, the student gets access.
-            OrderItemStatusEnum::COMPLETED => EnrollmentStatusEnum::PENDING_PROVISIONING,
+            // If the item is completed, the student gets access. Provisioning
+            // readiness is tracked separately via provisioning_status, not the
+            // enrollment lifecycle status.
+            OrderItemStatusEnum::COMPLETED => EnrollmentStatusEnum::ACTIVE,
             // Otherwise, no change.
             default => $item->enrollment->enrollment_status,
         };
 
         if ($item->enrollment->enrollment_status !== $newStatus) {
             $item->enrollment->enrollment_status = $newStatus;
-            if ($newStatus === EnrollmentStatusEnum::PENDING_PROVISIONING && is_null($item->enrollment->access_start_date)) {
-                $item->enrollment->access_start_date = now();
-            }
+        }
+        if ($newStatus === EnrollmentStatusEnum::ACTIVE && is_null($item->enrollment->access_start_date)) {
+            $item->enrollment->access_start_date = now();
+        }
+        if ($item->enrollment->isDirty()) {
             $item->enrollment->save();
         }
     }
