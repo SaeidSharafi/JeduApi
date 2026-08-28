@@ -6,6 +6,7 @@ namespace App\Data\Admin\Enrollment;
 
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\ProvisioningStatusEnum;
+use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
@@ -21,6 +22,6 @@ final class ProvisioningPlanData extends Data
         public DataCollection $providers,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ProvisioningStatusEnum $status,
-        public ?string $resolved_at,
+        public ?Verta $resolved_at,
     ) {}
 }
