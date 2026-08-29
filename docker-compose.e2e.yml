@@ -1,0 +1,176 @@
+name: ${COMPOSE_PROJECT_NAME:-jedu-e2e}
+
+services:
+  api:
+    image: ${API_IMAGE:-nexus.jedu.ir/repository/docker-hub/jedu-api:latest}
+    restart: "no"
+    ports:
+      - "${E2E_APP_PORT:-8000}:8000"
+    environment:
+      DEPLOYMENT_TYPE: web
+      APP_NAME: ${APP_NAME:-Jedu-E2E}
+      APP_ENV: e2e
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_KEY: ${APP_KEY:?APP_KEY is required}
+      APP_URL: http://localhost:${E2E_APP_PORT:-8000}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-jedu_e2e}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      REDIS_PREFIX: ${REDIS_PREFIX:-jedu_e2e_}
+      E2E_REDIS_DB: ${E2E_REDIS_DB:-2}
+      E2E_REDIS_CACHE_DB: ${E2E_REDIS_CACHE_DB:-3}
+      E2E_REDIS_LOCK_DB: ${E2E_REDIS_LOCK_DB:-4}
+      E2E_QUEUE: ${E2E_QUEUE:-e2e}
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+      FILESYSTEM_DISK: e2e
+      E2E_CONTROL_KEY: ${E2E_CONTROL_KEY:?E2E_CONTROL_KEY is required}
+      PAYMENT_SIMULATOR_ENABLED: "true"
+      PAYMENT_SIMULATOR_URL: http://payment-simulator
+      PAYMENT_SIMULATOR_SECRET: ${PAYMENT_SIMULATOR_SECRET:?PAYMENT_SIMULATOR_SECRET is required}
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      SCOUT_DRIVER: database
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+      payment-simulator:
+        condition: service_healthy
+    networks:
+      - e2e
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/up >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  worker:
+    image: ${API_IMAGE:-nexus.jedu.ir/repository/docker-hub/jedu-api:latest}
+    restart: "no"
+    environment:
+      DEPLOYMENT_TYPE: worker
+      APP_NAME: ${APP_NAME:-Jedu-E2E}
+      APP_ENV: e2e
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_KEY: ${APP_KEY:?APP_KEY is required}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-jedu_e2e}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      REDIS_PREFIX: ${REDIS_PREFIX:-jedu_e2e_}
+      E2E_REDIS_DB: ${E2E_REDIS_DB:-2}
+      E2E_REDIS_CACHE_DB: ${E2E_REDIS_CACHE_DB:-3}
+      E2E_REDIS_LOCK_DB: ${E2E_REDIS_LOCK_DB:-4}
+      E2E_QUEUE: ${E2E_QUEUE:-e2e}
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+      FILESYSTEM_DISK: e2e
+      E2E_CONTROL_KEY: ${E2E_CONTROL_KEY:?E2E_CONTROL_KEY is required}
+      PAYMENT_SIMULATOR_ENABLED: "true"
+      PAYMENT_SIMULATOR_URL: http://payment-simulator
+      PAYMENT_SIMULATOR_SECRET: ${PAYMENT_SIMULATOR_SECRET:?PAYMENT_SIMULATOR_SECRET is required}
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      SCOUT_DRIVER: database
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - e2e
+    healthcheck:
+      test: ["CMD-SHELL", "test -s /tmp/supervisord.pid && kill -0 $$(cat /tmp/supervisord.pid)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  postgres:
+    image: ${POSTGRES_IMAGE:-groonga/pgroonga:latest-alpine-17}
+    restart: "no"
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-jedu_e2e}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    command: postgres -c max_locks_per_transaction=256
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - e2e
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:7-alpine}
+    restart: "no"
+    command: redis-server --save "" --appendonly no
+    volumes:
+      - redis-data:/data
+    networks:
+      - e2e
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  mailpit:
+    image: ${MAILPIT_IMAGE:-axllent/mailpit:latest}
+    restart: "no"
+    ports:
+      - "${E2E_MAILPIT_PORT:-8025}:8025"
+    networks:
+      - e2e
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8025/api/v1/info"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  payment-simulator:
+    image: ${PAYMENT_SIMULATOR_IMAGE:?PAYMENT_SIMULATOR_IMAGE is required}
+    restart: "no"
+    environment:
+      PORT: 80
+      SIMULATOR_SECRET: ${PAYMENT_SIMULATOR_SECRET:?PAYMENT_SIMULATOR_SECRET is required}
+    ports:
+      - "${E2E_PAYMENT_SIMULATOR_PORT:-8080}:80"
+    networks:
+      - e2e
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+networks:
+  e2e:
+    internal: true
+
+volumes:
+  postgres-data:
+  redis-data:

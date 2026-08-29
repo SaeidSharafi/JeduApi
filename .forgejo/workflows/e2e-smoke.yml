@@ -1,0 +1,49 @@
+name: Black-box E2E smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: Boot isolated E2E stack
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_PROJECT_NAME: jedu-e2e-${{ github.run_id }}
+      APP_KEY: ${{ secrets.E2E_APP_KEY }}
+      E2E_CONTROL_KEY: ${{ secrets.E2E_CONTROL_KEY }}
+      PAYMENT_SIMULATOR_SECRET: ${{ secrets.PAYMENT_SIMULATOR_SECRET }}
+      PAYMENT_SIMULATOR_IMAGE: ${{ secrets.PAYMENT_SIMULATOR_IMAGE }}
+      E2E_APP_PORT: 18000
+      E2E_MAILPIT_PORT: 18025
+      E2E_PAYMENT_SIMULATOR_PORT: 18080
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Boot sealed stack
+        run: docker compose -f docker-compose.e2e.yml up -d
+
+      - name: Wait for application health
+        run: curl --fail --retry 30 --retry-delay 2 "http://localhost:${E2E_APP_PORT}/up"
+
+      - name: Verify E2E reset control
+        run: |
+          curl --fail-with-body \
+            -X POST "http://localhost:${E2E_APP_PORT}/api/v1/e2e/reset" \
+            -H "X-E2E-Key: ${E2E_CONTROL_KEY}"
+
+      - name: Reset Mailpit and gateway simulator
+        run: |
+          curl --fail-with-body \
+            -X DELETE "http://localhost:${E2E_MAILPIT_PORT}/api/v1/messages"
+          curl --fail-with-body \
+            -X POST "http://localhost:${E2E_PAYMENT_SIMULATOR_PORT}/api/v1/reset" \
+            -H "X-Simulator-Secret: ${PAYMENT_SIMULATOR_SECRET}"
+
+      - name: Collect service logs
+        if: always()
+        run: docker compose -f docker-compose.e2e.yml logs --no-color
+
+      - name: Tear down stack
+        if: always()
+        run: docker compose -f docker-compose.e2e.yml down -v --remove-orphans
