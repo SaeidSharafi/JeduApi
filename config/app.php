@@ -133,5 +133,4 @@ return [
 
     'page_size' => env('APP_PAGE_SIZE', 15),
 
-    'use_fake_providers' => env('APP_USE_FAKE_PROVIDERS', false),
 ];

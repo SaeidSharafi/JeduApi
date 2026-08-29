@@ -55,7 +55,7 @@ final class AppServiceProvider extends ServiceProvider
         }
 
         if ($this->app->environment('e2e')) {
-            $this->app->register(DemoServiceProvider::class);
+            $this->app->register(E2eServiceProvider::class);
         }
 
         $this->app->singleton(OtpGeneratorInterface::class, DefaultOtpGenerator::class);
@@ -145,7 +145,6 @@ final class AppServiceProvider extends ServiceProvider
 
         $enabledControls = array_filter([
             'E2E_CONTROL_KEY'           => config('e2e.control_key'),
-            'APP_USE_FAKE_PROVIDERS'    => config('app.use_fake_providers'),
             'PAYMENT_SIMULATOR_ENABLED' => config('payments.simulator.enabled'),
         ], static fn (mixed $value): bool => $value !== null && $value !== false && $value !== '');
 

@@ -7,6 +7,7 @@ use App\Http\Middleware\AdminAuditMiddleware;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Http;
 use Tests\Support\Traits\DateUtilTestTrait;
 use Tests\Support\Traits\FakeMediaTrait;
 
@@ -23,6 +24,7 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Http::preventStrayRequests();
         $this->withoutMiddleware(AdminAuditMiddleware::class);
         $this->app->singleton(function ($app): OtpGeneratorInterface {
             return new \Tests\Support\Fakes\FakeOtpGenerator();
