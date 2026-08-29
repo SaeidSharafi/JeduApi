@@ -21,16 +21,46 @@ return [
 
     'permission' => [
         'resource' => [
-            'course'            => 'Courses',
-            'seminar'           => 'Seminars',
-            'digital_asset'     => 'Files',
-            'user'              => 'Users',
-            'role'              => 'Roles',
-            'media'             => 'Media',
-            'file'              => 'Private Files',
-            'category'          => 'Categories',
-            'staff'             => 'Staff',
-            'custom_permission' => 'Custom Permissions',
+            'advice_requests'          => 'Advice Requests',
+            'audits'                   => 'Audits',
+            'blog_categories'          => 'Blog Categories',
+            'blog_posts'               => 'Blog Posts',
+            'categories'               => 'Categories',
+            'collaboration_requests'   => 'Collaboration Requests',
+            'contact_us_requests'      => 'Contact Us Requests',
+            'courses'                  => 'Courses',
+            'discounts'                => 'Discounts',
+            'enrollments'              => 'Enrollments',
+            'files'                    => 'Files',
+            'home_page_blocks'         => 'Home Page Blocks',
+            'orders'                   => 'Orders',
+            'partners'                 => 'Partners',
+            'payments'                 => 'Payments',
+            'product_delivery_options' => 'Product Delivery Options',
+            'products'                 => 'Products',
+            'refunds'                  => 'Refunds',
+            'reviews'                  => 'Reviews',
+            'roles'                    => 'Roles',
+            'seminars'                 => 'Seminars',
+            'settings'                 => 'Settings',
+            'sliders'                  => 'Sliders',
+            'student_stories'          => 'Student Stories',
+            'teachers'                 => 'Teachers',
+            'terms'                    => 'Terms',
+            'users'                    => 'Users',
+            'vendors'                  => 'Vendors',
+            'wallet_campaigns'         => 'Wallet Campaigns',
+            'wallets'                  => 'Wallets',
+            'course'                   => 'Courses',
+            'seminar'                  => 'Seminars',
+            'digital_asset'            => 'Files',
+            'user'                     => 'Users',
+            'role'                     => 'Roles',
+            'media'                    => 'Media',
+            'file'                     => 'Private Files',
+            'category'                 => 'Categories',
+            'staff'                    => 'Staff',
+            'custom_permission'        => 'Custom Permissions',
         ],
         'action' => [
             'view_any'     => 'View Any',
@@ -46,13 +76,54 @@ return [
             'force_delete' => 'Force Delete',
         ],
         'custom' => [
+            'audits' => [
+                'admin_actions_view'       => 'View Admin Actions',
+                'compliance_reports_view'  => 'View Compliance Reports',
+                'suspicious_activity_view' => 'View Suspicious Activity',
+            ],
+            'blog_posts' => [
+                'publish' => 'Publish',
+                'feature' => 'Feature',
+            ],
+            'enrollments' => [
+                'diagnostics_view' => 'View Diagnostics',
+                'retry_provision'  => 'Retry Provisioning',
+                'waive_provision'  => 'Waive Provisioning',
+            ],
+            'orders' => [
+                'approve' => 'Approve',
+            ],
+            'refunds' => [
+                'skip_gateway'  => 'Skip Gateway',
+                'update_status' => 'Update Status',
+            ],
+            'reviews' => [
+                'update_featured_status' => 'Update Featured Status',
+            ],
+            'settings' => [
+                'payment_update' => 'Update Payment Settings',
+                'payment_view'   => 'View Payment Settings',
+            ],
             'staff' => [
+                'ban'          => 'Ban Staff',
                 'manage_roles' => 'Manage Roles',
                 'impersonate'  => 'Impersonate User',
             ],
+            'users' => [
+                'ban' => 'Ban User',
+            ],
+            'wallet_campaigns' => [
+                'allocate'      => 'Allocate Campaign',
+                'process_bonus' => 'Process Bonus',
+            ],
+            'wallets' => [
+                'adjustment' => 'Adjust Balance',
+                'deposit'    => 'Deposit',
+                'withdrawal' => 'Withdraw',
+            ],
         ],
-        'custom_permission' => [ // Assuming 'custom_permission' from PermissionData.php needs a general label
-            'access_admin_panel' => 'Access Admin Panel', // Example, adjust as needed
+        'custom_permission' => [
+            'access_admin_panel' => 'Access Admin Panel',
         ],
     ],
 

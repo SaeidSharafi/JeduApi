@@ -208,6 +208,29 @@ return [
         'retry_dispatched'                => 'Retry dispatched for :count provider(s)',
         'initial_provisioning_dispatched' => 'Initial provisioning dispatched for :count provider(s)',
     ],
+    'provisioning_diagnostics' => [
+        'data' => 'Data', 'status' => 'Provisioning Status',
+        'reconciliation_status' => 'Access Reconciliation Status', 'providers' => 'Providers',
+        'provider' => 'Provider', 'retryable' => 'Retry Available',
+        'recommended_action' => 'Recommended Action', 'safe_error' => 'Safe Error',
+        'references' => 'Reference Identifiers', 'updated_at' => 'Last Updated',
+        'retry_provisioning' => 'Retry Provisioning', 'provider_retry' => 'Retry This Provider',
+        'manual_resolve' => 'Record Manual Resolution', 'waive_provider' => 'Waive This Provider',
+        'manual_review' => 'Manual Review', 'view_diagnostics' => 'View Diagnostics',
+        'no_references' => 'No Reference Identifiers Available',
+        'actions' => [
+            'none' => 'No Action Required', 'retry_or_manual_review' => 'Retry or Manual Review',
+            'await_provisioning' => 'Await Provisioning',
+        ],
+        'references_fields' => [
+            'moodle_user_id' => 'Moodle User ID', 'moodle_course_id' => 'Moodle Course ID',
+            'course_code' => 'Course Code', 'course_url' => 'Course Link', 'login_path' => 'Login Path',
+            'ims_student_id' => 'IMS Student ID', 'ims_enrollment_id' => 'IMS Enrollment ID',
+            'spot_id' => 'SpotPlayer Content ID', 'player_url' => 'Player Link', 'meeting_id' => 'BBB Meeting ID',
+            'nili_room_id' => 'Niliroom Room ID', 'room_id' => 'Room ID', 'skyroom_user_id' => 'Skyroom User ID',
+            'provisioned_at' => 'Provisioning Time',
+        ],
+    ],
 
     // Wallet Campaign Messages
     'campaigns_retrieved_successfully'        => 'Wallet campaigns retrieved successfully.',
