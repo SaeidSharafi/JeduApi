@@ -2,6 +2,14 @@
 
 ## Actions Pattern (`app/Actions/`)
 
+### E2E Actions (`app/Actions/Testing/`)
+
+#### ResetE2eEnvironmentAction (`app/Actions/Testing/ResetE2eEnvironmentAction.php`)
+- **Purpose:** Rebuilds the isolated E2E database and returns fresh bootstrap identities for black-box tests.
+- **Concurrency:** Acquires the distributed `e2e:database-reset` cache lock for five minutes; returns `null` when another reset already owns the lock.
+- **Functionality:** Runs `migrate:fresh`, synchronizes staff/user permissions, clears the default Redis database and Horizon queue state, creates one super-admin staff identity and one complete customer identity, and issues Sanctum tokens for both.
+- **Output:** Returns a unique `reset_id`, `readiness: ready`, and each bootstrap identity's ID, email, phone, password, and token.
+
 ### Admin Actions (`app/Actions/Admin/`)
 
 #### Utility Actions

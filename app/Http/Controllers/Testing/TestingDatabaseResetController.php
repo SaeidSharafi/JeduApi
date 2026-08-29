@@ -4,80 +4,28 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Testing;
 
+use App\Actions\Testing\ResetE2eEnvironmentAction;
 use App\Contracts\ApiResponseInterface;
-use App\Models\Staff;
-use App\Models\User;
-use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Redis;
-use SaeidSharafi\LaravelPermissionGenerator\Commands\PermissionsSync;
-use Throwable;
+use Symfony\Component\HttpFoundation\Response;
 
 final class TestingDatabaseResetController extends Controller
 {
-    public function reset(Request $request): ApiResponseInterface
+    public function reset(Request $request, ResetE2eEnvironmentAction $action): ApiResponseInterface
     {
-        abort_unless(
+        if (
             app()->environment('e2e')
             && (string) config('e2e.control_key') !== ''
-            && hash_equals((string) config('e2e.control_key'), (string) $request->header('X-E2E-Key')),
-            403,
-            'Unauthorized environment.',
-        );
+            && hash_equals((string) config('e2e.control_key'), (string) $request->header('X-E2E-Key'))
+        ) {
+            $data = $action->handle();
 
-        Artisan::call('migrate:fresh', ['--force' => true]);
-
-        // Package registers permissions:sync only when runningInConsole();
-        // FrankenPHP requests are not, so register it manually.
-        app(ConsoleKernel::class)->registerCommand(app(PermissionsSync::class));
-
-        Artisan::call('permissions:sync', ['--guard' => 'staff']);
-        Artisan::call('permissions:sync', ['--guard' => 'user']);
-
-        try {
-            Redis::connection('default')->flushdb();
-            Artisan::call('horizon:purge');
-        } catch (Throwable $e) {
-            // Ignore if Redis is not running in pure unit-test mock mode
+            return $data === null
+                ? apiResponse()->error('Another E2E reset is already in progress.', Response::HTTP_CONFLICT)
+                : apiResponse()->success($data, 'Database and Horizon queues reset successfully');
         }
 
-        // 1. Seed Default Staff User
-        $staff = Staff::create([
-            'name'     => 'Test Admin',
-            'email'    => 'admin@jedu.test',
-            'phone'    => '09121111111',
-            'password' => 'password123',
-        ]);
-        $staff->is_admin = true;
-        $staff->save();
-        $staffToken = $staff->createToken('test-suite')->plainTextToken;
-
-        // 2. Seed Default Customer User
-        $customer = User::create([
-            'first_name' => 'John',
-            'last_name'  => 'Doe',
-            'email'      => 'customer@jedu.test',
-            'phone'      => '09120000000',
-            'password'   => 'password123',
-            'civil_id'   => '0011223344',
-        ]);
-        $customerToken = $customer->createToken('test-suite')->plainTextToken;
-
-        return apiResponse()->success([
-            'staff' => [
-                'id'    => $staff->id,
-                'email' => $staff->email,
-                'phone' => $staff->phone,
-                'token' => $staffToken,
-            ],
-            'customer' => [
-                'id'    => $customer->id,
-                'email' => $customer->email,
-                'phone' => $customer->phone,
-                'token' => $customerToken,
-            ],
-        ], 'Database and Horizon queues reset successfully');
+        return apiResponse()->forbidden('Unauthorized environment.');
     }
 }
