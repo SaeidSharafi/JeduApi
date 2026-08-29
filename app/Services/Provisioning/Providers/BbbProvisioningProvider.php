@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Provisioning\Providers;
 
+use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\ProvisioningProviderEnum;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
-use App\Services\Integrations\BbbService;
 
 final readonly class BbbProvisioningProvider implements ProvisioningProvider
 {
-    public function __construct(private BbbService $bbb) {}
+    public function __construct(private BbbClientContract $bbb) {}
 
     public function provider(): ProvisioningProviderEnum
     {

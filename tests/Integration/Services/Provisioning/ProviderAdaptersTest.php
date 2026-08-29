@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
@@ -9,7 +10,6 @@ use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
 use App\Models\ProductDeliveryOption;
-use App\Services\Integrations\BbbService;
 use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
 use App\Services\Integrations\SkyroomService;
@@ -110,13 +110,23 @@ it('rejects an IMS provider when its course reference is missing', function (): 
 
 it('provisions BBB from a staff-created room without creating it', function (): void {
     $enrollment = adapterEnrollment('bbb', ['meeting_id' => 'NILI-ROOM-1']);
-    $service    = $this->mock(BbbService::class);
+    $service    = $this->mock(BbbClientContract::class);
     $service->shouldReceive('isEnabled')->andReturnTrue();
     $service->shouldReceive('assertConfigured');
     $service->shouldNotReceive('createMeeting');
 
     expect((new BbbProvisioningProvider($service))->provision($enrollment))
         ->toBe(['meeting_id' => 'NILI-ROOM-1']);
+});
+
+it('rejects a BBB provider when its meeting reference is missing', function (): void {
+    $enrollment = adapterEnrollment('bbb', []);
+    $service    = $this->mock(BbbClientContract::class);
+    $service->shouldReceive('isEnabled')->andReturnTrue();
+    $service->shouldReceive('assertConfigured');
+
+    expect(fn () => (new BbbProvisioningProvider($service))->provision($enrollment))
+        ->toThrow(UnrecoverableProvisioningException::class, 'meeting_id');
 });
 
 it('provisions Skyroom into a staff-created room', function (): void {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Integrations\BbbClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Models\ProductDeliveryOption;
-use App\Services\Integrations\BbbService;
 
 use function Pest\Laravel\getJson;
 
@@ -110,7 +110,7 @@ it('returns join url for bbb enrollment', function (): void {
         ],
     ])->saveQuietly();
 
-    $this->mock(BbbService::class, function ($mock): void {
+    $this->mock(BbbClientContract::class, function ($mock): void {
         $mock->shouldReceive('buildJoinUrl')->andReturn('https://bbb.test/join/abc');
     });
 

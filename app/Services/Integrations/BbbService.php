@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Integrations;
 
+use App\Contracts\Integrations\BbbClientContract;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 
-final class BbbService extends AbstractIntegrationService
+final class BbbService extends AbstractIntegrationService implements BbbClientContract
 {
     public function createMeeting(
         string $meetingId,

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Integrations\BbbClientContract;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Models\Enrollment;
-use App\Services\Integrations\BbbService;
 use App\Services\Integrations\SkyroomService;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
@@ -50,7 +50,7 @@ it('returns join url for BBB live session', function (): void {
 
     $joinUrl = 'https://bbb.example.com/join?meetingId=meeting-abc-123&fullName=Test+User';
 
-    $this->mock(BbbService::class, function ($mock) use ($joinUrl): void {
+    $this->mock(BbbClientContract::class, function ($mock) use ($joinUrl): void {
         $mock->shouldReceive('buildJoinUrl')
             ->once()
             ->with('meeting-abc-123', Mockery::any())
@@ -192,7 +192,7 @@ it('returns 500 when an unexpected error occurs', function (): void {
     ];
     $enrollment->save();
 
-    $this->mock(BbbService::class, function ($mock): void {
+    $this->mock(BbbClientContract::class, function ($mock): void {
         $mock->shouldReceive('buildJoinUrl')
             ->once()
             ->andThrow(new RuntimeException('BbbService crashed'));

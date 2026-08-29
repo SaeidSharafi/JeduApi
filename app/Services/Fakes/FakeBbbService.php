@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Fakes;
 
-use App\Services\SettingsService;
+use App\Contracts\Integrations\BbbClientContract;
 
 /**
  * @codeCoverageIgnore
  */
-final class FakeBbbService
+final class FakeBbbService implements BbbClientContract
 {
     /** @var array<string, mixed> */
     private array $config = [];
-
-    public function __construct(private readonly SettingsService $settings) {}
 
     /**
      * @param  array<string, mixed>  $config
@@ -22,6 +20,18 @@ final class FakeBbbService
     public function setConfig(array $config): void
     {
         $this->config = $config;
+    }
+
+    public function isEnabled(): bool
+    {
+        return true;
+    }
+
+    public function assertConfigured(): void {}
+
+    public function isReady(): bool
+    {
+        return true;
     }
 
     public function createMeeting(

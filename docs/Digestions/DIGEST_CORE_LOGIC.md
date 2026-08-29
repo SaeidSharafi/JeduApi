@@ -626,10 +626,13 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Purpose:** Shared boundary for SpotPlayer provisioning and readiness checks. The real client is used in normal environments; `FakeSpotPlayerService` implements the same contract in E2E with stable, credential-free license references and no outbound requests.
 
 #### BbbService (`app/Services/Integrations/BbbService.php`)
-- **Purpose:** BigBlueButton API client for meeting management and join URL generation (SHA1 checksum auth)
+- **Purpose:** Real BigBlueButton API client implementing `BbbClientContract` for meeting management and join URL generation (SHA1 checksum auth)
 - **Methods:**
   - `createMeeting(string $meetingId, string $name, ?string $attendeePw, ?string $moderatorPw): void`: Creates BBB meeting
   - `buildJoinUrl(string $meetingId, string $fullName, ?string $password): string`: Generates attendee/moderator join URL
+
+#### BbbClientContract (`app/Contracts/Integrations/BbbClientContract.php`)
+- **Purpose:** Shared boundary for BBB provisioning, join URL generation, and readiness checks. The real client is used in normal environments; `FakeBbbService` implements the same contract in E2E with stable, credential-free meeting URLs and no outbound requests.
 
 ### Provisioning Jobs (`app/Jobs/Provisioning/`)
 
