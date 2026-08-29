@@ -12,7 +12,9 @@ services:
       APP_ENV: e2e
       APP_DEBUG: ${APP_DEBUG:-false}
       APP_KEY: ${APP_KEY:?APP_KEY is required}
-      APP_URL: http://localhost:${E2E_APP_PORT:-8000}
+      APP_URL: ${E2E_APP_URL:-http://localhost:8000}
+      FRONTEND_PAYMENT_SUCCESS_URL: ${FRONTEND_PAYMENT_SUCCESS_URL:-http://localhost:3000/payment/success}
+      FRONTEND_PAYMENT_FAILURE_URL: ${FRONTEND_PAYMENT_FAILURE_URL:-http://localhost:3000/payment/fail}
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432

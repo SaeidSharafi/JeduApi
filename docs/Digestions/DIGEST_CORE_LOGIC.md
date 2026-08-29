@@ -17,6 +17,11 @@
 - **Initiation:** Creates one `PaymentTransaction`, sends the exact order/payment references, amount, callback URL, optional `delay_seconds` in the range 0–15, and an HMAC-SHA256 signature to the standalone simulator.
 - **Verification:** Validates the signed callback's references, amount, and `success`/`failure` outcome before making a terminal transition. Terminal transactions and repeated callbacks are idempotent; failed payments remain retryable and retries create a new `Payment` for the same `Order`.
 
+### Black-box E2E safety boundary
+- **Stack contract:** `docs/e2e/BLACK_BOX_STACK.md` version 1 defines the isolated Compose services, required variables/images, health checks, startup order, shutdown, reset protocol, browser boundary, and external Mailpit/gateway controls.
+- **Provider isolation:** `E2eServiceProvider` binds every provisioning provider contract to its deterministic in-process fake in E2E: IMS, Moodle/Moodle Quiz, SpotPlayer, BBB, and Skyroom. These fakes do not make provider HTTP calls; the E2E Compose network is internal and denies undeclared egress.
+- **Verification:** Provider binding, production fail-closed configuration, reset authorization/isolation, simulator callback validation, retry semantics, and callback idempotency are covered by the provider, reset, gateway, and simulator tests described in the runbook.
+
 ### Admin Actions (`app/Actions/Admin/`)
 
 #### Utility Actions

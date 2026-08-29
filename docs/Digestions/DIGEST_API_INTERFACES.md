@@ -12,6 +12,11 @@
 - **Initiation contract:** The backend sends `order_reference`, `payment_reference`, `amount`, `callback_url`, optional bounded `delay_seconds`, and an HMAC signature to the standalone gateway simulator, which returns a browser redirect URL.
 - **Callback contract:** The normal `POST|GET /api/v1/shop/payment/gateway/callback/{payment:uuid}` validates the simulator signature and exact Order, Payment, amount, and terminal outcome. Failure leaves the Order retryable; a retry creates another Payment for the same Order.
 
+### Black-box E2E operating contract
+- **Runbook:** `docs/e2e/BLACK_BOX_STACK.md` version 1 is the source-independent contract for stack variables, image overrides, service health, startup/shutdown, reset authentication, bootstrap identities, caller-owned API arrangement, browser actions, and Mailpit/gateway reset.
+- **Reset response:** Successful reset data contains `reset_id`, `readiness`, and fresh `staff`/`customer` records with IDs, email, phone, password, and Sanctum token. Invalid control keys and non-E2E requests return 403 without state mutation; infrastructure failures return 503 with `E2E_RESET_FAILED` and `reset_id`.
+- **Safety verification:** Provider fakes, production configuration rejection, reset authorization/isolation, and signed simulator lifecycle/idempotency are covered by automated tests; the external browser scenario consumes these interfaces through the assembled stack.
+
 ## Admin API Interface (`/api/v1/admin/*`)
 **Authentication:** `auth:staff` guard with `admin.audit` middleware  
 **Response Pattern:** All responses use `spatie/laravel-data` DTOs via `ResponseService`.
