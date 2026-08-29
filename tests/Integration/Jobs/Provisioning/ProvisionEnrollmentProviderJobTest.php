@@ -2,19 +2,25 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\ProvisioningAttemptStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningStatusEnum;
 use App\Enums\ProvisioningTriggerEnum;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Models\Enrollment;
+use App\Models\OrderItem;
+use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
+use App\Services\Fakes\FakeMoodleService;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleQuizProvisioningProvider;
 use App\Services\Provisioning\Providers\SpotPlayerProvisioningProvider;
 use App\Services\Provisioning\ProvisioningAttemptService;
 use App\Services\Provisioning\ProvisioningProviderRegistry;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Queue;
 
 function reconciliationEnrollment(string $provider, array $data = []): Enrollment
@@ -76,6 +82,51 @@ it('runs Moodle through the provider boundary and activates the enrollment', fun
         ->and($enrollment->provisioning_status)->toBe(ProvisioningStatusEnum::HEALTHY)
         ->and(data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_user_id'))->toBe(42)
         ->and(data_get($enrollment->provisioning_data, 'providers.moodle.data'))->not->toHaveKey('raw_payload');
+});
+
+it('provisions Moodle with the simulated client through the queued lifecycle', function (): void {
+    app()->instance(
+        MoodleClientContract::class,
+        new FakeMoodleService(app(SettingsService::class)),
+    );
+    $option = ProductDeliveryOption::factory()->create([
+        'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
+        'details_json'    => ['moodle_course_id' => 321],
+    ]);
+    $orderItem = OrderItem::factory()->create([
+        'product_delivery_option_id' => $option->id,
+    ]);
+    $enrollment = Enrollment::factory()->create([
+        'order_item_id'              => $orderItem->id,
+        'order_id'                   => $orderItem->order_id,
+        'customer_id'                => $orderItem->order->customer_id,
+        'product_delivery_option_id' => $option->id,
+        'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        'provisioning_plan'          => [
+            'version'   => 1,
+            'providers' => [['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready']],
+            'status'    => ProvisioningStatusEnum::READY->value,
+        ],
+    ]);
+    $attempts = app(ProvisioningAttemptService::class);
+    $attempt  = $attempts->queue($enrollment, ProvisioningTriggerEnum::PAYMENT);
+    (new ProvisionEnrollmentProviderJob($attempt->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
+
+    $enrollment->refresh();
+    $firstData = data_get($enrollment->provisioning_data, 'providers.moodle.data');
+
+    expect($attempt->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
+        ->and($enrollment->provisioning_status)->toBe(ProvisioningStatusEnum::HEALTHY)
+        ->and($firstData['moodle_user_id'])->toBe(1000 + $enrollment->customer_id)
+        ->and($firstData['moodle_course_id'])->toBe(321)
+        ->and($firstData)->not->toHaveKey('raw_payload');
+
+    $retry = $attempts->queue($enrollment, ProvisioningTriggerEnum::RETRY);
+    (new ProvisionEnrollmentProviderJob($retry->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
+
+    expect($retry->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
+        ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.moodle.data.moodle_user_id'))
+        ->toBe($firstData['moodle_user_id']);
 });
 
 it('runs SpotPlayer through the provider boundary and stores only safe references', function (): void {

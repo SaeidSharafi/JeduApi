@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Teacher;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Http\Controllers\Controller;
-use App\Services\Integrations\MoodleService;
 use App\Services\SWRCacheService;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,7 +24,7 @@ final class QuizController extends Controller
      *
      * @responseFile 200 resources/responses/shop/student/quizzes.json
      */
-    public function __invoke(MoodleService $moodleService): ApiResponseInterface
+    public function __invoke(MoodleClientContract $moodleService): ApiResponseInterface
     {
         $user = Auth::user();
         abort_unless(Auth::user()?->is_teacher, 403);

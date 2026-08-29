@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Teacher;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Http\Controllers\Controller;
 use App\Models\ProductDeliveryOption;
 use App\Models\Teacher;
-use App\Services\Integrations\MoodleService;
 use Illuminate\Http\Request;
 
 /**
@@ -38,7 +38,7 @@ final class TeacherMoodleSsoController extends Controller
     public function __invoke(
         Request $request,
         ProductDeliveryOption $deliveryOption,
-        MoodleService $moodleService
+        MoodleClientContract $moodleService
     ): ApiResponseInterface {
         $user = $request->user();
 

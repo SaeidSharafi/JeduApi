@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Models\Enrollment;
-use App\Services\Integrations\MoodleService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
@@ -32,7 +32,7 @@ final class SyncMoodleProgressJob implements ShouldQueue
         private readonly string $providerKey = 'moodle',
     ) {}
 
-    public function handle(MoodleService $moodleService): void
+    public function handle(MoodleClientContract $moodleService): void
     {
         $enrollment = Enrollment::find($this->enrollmentId);
         if (! $enrollment) {

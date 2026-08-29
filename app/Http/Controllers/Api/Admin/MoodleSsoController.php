@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Http\Controllers\Controller;
 use App\Models\Staff;
-use App\Services\Integrations\MoodleService;
 use Illuminate\Http\Request;
 
 /**
@@ -31,7 +31,7 @@ final class MoodleSsoController extends Controller
      * @response 422 {"message": "Moodle username not found for staff member."}
      * @response 422 {"message": "Moodle service error."}
      */
-    public function __invoke(Request $request, MoodleService $moodleService): ApiResponseInterface
+    public function __invoke(Request $request, MoodleClientContract $moodleService): ApiResponseInterface
     {
         /** @var Staff|null $staff */
         $staff = auth('staff')->user();

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Services\Fakes\FakeBbbService;
 use App\Services\Fakes\FakeMoodleService;
 use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\Integrations\BbbService;
-use App\Services\Integrations\MoodleService;
 use App\Services\Integrations\SpotPlayerService;
 use App\Services\SettingsService;
 use Illuminate\Support\ServiceProvider;
@@ -31,7 +31,7 @@ final class DemoServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(
-            MoodleService::class,
+            MoodleClientContract::class,
             fn ($app): FakeMoodleService => new FakeMoodleService($app->make(SettingsService::class))
         );
     }

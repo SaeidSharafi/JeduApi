@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\CartIdentifier;
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Contracts\OtpGeneratorInterface;
 use App\Enums\System\MorphTypeEnum;
 use App\Services\Cart\RequestCartIdentifier;
 use App\Services\DefaultOtpGenerator;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
+use App\Services\Integrations\MoodleService;
 use App\Services\RequestDataCacheService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +34,8 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->failIfE2EConfigurationIsEnabledInProduction();
+
+        $this->app->bind(MoodleClientContract::class, MoodleService::class);
 
         if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);

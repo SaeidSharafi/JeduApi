@@ -596,8 +596,11 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `getGrades(...)`, `storeGrade(...)`, `storeBulkGrades(...)`: Course grade read/write operations
 - **Security:** PII redaction in logs (email, phone via `sanitizeBody()`); credentials resolved via `SettingsService`
 
+#### MoodleClientContract (`app/Contracts/Integrations/MoodleClientContract.php`)
+- **Purpose:** Narrow client boundary shared by the real Moodle Web Services client and the deterministic E2E simulated client. Provisioning, read-side consumers, SSO, quizzes, progress sync, and access reconciliation depend on this contract.
+
 #### MoodleService (`app/Services/Integrations/MoodleService.php`)
-- **Purpose:** Moodle Web Services API client for user management, enrollment, grades, and SSO
+- **Purpose:** Real Moodle Web Services API client implementing `MoodleClientContract` for user management, enrollment, grades, and SSO
 - **Methods:**
   - `setConfig(array $config): void`: Injects runtime configuration
   - `findOrCreateUser(User $user): array`: Finds or creates Moodle user → returns `[moodleUserId, moodleUsername]`
@@ -607,6 +610,9 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `getCourse(int $moodleCourseId): LmsMoodleBlockData`: Fetches course content structure
   - `enrollUser(int $moodleUserId, int $moodleCourseId, ?int $startTime, ?int $endTime, int $roleId = 5): void`: Manual enrollment
   - `createUserKey(string $username, ?string $token = null): string`: Generates SSO login URL key
+
+#### FakeMoodleService (`app/Services/Fakes/FakeMoodleService.php`)
+- **Purpose:** Deterministic, credential-free Moodle client used only when `APP_ENV=e2e`; returns stable user/course/login references and implements the same `MoodleClientContract` without outbound requests.
 
 #### SpotPlayerService (`app/Services/Integrations/SpotPlayerService.php`)
 - **Purpose:** SpotPlayer video platform license provisioning

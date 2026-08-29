@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Provisioning\Providers;
 
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\ProvisioningProviderEnum;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
-use App\Services\Integrations\MoodleService;
 
 final readonly class MoodleQuizProvisioningProvider implements ProvisioningProvider
 {
-    public function __construct(private MoodleService $moodle) {}
+    public function __construct(private MoodleClientContract $moodle) {}
 
     public function provider(): ProvisioningProviderEnum
     {

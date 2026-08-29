@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Providers\AppServiceProvider;
 use App\Services\Fakes\FakeMoodleService;
 use App\Services\Integrations\MoodleService;
@@ -37,7 +38,7 @@ it('allows production boot when E2E controls use their safe defaults', function 
 it('does not register simulated providers outside the E2E environment', function (): void {
     config(['app.use_fake_providers' => true]);
 
-    expect(app()->bound(MoodleService::class))->toBeFalse();
+    expect(app(MoodleClientContract::class))->toBeInstanceOf(MoodleService::class);
 });
 
 it('registers simulated providers only in the E2E environment', function (): void {
@@ -45,5 +46,5 @@ it('registers simulated providers only in the E2E environment', function (): voi
 
     (new AppServiceProvider(app()))->register();
 
-    expect(app(MoodleService::class))->toBeInstanceOf(FakeMoodleService::class);
+    expect(app(MoodleClientContract::class))->toBeInstanceOf(FakeMoodleService::class);
 });

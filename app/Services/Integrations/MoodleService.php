@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Integrations;
 
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
 use App\Data\Shop\Student\Blocks\MoodleActivityData;
 use App\Data\Shop\Student\MoodleSsoUrlData;
@@ -17,7 +18,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
-final class MoodleService extends AbstractIntegrationService
+final class MoodleService extends AbstractIntegrationService implements MoodleClientContract
 {
     private string $baseUrl = '';
 

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Student;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
-use App\Services\Integrations\MoodleService;
 use Illuminate\Http\Request;
 
 /**
@@ -34,7 +34,7 @@ final class MoodleSsoController extends Controller
      * @response 422 {"message": "Moodle is not configured."}
      * @response 422 {"message": "Moodle auth_userkey token is not configured."}
      */
-    public function __invoke(Request $request, Enrollment $enrollment, MoodleService $moodleService): ApiResponseInterface
+    public function __invoke(Request $request, Enrollment $enrollment, MoodleClientContract $moodleService): ApiResponseInterface
     {
         if ($enrollment->customer_id !== $request->user()?->id) {
             return apiResponse()->notFound(__('messages.enrollments.not_found'));

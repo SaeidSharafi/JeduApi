@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Student;
 
+use App\Contracts\Integrations\MoodleClientContract;
 use App\Http\Controllers\Controller;
-use App\Services\Integrations\MoodleService;
 use App\Services\SWRCacheService;
 
 /**
@@ -20,7 +20,7 @@ final class QuizController extends Controller
      *
      * @responseFile 200 resources/responses/shop/student/quizzes.json
      */
-    public function __invoke(MoodleService $moodleService): \App\Contracts\ApiResponseInterface
+    public function __invoke(MoodleClientContract $moodleService): \App\Contracts\ApiResponseInterface
     {
         $user    = auth()->user();
         $quizzes = SWRCacheService::remember('student_quizzes:'.$user->id, function () use ($moodleService, $user): array {
