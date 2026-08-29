@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Provisioning\Providers;
 
+use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
@@ -12,13 +13,13 @@ use App\Enums\User\GenderEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
-use App\Services\Integrations\ImsService;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 
 final readonly class ImsProvisioningProvider implements ProvisioningProvider
 {
-    public function __construct(private ImsService $ims) {}
+    public function __construct(private ImsClientContract $ims) {}
 
     public function provider(): ProvisioningProviderEnum
     {
@@ -104,7 +105,7 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
     /**
      * @param  array<string, mixed>|null  $data
      */
-    private function resolvePaymentDate(?array $data, ?Carbon $createdAt): ?string
+    private function resolvePaymentDate(?array $data, ?CarbonInterface $createdAt): ?string
     {
         $transactionDate = data_get($data, 'transaction_date');
         if (is_string($transactionDate) && $transactionDate !== '') {

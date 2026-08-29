@@ -585,7 +585,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `addUserToRoom(int $roomId, int $skyroomUserId, string $role = 'normal'): void`: Enrolls user in a Skyroom room with specified role
 
 #### ImsService (`app/Services/Integrations/ImsService.php`)
-- **Purpose:** IMS (Internal Management System) REST API client for student & enrollment CRUD operations and teacher dashboard data
+- **Purpose:** Real IMS (Internal Management System) REST API client implementing `ImsClientContract` for student & enrollment CRUD operations and teacher dashboard data
 - **Methods:**
   - `setConfig(array $config): void`: Injects runtime configuration (credentials, endpoint)
   - `storeStudent(array $payload): array`: Creates student record via POST `/api/v2/student`
@@ -595,6 +595,9 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `storeAttendance(...)`, `updateAttendance(...)`, `destroyAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdType, array $payload): void`: Creates/updates/deletes attendance records
   - `getGrades(...)`, `storeGrade(...)`, `storeBulkGrades(...)`: Course grade read/write operations
 - **Security:** PII redaction in logs (email, phone via `sanitizeBody()`); credentials resolved via `SettingsService`
+
+#### ImsClientContract (`app/Contracts/Integrations/ImsClientContract.php`)
+- **Purpose:** Shared boundary for IMS provisioning and teacher dashboard operations. The real client is used in normal environments; `FakeImsService` implements the same contract in E2E with stable, credential-free identifiers and no outbound requests.
 
 #### MoodleClientContract (`app/Contracts/Integrations/MoodleClientContract.php`)
 - **Purpose:** Narrow client boundary shared by the real Moodle Web Services client and the deterministic E2E simulated client. Provisioning, read-side consumers, SSO, quizzes, progress sync, and access reconciliation depend on this contract.

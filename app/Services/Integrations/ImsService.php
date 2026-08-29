@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Integrations;
 
+use App\Contracts\Integrations\ImsClientContract;
 use App\Enums\System\SettingKeyEnum;
 use App\Enums\User\CivilIdTypeEnum;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
-final class ImsService extends AbstractIntegrationService
+final class ImsService extends AbstractIntegrationService implements ImsClientContract
 {
     /**
      * @param  array<string, mixed>  $payload

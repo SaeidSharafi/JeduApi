@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Teacher;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Integrations\ImsClientContract;
 use App\Data\Shop\Teacher\TeacherCourseItemData;
 use App\Enums\MediaTagEnum;
 use App\Http\Controllers\Controller;
 use App\Models\ProductDeliveryOption;
 use App\Models\Teacher;
-use App\Services\Integrations\ImsService;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Auth;
  */
 final class CourseController extends Controller
 {
-    public function __construct(private readonly ImsService $imsService) {}
+    public function __construct(private readonly ImsClientContract $imsService) {}
 
     /**
      * Get the authenticated teacher's courses.

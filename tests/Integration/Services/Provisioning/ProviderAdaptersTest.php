@@ -9,10 +9,12 @@ use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
 use App\Models\ProductDeliveryOption;
 use App\Services\Integrations\BbbService;
+use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
 use App\Services\Integrations\SkyroomService;
 use App\Services\Integrations\SpotPlayerService;
 use App\Services\Provisioning\Providers\BbbProvisioningProvider;
+use App\Services\Provisioning\Providers\ImsProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleQuizProvisioningProvider;
 use App\Services\Provisioning\Providers\SkyroomProvisioningProvider;
@@ -83,7 +85,17 @@ it('rejects a Moodle Quiz provider when its course reference is missing', functi
     $service->shouldReceive('assertConfigured');
 
     expect(fn () => (new MoodleQuizProvisioningProvider($service))->provision($enrollment))
-        ->toThrow(UnrecoverableProvisioningException::class, 'course id');
+        ->toThrow(UnrecoverableProvisioningException::class, 'course_id');
+});
+
+it('rejects an IMS provider when its course reference is missing', function (): void {
+    $enrollment = adapterEnrollment('ims', []);
+    $service    = $this->mock(ImsService::class);
+    $service->shouldReceive('isEnabled')->andReturnTrue();
+    $service->shouldReceive('assertConfigured');
+
+    expect(fn () => (new ImsProvisioningProvider($service))->provision($enrollment))
+        ->toThrow(UnrecoverableProvisioningException::class, 'course code');
 });
 
 it('provisions BBB from a staff-created room without creating it', function (): void {

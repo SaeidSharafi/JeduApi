@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\ProvisioningAttemptStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
@@ -12,8 +14,10 @@ use App\Enums\ProvisioningTriggerEnum;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Models\Enrollment;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
+use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleQuizProvisioningProvider;
@@ -127,6 +131,59 @@ it('provisions Moodle with the simulated client through the queued lifecycle', f
     expect($retry->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
         ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.moodle.data.moodle_user_id'))
         ->toBe($firstData['moodle_user_id']);
+});
+
+it('provisions IMS with stable simulated references through the queued lifecycle', function (): void {
+    app()->instance(ImsClientContract::class, new FakeImsService());
+    $option = ProductDeliveryOption::factory()->create([
+        'delivery_method' => DeliveryMethodEnum::IN_PERSON,
+        'details_json'    => ['ims_course_code' => 'IMS-E2E-76'],
+    ]);
+    $orderItem = OrderItem::factory()->create([
+        'product_delivery_option_id' => $option->id,
+    ]);
+    Payment::factory()->create([
+        'order_id'    => $orderItem->order_id,
+        'customer_id' => $orderItem->order->customer_id,
+        'amount'      => $orderItem->total ?: 1000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+    $enrollment = Enrollment::factory()->create([
+        'order_item_id'              => $orderItem->id,
+        'order_id'                   => $orderItem->order_id,
+        'customer_id'                => $orderItem->order->customer_id,
+        'product_delivery_option_id' => $option->id,
+        'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        'provisioning_plan'          => [
+            'version'   => 1,
+            'providers' => [['provider' => 'ims', 'applicable' => true, 'readiness' => 'ready']],
+            'status'    => ProvisioningStatusEnum::READY->value,
+        ],
+    ]);
+
+    $attempts = app(ProvisioningAttemptService::class);
+    $attempt  = $attempts->queue($enrollment, ProvisioningTriggerEnum::PAYMENT,
+        provider: ProvisioningProviderEnum::IMS);
+    (new ProvisionEnrollmentProviderJob($attempt->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
+
+    $enrollment->refresh();
+    $firstData = data_get($enrollment->provisioning_data, 'providers.ims.data');
+
+    expect($attempt->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
+        ->and($enrollment->provisioning_status)->toBe(ProvisioningStatusEnum::HEALTHY)
+        ->and($firstData['course_code'])->toBe('IMS-E2E-76')
+        ->and($firstData['ims_student_id'])->toBeInt()
+        ->and($firstData['ims_enrollment_id'])->toBeInt();
+
+    $retry = $attempts->queue($enrollment, ProvisioningTriggerEnum::RETRY,
+        provider: ProvisioningProviderEnum::IMS);
+    (new ProvisionEnrollmentProviderJob($retry->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
+
+    expect($retry->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
+        ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.ims.data.ims_student_id'))
+        ->toBe($firstData['ims_student_id'])
+        ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.ims.data.ims_enrollment_id'))
+        ->toBe($firstData['ims_enrollment_id']);
 });
 
 it('provisions Moodle Quiz with stable simulated references through the queued lifecycle', function (): void {

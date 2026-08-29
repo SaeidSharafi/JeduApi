@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Teacher;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Integrations\ImsClientContract;
 use App\Data\Shop\Teacher\StoreBulkGradeData;
 use App\Data\Shop\Teacher\StoreGradeData;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Http\Controllers\Controller;
 use App\Models\Teacher;
-use App\Services\Integrations\ImsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Auth;
  */
 final class GradeController extends Controller
 {
-    public function __construct(private readonly ImsService $imsService) {}
+    public function __construct(private readonly ImsClientContract $imsService) {}
 
     /**
      * List grades for a course.
