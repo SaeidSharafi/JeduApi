@@ -618,9 +618,12 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Purpose:** Deterministic, credential-free Moodle client used only when `APP_ENV=e2e`; returns stable user/course/login references and implements the same `MoodleClientContract` without outbound requests.
 
 #### SpotPlayerService (`app/Services/Integrations/SpotPlayerService.php`)
-- **Purpose:** SpotPlayer video platform license provisioning
+- **Purpose:** Real SpotPlayer video platform client implementing `SpotPlayerClientContract` for license provisioning
 - **Methods:**
   - `issueLicense(string $spotId, User $user): array`: Issues license → returns `{license_key, player_url, raw}`
+
+#### SpotPlayerClientContract (`app/Contracts/Integrations/SpotPlayerClientContract.php`)
+- **Purpose:** Shared boundary for SpotPlayer provisioning and readiness checks. The real client is used in normal environments; `FakeSpotPlayerService` implements the same contract in E2E with stable, credential-free license references and no outbound requests.
 
 #### BbbService (`app/Services/Integrations/BbbService.php`)
 - **Purpose:** BigBlueButton API client for meeting management and join URL generation (SHA1 checksum auth)

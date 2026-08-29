@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
@@ -19,6 +20,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
 use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
+use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleQuizProvisioningProvider;
 use App\Services\Provisioning\Providers\SpotPlayerProvisioningProvider;
@@ -232,6 +234,54 @@ it('provisions Moodle Quiz with stable simulated references through the queued l
     expect($retry->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
         ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.moodle_quiz.data.moodle_user_id'))
         ->toBe($firstData['moodle_user_id']);
+});
+
+it('provisions SpotPlayer with stable simulated references through the queued lifecycle', function (): void {
+    app()->instance(SpotPlayerClientContract::class, new FakeSpotPlayerService());
+    $option = ProductDeliveryOption::factory()->create([
+        'delivery_method' => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+        'details_json'    => ['spot_id' => 'SPOT-E2E-79'],
+    ]);
+    $orderItem = OrderItem::factory()->create([
+        'product_delivery_option_id' => $option->id,
+    ]);
+    $enrollment = Enrollment::factory()->create([
+        'order_item_id'              => $orderItem->id,
+        'order_id'                   => $orderItem->order_id,
+        'customer_id'                => $orderItem->order->customer_id,
+        'product_delivery_option_id' => $option->id,
+        'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        'provisioning_plan'          => [
+            'version'   => 1,
+            'providers' => [['provider' => 'spotplayer', 'applicable' => true, 'readiness' => 'ready']],
+            'status'    => ProvisioningStatusEnum::READY->value,
+        ],
+    ]);
+
+    $attempts = app(ProvisioningAttemptService::class);
+    $attempt  = $attempts->queue($enrollment, ProvisioningTriggerEnum::PAYMENT,
+        provider: ProvisioningProviderEnum::SPOTPLAYER);
+    (new ProvisionEnrollmentProviderJob($attempt->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
+
+    $enrollment->refresh();
+    $firstData = data_get($enrollment->provisioning_data, 'providers.spotplayer.data');
+
+    expect($attempt->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
+        ->and($enrollment->provisioning_status)->toBe(ProvisioningStatusEnum::HEALTHY)
+        ->and($firstData['spot_id'])->toBe('SPOT-E2E-79')
+        ->and($firstData['license_key'])->toBeString()
+        ->and($firstData['player_url'])->toBe('https://app.spotplayer.ir/player/SPOT-E2E-79/')
+        ->and($firstData)->not->toHaveKey('raw');
+
+    $retry = $attempts->queue($enrollment, ProvisioningTriggerEnum::RETRY,
+        provider: ProvisioningProviderEnum::SPOTPLAYER);
+    (new ProvisionEnrollmentProviderJob($retry->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
+
+    expect($retry->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
+        ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.spotplayer.data.license_key'))
+        ->toBe($firstData['license_key'])
+        ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.spotplayer.data.player_url'))
+        ->toBe($firstData['player_url']);
 });
 
 it('runs SpotPlayer through the provider boundary and stores only safe references', function (): void {

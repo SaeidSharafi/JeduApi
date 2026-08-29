@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Contracts\CartIdentifier;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Contracts\OtpGeneratorInterface;
 use App\Enums\System\MorphTypeEnum;
 use App\Services\Cart\RequestCartIdentifier;
@@ -15,6 +16,7 @@ use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
 use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
+use App\Services\Integrations\SpotPlayerService;
 use App\Services\RequestDataCacheService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -39,6 +41,7 @@ final class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(MoodleClientContract::class, MoodleService::class);
         $this->app->bind(ImsClientContract::class, ImsService::class);
+        $this->app->bind(SpotPlayerClientContract::class, SpotPlayerService::class);
 
         if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services\Provisioning\Providers;
 
+use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\ProvisioningProviderEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
-use App\Services\Integrations\SpotPlayerService;
 
 final readonly class SpotPlayerProvisioningProvider implements ProvisioningProvider
 {
-    public function __construct(private SpotPlayerService $spotPlayer) {}
+    public function __construct(private SpotPlayerClientContract $spotPlayer) {}
 
     public function provider(): ProvisioningProviderEnum
     {

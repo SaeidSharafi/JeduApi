@@ -6,12 +6,12 @@ namespace App\Providers;
 
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Services\Fakes\FakeBbbService;
 use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
 use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\Integrations\BbbService;
-use App\Services\Integrations\SpotPlayerService;
 use App\Services\SettingsService;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,10 +22,7 @@ final class DemoServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(
-            SpotPlayerService::class,
-            fn ($app): FakeSpotPlayerService => new FakeSpotPlayerService($app->make(SettingsService::class))
-        );
+        $this->app->singleton(SpotPlayerClientContract::class, FakeSpotPlayerService::class);
 
         $this->app->singleton(
             BbbService::class,

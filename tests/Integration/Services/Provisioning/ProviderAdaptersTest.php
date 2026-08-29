@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
@@ -12,7 +13,6 @@ use App\Services\Integrations\BbbService;
 use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
 use App\Services\Integrations\SkyroomService;
-use App\Services\Integrations\SpotPlayerService;
 use App\Services\Provisioning\Providers\BbbProvisioningProvider;
 use App\Services\Provisioning\Providers\ImsProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
@@ -44,7 +44,7 @@ function adapterEnrollment(string $provider, array $details): Enrollment
 
 it('provisions SpotPlayer and returns canonical references', function (): void {
     $enrollment = adapterEnrollment('spotplayer', ['spot_id' => 'SPOT-1']);
-    $service    = $this->mock(SpotPlayerService::class);
+    $service    = $this->mock(SpotPlayerClientContract::class);
     $service->shouldReceive('isEnabled')->andReturnTrue();
     $service->shouldReceive('assertConfigured');
     $service->shouldReceive('issueLicense')->with('SPOT-1', Mockery::type(App\Models\User::class))->andReturn([
@@ -58,7 +58,7 @@ it('provisions SpotPlayer and returns canonical references', function (): void {
 
 it('marks an uncertain SpotPlayer response as manual action', function (): void {
     $enrollment = adapterEnrollment('spotplayer', ['spot_id' => 'SPOT-1']);
-    $service    = $this->mock(SpotPlayerService::class);
+    $service    = $this->mock(SpotPlayerClientContract::class);
     $service->shouldReceive('isEnabled')->andReturnTrue();
     $service->shouldReceive('assertConfigured');
     $service->shouldReceive('issueLicense')->andThrow(new RecoverableProvisioningException('timeout', 0, null,
@@ -66,6 +66,16 @@ it('marks an uncertain SpotPlayer response as manual action', function (): void 
 
     expect(fn () => (new SpotPlayerProvisioningProvider($service))->provision($enrollment))
         ->toThrow(UnrecoverableProvisioningException::class, 'ambiguous');
+});
+
+it('rejects a SpotPlayer provider when its content reference is missing', function (): void {
+    $enrollment = adapterEnrollment('spotplayer', []);
+    $service    = $this->mock(SpotPlayerClientContract::class);
+    $service->shouldReceive('isEnabled')->andReturnTrue();
+    $service->shouldReceive('assertConfigured');
+
+    expect(fn () => (new SpotPlayerProvisioningProvider($service))->provision($enrollment))
+        ->toThrow(UnrecoverableProvisioningException::class, 'spot_id');
 });
 
 it('rejects a Moodle Quiz provider that is not in the canonical plan', function (): void {

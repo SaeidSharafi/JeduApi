@@ -6,6 +6,7 @@ namespace App\Services\Enrollment;
 
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningReadinessEnum;
@@ -14,14 +15,13 @@ use App\Models\ProductDeliveryOption;
 use App\Services\Integrations\AbstractIntegrationService;
 use App\Services\Integrations\BbbService;
 use App\Services\Integrations\SkyroomService;
-use App\Services\Integrations\SpotPlayerService;
 
 final readonly class ProvisioningPlanResolver
 {
     public function __construct(
         private ImsClientContract $ims,
         private MoodleClientContract $moodle,
-        private SpotPlayerService $spotPlayer,
+        private SpotPlayerClientContract $spotPlayer,
         private BbbService $bbb,
         private SkyroomService $skyroom,
     ) {}
@@ -74,7 +74,7 @@ final readonly class ProvisioningPlanResolver
     /**
      * @return array{provider: string, applicable: bool, readiness: string, configuration_issue: ?string}
      */
-    private function provider(ProvisioningProviderEnum $provider, AbstractIntegrationService|ImsClientContract|MoodleClientContract $service): array
+    private function provider(ProvisioningProviderEnum $provider, AbstractIntegrationService|ImsClientContract|MoodleClientContract|SpotPlayerClientContract $service): array
     {
         $readiness = ! $service->isEnabled()
             ? ProvisioningReadinessEnum::DISABLED

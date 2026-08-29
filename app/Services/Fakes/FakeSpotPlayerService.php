@@ -4,22 +4,32 @@ declare(strict_types=1);
 
 namespace App\Services\Fakes;
 
+use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Models\User;
-use App\Services\SettingsService;
 
 /**
  * @codeCoverageIgnore
  */
-final class FakeSpotPlayerService
+final class FakeSpotPlayerService implements SpotPlayerClientContract
 {
-    public function __construct(private readonly SettingsService $settings) {}
+    public function isEnabled(): bool
+    {
+        return true;
+    }
+
+    public function assertConfigured(): void {}
+
+    public function isReady(): bool
+    {
+        return true;
+    }
 
     /**
      * @return array<string, mixed>
      */
     public function issueLicense(string $spotId, User $user): array
     {
-        $licenseKey = hash('sha256', $spotId.$user->id.'demo-secret');
+        $licenseKey = hash('sha256', $spotId.'|'.$user->uuid.'|demo-secret');
 
         return [
             'license_key' => '0001'.$licenseKey,

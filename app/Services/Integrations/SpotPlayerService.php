@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Integrations;
 
+use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
-final class SpotPlayerService extends AbstractIntegrationService
+final class SpotPlayerService extends AbstractIntegrationService implements SpotPlayerClientContract
 {
     /**
      * @return array<string, mixed>
