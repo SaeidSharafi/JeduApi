@@ -13,6 +13,7 @@ use App\Exceptions\RefundGatewayException;
 use App\Exceptions\RefundValidationException;
 use App\Http\Middleware\AdminAuditMiddleware;
 use App\Http\Middleware\AuthenticateTokenFromCookie;
+use App\Http\Middleware\E2eResetGuard;
 use App\Http\Middleware\EnsureAdminNumericIdsMiddleware;
 use App\Http\Middleware\ProfileCheckMiddleware;
 use App\Http\Middleware\ThrottlePasswordLogin;
@@ -106,6 +107,7 @@ return Application::configure(basePath: dirname(__DIR__))
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             EnsureAdminNumericIdsMiddleware::class,
+            E2eResetGuard::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             '/webhooks/github-deployer',

@@ -16,6 +16,12 @@ use App\Services\Fakes\FakeMoodleService;
 use App\Services\Fakes\FakeSkyroomService;
 use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\SettingsService;
+use App\Services\Testing\E2eResetState;
+use Illuminate\Queue\Events\JobExceptionOccurred;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Queue\Events\Looping;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
 use LogicException;
 
@@ -35,6 +41,30 @@ final class E2eServiceProvider extends ServiceProvider
             fn ($app): FakeMoodleService => new FakeMoodleService($app->make(SettingsService::class)),
         );
         $this->app->singleton(ImsClientContract::class, fn (): FakeImsService => new FakeImsService());
+
+        Queue::looping(function (Looping $event): bool {
+            $state = app(E2eResetState::class);
+
+            if ($state->isResetting()) {
+                return false;
+            }
+
+            $state->markWorkerReady(
+                sprintf('%s:%s:%s', gethostname(), getmypid(), $event->queue),
+                30,
+            );
+
+            return true;
+        });
+        Queue::before(function (JobProcessing $event): void {
+            app(E2eResetState::class)->markJobStarted($event->job->getJobId(), 900);
+        });
+        Queue::after(function (JobProcessed $event): void {
+            app(E2eResetState::class)->markJobFinished($event->job->getJobId());
+        });
+        Queue::exceptionOccurred(function (JobExceptionOccurred $event): void {
+            app(E2eResetState::class)->markJobFinished($event->job->getJobId());
+        });
 
         $this->assertCompleteProviderCoverage();
     }

@@ -153,8 +153,13 @@ return [
         'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'options' => [
-            'cluster'    => env('REDIS_CLUSTER', 'redis'),
-            'prefix'     => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'cluster' => env('REDIS_CLUSTER', 'redis'),
+            'prefix'  => env(
+                'REDIS_PREFIX',
+                env('APP_ENV') === 'e2e'
+                    ? Str::slug(env('APP_NAME', 'laravel'), '_').'_e2e_database_'
+                    : Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'
+            ),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 
@@ -164,7 +169,7 @@ return [
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
             'port'     => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_DB', '0'),
+            'database' => env('E2E_REDIS_DB', env('REDIS_DB', env('APP_ENV') === 'e2e' ? '2' : '0')),
         ],
 
         'cache' => [
@@ -173,7 +178,16 @@ return [
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
             'port'     => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_CACHE_DB', '1'),
+            'database' => env('E2E_REDIS_CACHE_DB', env('REDIS_CACHE_DB', env('APP_ENV') === 'e2e' ? '3' : '1')),
+        ],
+
+        'e2e_lock' => [
+            'url'      => env('REDIS_URL'),
+            'host'     => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port'     => env('REDIS_PORT', '6379'),
+            'database' => env('E2E_REDIS_LOCK_DB', '4'),
         ],
 
     ],

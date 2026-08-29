@@ -6,8 +6,9 @@
 
 #### ResetE2eEnvironmentAction (`app/Actions/Testing/ResetE2eEnvironmentAction.php`)
 - **Purpose:** Rebuilds the isolated E2E database and returns fresh bootstrap identities for black-box tests.
-- **Concurrency:** Acquires the distributed `e2e:database-reset` cache lock for five minutes; returns `null` when another reset already owns the lock.
-- **Functionality:** Runs `migrate:fresh`, synchronizes staff/user permissions, clears the default Redis database and Horizon queue state, creates one super-admin staff identity and one complete customer identity, and issues Sanctum tokens for both.
+- **Concurrency:** Acquires the distributed `e2e:database-reset` cache lock for five minutes, marks the E2E application as resetting, drains active jobs, and prevents new HTTP/queue work until cleanup is complete; returns `null` when another reset already owns the lock.
+- **Functionality:** Terminates E2E Horizon workers, flushes the dedicated E2E Redis queue/cache databases, clears the dedicated E2E media disk, runs `migrate:fresh`, synchronizes staff/user permissions, creates one super-admin staff identity and one complete customer identity, issues Sanctum tokens for both, and waits for a worker heartbeat before returning.
+- **Failures:** Cleanup and worker readiness failures are logged with the reset ID and raised as `E2eResetFailedException`; the API exposes only the stable `E2E_RESET_FAILED` code and correlation ID.
 - **Output:** Returns a unique `reset_id`, `readiness: ready`, and each bootstrap identity's ID, email, phone, password, and token.
 
 ### Admin Actions (`app/Actions/Admin/`)

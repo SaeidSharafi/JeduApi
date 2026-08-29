@@ -12,7 +12,7 @@ return [
     'use'    => 'default',
     'prefix' => env(
         'HORIZON_PREFIX',
-        Str::slug(env('APP_NAME', 'laravel'), '_').'_horizon:'
+        Str::slug(env('APP_NAME', 'laravel'), '_').(env('APP_ENV') === 'e2e' ? '_e2e_horizon:' : '_horizon:')
     ),
     'middleware' => ['web', HorizonBasicAuth::class],
     'auth'       => [
@@ -43,7 +43,7 @@ return [
     'defaults'         => [
         'supervisor-1' => [
             'connection'          => 'redis',
-            'queue'               => ['default'],
+            'queue'               => [env('E2E_QUEUE', env('REDIS_QUEUE', env('APP_ENV') === 'e2e' ? 'e2e' : 'default'))],
             'balance'             => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses'        => 1,

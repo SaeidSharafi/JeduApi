@@ -68,7 +68,7 @@ return [
         'redis' => [
             'driver'       => 'redis',
             'connection'   => env('REDIS_QUEUE_CONNECTION', 'default'),
-            'queue'        => env('REDIS_QUEUE', 'default'),
+            'queue'        => env('E2E_QUEUE', env('REDIS_QUEUE', env('APP_ENV') === 'e2e' ? 'e2e' : 'default')),
             'retry_after'  => (int) env('REDIS_QUEUE_RETRY_AFTER', 90),
             'block_for'    => null,
             'after_commit' => true,

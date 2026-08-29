@@ -79,6 +79,12 @@ return [
             'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
         ],
 
+        'e2e' => [
+            'driver'          => 'redis',
+            'connection'      => 'cache',
+            'lock_connection' => 'e2e_lock',
+        ],
+
         'dynamodb' => [
             'driver'   => 'dynamodb',
             'key'      => env('AWS_ACCESS_KEY_ID'),
@@ -105,7 +111,12 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+    'prefix' => env(
+        'CACHE_PREFIX',
+        env('APP_ENV') === 'e2e'
+            ? Str::slug(env('APP_NAME', 'laravel'), '_').'_e2e_cache_'
+            : Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'
+    ),
 
     'keys' => [
         'all_permissions' => 'all_permissions',

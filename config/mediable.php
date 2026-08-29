@@ -25,7 +25,7 @@ return [
     /*
      * Filesystem disk to use if none is specified
      */
-    'default_disk' => 'public',
+    'default_disk' => env('MEDIABLE_DEFAULT_DISK', env('APP_ENV') === 'e2e' ? 'e2e' : 'public'),
 
     /*
      * Filesystems that can be used for media storage
@@ -35,6 +35,7 @@ return [
     'allowed_disks' => [
         'public',
         'local',
+        'e2e',
     ],
 
     /*

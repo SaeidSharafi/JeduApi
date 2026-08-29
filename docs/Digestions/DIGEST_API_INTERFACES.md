@@ -5,7 +5,7 @@
 **Authentication:** Destructive control requests require the `X-E2E-Key` header matching `E2E_CONTROL_KEY` using constant-time comparison.
 
 ### TestingDatabaseResetController (`app/Http/Controllers/Testing/TestingDatabaseResetController.php`)
-- `reset()`: **Route:** `POST /api/v1/e2e/reset` - Requires `X-E2E-Key`, takes a distributed reset lock, rebuilds the isolated E2E database, synchronizes staff/user permissions, and returns a standard success envelope containing a unique `reset_id`, `readiness: ready`, and fresh bootstrap staff/customer credentials, passwords, and Sanctum tokens. Requests outside E2E or with a missing/invalid control key are rejected without touching data.
+- `reset()`: **Route:** `POST /api/v1/e2e/reset` - Requires `X-E2E-Key`, takes a distributed reset lock, blocks application work, drains and terminates E2E workers, flushes the dedicated E2E Redis queue/cache databases, clears the dedicated E2E media disk, rebuilds the isolated E2E database, synchronizes staff/user permissions, and waits for worker readiness. The standard success envelope contains a unique `reset_id`, `readiness: ready`, and fresh bootstrap staff/customer credentials, passwords, and Sanctum tokens. Requests outside E2E or with a missing/invalid control key are rejected without touching data; infrastructure failures return `E2E_RESET_FAILED` with a correlation ID.
 
 ## Admin API Interface (`/api/v1/admin/*`)
 **Authentication:** `auth:staff` guard with `admin.audit` middleware  

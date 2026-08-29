@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Testing\ResetE2eEnvironmentAction;
+use App\Exceptions\Testing\E2eResetFailedException;
 use App\Http\Controllers\Testing\TestingDatabaseResetController;
 use Illuminate\Http\Request;
 
@@ -73,4 +74,25 @@ it('returns conflict when another reset owns the distributed lock', function ():
 
     expect($response->getStatusCode())->toBe(409)
         ->and($response->getData(true))->toHaveKeys(['message', 'errors', 'metadata']);
+});
+
+it('returns a stable correlated error when reset infrastructure fails', function (): void {
+    app()->detectEnvironment(fn (): string => 'e2e');
+    config(['e2e.control_key' => 'expected-secret']);
+
+    $action = $this->mock(ResetE2eEnvironmentAction::class);
+    $action->shouldReceive('handle')->once()->andThrow(
+        new E2eResetFailedException('reset-1', 'internal failure'),
+    );
+
+    $request  = Request::create('/api/v1/e2e/reset', 'POST', server: ['HTTP_X_E2E_KEY' => 'expected-secret']);
+    $response = (new TestingDatabaseResetController())->reset($request, $action)->toResponse($request);
+
+    expect($response->getStatusCode())->toBe(503)
+        ->and($response->getData(true))->toMatchArray([
+            'metadata' => [
+                'error_code' => 'E2E_RESET_FAILED',
+                'reset_id'   => 'reset-1',
+            ],
+        ]);
 });
