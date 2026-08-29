@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Intervention\Image\Image;
+use LogicException;
 use Plank\Mediable\Facades\ImageManipulator;
 use Plank\Mediable\ImageManipulation;
 use Plank\Mediable\Media;
@@ -30,12 +31,14 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->failIfE2EConfigurationIsEnabledInProduction();
+
         if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
         }
 
-        if (! $this->app->environment('production') && config('app.use_fake_providers')) {
+        if ($this->app->environment('e2e')) {
             $this->app->register(DemoServiceProvider::class);
         }
 
@@ -116,5 +119,25 @@ final class AppServiceProvider extends ServiceProvider
                 ->optimize()->outputWebpFormat(),
         );
         // @codeCoverageIgnoreEnd
+    }
+
+    private function failIfE2EConfigurationIsEnabledInProduction(): void
+    {
+        if (! $this->app->environment('production')) {
+            return;
+        }
+
+        $enabledControls = array_filter([
+            'E2E_CONTROL_KEY'           => config('e2e.control_key'),
+            'APP_USE_FAKE_PROVIDERS'    => config('app.use_fake_providers'),
+            'PAYMENT_SIMULATOR_ENABLED' => config('payments.simulator.enabled'),
+        ], static fn (mixed $value): bool => $value !== null && $value !== false && $value !== '');
+
+        if ($enabledControls !== []) {
+            throw new LogicException(sprintf(
+                'E2E-only configuration is not allowed in production: %s.',
+                implode(', ', array_keys($enabledControls)),
+            ));
+        }
     }
 }

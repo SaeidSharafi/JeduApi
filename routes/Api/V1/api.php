@@ -8,6 +8,6 @@ Illuminate\Support\Facades\Route::webhooks('webhooks/github-deployer', 'github-d
 require __DIR__.'/auth.php';
 require __DIR__.'/customer.php';
 
-if (app()->environment('testing', 'local')) {
-    Route::post('/testing/reset-db', [TestingDatabaseResetController::class, 'reset']);
+if (app()->environment('e2e')) {
+    Route::post('/e2e/reset', [TestingDatabaseResetController::class, 'reset']);
 }

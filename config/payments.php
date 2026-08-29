@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 return [
+    'simulator' => [
+        'enabled' => env('PAYMENT_SIMULATOR_ENABLED', false),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Payment Gateway Configuration

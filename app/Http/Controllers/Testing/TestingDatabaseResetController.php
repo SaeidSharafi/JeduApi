@@ -8,6 +8,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Redis;
@@ -16,9 +17,15 @@ use Throwable;
 
 final class TestingDatabaseResetController extends Controller
 {
-    public function reset(): ApiResponseInterface
+    public function reset(Request $request): ApiResponseInterface
     {
-        abort_unless(app()->environment('testing', 'local'), 403, 'Unauthorized environment.');
+        abort_unless(
+            app()->environment('e2e')
+            && (string) config('e2e.control_key') !== ''
+            && hash_equals((string) config('e2e.control_key'), (string) $request->header('X-E2E-Key')),
+            403,
+            'Unauthorized environment.',
+        );
 
         Artisan::call('migrate:fresh', ['--force' => true]);
 
