@@ -11,6 +11,12 @@
 - **Failures:** Cleanup and worker readiness failures are logged with the reset ID and raised as `E2eResetFailedException`; the API exposes only the stable `E2E_RESET_FAILED` code and correlation ID.
 - **Output:** Returns a unique `reset_id`, `readiness: ready`, and each bootstrap identity's ID, email, phone, password, and token.
 
+#### SimulatorPaymentProcessor (`app/Services/Payment/SimulatorPaymentProcessor.php`)
+- **Purpose:** Provides the browser-facing gateway boundary used by black-box E2E payment scenarios.
+- **Availability:** Registered and advertised only when `APP_ENV=e2e` and `PAYMENT_SIMULATOR_ENABLED=true`; direct production use fails closed.
+- **Initiation:** Creates one `PaymentTransaction`, sends the exact order/payment references, amount, callback URL, optional `delay_seconds` in the range 0–15, and an HMAC-SHA256 signature to the standalone simulator.
+- **Verification:** Validates the signed callback's references, amount, and `success`/`failure` outcome before making a terminal transition. Terminal transactions and repeated callbacks are idempotent; failed payments remain retryable and retries create a new `Payment` for the same `Order`.
+
 ### Admin Actions (`app/Actions/Admin/`)
 
 #### Utility Actions

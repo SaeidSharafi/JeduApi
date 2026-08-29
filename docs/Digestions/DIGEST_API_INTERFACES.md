@@ -7,6 +7,11 @@
 ### TestingDatabaseResetController (`app/Http/Controllers/Testing/TestingDatabaseResetController.php`)
 - `reset()`: **Route:** `POST /api/v1/e2e/reset` - Requires `X-E2E-Key`, takes a distributed reset lock, blocks application work, drains and terminates E2E workers, flushes the dedicated E2E Redis queue/cache databases, clears the dedicated E2E media disk, rebuilds the isolated E2E database, synchronizes staff/user permissions, and waits for worker readiness. The standard success envelope contains a unique `reset_id`, `readiness: ready`, and fresh bootstrap staff/customer credentials, passwords, and Sanctum tokens. Requests outside E2E or with a missing/invalid control key are rejected without touching data; infrastructure failures return `E2E_RESET_FAILED` with a correlation ID.
 
+### Simulator payment method
+- **Availability:** `simulator` is included by `GET /api/v1/shop/payment/gateways` and accepted by checkout/retry only in E2E when `PAYMENT_SIMULATOR_ENABLED=true`.
+- **Initiation contract:** The backend sends `order_reference`, `payment_reference`, `amount`, `callback_url`, optional bounded `delay_seconds`, and an HMAC signature to the standalone gateway simulator, which returns a browser redirect URL.
+- **Callback contract:** The normal `POST|GET /api/v1/shop/payment/gateway/callback/{payment:uuid}` validates the simulator signature and exact Order, Payment, amount, and terminal outcome. Failure leaves the Order retryable; a retry creates another Payment for the same Order.
+
 ## Admin API Interface (`/api/v1/admin/*`)
 **Authentication:** `auth:staff` guard with `admin.audit` middleware  
 **Response Pattern:** All responses use `spatie/laravel-data` DTOs via `ResponseService`.

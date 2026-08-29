@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\Payment;
 
+use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Payment;
 use App\Services\Payment\PaymentProcessorFactory;
@@ -32,6 +33,10 @@ final readonly class VerifyPaymentAction
             }
 
             if ($payment->status !== PaymentStatusEnum::PENDING) {
+                if ($payment->method === PaymentMethodEnum::SIMULATOR && $payment->status === PaymentStatusEnum::FAILED) {
+                    return $payment;
+                }
+
                 throw ValidationException::withMessages([
                     'payment' => __('messages.checkout.payment_not_pending', ['uuid' => $payment->uuid]),
                 ]);

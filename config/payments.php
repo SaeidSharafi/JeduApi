@@ -4,7 +4,15 @@ declare(strict_types=1);
 
 return [
     'simulator' => [
-        'enabled' => env('PAYMENT_SIMULATOR_ENABLED', false),
+        'enabled'           => env('PAYMENT_SIMULATOR_ENABLED', false),
+        'base_url'          => env('PAYMENT_SIMULATOR_URL', 'http://payment-simulator'),
+        'secret'            => env('PAYMENT_SIMULATOR_SECRET'),
+        'initiate_path'     => env('PAYMENT_SIMULATOR_INITIATE_PATH', '/api/v1/attempts'),
+        'timeout'           => (int) env('PAYMENT_SIMULATOR_TIMEOUT', 10),
+        'max_delay_seconds' => 15,
+        'label'             => 'E2E Payment Simulator',
+        'description'       => 'Browser-facing payment simulator for E2E tests.',
+        'icon'              => null,
     ],
 
     /*

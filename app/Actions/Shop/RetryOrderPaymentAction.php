@@ -49,6 +49,13 @@ final readonly class RetryOrderPaymentAction
         PaymentMethodEnum $paymentMethod,
         ?int $amountToPay = null
     ): PaymentProcessResultData {
+        if ($paymentMethod === PaymentMethodEnum::SIMULATOR
+            && (! app()->environment('e2e') || ! config('payments.simulator.enabled'))) {
+            throw ValidationException::withMessages([
+                'payment_method' => __('messages.payment_method_unavailable'),
+            ]);
+        }
+
         $payment = DB::transaction(function () use ($order, $paymentMethod, $amountToPay): Payment {
 
             $this->validateOrderEligibility($order);

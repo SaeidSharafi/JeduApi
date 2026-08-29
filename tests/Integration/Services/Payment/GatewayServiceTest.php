@@ -6,6 +6,7 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Setting;
 use App\Services\Payment\GatewayService;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -52,6 +53,23 @@ describe('GatewayService', function (): void {
     beforeEach(function (): void {
         // SettingsService caches all settings forever — keep tests isolated.
         Cache::flush();
+    });
+
+    afterEach(function (): void {
+        config(['payments.simulator.enabled' => false]);
+    });
+
+    it('advertises the simulator only in E2E', function (): void {
+        $service = new GatewayService(app(SettingsService::class), false);
+
+        expect($service->getShopActiveGateways())->not->toContain(PaymentMethodEnum::SIMULATOR->value);
+
+        config(['payments.simulator.enabled' => true]);
+        $service = new GatewayService(app(SettingsService::class), true);
+
+        expect($service->getShopActiveGateways())->toContain(PaymentMethodEnum::SIMULATOR->value);
+        expect(collect($service->getShopActiveGatewaysDetails())->firstWhere('key', 'simulator'))
+            ->toMatchArray(['enabled' => true, 'shop_enabled' => true]);
     });
 
     it('returns every gateway that has a setting key when no settings exist', function (): void {

@@ -20,6 +20,7 @@ enum PaymentMethodEnum: string
     case WALLET     = 'wallet';
     case NO_PAYMENT = 'no_payment';
     case DIGIPAY    = 'digipay';
+    case SIMULATOR  = 'simulator';
 
     public function settingDataClass(): ?string
     {

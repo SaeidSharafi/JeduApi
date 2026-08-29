@@ -12,6 +12,7 @@ final readonly class GatewayService
 {
     public function __construct(
         private SettingsService $settings,
+        private ?bool $simulatorAvailable = null,
     ) {}
 
     /**
@@ -20,6 +21,10 @@ final readonly class GatewayService
     public function getShopActiveGatewaysDetails(): array
     {
         $gateways = [];
+        if ($this->simulatorIsAvailable()) {
+            $gateways[] = $this->simulatorGateway()->toArray();
+        }
+
         foreach (PaymentMethodEnum::cases() as $method) {
             if ($method->settingKey() === null) {
                 continue;
@@ -46,6 +51,10 @@ final readonly class GatewayService
     public function getShopActiveGateways(): array
     {
         $gateways = [];
+        if ($this->simulatorIsAvailable()) {
+            $gateways[] = PaymentMethodEnum::SIMULATOR->value;
+        }
+
         foreach (PaymentMethodEnum::cases() as $method) {
             if ($method->settingKey() === null) {
                 continue;
@@ -61,5 +70,23 @@ final readonly class GatewayService
         }
 
         return $gateways;
+    }
+
+    private function simulatorIsAvailable(): bool
+    {
+        return ($this->simulatorAvailable ?? app()->environment('e2e'))
+            && (bool) config('payments.simulator.enabled');
+    }
+
+    private function simulatorGateway(): GatewayData
+    {
+        return GatewayData::from([
+            'key'          => PaymentMethodEnum::SIMULATOR->value,
+            'enabled'      => true,
+            'shop_enabled' => true,
+            'label'        => config('payments.simulator.label'),
+            'description'  => config('payments.simulator.description'),
+            'icon_url'     => config('payments.simulator.icon'),
+        ]);
     }
 }

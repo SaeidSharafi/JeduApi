@@ -14,6 +14,7 @@ use App\Services\Payment\Digipay\DigipayConfigRepository;
 use App\Services\Payment\DigipayPaymentProcessor;
 use App\Services\Payment\MellatGatewayPaymentProcessor;
 use App\Services\Payment\PaymentProcessorFactory;
+use App\Services\Payment\SimulatorPaymentProcessor;
 use App\Services\Payment\WalletPaymentProcessor;
 use Illuminate\Support\ServiceProvider;
 
@@ -38,12 +39,18 @@ final class PaymentServiceProvider extends ServiceProvider
         $this->app->singleton(DigipayClient::class);
         $this->app->singleton(DigipayAdminService::class);
         $this->app->singleton(DigipayPaymentProcessor::class);
+        if ($this->app->environment('e2e') && config('payments.simulator.enabled')) {
+            $this->app->singleton(SimulatorPaymentProcessor::class);
+        }
 
         $this->app->tag([
             WalletPaymentProcessor::class,
             BankTransferPaymentProcessor::class,
             MellatGatewayPaymentProcessor::class,
             DigipayPaymentProcessor::class,
+            ...($this->app->environment('e2e') && config('payments.simulator.enabled')
+                ? [SimulatorPaymentProcessor::class]
+                : []),
         ], self::PAYMENT_PROCESSOR_TAG);
 
         $this->app->singleton(function ($app): PaymentProcessorFactory {
