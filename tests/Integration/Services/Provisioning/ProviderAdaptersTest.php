@@ -76,6 +76,16 @@ it('rejects a Moodle Quiz provider that is not in the canonical plan', function 
         ->toThrow(UnrecoverableProvisioningException::class, 'not applicable');
 });
 
+it('rejects a Moodle Quiz provider when its course reference is missing', function (): void {
+    $enrollment = adapterEnrollment('moodle_quiz', []);
+    $service    = $this->mock(MoodleService::class);
+    $service->shouldReceive('isEnabled')->andReturnTrue();
+    $service->shouldReceive('assertConfigured');
+
+    expect(fn () => (new MoodleQuizProvisioningProvider($service))->provision($enrollment))
+        ->toThrow(UnrecoverableProvisioningException::class, 'course id');
+});
+
 it('provisions BBB from a staff-created room without creating it', function (): void {
     $enrollment = adapterEnrollment('bbb', ['meeting_id' => 'NILI-ROOM-1']);
     $service    = $this->mock(BbbService::class);
