@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Provisioning\Providers;
 
+use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\ProvisioningProviderEnum;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
-use App\Services\Integrations\SkyroomService;
 
 final readonly class SkyroomProvisioningProvider implements ProvisioningProvider
 {
-    public function __construct(private SkyroomService $skyroom) {}
+    public function __construct(private SkyroomClientContract $skyroom) {}
 
     public function provider(): ProvisioningProviderEnum
     {

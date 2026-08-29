@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Contracts\Integrations\BbbClientContract;
+use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
@@ -12,7 +13,6 @@ use App\Models\Enrollment;
 use App\Models\ProductDeliveryOption;
 use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
-use App\Services\Integrations\SkyroomService;
 use App\Services\Provisioning\Providers\BbbProvisioningProvider;
 use App\Services\Provisioning\Providers\ImsProvisioningProvider;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
@@ -131,7 +131,7 @@ it('rejects a BBB provider when its meeting reference is missing', function (): 
 
 it('provisions Skyroom into a staff-created room', function (): void {
     $enrollment = adapterEnrollment('skyroom', ['room_id' => 10]);
-    $service    = $this->mock(SkyroomService::class);
+    $service    = $this->mock(SkyroomClientContract::class);
     $service->shouldReceive('isEnabled')->andReturnTrue();
     $service->shouldReceive('assertConfigured');
     $service->shouldReceive('findOrCreateUser')->once()->andReturn(['skyroom_user_id' => 42]);
@@ -143,7 +143,7 @@ it('provisions Skyroom into a staff-created room', function (): void {
 
 it('rejects a missing staff-created room as manual action', function (): void {
     $enrollment = adapterEnrollment('skyroom', ['room_id' => null]);
-    $service    = $this->mock(SkyroomService::class);
+    $service    = $this->mock(SkyroomClientContract::class);
     $service->shouldReceive('isEnabled')->andReturnTrue();
     $service->shouldReceive('assertConfigured');
 

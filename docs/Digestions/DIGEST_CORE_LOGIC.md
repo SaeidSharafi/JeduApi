@@ -577,6 +577,10 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `handleHttpErrors(Response $response, string $endpoint): void` — standardized error handler for JSON REST integrations (throws `RecoverableProvisioningException` for 5xx, `UnrecoverableProvisioningException` for 4xx)
 - **Subclasses:** ImsService, MoodleService, SpotPlayerService, BbbService, SkyroomService all extend this base
 
+#### SkyroomClientContract (`app/Contracts/Integrations/SkyroomClientContract.php`)
+- **Purpose:** Narrow boundary shared by the real Skyroom API client and the deterministic E2E simulated client.
+- **Consumers:** Skyroom provisioning and Jedu-side join URL generation depend on this contract.
+
 #### SkyroomService (`app/Services/Integrations/SkyroomService.php`)
 - **Purpose:** Skyroom video conferencing API client for meeting management and user provisioning
 - **Methods:**

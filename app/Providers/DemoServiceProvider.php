@@ -7,10 +7,12 @@ namespace App\Providers;
 use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Services\Fakes\FakeBbbService;
 use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
+use App\Services\Fakes\FakeSkyroomService;
 use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\SettingsService;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +25,7 @@ final class DemoServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SpotPlayerClientContract::class, FakeSpotPlayerService::class);
+        $this->app->singleton(SkyroomClientContract::class, FakeSkyroomService::class);
 
         $this->app->singleton(
             BbbClientContract::class,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Integrations;
 
+use App\Contracts\Integrations\SkyroomClientContract;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
@@ -12,7 +13,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
-final class SkyroomService extends AbstractIntegrationService
+final class SkyroomService extends AbstractIntegrationService implements SkyroomClientContract
 {
     /**
      * @return array<string, mixed>

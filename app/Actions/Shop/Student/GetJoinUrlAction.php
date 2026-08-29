@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Actions\Shop\Student;
 
 use App\Contracts\Integrations\BbbClientContract;
+use App\Contracts\Integrations\SkyroomClientContract;
 use App\Data\Shop\Student\JoinUrlData;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Exceptions\Integrations\ResourceNotProvisionedException;
 use App\Models\Enrollment;
-use App\Services\Integrations\SkyroomService;
 use InvalidArgumentException;
 
 final readonly class GetJoinUrlAction
 {
     public function __construct(
         private BbbClientContract $bbbService,
-        private SkyroomService $skyroomService,
+        private SkyroomClientContract $skyroomService,
     ) {}
 
     public function handle(Enrollment $enrollment): JoinUrlData

@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use App\Contracts\Integrations\BbbClientContract;
+use App\Contracts\Integrations\SkyroomClientContract;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Models\Enrollment;
-use App\Services\Integrations\SkyroomService;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
@@ -117,7 +117,7 @@ it('returns join url for Skyroom live session', function (): void {
 
     $joinUrl = 'https://skyroom.example.com/login?room=456';
 
-    $this->mock(SkyroomService::class, function ($mock) use ($joinUrl): void {
+    $this->mock(SkyroomClientContract::class, function ($mock) use ($joinUrl): void {
         $mock->shouldReceive('createLoginUrl')
             ->once()
             ->with(456, 'user-'.$this->user->id, Mockery::any())
