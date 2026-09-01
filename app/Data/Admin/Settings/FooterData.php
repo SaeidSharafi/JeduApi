@@ -32,7 +32,7 @@ final class FooterData extends Data
             'caption'               => 'شریک شما در آموزش مدرن',
             'support_email_address' => 'support@jedu.ir',
             'addresses'             => ContactInfoData::getDefaults()['addresses'],
-            'categories'            => Category::query()->get(['name', 'slug'])->toArray(),
+            'categories'            => Category::query()->pluck('id')->all(),
             'social_media_links'    => ContactInfoData::getDefaults()['social_media_links'],
             'certifications'        => [
                 ['name' => 'اینماد', 'image' => 'https://jedu.ir/enamd.png', 'html' => ''],

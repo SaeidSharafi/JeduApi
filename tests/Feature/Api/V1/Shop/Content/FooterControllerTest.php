@@ -31,7 +31,7 @@ describe('FooterController', function (): void {
                         'phone'        => '۰۲۱-۱۲۳۴۵۶۷۸',
                     ],
                 ],
-                'categories'         => Category::query()->orderBy('name')->get('id')->toArray(),
+                'categories'         => Category::query()->orderBy('name')->pluck('id')->toArray(),
                 'social_media_links' => [
                     [
                         'platform' => 'instagram',
