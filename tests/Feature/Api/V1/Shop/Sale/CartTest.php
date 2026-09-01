@@ -6,6 +6,7 @@ use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
 use App\Models\ProductDeliveryOption;
+use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Tests\Support\Traits\AuthTestTrait;
@@ -20,6 +21,27 @@ uses(AuthTestTrait::class);
 beforeEach(function (): void {
     $this->deliveryOption = ProductDeliveryOption::factory()->create([
         'price' => 100000, 'uuid' => Str::uuid()->toString(),
+    ]);
+});
+
+test('delivery option endpoint exposes pricing and prepayment details', function (): void {
+    $this->deliveryOption->update([
+        'price'                     => 100000,
+        'prepayment_amount'         => 25000,
+        'is_prepayment_available'   => true,
+        'is_featured'               => true,
+        'featured_price'            => 90000,
+        'featured_price_start_date' => now()->subDay(),
+        'featured_price_end_date'   => now()->addDay(),
+    ]);
+
+    $response = getJson('/api/v1/shop/product-delivery-option/'.$this->deliveryOption->uuid);
+
+    $response->assertOk()->assertJsonPath('data.price_data.current_price', 90000);
+    expect($response->json('data'))->toMatchArray([
+        'price'                   => 100000,
+        'prepayment_amount'       => 25000,
+        'is_prepayment_available' => true,
     ]);
 });
 
@@ -143,6 +165,38 @@ describe('Cart Discount Integration', function (): void {
             ->and($data['discount_amount'])->toBe(0)
             ->and($data['grand_total'])->toBe(100000);
     });
+
+    test('cart item exposes current price and product discount details', function (): void {
+        $this->deliveryOption->update([
+            'prepayment_amount'       => null,
+            'is_prepayment_available' => false,
+        ]);
+        $promotion = DiscountPromotion::factory()->create();
+        ProductDeliveryOptionDiscountPrice::factory()->create([
+            'product_delivery_option_id' => $this->deliveryOption->id,
+            'discount_promotion_id'      => $promotion->id,
+            'discounted_price'           => 80000,
+        ]);
+
+        $response = postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+            'quantity'                     => 1,
+        ]);
+
+        $response->assertOk()->assertJsonPath('data.items.0.current_price', 80000);
+
+        expect($response->json('data.items.0'))->toMatchArray([
+            'original_price'          => 100000,
+            'product_discount_amount' => 20000,
+            'cart_discount_amount'    => 0,
+            'total_discount_amount'   => 20000,
+            'line_total'              => 80000,
+            'discount_type'           => 'promotion',
+            'discount_percentage'     => 20.0,
+            'prepayment_amount'       => null,
+            'is_prepayment_available' => false,
+        ]);
+    });
 });
 
 describe('Paymetn Type Variations', function (): void {
@@ -175,6 +229,13 @@ describe('Paymetn Type Variations', function (): void {
         ]);
 
         $responsePre->assertOk();
+        expect($responsePre->json('data.items.0'))->toMatchArray([
+            'current_price'           => 50000,
+            'original_price'          => 50000,
+            'line_total'              => 10000,
+            'prepayment_amount'       => 10000,
+            'is_prepayment_available' => true,
+        ]);
         assertDatabaseHas('cart_items', [
             'payment_type' => 'pre_payment',
         ]);

@@ -39,12 +39,14 @@
           "name": "Introduction to Python - Online Course",
           "sku": "PYT-ONLINE-001",
           "price": 500000,
+          "current_price": 500000,
           "total": 450000,
           "payment_type": {
             "value": "full_payment",
             "label": "enums.OrderItemPaymentTypeEnum.full_payment"
           },
           "prepayment_amount": 0,
+          "is_prepayment_available": false,
           "qty_refunded": 0,
           "total_refunded": 0,
           "status": {
@@ -61,12 +63,14 @@
           "name": "Advanced Laravel - Hybrid Course",
           "sku": "LRV-HYB-002",
           "price": 500000,
+          "current_price": 500000,
           "total": 450000,
           "payment_type": {
             "value": "full_payment",
             "label": "enums.OrderItemPaymentTypeEnum.full_payment"
           },
           "prepayment_amount": 0,
+          "is_prepayment_available": false,
           "qty_refunded": 0,
           "total_refunded": 0,
           "status": {

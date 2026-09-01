@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
 use App\Http\Controllers\Controller;
 use App\Models\ProductDeliveryOption;
@@ -19,10 +20,12 @@ final class ProductDeliveryOptionController extends Controller
      *
      * @responseFile 200 resources/responses/shop/products/delivery_option.json
      */
-    public function __invoke(ProductDeliveryOption $productDeliveryOption, ProductPriceService $priceService): ProductDeliveryOptionCardData
+    public function __invoke(ProductDeliveryOption $productDeliveryOption, ProductPriceService $priceService): ApiResponseInterface
     {
         $productDeliveryOption->load('product.productable.media');
 
-        return ProductDeliveryOptionCardData::fromModel($productDeliveryOption);
+        $priceData = $priceService->getPriceDataForOption($productDeliveryOption);
+
+        return apiResponse()->success(ProductDeliveryOptionCardData::fromModel($productDeliveryOption, $priceData));
     }
 }

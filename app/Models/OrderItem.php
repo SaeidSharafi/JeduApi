@@ -119,6 +119,30 @@ final class OrderItem extends Model
     }
 
     /**
+     * Accessor to get the effective full-payment unit price captured at checkout.
+     *
+     * @return Attribute<int, never>
+     */
+    protected function currentPrice(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): int => $this->price - ($this->pricing_metadata['discount_amount'] ?? 0),
+        );
+    }
+
+    /**
+     * Accessor to expose whether the delivery option supports prepayment.
+     *
+     * @return Attribute<bool, never>
+     */
+    protected function isPrepaymentAvailable(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): bool => (bool) $this->productDeliveryOption?->is_prepayment_available,
+        );
+    }
+
+    /**
      * Accessor to get total discount (product + cart discounts combined).
      *
      * @return Attribute<int, never>

@@ -9,7 +9,17 @@
         "quantity": 1,
         "payment_type": "full_payment",
         "product_name": "کارگاه کارگردانی سینما - زمستان ۱۴۰۳",
-        "sku": "offline_service_1003"
+        "sku": "offline_service_1003",
+        "current_price": 1800000,
+        "original_price": 1800000,
+        "product_discount_amount": 0,
+        "cart_discount_amount": 0,
+        "total_discount_amount": 0,
+        "line_total": 1800000,
+        "prepayment_amount": null,
+        "is_prepayment_available": false,
+        "discount_type": null,
+        "discount_percentage": null
       }
     ],
     "total_items_count": 1,

@@ -95,7 +95,17 @@ describe('Checkout Success', function (): void {
                         'subtotal',
                         'discount_amount',
                         'grand_total',
-                        'items',
+                        'items' => [
+                            '*' => [
+                                'price',
+                                'current_price',
+                                'original_price',
+                                'product_discount_amount',
+                                'total_discount_amount',
+                                'prepayment_amount',
+                                'is_prepayment_available',
+                            ],
+                        ],
                         'payments' => [
                             '*' => [
                                 'id',

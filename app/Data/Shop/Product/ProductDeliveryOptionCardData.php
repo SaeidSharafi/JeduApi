@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Product;
 
+use App\Data\Shop\ProductDeliveryOptionPriceData;
 use App\Enums\MediaTagEnum;
 use App\Models\ProductDeliveryOption;
 use Spatie\LaravelData\Data;
@@ -19,6 +20,9 @@ final class ProductDeliveryOptionCardData extends Data
         public ?string $vendor,
         public ?string $term,
         public int $price,
+        public ?int $prepayment_amount = null,
+        public bool $is_prepayment_available = false,
+        public ?ProductDeliveryOptionPriceData $price_data = null,
         public array $fulfillment_type = [],
         public array $delivery_method = [],
         public ?string $status = null,
@@ -27,8 +31,10 @@ final class ProductDeliveryOptionCardData extends Data
 
     ) {}
 
-    public static function fromModel(ProductDeliveryOption $deliveryOption): self
-    {
+    public static function fromModel(
+        ProductDeliveryOption $deliveryOption,
+        ?ProductDeliveryOptionPriceData $priceData = null,
+    ): self {
         $product = $deliveryOption->product;
         $media   = $product->productable->getAllMedia();
         $cover   = self::getCoverMedia($media);
@@ -42,6 +48,9 @@ final class ProductDeliveryOptionCardData extends Data
             vendor: $product->vendor?->name,
             term: $product->term?->name,
             price: $deliveryOption->price,
+            prepayment_amount: $deliveryOption->is_prepayment_available ? $deliveryOption->prepayment_amount : null,
+            is_prepayment_available: $deliveryOption->is_prepayment_available,
+            price_data: $priceData,
             fulfillment_type: [
                 'value' => $deliveryOption->fulfillment_type->value,
                 'label' => $deliveryOption->fulfillment_type->translate(),

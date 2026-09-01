@@ -23,6 +23,7 @@ final class OrderItemData extends Data
         public string $name,
         public string $sku,
         public int $price,
+        public int $current_price,
         public int $total,
         public int $original_price,
         public int $product_discount_amount,
@@ -30,6 +31,7 @@ final class OrderItemData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public OrderItemPaymentTypeEnum $payment_type,
         public ?int $prepayment_amount,
+        public bool $is_prepayment_available,
         public ?int $qty_refunded,
         public ?int $total_refunded,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]

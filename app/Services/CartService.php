@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\CartIdentifier;
+use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Shop\Cart\AddCartItemData;
 use App\Data\Shop\Cart\ApplyCouponData;
 use App\Data\Shop\Cart\CartData;
+use App\Data\Shop\Cart\CartItemData;
 use App\Data\Shop\Cart\UpdateCartItemData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
@@ -25,6 +27,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Spatie\LaravelData\DataCollection;
 
 final readonly class CartService
 {
@@ -32,6 +35,7 @@ final readonly class CartService
         private CartIdentifier $identifier,
         private OrderCalculationService $orderCalculationService,
         private PromotionService $promotionService,
+        private ProductPriceService $productPriceService,
     ) {}
 
     public function findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart
@@ -364,7 +368,7 @@ final readonly class CartService
     {
         // If cart is empty, return with zero totals
         if ($cart->items->isEmpty()) {
-            return CartData::fromModel($cart, 0, 0, 0);
+            return CartData::fromModel($cart, 0, 0, 0, CartItemData::collect([], DataCollection::class));
         }
 
         // Get the user ID - for guest carts, we'll use a temporary user concept
@@ -391,7 +395,26 @@ final readonly class CartService
         $discountAmount = $context->calculateTotalDiscount();
         $grandTotal     = $context->calculateGrandTotal();
 
-        return CartData::fromModel($cart, $subtotal, $discountAmount, $grandTotal);
+        $calculatedItems = $context->items->keyBy(
+            fn (CalculatedOrderItemData $item): int => $item->product_delivery_option->id
+        );
+        $cartItems = $cart->items->map(function (CartItem $cartItem) use ($calculatedItems): CartItemData {
+            $calculatedItem = $calculatedItems->get($cartItem->product_delivery_option_id);
+
+            return CartItemData::fromModel(
+                $cartItem,
+                $calculatedItem,
+                $this->productPriceService->getPriceDataForOption($cartItem->productDeliveryOption),
+            );
+        });
+
+        return CartData::fromModel(
+            $cart,
+            $subtotal,
+            $discountAmount,
+            $grandTotal,
+            CartItemData::collect($cartItems, DataCollection::class),
+        );
     }
 
     private function validateQuantity(
