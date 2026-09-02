@@ -93,28 +93,29 @@ final class PaymentGatewaySettingsController extends Controller
      *
      * <aside class="warning">The request body varies by gateway. All gateways share the common fields below, with additional fields per gateway.</aside>
      *
-     * ### Common fields (all gateways):
-     * - `enabled` (boolean, require): Whether the gateway is active and available for use.
+     * ### Top-level fields (all gateways):
+     * - `enabled` (boolean, required): Whether the gateway is active and available for use.
      * - `shop_enabled` (boolean, required): Whether the gateway is offered to customers at checkout.
      * - `label` (string, required): Display name shown to customers.
      * - `description` (string, optional): Description shown at checkout.
      * - `icon` (integer, optional): Media ID of the gateway icon image.
-     * - `ims_bank_account_number` (string, required): IMS settlement account number. **Encrypted at rest.**
+     * - `ims_bank_account_number` (string, optional): IMS settlement account number. **Encrypted at rest.**
+     * - `config` (object, required for gateways with provider-specific settings): Provider-specific settings. The fields below are nested inside this object.
      *
      * ### Gateway: `mellat`
-     * - `terminal_id` (string, required): Terminal ID provided by Mellat bank.
-     * - `username` (string, required): Mellat merchant username.
-     * - `password` (string, required on first save / nullable on update): Mellat merchant password. **Encrypted at rest.** Omit or send `null` to keep existing.
-     * - `test_mode` (boolean, optional): Enable test/sandbox mode. Default: `false`.
-     * - `test_server_url` (url, optional): Sandbox WSDL endpoint. Recommended when `test_mode` is `true`.
-     * - `test_gateway_url` (url, optional): Sandbox redirect URL. Recommended when `test_mode` is `true`.
+     * - `config`:
+     *   - `terminal_id` (string, required): Terminal ID provided by Mellat bank.
+     *   - `username` (string, required): Mellat merchant username.
+     *   - `password` (string, required on first save / nullable on update): Mellat merchant password. **Encrypted at rest.** Omit or send `null` to keep existing.
+     *   - `test_mode` (boolean, optional): Enable test/sandbox mode. Default: `false`.
      *
      * ### Gateway: `digipay`
-     * - `client_id` (string, required): Digipay OAuth client ID.
-     * - `client_secret` (string, required on first save / nullable on update): Digipay OAuth client secret. **Encrypted at rest.** Omit or send `null` to keep existing.
-     * - `username` (string, required): Mellat merchant username.
-     * - `password` (string, required on first save / nullable on update): Mellat merchant password. **Encrypted at rest.** Omit or send `null` to keep existing.
-     * - `sandbox_mode` (boolean, optional): Enable Digipay UAT/sandbox mode. Default: `false`.
+     * - `config`:
+     *   - `client_id` (string, required): Digipay OAuth client ID.
+     *   - `client_secret` (string, required on first save / nullable on update): Digipay OAuth client secret. **Encrypted at rest.** Omit or send `null` to keep existing.
+     *   - `username` (string, required): Digipay merchant username.
+     *   - `password` (string, required on first save / nullable on update): Digipay merchant password. **Encrypted at rest.** Omit or send `null` to keep existing.
+     *   - `sandbox_mode` (boolean, optional): Enable Digipay UAT/sandbox mode. Default: `false`.
      *
      * ### Gateway: `wallet`
      * No additional fields beyond common fields.
