@@ -1,0 +1,870 @@
+openapi: 3.0.3
+info:
+  title: Vendor Landing Page & Management API
+  description: Proposed API for enabled vendor/department landing pages, their informational content, and vendor-scoped product listings.
+  version: 1.1.0
+
+paths:
+  # ==========================================
+  # PUBLIC SHOP ROUTES
+  # ==========================================
+  /vendors/{slug}:
+    get:
+      summary: Get Vendor Landing Page Data
+      operationId: getVendorLandingPage
+      tags:
+        - Shop / Vendor
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: The vendor slug
+          schema:
+            type: string
+            example: acme-corp
+      responses:
+        '200':
+          description: Vendor landing page details fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/VendorLandingPageData'
+        '404':
+          description: Vendor not found, not public, or does not have a landing page
+
+  /vendors/{slug}/courses:
+    get:
+      summary: Get Vendor Courses (Paginated)
+      operationId: getVendorCourses
+      description: >
+        Returns published and visible course products belonging to the vendor in
+        the path. Vendor scoping is applied by the shop vendor controller.
+      tags:
+        - Shop / Vendor
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: The vendor slug
+          schema:
+            type: string
+            example: acme-corp
+        - name: page
+          in: query
+          required: false
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 12
+        - name: sortBy
+          in: query
+          required: false
+          description: Product listing sort field supported by the shop product listing contract.
+          schema:
+            type: string
+            default: created_at
+        - name: sortOrder
+          in: query
+          required: false
+          description: Product listing sort direction.
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Paginated product cards with hydrated pricing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductCardData'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '404':
+          description: Vendor not found or landing page disabled
+
+  # ==========================================
+  # ADMIN ROUTES
+  # ==========================================
+  /admin/vendors/{vendor}/landing-page:
+    parameters:
+      - name: vendor
+        in: path
+        required: true
+        description: Vendor ID or Slug
+        schema:
+          type: string
+
+    get:
+      summary: Get Admin Vendor Landing Page Settings
+      operationId: getAdminVendorLandingPage
+      tags:
+        - Admin / Vendor Landing Page
+      responses:
+        '200':
+          description: Admin view of vendor landing page data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/VendorLandingPageData'
+
+    put:
+      summary: Update Vendor Landing Page Settings
+      operationId: updateAdminVendorLandingPage
+      tags:
+        - Admin / Vendor Landing Page
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorLandingPageUpdateData'
+      responses:
+        '200':
+          description: Landing page settings updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/VendorLandingPageData'
+
+  # --- Admin Partners Resource ---
+  /admin/vendors/{vendor}/partners:
+    parameters:
+      - name: vendor
+        in: path
+        required: true
+        description: Vendor ID or Slug
+        schema:
+          type: string
+
+    get:
+      summary: List Vendor Partners
+      operationId: getVendorPartners
+      tags:
+        - Admin / Vendor Partners
+      responses:
+        '200':
+          description: List of vendor partner items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VendorPartnerData'
+
+    post:
+      summary: Create Vendor Partner
+      operationId: storeVendorPartner
+      tags:
+        - Admin / Vendor Partners
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorPartnerCreateData'
+      responses:
+        '201':
+          description: Vendor partner created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/VendorPartnerData'
+
+  /admin/vendors/{vendor}/partners/{partner}:
+    parameters:
+      - name: vendor
+        in: path
+        required: true
+        description: Vendor ID or Slug
+        schema:
+          type: string
+      - name: partner
+        in: path
+        required: true
+        description: Partner ID
+        schema:
+          type: integer
+
+    get:
+      summary: Show Vendor Partner Details
+      operationId: showVendorPartner
+      tags:
+        - Admin / Vendor Partners
+      responses:
+        '200':
+          description: Single partner data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/VendorPartnerData'
+
+    put:
+      summary: Update Vendor Partner
+      operationId: updateVendorPartner
+      tags:
+        - Admin / Vendor Partners
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorPartnerUpdateData'
+      responses:
+        '200':
+          description: Partner updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/VendorPartnerData'
+
+    delete:
+      summary: Delete Vendor Partner
+      operationId: deleteVendorPartner
+      tags:
+        - Admin / Vendor Partners
+      responses:
+        '204':
+          description: Partner deleted successfully (No Content)
+
+  # --- Admin Training Domains Resource ---
+  /admin/vendors/{vendor}/training-domains:
+    parameters:
+      - name: vendor
+        in: path
+        required: true
+        description: Vendor ID or Slug
+        schema:
+          type: string
+
+    get:
+      summary: List Vendor Training Domains
+      operationId: getVendorTrainingDomains
+      tags:
+        - Admin / Vendor Training Domains
+      responses:
+        '200':
+          description: List of training domains
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VendorTrainingDomainData'
+
+    post:
+      summary: Create Training Domain
+      operationId: storeVendorTrainingDomain
+      tags:
+        - Admin / Vendor Training Domains
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorTrainingDomainCreateData'
+      responses:
+        '201':
+          description: Training domain created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/VendorTrainingDomainData'
+
+  /admin/vendors/{vendor}/training-domains/{training_domain}:
+    parameters:
+      - name: vendor
+        in: path
+        required: true
+        description: Vendor ID or Slug
+        schema:
+          type: string
+      - name: training_domain
+        in: path
+        required: true
+        description: Training Domain ID
+        schema:
+          type: integer
+
+    get:
+      summary: Show Training Domain Details
+      operationId: showVendorTrainingDomain
+      tags:
+        - Admin / Vendor Training Domains
+      responses:
+        '200':
+          description: Single training domain data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/VendorTrainingDomainData'
+
+    put:
+      summary: Update Training Domain
+      operationId: updateVendorTrainingDomain
+      tags:
+        - Admin / Vendor Training Domains
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VendorTrainingDomainUpdateData'
+      responses:
+        '200':
+          description: Training domain updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/VendorTrainingDomainData'
+
+    delete:
+      summary: Delete Training Domain
+      operationId: deleteVendorTrainingDomain
+      tags:
+        - Admin / Vendor Training Domains
+      responses:
+        '204':
+          description: Training domain deleted successfully (No Content)
+
+# ==========================================
+# COMPONENTS & SCHEMAS
+# ==========================================
+components:
+  schemas:
+    VendorLandingPageData:
+      type: object
+      required:
+        - id
+        - slug
+        - name
+        - hero
+        - partners
+        - training_domains
+        - recent_courses
+      properties:
+        id:
+          type: integer
+          example: 1
+        slug:
+          type: string
+          example: acme-corp
+        name:
+          type: string
+          example: Acme Corporation
+        is_public:
+          type: boolean
+          description: Whether the vendor is publicly visible.
+          example: true
+        has_landing_page:
+          type: boolean
+          description: Whether the vendor landing page is enabled.
+          example: true
+        logo_url:
+          type: string
+          nullable: true
+          example: https://example.com/logo.png
+        tagline:
+          type: string
+          nullable: true
+          example: Empowering Next-Gen Learning
+        about_text:
+          type: string
+          nullable: true
+          example: Detailed information about the vendor...
+        educational_calendar_url:
+          type: string
+          nullable: true
+          example: https://example.com/calendar.pdf
+        hero:
+          $ref: '#/components/schemas/VendorHeroData'
+        partners:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorPartnerData'
+        training_domains:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorTrainingDomainData'
+        recent_courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCardData'
+        meta_title:
+          type: string
+          nullable: true
+          example: Acme Corp - Training Courses
+        meta_description:
+          type: string
+          nullable: true
+          example: Browse official training courses from Acme Corp.
+        meta_keywords:
+          type: string
+          nullable: true
+          example: courses, training, certification
+
+    VendorHeroData:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: true
+          example: Welcome to Acme Training Portal
+        description:
+          type: string
+          nullable: true
+          example: Explore our certified software development courses.
+        image_url:
+          type: string
+          nullable: true
+          example: https://example.com/hero.jpg
+        cta_text:
+          type: string
+          nullable: true
+          example: Explore Courses
+        cta_url:
+          type: string
+          nullable: true
+          example: https://example.com/courses
+        portal_url:
+          type: string
+          nullable: true
+          example: https://portal.example.com
+
+    VendorPartnerData:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          example: 101
+        name:
+          type: string
+          example: Partner Company Inc.
+        image_url:
+          type: string
+          nullable: true
+          example: https://example.com/partner-logo.png
+        url:
+          type: string
+          nullable: true
+          example: https://partner.example.com
+
+    VendorTrainingDomainData:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          example: 201
+        name:
+          type: string
+          example: Cloud Computing
+        icon_url:
+          type: string
+          nullable: true
+          example: https://example.com/icons/cloud.png
+        form_url:
+          type: string
+          nullable: true
+          example: https://example.com/forms/apply
+        category_id:
+          type: integer
+          nullable: true
+          example: 5
+
+    ProductCardData:
+      type: object
+      required:
+        - slug
+        - name
+        - product_type
+        - is_free
+        - is_featured
+        - provides_certificate
+      properties:
+        slug:
+          type: string
+          example: laravel-fundamentals
+        name:
+          type: string
+          example: Laravel Fundamentals
+        excerpt:
+          type: string
+          nullable: true
+        price:
+          type: integer
+          nullable: true
+          description: Minimum current price across the product's published delivery options, in the platform currency unit.
+        original_price:
+          type: integer
+          nullable: true
+        price_range:
+          type: object
+          nullable: true
+          properties:
+            min:
+              type: integer
+            max:
+              type: integer
+        is_free:
+          type: boolean
+        is_featured:
+          type: boolean
+        provides_certificate:
+          type: boolean
+        product_type:
+          type: string
+          enum: [course, seminar, digital_asset]
+        thumbnail_url:
+          type: string
+          nullable: true
+        available_from:
+          type: string
+          nullable: true
+        available_to:
+          type: string
+          nullable: true
+        registration_start_date:
+          type: string
+          nullable: true
+        registration_end_date:
+          type: string
+          nullable: true
+        teachers:
+          type: array
+          nullable: true
+          items: {}
+        reviews_count:
+          type: integer
+          nullable: true
+        average_rating:
+          type: number
+          nullable: true
+        registration_status:
+          type: string
+          nullable: true
+          enum: [in_progress, finished]
+        delivery_type:
+          type: string
+          nullable: true
+          enum: [online, in_person, combined]
+        price_data:
+          $ref: '#/components/schemas/ProductPriceData'
+        event_start_at:
+          type: string
+          nullable: true
+        event_ended_at:
+          type: string
+          nullable: true
+
+    ProductPriceData:
+      type: object
+      properties:
+        min_price:
+          type: integer
+          nullable: true
+          description: Minimum current price across the product's priced delivery options.
+        min_original_price:
+          type: integer
+          nullable: true
+          description: Minimum original price across the product's priced delivery options.
+        has_featured_price:
+          type: boolean
+          example: false
+        has_discount:
+          type: boolean
+          example: false
+        has_pre_payment:
+          type: boolean
+          example: true
+        discount_type:
+          type: string
+          nullable: true
+          example: null
+        discount_percentage:
+          type: number
+          nullable: true
+          example: null
+        highest_discount_amount:
+          type: number
+          nullable: true
+          example: null
+        range:
+          type: object
+          nullable: true
+          properties:
+            min:
+              type: number
+              example: 2900000
+            max:
+              type: number
+              example: 2900000
+        prices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductPriceItem'
+
+    ProductPriceItem:
+      type: object
+      properties:
+        current_price:
+          type: number
+          example: 2900000
+        original_price:
+          type: number
+          example: 2900000
+        pre_payment_price:
+          type: number
+          nullable: true
+          example: 800000
+        featured_price:
+          type: number
+          nullable: true
+          example: null
+        discount_amount:
+          type: number
+          nullable: true
+          example: null
+        has_pre_payment_price:
+          type: boolean
+          example: true
+        has_featured_price:
+          type: boolean
+          example: false
+        has_discount:
+          type: boolean
+          example: false
+        discount_type:
+          type: string
+          nullable: true
+          example: null
+        discount_percentage:
+          type: number
+          nullable: true
+          example: null
+        range:
+          type: object
+          nullable: true
+          example: null
+        uuid:
+          type: string
+          format: uuid
+          example: 3cc5e597-ecff-4051-9bd0-c4c1ccd5a364
+
+    VendorLandingPageUpdateData:
+      type: object
+      properties:
+        slug:
+          type: string
+          nullable: true
+        is_public:
+          type: boolean
+          nullable: true
+        has_landing_page:
+          type: boolean
+          nullable: true
+        hero_title:
+          type: string
+          nullable: true
+        hero_description:
+          type: string
+          nullable: true
+        hero_image_id:
+          type: integer
+          nullable: true
+        hero_cta_text:
+          type: string
+          nullable: true
+        hero_cta_url:
+          type: string
+          nullable: true
+        portal_url:
+          type: string
+          nullable: true
+        tagline:
+          type: string
+          nullable: true
+        educational_calendar_url:
+          type: string
+          nullable: true
+        about_text:
+          type: string
+          nullable: true
+        meta_title:
+          type: string
+          nullable: true
+        meta_description:
+          type: string
+          nullable: true
+        meta_keywords:
+          type: string
+          nullable: true
+
+    VendorPartnerCreateData:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: New Partner Co.
+        image_id:
+          type: integer
+          nullable: true
+          example: 45
+        url:
+          type: string
+          nullable: true
+          example: https://newpartner.com
+
+    VendorPartnerUpdateData:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        image_id:
+          type: integer
+          nullable: true
+        url:
+          type: string
+          nullable: true
+
+    VendorTrainingDomainCreateData:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: DevOps & Infrastructure
+        icon_id:
+          type: integer
+          nullable: true
+          example: 88
+        form_url:
+          type: string
+          nullable: true
+          example: https://example.com/forms/devops
+        category_id:
+          type: integer
+          nullable: true
+          example: 12
+
+    VendorTrainingDomainUpdateData:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        icon_id:
+          type: integer
+          nullable: true
+        form_url:
+          type: string
+          nullable: true
+        category_id:
+          type: integer
+          nullable: true
+
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        last_page:
+          type: integer
+          example: 5
+        per_page:
+          type: integer
+          example: 12
+        total:
+          type: integer
+          example: 60

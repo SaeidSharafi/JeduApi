@@ -1,0 +1,188 @@
+openapi: 3.0.3
+info:
+  title: JeduShop Learning Path API
+  description: >-
+    Proposed contract for Learning Paths. A Learning Path is an ordered
+    guide made from existing Productable identities. It is not a Product,
+    Product Delivery Option, or purchasable entity. The server base path is
+    /api/v1.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+tags:
+  - name: Admin / Learning Paths
+  - name: Shop / Learning Paths
+security:
+  - sanctum: []
+paths:
+  /admin/learning-paths:
+    get:
+      tags: [Admin / Learning Paths]
+      summary: List Learning Paths
+      operationId: listLearningPaths
+      responses:
+        '200': { $ref: '#/components/responses/LearningPathCollection' }
+    post:
+      tags: [Admin / Learning Paths]
+      summary: Create a Learning Path
+      operationId: createLearningPath
+      requestBody: { $ref: '#/components/requestBodies/LearningPathWrite' }
+      responses:
+        '201': { $ref: '#/components/responses/LearningPath' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /admin/learning-paths/{learningPath}:
+    parameters:
+      - $ref: '#/components/parameters/LearningPathId'
+    get:
+      tags: [Admin / Learning Paths]
+      summary: Get a Learning Path
+      operationId: getLearningPath
+      responses:
+        '200': { $ref: '#/components/responses/LearningPath' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Admin / Learning Paths]
+      summary: Replace a Learning Path
+      operationId: updateLearningPath
+      requestBody: { $ref: '#/components/requestBodies/LearningPathWrite' }
+      responses:
+        '200': { $ref: '#/components/responses/LearningPath' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Admin / Learning Paths]
+      summary: Archive a Learning Path
+      operationId: archiveLearningPath
+      responses:
+        '200': { $ref: '#/components/responses/LearningPath' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /learning-paths:
+    get:
+      security: []
+      tags: [Shop / Learning Paths]
+      summary: List published Learning Paths
+      operationId: listShopLearningPaths
+      parameters:
+        - { $ref: '#/components/parameters/PaginationPage' }
+        - { $ref: '#/components/parameters/PaginationPerPage' }
+      responses:
+        '200': { $ref: '#/components/responses/LearningPathCardCollection' }
+  /learning-paths/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      security: []
+      tags: [Shop / Learning Paths]
+      summary: Get a published Learning Path
+      operationId: getShopLearningPath
+      responses:
+        '200': { $ref: '#/components/responses/LearningPathDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    sanctum: { type: http, scheme: bearer, bearerFormat: token }
+  parameters:
+    LearningPathId: { name: learningPath, in: path, required: true, schema: { type: integer } }
+    PaginationPage: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    PaginationPerPage: { name: per_page, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 12 } }
+  requestBodies:
+    LearningPathWrite:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/LearningPathWrite' }
+  responses:
+    LearningPath: { description: Learning Path response, content: { application/json: { schema: { $ref: '#/components/schemas/LearningPathResponse' } } } }
+    LearningPathCollection: { description: Learning Path collection, content: { application/json: { schema: { $ref: '#/components/schemas/LearningPathCollectionResponse' } } } }
+    LearningPathCardCollection: { description: Published Learning Path cards, content: { application/json: { schema: { $ref: '#/components/schemas/LearningPathCardCollectionResponse' } } } }
+    LearningPathDetail: { description: Learning Path detail, content: { application/json: { schema: { $ref: '#/components/schemas/LearningPathDetailResponse' } } } }
+    ValidationError: { description: Validation or business-contract error }
+    NotFound: { description: Resource not found }
+    Conflict: { description: State or archival conflict }
+  schemas:
+    LearningPathWrite:
+      type: object
+      required: [title, slug, description, status, steps]
+      properties:
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        media: { type: array, items: { type: object } }
+        status: { type: string, enum: [draft, published, archived] }
+        steps:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/LearningPathStepWrite' }
+    LearningPathStepWrite:
+      type: object
+      required: [position, productable_type, productable_id, title]
+      properties:
+        position: { type: integer, minimum: 1 }
+        productable_type: { type: string, enum: [course, seminar, digital_asset], description: Stable Productable type. }
+        productable_id: { type: integer, description: Existing Productable ID. The API must not create a Productable from this reference. }
+        title: { type: string, description: Optional path-specific label for the step. }
+        description: { type: string, nullable: true }
+    LearningPath:
+      type: object
+      required: [id, title, slug, description, status, steps]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        media: { type: array, items: { type: object } }
+        status: { type: string, enum: [draft, published, archived] }
+        steps:
+          type: array
+          items: { $ref: '#/components/schemas/LearningPathStep' }
+    LearningPathStep:
+      type: object
+      required: [position, product]
+      properties:
+        position: { type: integer, minimum: 1 }
+        title: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        productable: { $ref: '#/components/schemas/ReferencedProductable' }
+        current_product: { $ref: '#/components/schemas/ReferencedProduct', nullable: true, description: Current active Product for this Productable, when one is available. }
+    ReferencedProductable:
+      type: object
+      description: Stable existing Productable identity used for guidance. It is not a Product or a purchasable path step.
+      required: [id, productable_type, name]
+      properties:
+        id: { type: integer }
+        productable_type: { type: string, enum: [course, seminar, digital_asset] }
+        name: { type: string }
+        slug: { type: string, nullable: true }
+        short_description: { type: string, nullable: true }
+        thumbnail_url: { type: string, format: uri, nullable: true }
+    ReferencedProduct:
+      type: object
+      description: Existing current Product projection for a Productable. It may be absent while no active Product is available.
+      required: [id, slug, name, productable_type]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        productable_type: { type: string, enum: [course, seminar, digital_asset] }
+        short_description: { type: string, nullable: true }
+        thumbnail_url: { type: string, format: uri, nullable: true }
+        price_data: { type: object, nullable: true, description: Existing Product pricing summary for display only. Purchase uses the Product's existing delivery options. }
+        delivery_options: { type: array, items: { type: object }, description: Existing Product Delivery Options available through the normal Product flow. }
+    LearningPathCard:
+      type: object
+      required: [id, title, slug, description, step_count]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        media: { type: array, items: { type: object } }
+        step_count: { type: integer, minimum: 0 }
+    LearningPathResponse: { type: object, properties: { success: { type: boolean, example: true }, data: { $ref: '#/components/schemas/LearningPath' } } }
+    LearningPathCollectionResponse: { type: object, properties: { success: { type: boolean }, data: { type: array, items: { $ref: '#/components/schemas/LearningPath' } }, meta: { type: object } } }
+    LearningPathCardCollectionResponse: { type: object, properties: { success: { type: boolean }, data: { type: array, items: { $ref: '#/components/schemas/LearningPathCard' } }, meta: { type: object } } }
+    LearningPathDetailResponse: { type: object, properties: { success: { type: boolean }, data: { $ref: '#/components/schemas/LearningPath' } } }

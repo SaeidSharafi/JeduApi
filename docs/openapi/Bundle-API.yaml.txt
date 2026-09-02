@@ -1,0 +1,386 @@
+openapi: 3.0.3
+info:
+  title: JeduShop Bundle API
+  description: >-
+    Bundle-only contract for the admin catalog and customer shop APIs. The
+    server base path is /api/v1. Existing generic cart, checkout, order, and
+    search endpoints are included only where their Bundle behavior is part of
+    this contract.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+tags:
+  - name: Admin / Bundles
+  - name: Admin / Bundle Options
+  - name: Shop / Bundles
+  - name: Shop / Bundle Purchase
+security:
+  - sanctum: []
+paths:
+  /admin/bundles:
+    get:
+      tags: [Admin / Bundles]
+      summary: List Bundle content records
+      operationId: listBundles
+      responses:
+        '200': { $ref: '#/components/responses/BundleCollection' }
+    post:
+      tags: [Admin / Bundles]
+      summary: Create Bundle content
+      operationId: createBundle
+      requestBody: { $ref: '#/components/requestBodies/BundleWrite' }
+      responses:
+        '201': { $ref: '#/components/responses/Bundle' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /admin/bundles/{bundle}:
+    parameters:
+      - $ref: '#/components/parameters/BundleId'
+    get:
+      tags: [Admin / Bundles]
+      summary: Get Bundle content
+      operationId: getBundle
+      responses:
+        '200': { $ref: '#/components/responses/Bundle' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Admin / Bundles]
+      summary: Update Bundle content
+      operationId: updateBundle
+      requestBody: { $ref: '#/components/requestBodies/BundleWrite' }
+      responses:
+        '200': { $ref: '#/components/responses/Bundle' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Admin / Bundles]
+      summary: Archive Bundle content
+      description: Used Bundle identities are archived; only never-used drafts may be hard-deleted.
+      operationId: archiveBundle
+      responses:
+        '200': { $ref: '#/components/responses/Bundle' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /admin/products/{product}/delivery-options:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+    post:
+      tags: [Admin / Bundle Options]
+      summary: Create a composite Bundle option
+      description: >-
+        This is the existing nested delivery-option resource. It accepts
+        components only when the parent Product is a Bundle. The component
+        list is written atomically.
+      operationId: createBundleOption
+      requestBody: { $ref: '#/components/requestBodies/BundleOptionWrite' }
+      responses:
+        '201': { $ref: '#/components/responses/BundleOption' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /admin/products/{product}/delivery-options/{deliveryOption}:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+      - $ref: '#/components/parameters/DeliveryOptionId'
+    get:
+      tags: [Admin / Bundle Options]
+      summary: Get a composite Bundle option
+      operationId: getBundleOption
+      responses:
+        '200': { $ref: '#/components/responses/BundleOption' }
+    put:
+      tags: [Admin / Bundle Options]
+      summary: Replace a composite Bundle option
+      operationId: updateBundleOption
+      requestBody: { $ref: '#/components/requestBodies/BundleOptionWrite' }
+      responses:
+        '200': { $ref: '#/components/responses/BundleOption' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Admin / Bundle Options]
+      summary: Archive a composite Bundle option
+      operationId: archiveBundleOption
+      responses:
+        '200': { $ref: '#/components/responses/BundleOption' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /bundles:
+    get:
+      security: []
+      tags: [Shop / Bundles]
+      summary: List purchasable Bundles
+      operationId: listShopBundles
+      parameters: [{ $ref: '#/components/parameters/PaginationPage' }, { $ref: '#/components/parameters/PaginationPerPage' }]
+      responses:
+        '200': { $ref: '#/components/responses/BundleCardCollection' }
+  /bundles/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      security: []
+      tags: [Shop / Bundles]
+      summary: Get a Bundle product detail page
+      operationId: getShopBundle
+      responses:
+        '200': { $ref: '#/components/responses/BundleDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /search:
+    get:
+      security: []
+      tags: [Shop / Bundles]
+      summary: Search Bundles
+      operationId: searchBundles
+      parameters:
+        - name: productable_type
+          in: query
+          required: true
+          description: Must be bundle when this Bundle-only view is requested.
+          schema: { type: string, enum: [bundle] }
+        - name: q
+          in: query
+          schema: { type: string }
+        - { $ref: '#/components/parameters/PaginationPage' }
+        - { $ref: '#/components/parameters/PaginationPerPage' }
+      responses:
+        '200': { $ref: '#/components/responses/SearchCollection' }
+
+  /cart/items:
+    post:
+      tags: [Shop / Bundle Purchase]
+      summary: Add one Bundle option to the cart
+      operationId: addBundleToCart
+      description: Quantity is always one. The request identifies the composite Product Delivery Option UUID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BundleCartItemWrite' }
+      responses:
+        '200': { $ref: '#/components/responses/Cart' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /checkout:
+    post:
+      tags: [Shop / Bundle Purchase]
+      summary: Check out a cart containing a Bundle
+      operationId: checkoutBundle
+      description: >-
+        Requires full payment for the Bundle. All component reservations and
+        the immutable Bundle Purchase snapshot succeed or fail together.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CheckoutWrite' }
+      responses:
+        '201': { $ref: '#/components/responses/Order' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /shop/student/orders:
+    get:
+      tags: [Shop / Bundle Purchase]
+      summary: List customer orders with Bundle groups
+      operationId: listCustomerBundleOrders
+      responses:
+        '200': { $ref: '#/components/responses/OrderCollection' }
+  /shop/student/orders/{order}:
+    parameters:
+      - name: order
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Shop / Bundle Purchase]
+      summary: Get a customer order with Bundle details
+      operationId: getCustomerBundleOrder
+      responses:
+        '200': { $ref: '#/components/responses/Order' }
+  /admin/orders/{order}/refund:
+    parameters:
+      - name: order
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [Shop / Bundle Purchase]
+      summary: Refund an order containing Bundles
+      operationId: refundBundleOrder
+      description: >-
+        A Bundle is an indivisible commercial unit. A mixed-order refund
+        validates every unit before processing and returns component accounting
+        and revocation states.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderRefundWrite' }
+      responses:
+        '200': { $ref: '#/components/responses/Refund' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+components:
+  securitySchemes:
+    sanctum: { type: http, scheme: bearer, bearerFormat: token }
+  parameters:
+    BundleId: { name: bundle, in: path, required: true, schema: { type: integer } }
+    ProductId: { name: product, in: path, required: true, schema: { type: integer } }
+    DeliveryOptionId: { name: deliveryOption, in: path, required: true, schema: { type: integer } }
+    PaginationPage: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    PaginationPerPage: { name: per_page, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 12 } }
+  requestBodies:
+    BundleWrite:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/BundleWrite' }
+    BundleOptionWrite:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/BundleOptionWrite' }
+  responses:
+    Bundle: { description: Bundle response, content: { application/json: { schema: { $ref: '#/components/schemas/BundleResponse' } } } }
+    BundleOption: { description: Composite Bundle option response, content: { application/json: { schema: { $ref: '#/components/schemas/BundleOptionResponse' } } } }
+    BundleCollection: { description: Bundle collection, content: { application/json: { schema: { $ref: '#/components/schemas/BundleCollectionResponse' } } } }
+    BundleCardCollection: { description: Shop Bundle cards, content: { application/json: { schema: { $ref: '#/components/schemas/BundleCardCollectionResponse' } } } }
+    BundleDetail: { description: Bundle PDP response, content: { application/json: { schema: { $ref: '#/components/schemas/BundleDetailResponse' } } } }
+    SearchCollection: { description: Bundle search results, content: { application/json: { schema: { $ref: '#/components/schemas/SearchResponse' } } } }
+    Cart: { description: Cart with Bundle item, content: { application/json: { schema: { $ref: '#/components/schemas/CartResponse' } } } }
+    Order: { description: Order with additive Bundle groups, content: { application/json: { schema: { $ref: '#/components/schemas/OrderResponse' } } } }
+    OrderCollection: { description: Customer order collection, content: { application/json: { schema: { $ref: '#/components/schemas/OrderCollectionResponse' } } } }
+    Refund: { description: Bundle refund result, content: { application/json: { schema: { $ref: '#/components/schemas/RefundResponse' } } } }
+    ValidationError: { description: Validation or business-contract error }
+    NotFound: { description: Resource not found }
+    Conflict: { description: Availability, ownership, stale-cart, state, or atomicity conflict }
+  schemas:
+    BundleWrite:
+      type: object
+      required: [name, slug, description]
+      properties:
+        name: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        media: { type: array, items: { type: object } }
+        properties: { type: object, additionalProperties: true }
+        additional_info: { type: object, additionalProperties: true }
+    BundleOptionWrite:
+      type: object
+      required: [name, price, status, components]
+      properties:
+        name: { type: string }
+        sku: { type: string }
+        price: { type: integer, minimum: 0, description: Selling price in IRR. Must equal allocation sum. }
+        status: { type: string, enum: [draft, published, archived] }
+        components:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/BundleComponentWrite' }
+        available_from: { type: string, format: date-time, nullable: true }
+        available_to: { type: string, format: date-time, nullable: true }
+    BundleComponentWrite:
+      type: object
+      required: [product_delivery_option_uuid, allocation]
+      properties:
+        product_delivery_option_uuid: { type: string, format: uuid }
+        allocation: { type: integer, minimum: 0, description: Actual paid component allocation in IRR; cannot exceed the component base price. }
+    BundleCartItemWrite:
+      type: object
+      required: [product_delivery_option_uuid, quantity]
+      properties:
+        product_delivery_option_uuid: { type: string, format: uuid }
+        quantity: { type: integer, enum: [1] }
+    CheckoutWrite:
+      type: object
+      required: [payment_gateway]
+      properties:
+        payment_gateway: { type: string }
+        cart_version: { type: string, description: Client's last confirmed cart/composition version. }
+    OrderRefundWrite:
+      type: object
+      properties:
+        bundle_purchase_ids: { type: array, items: { type: integer }, description: Omit for a full-order refund. }
+        deduction_percentage: { type: number, minimum: 0, maximum: 100 }
+    Bundle:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        description: { type: string, nullable: true }
+        media: { type: array, items: { type: object } }
+        owning_vendor: { type: object, nullable: true }
+        status: { type: string }
+    BundleOptionResponse: { type: object, properties: { success: { type: boolean, example: true }, data: { $ref: '#/components/schemas/BundleOption' } } }
+    BundleCard:
+      allOf: [{ $ref: '#/components/schemas/Bundle' }]
+      type: object
+      properties:
+        base_value: { type: integer, description: Sum of undiscounted component PDO base prices in IRR. }
+        price: { type: integer, description: Bundle selling price in IRR. }
+        discount_amount: { type: integer }
+        discount_percentage: { type: number }
+        is_available: { type: boolean }
+        delivery_options: { type: array, items: { $ref: '#/components/schemas/BundleOption' } }
+    BundleDetail:
+      allOf: [{ $ref: '#/components/schemas/BundleCard' }]
+      type: object
+      properties:
+        categories: { type: array, items: { type: object } }
+        components: { type: array, items: { $ref: '#/components/schemas/BundleComponent' } }
+    BundleOption:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        sku: { type: string }
+        name: { type: string }
+        base_value: { type: integer }
+        price: { type: integer }
+        discount_amount: { type: integer }
+        discount_percentage: { type: number }
+        is_available: { type: boolean }
+        is_purchasable: { type: boolean }
+    BundleComponent:
+      type: object
+      properties:
+        product_delivery_option_uuid: { type: string, format: uuid }
+        product_type: { type: string, enum: [course, seminar, digital_asset] }
+        name: { type: string }
+        delivery_method: { type: string }
+        provider: { type: object, nullable: true }
+        schedule: { type: object, nullable: true }
+        access_window: { type: object, nullable: true }
+        teacher: { type: object, nullable: true }
+        format: { type: string, nullable: true }
+        base_price: { type: integer }
+        allocation: { type: integer, description: Present to authorized admin/order consumers; actual paid amount in IRR. }
+    BundlePurchase:
+      type: object
+      properties:
+        id: { type: integer }
+        bundle_name: { type: string }
+        bundle_sku: { type: string }
+        order_id: { type: integer }
+        base_value: { type: integer }
+        amount_paid: { type: integer }
+        status: { type: string, enum: [pending_payment, provisioning, active, partially_failed, failed, revocation_pending, refunded] }
+        components: { type: array, items: { $ref: '#/components/schemas/BundlePurchaseComponent' } }
+    BundlePurchaseComponent:
+      type: object
+      properties:
+        order_item_id: { type: integer }
+        enrollment_id: { type: integer, nullable: true }
+        product_delivery_option_uuid: { type: string, format: uuid }
+        allocation: { type: integer }
+        base_price: { type: integer }
+        enrollment_status: { type: string, nullable: true }
+        provisioning_status: { type: string, nullable: true }
+        revocation_status: { type: string, nullable: true }
+    BundleResponse: { type: object, properties: { success: { type: boolean, example: true }, data: { $ref: '#/components/schemas/Bundle' } } }
+    BundleCollectionResponse: { type: object, properties: { success: { type: boolean }, data: { type: array, items: { $ref: '#/components/schemas/Bundle' } }, meta: { type: object } } }
+    BundleCardCollectionResponse: { type: object, properties: { success: { type: boolean }, data: { type: array, items: { $ref: '#/components/schemas/BundleCard' } }, meta: { type: object } } }
+    BundleDetailResponse: { type: object, properties: { success: { type: boolean }, data: { $ref: '#/components/schemas/BundleDetail' } } }
+    SearchResponse: { type: object, properties: { success: { type: boolean }, data: { type: array, items: { $ref: '#/components/schemas/BundleCard' } }, meta: { type: object } } }
+    CartResponse: { type: object, properties: { success: { type: boolean }, data: { type: object, description: Existing cart shape with a Bundle cart item and reconfirmation metadata. } } }
+    OrderResponse: { type: object, properties: { success: { type: boolean }, data: { type: object, properties: { items: { type: array, description: Existing flat items remain available. }, bundle_purchases: { type: array, items: { $ref: '#/components/schemas/BundlePurchase' } } } } } }
+    OrderCollectionResponse: { type: object, properties: { success: { type: boolean }, data: { type: array, items: { $ref: '#/components/schemas/OrderResponse' } }, meta: { type: object } } }
+    RefundResponse: { type: object, properties: { success: { type: boolean }, data: { type: object, properties: { bundle_purchase: { $ref: '#/components/schemas/BundlePurchase' }, component_refunds: { type: array, items: { type: object } } } } } }
