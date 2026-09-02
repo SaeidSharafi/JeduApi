@@ -16,9 +16,17 @@ final class ImsService extends AbstractIntegrationService implements ImsClientCo
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    public function storeStudent(array $payload): array  // fixed typo
+    public function storeStudent(array $payload): array
     {
         $this->assertConfigured();
+
+        if (isset($payload['civil_id']) && ! isset($payload['national_code'])) {
+            $payload['national_code'] = $payload['civil_id'];
+        }
+
+        if (isset($payload['gender']) && $payload['gender'] === 0) {
+            $payload['gender'] = 2;
+        }
 
         $response = Http::baseUrl($this->config['base_url'])
             ->timeout((int) ($this->config['timeout'] ?? 15))
@@ -47,7 +55,13 @@ final class ImsService extends AbstractIntegrationService implements ImsClientCo
 
         $this->handleHttpErrors($response, '/api/v2/enrollment');
 
-        return (array) ($response->json() ?? []);
+        $result = (array) ($response->json() ?? []);
+
+        if (isset($result['data']['enrolment_id']) && ! isset($result['data']['enrollment_id'])) {
+            $result['data']['enrollment_id'] = $result['data']['enrolment_id'];
+        }
+
+        return $result;
     }
 
     /**
