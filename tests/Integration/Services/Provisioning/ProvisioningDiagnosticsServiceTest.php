@@ -24,6 +24,42 @@ it('returns safe provider diagnostics without raw payloads', function (): void {
         ->and($diagnostics->providers[0]->references)->toBe(['moodle_user_id' => 4]);
 });
 
+it('shows sanitized provider validation details to diagnostic viewers', function (): void {
+    $enrollment = Enrollment::factory()->create([
+        'provisioning_data' => ['providers' => ['ims' => ['status' => 'failed', 'last_error' => 'validation failed']]],
+    ]);
+    $enrollment->update([
+        'provisioning_plan'   => ['version' => 1, 'providers' => [['provider' => 'ims', 'applicable' => true, 'readiness' => 'ready']], 'status' => 'degraded'],
+        'provisioning_status' => 'degraded',
+    ]);
+    ProvisioningAttempt::create([
+        'enrollment_id'    => $enrollment->id,
+        'provider'         => ProvisioningProviderEnum::IMS,
+        'trigger'          => ProvisioningTriggerEnum::PAYMENT,
+        'status'           => ProvisioningAttemptStatusEnum::FAILED,
+        'sequence'         => 1,
+        'retryable'        => false,
+        'failure_metadata' => [
+            'http_status'       => 422,
+            'endpoint'          => '/api/v2/student',
+            'validation_errors' => [
+                'gender'   => ['The selected gender is invalid.'],
+                'civil_id' => ['The civil ID 1234567890 is invalid.'],
+                'email'    => ['The email test@example.com is invalid.'],
+            ],
+        ],
+    ]);
+
+    $diagnostics = app(ProvisioningDiagnosticsService::class)->diagnostics($enrollment);
+
+    expect($diagnostics->providers[0]->safe_error)
+        ->toContain('gender:')
+        ->toContain('civil_id:')
+        ->toContain('[REDACTED]')
+        ->not->toContain('1234567890')
+        ->not->toContain('test@example.com');
+});
+
 it('returns newest attempt history first and preserves terminal retryability', function (): void {
     $enrollment = Enrollment::factory()->create();
     ProvisioningAttempt::create([

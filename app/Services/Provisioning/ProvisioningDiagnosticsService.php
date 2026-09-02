@@ -20,7 +20,7 @@ final class ProvisioningDiagnosticsService
     {
         $data           = $enrollment->provisioning_data ?? [];
         $attemptHistory = $enrollment->provisioningAttempts()->latest('id')->get();
-        $latestAttempts = $attemptHistory->groupBy('provider');
+        $latestAttempts = $attemptHistory->groupBy(fn (ProvisioningAttempt $attempt): string => $attempt->provider->value);
         $providers      = collect($enrollment->provisioning_plan['providers'] ?? [])->map(function (array $plan) use ($data, $latestAttempts): ProvisioningDiagnosticData {
             $provider   = (string) $plan['provider'];
             $outcome    = data_get($data, "providers.{$provider}", []);
@@ -30,7 +30,7 @@ final class ProvisioningDiagnosticsService
 
             $attempt = $latestAttempts->get($provider)?->first();
 
-            return new ProvisioningDiagnosticData($provider, $status, (bool) ($attempt?->retryable ?? $status === 'failed'), $status === 'succeeded' || $status === 'waived' ? 'none' : ($status === 'failed' ? 'retry_or_manual_review' : 'await_provisioning'), $this->safeError(data_get($outcome, 'last_error')), $references, $attempt?->updated_at?->toISOString() ?? data_get($outcome, 'updated_at'));
+            return new ProvisioningDiagnosticData($provider, $status, (bool) ($attempt?->retryable ?? $status === 'failed'), $status === 'succeeded' || $status === 'waived' ? 'none' : ($status === 'failed' ? 'retry_or_manual_review' : 'await_provisioning'), $this->safeError(data_get($outcome, 'last_error'), $attempt?->failure_metadata ?? []), $references, $attempt?->updated_at?->toISOString() ?? data_get($outcome, 'updated_at'));
         })->values()->all();
         $summary = new ProvisioningDiagnosticsData(
             (string) $enrollment->provisioning_status->value,
@@ -67,13 +67,40 @@ final class ProvisioningDiagnosticsService
         return 'not_applicable';
     }
 
-    private function safeError(mixed $error): ?string
+    /** @param array<string, mixed> $metadata */
+    private function safeError(mixed $error, array $metadata = []): ?string
     {
+        $validationErrors = data_get($metadata, 'validation_errors');
+        if (is_array($validationErrors) && $validationErrors !== []) {
+            $details = collect($this->safeValidationErrors($validationErrors))
+                ->map(fn (string $message, string $field): string => $field.': '.$message)
+                ->implode('; ');
+
+            return mb_substr('Provider validation failed: '.$details, 0, 1000);
+        }
+
         if (! is_string($error) || $error === '') {
             return null;
         }
 
         return 'Provider failure details were redacted.';
+    }
+
+    /** @param array<string, mixed> $validationErrors @return array<string, string> */
+    private function safeValidationErrors(array $validationErrors): array
+    {
+        return collect($validationErrors)
+            ->map(function (mixed $value): string {
+                $message   = is_scalar($value) ? (string) $value : (json_encode($value) ?: '[unavailable]');
+                $sanitized = preg_replace(
+                    ['/[\w.+-]+@[\w-]+\.[\w.-]+/', '/\b09\d{9}\b/', '/\b\d{10}\b/'],
+                    '[REDACTED]',
+                    $message
+                );
+
+                return mb_substr($sanitized ?? $message, 0, 500);
+            })
+            ->all();
     }
 
     /** @param array<string, mixed> $metadata */
@@ -82,6 +109,10 @@ final class ProvisioningDiagnosticsService
         $context = collect($metadata)->only(['http_status', 'errorcode'])->all();
         if (isset($metadata['endpoint']) && is_string($metadata['endpoint'])) {
             $context['endpoint'] = parse_url($metadata['endpoint'], PHP_URL_PATH) ?: Str::before($metadata['endpoint'], '?');
+        }
+
+        if (isset($metadata['validation_errors']) && is_array($metadata['validation_errors'])) {
+            $context['validation_errors'] = $this->safeValidationErrors($metadata['validation_errors']);
         }
 
         return $context;
