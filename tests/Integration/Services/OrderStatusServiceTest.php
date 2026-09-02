@@ -9,6 +9,7 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
@@ -16,7 +17,9 @@ use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\ProductDeliveryOption;
 use App\Services\OrderStatusService;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
 describe('OrderStatusService', function (): void {
@@ -278,6 +281,29 @@ describe('OrderStatusService', function (): void {
         $this->assertDatabaseHas('orders', [
             'id'     => $order->id,
             'status' => OrderStatusEnum::COMPLETED->value,
+        ]);
+    });
+
+    it('dispatches provisioning when payment completes an already completed admin order', function (): void {
+        Event::fake([OrderStatusUpdatedEvent::class]);
+
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'details_json' => ['ims_course_code' => 'IMS-ADMIN-ORDER'],
+        ]);
+        $order = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
+        $item  = OrderItem::factory()->for($order)->create([
+            'product_delivery_option_id' => $deliveryOption->id,
+            'status'                     => OrderItemStatusEnum::PENDING,
+        ]);
+
+        app(OrderStatusService::class)->handlePaymentCompletion($order->fresh());
+
+        Event::assertDispatched(OrderStatusUpdatedEvent::class, function (OrderStatusUpdatedEvent $event) use ($order): bool {
+            return $event->order->is($order);
+        });
+        $this->assertDatabaseHas('order_items', [
+            'id'     => $item->id,
+            'status' => OrderItemStatusEnum::COMPLETED->value,
         ]);
     });
 

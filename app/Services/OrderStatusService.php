@@ -52,13 +52,24 @@ final class OrderStatusService
             return;
         }
 
+        $wasAlreadyCompleted = $order->status === OrderStatusEnum::COMPLETED;
+        $completedAnyItem    = false;
+
         // Provision: update the status of each individual line item
         foreach ($order->items as $item) {
-            $this->completeOrderItemAfterPayment($item);
+            $completedAnyItem = $this->completeOrderItemAfterPayment($item) || $completedAnyItem;
         }
 
         // Then, based on the new state of the items, update the parent order's status
-        $this->updateParentOrderStatus($order->fresh());
+        $completedOrder = $order->fresh();
+        $this->updateParentOrderStatus($completedOrder);
+
+        // Admin-created orders may already be marked COMPLETED before their
+        // payment is recorded. In that case updateParentOrderStatus() has no
+        // status transition from which to dispatch the provisioning event.
+        if ($wasAlreadyCompleted && $completedAnyItem) {
+            OrderStatusUpdatedEvent::dispatch($completedOrder->fresh());
+        }
     }
 
     /**
@@ -125,9 +136,10 @@ final class OrderStatusService
     /**
      * Updates an individual OrderItem and its Enrollment after a payment.
      */
-    private function completeOrderItemAfterPayment(OrderItem $item): void
+    private function completeOrderItemAfterPayment(OrderItem $item): bool
     {
-        $newStatus = OrderItemStatusEnum::COMPLETED;
+        $newStatus  = OrderItemStatusEnum::COMPLETED;
+        $wasPending = $item->status !== $newStatus;
 
         if ($item->status !== $newStatus) {
             // Payment received → the reserved seat is now occupied by this item.
@@ -151,6 +163,8 @@ final class OrderStatusService
         }
 
         $this->updateEnrollmentStatus($item);
+
+        return $wasPending;
     }
 
     /**

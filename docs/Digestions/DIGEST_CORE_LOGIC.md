@@ -469,6 +469,7 @@ Administrative status and access-date changes reconcile deliberately with applic
    - `any_payment` (default): Immediately completes items/enrollments
    - `full_payment`: Provisions only when `balance_due <= 0`
    - `manual_approval`: Never auto-provisions — sets order to PROCESSING, requiring staff to call `ApproveOrderAction`
+   - When payment completion completes items on an order already marked `COMPLETED` (the admin create-order flow), it still dispatches `OrderStatusUpdatedEvent` so provisioning attempts are created; repeated completion with no item changes does not dispatch a duplicate event.
    - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items set enrolments to `ACTIVE`, setting `access_start_date` when first activated; refunded/cancelled items set `CANCELLED`). Uses `save()` to fire model events for `enrolled_count` synchronization.
   - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates. Creates enrollment via `firstOrCreate()` if none exists (status `ACTIVE`), then calls `updateEnrollmentStatus()`.
   - `updateParentOrderStatus(Order $order): void`: Determines parent order status from collective item states: all refunded → REFUNDED, all cancelled → CANCELLED, any refunded → PARTIALLY_REFUNDED, all completed → COMPLETED, default → PROCESSING
