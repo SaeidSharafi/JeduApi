@@ -11,8 +11,8 @@
     "skills": [
         "infer-conventions",
         "laravel-best-practices",
+        "testing-best-practices",
         "configuring-horizon",
-        "scout-development",
-        "pest-testing"
+        "scout-development"
     ]
 }
