@@ -35,11 +35,21 @@ final class OrderItemFactory extends Factory
             ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->sku,
             'product_data_snapshot_json' => fn (array $attributes
             ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->product->toArray(),
-            'vendor_id'         => Vendor::factory(),
-            'price'             => 0,
-            'discount_amount'   => 0,
-            'tax_amount'        => 0,
-            'total'             => 0,
+            'vendor_id'        => Vendor::factory(),
+            'price'            => 0,
+            'discount_amount'  => 0,
+            'tax_amount'       => 0,
+            'total'            => 0,
+            'pricing_metadata' => fn (array $attributes): array => [
+                'original_price'          => $attributes['price'],
+                'base_price_amount'       => $attributes['price'] * $attributes['qty_ordered'],
+                'paid_amount'             => $attributes['total'],
+                'product_discount_amount' => 0,
+                'cart_discount_amount'    => $attributes['discount_amount'],
+                'total_discount_amount'   => $attributes['payment_type'] === OrderItemPaymentTypeEnum::PRE_PAYMENT->value
+                    ? 0
+                    : max(0, ($attributes['price'] * $attributes['qty_ordered']) - $attributes['total']),
+            ],
             'prepayment_amount' => 0,
             'total_refunded'    => 0,
             'qty_refunded'      => 0,

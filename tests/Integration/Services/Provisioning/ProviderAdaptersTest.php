@@ -10,6 +10,9 @@ use App\Enums\Product\DeliveryMethodEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
 use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
@@ -106,6 +109,54 @@ it('rejects an IMS provider when its course reference is missing', function (): 
 
     expect(fn () => (new ImsProvisioningProvider($service))->provision($enrollment))
         ->toThrow(UnrecoverableProvisioningException::class, 'course code');
+});
+
+it('reports immutable paid value and the complete discount for an IMS enrollment', function (): void {
+    $customer = App\Models\User::factory()->create();
+    $option   = ProductDeliveryOption::factory()->create([
+        'price'        => 100000,
+        'details_json' => ['ims_course_code' => 'IMS-PRICE-1'],
+    ]);
+    $order = Order::factory()->create([
+        'customer_id' => $customer->id,
+        'grand_total' => 60000,
+    ]);
+    $item = OrderItem::factory()->create([
+        'order_id'                   => $order->id,
+        'product_delivery_option_id' => $option->id,
+        'price'                      => 100000,
+        'total'                      => 60000,
+        'pricing_metadata'           => [
+            'base_price_amount'     => 100000,
+            'paid_amount'           => 60000,
+            'total_discount_amount' => 40000,
+        ],
+    ]);
+    $enrollment = Enrollment::factory()->create([
+        'order_id'                   => $order->id,
+        'order_item_id'              => $item->id,
+        'customer_id'                => $customer->id,
+        'product_delivery_option_id' => $option->id,
+    ]);
+    Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $customer->id,
+        'amount'      => 160000,
+        'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
+    ]);
+
+    $service = $this->mock(ImsService::class);
+    $service->shouldReceive('isEnabled')->andReturnTrue();
+    $service->shouldReceive('assertConfigured');
+    $service->shouldReceive('storeStudent')->andReturn(['data' => ['student_id' => 7]]);
+    $service->shouldReceive('storeEnrollment')->once()->withArgs(function ($user, array $payload): bool {
+        return $payload['payment']['amount']          === 60000
+            && $payload['payment']['discount_type']   === 'manual'
+            && $payload['payment']['discount_amount'] === 40000;
+    })->andReturn(['data' => ['enrollment_id' => 9]]);
+
+    expect((new ImsProvisioningProvider($service))->provision($enrollment))
+        ->toMatchArray(['course_code' => 'IMS-PRICE-1', 'ims_enrollment_id' => 9]);
 });
 
 it('provisions BBB from a staff-created room without creating it', function (): void {

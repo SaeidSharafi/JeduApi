@@ -69,11 +69,9 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
             $result = $this->ims->storeEnrollment($customer, [
                 'civil_id' => $customer->civil_id, 'civil_id_type' => $customer->civil_id_type, 'course_code' => $code,
                 'payment'  => [
-                    'amount' => (int) $payment->amount > 0 ? (int) ($enrollment->orderItem?->total ?? 0)
-                        : 0,
-                    'discount_type' => ((int) ($enrollment->orderItem?->discount_amount ?? 0)) > 0 ? 'manual'
-                        : 'none',
-                    'discount_amount' => (int) ($enrollment->orderItem?->discount_amount ?? 0),
+                    'amount'          => $enrollment->orderItem?->paid_amount ?? 0,
+                    'discount_type'   => ($enrollment->orderItem?->applicable_discount_amount ?? 0) > 0 ? 'manual' : 'none',
+                    'discount_amount' => $enrollment->orderItem?->applicable_discount_amount ?? 0,
                     'discount_code'   => $enrollment->order?->applied_coupon_code,
                     'tracking_code'   => $payment->last_gateway_reference ?? data_get($payment->data,
                         'transaction_id') ?? $enrollment->order?->increment_id,

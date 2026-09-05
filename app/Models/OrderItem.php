@@ -107,6 +107,42 @@ final class OrderItem extends Model
     }
 
     /**
+     * Accessor to get the immutable PDO base value for this purchased line.
+     *
+     * @return Attribute<int, never>
+     */
+    protected function basePriceAmount(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): int => (int) data_get($this->pricing_metadata, 'base_price_amount', 0),
+        );
+    }
+
+    /**
+     * Accessor to get the immutable amount paid for this purchased line.
+     *
+     * @return Attribute<int, never>
+     */
+    protected function paidAmount(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): int => max(0, (int) data_get($this->pricing_metadata, 'paid_amount', 0)),
+        );
+    }
+
+    /**
+     * Accessor to get the complete immutable discount for this purchased line.
+     *
+     * @return Attribute<int, never>
+     */
+    protected function applicableDiscountAmount(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): int => max(0, (int) data_get($this->pricing_metadata, 'total_discount_amount', 0)),
+        );
+    }
+
+    /**
      * Accessor to get product-level discount amount from pricing_metadata.
      *
      * @return Attribute<int, never>
@@ -150,7 +186,7 @@ final class OrderItem extends Model
     protected function totalDiscountAmount(): Attribute
     {
         return Attribute::make(
-            get: fn (): int => $this->product_discount_amount + $this->discount_amount,
+            get: fn (): int => (int) data_get($this->pricing_metadata, 'total_discount_amount', 0),
         );
     }
 }

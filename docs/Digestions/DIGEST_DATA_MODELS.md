@@ -150,7 +150,7 @@
   - `originalPrice()` — base price from `pricing_metadata['original_price']`, falls back to `price` column
   - `productDiscountAmount()` — product-level discount from `pricing_metadata['discount_amount']` multiplied by `qty_ordered`; zero for pre-payment items
   - `totalDiscountAmount()` — sum of `product_discount_amount` + `discount_amount` (cart-level coupon)
-- **Special Features:** Two-layer discount tracking: product-level discounts (featured prices, auto-promotions) stored in `pricing_metadata` JSON column; cart-level discounts (coupons) stored in `discount_amount` column. The `price` column always stores the base price from `product_delivery_option.price` with no discounts applied. The `pricing_metadata` JSON stores `{original_price, discount_type, discount_amount, discount_percentage}` — pre-payment items receive zero discount values in `pricing_metadata`.
+- **Special Features:** Immutable checkout pricing snapshot: `pricing_metadata` stores `{original_price, base_price_amount, paid_amount, product_discount_amount, cart_discount_amount, total_discount_amount, discount_type, discount_amount, discount_percentage}`. IMS provisioning and refunds use `base_price_amount`, `paid_amount`, and `total_discount_amount`; the parent completed payment is only an existence gate. The `price` column always stores the base price from `product_delivery_option.price` with no discounts applied. Pre-payment items receive zero discount values in `pricing_metadata`.
 
 ### Enrollment (`app/Models/Enrollment.php`)
 - **Purpose:** Student access records linking customers to purchased delivery options

@@ -42,7 +42,7 @@ final class CreateRefundAction
             $this->validateOrderItemIsRefundable($orderItem, $data);
 
             $amountPaidForItem = $this->calculateAmountPaidForItem($orderItem);
-            $deductionAmount   = $this->calculateDeductionAmount($data, $orderItem->price);
+            $deductionAmount   = $this->calculateDeductionAmount($data, $orderItem->base_price_amount);
             $refundAmount      = max(0, $amountPaidForItem - $deductionAmount);
 
             $payment       = $this->resolvePayment($orderItem);
@@ -201,14 +201,7 @@ final class CreateRefundAction
      */
     private function calculateAmountPaidForItem(OrderItem $orderItem): int
     {
-        $order = $orderItem->order;
-
-        if ($order->balance_due <= 0) {
-            return (int) (($orderItem->price - $orderItem->discount_amount + $orderItem->tax_amount)
-                * $orderItem->qty_ordered);
-        }
-
-        return $orderItem->total;
+        return $orderItem->paid_amount;
     }
 
     /**

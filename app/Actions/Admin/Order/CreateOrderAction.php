@@ -94,6 +94,11 @@ final readonly class CreateOrderAction
                 // PRE_PAYMENT items do NOT receive product-level discounts in pricing_metadata
                 $isPrePayment = $calculatedItem->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT;
 
+                $basePriceAmount       = $calculatedItem->product_delivery_option->price * $calculatedItem->qty;
+                $paidAmount            = max(0, $calculatedItem->total);
+                $productDiscountAmount = $isPrePayment ? 0 : $priceData->discount_amount * $calculatedItem->qty;
+                $totalDiscountAmount   = $isPrePayment ? 0 : max(0, $basePriceAmount - $paidAmount);
+
                 $orderItemsData->push([
                     'product_delivery_option_id' => $calculatedItem->product_delivery_option->id,
                     'vendor_id'                  => $deliveryOption->product->vendor_id,
@@ -112,15 +117,25 @@ final readonly class CreateOrderAction
                         : null,
                     // PRE_PAYMENT: no discount metadata, FULL_PAYMENT: full discount metadata
                     'pricing_metadata' => $isPrePayment ? [
-                        'original_price'      => $priceData->original_price,
-                        'discount_type'       => null,
-                        'discount_amount'     => 0,
-                        'discount_percentage' => null,
+                        'original_price'          => $priceData->original_price,
+                        'base_price_amount'       => $basePriceAmount,
+                        'paid_amount'             => $paidAmount,
+                        'product_discount_amount' => 0,
+                        'cart_discount_amount'    => 0,
+                        'total_discount_amount'   => $totalDiscountAmount,
+                        'discount_type'           => null,
+                        'discount_amount'         => 0,
+                        'discount_percentage'     => null,
                     ] : [
-                        'original_price'      => $priceData->original_price,
-                        'discount_type'       => $priceData->discount_type,
-                        'discount_amount'     => $priceData->discount_amount,
-                        'discount_percentage' => $priceData->discount_percentage,
+                        'original_price'          => $priceData->original_price,
+                        'base_price_amount'       => $basePriceAmount,
+                        'paid_amount'             => $paidAmount,
+                        'product_discount_amount' => $productDiscountAmount,
+                        'cart_discount_amount'    => $calculatedItem->discount_amount,
+                        'total_discount_amount'   => $totalDiscountAmount,
+                        'discount_type'           => $priceData->discount_type,
+                        'discount_amount'         => $priceData->discount_amount,
+                        'discount_percentage'     => $priceData->discount_percentage,
                     ],
                     'prepayment_amount' => $deliveryOption->prepayment_amount,
                     'tax_amount'        => 0, // Placeholder

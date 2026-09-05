@@ -147,6 +147,77 @@ describe('CreateRefundAction', function (): void {
         ]);
     });
 
+    it('uses the immutable paid amount and PDO base value for discounted refunds', function (): void {
+        $order = Order::factory()->withCalculatedTotals([
+            [
+                'price'            => 100000,
+                'total'            => 60000,
+                'pricing_metadata' => [
+                    'base_price_amount'     => 100000,
+                    'paid_amount'           => 60000,
+                    'total_discount_amount' => 40000,
+                ],
+            ],
+        ])->create();
+        $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::BANK_TRANSFER,
+            'amount'      => 60000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+        $orderItem = $order->items->first();
+        $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        $refund = resolve(CreateRefundAction::class)->handle(new RefundCreateData(
+            order_item_id: $orderItem->id,
+            deduction_amount: null,
+            deduction_percent: 10,
+            transaction_details: new RefundTransactionData(
+                receiver_name: 'John Doe',
+                card_number: '1234567812345678',
+                iban_number: 'DE89370400440532013000',
+                tracking_code: null,
+            ),
+            status: RefundStatusEnum::COMPLETED->value,
+        ));
+
+        expect($refund->amount)->toBe(50000)
+            ->and($refund->deduction_amount)->toBe(10000);
+    });
+
+    it('does not create a negative refund for a zero-paid item', function (): void {
+        $order = Order::factory()->withCalculatedTotals([
+            [
+                'price'            => 100000,
+                'total'            => 0,
+                'pricing_metadata' => ['base_price_amount' => 100000, 'paid_amount' => 0],
+            ],
+        ])->create();
+        $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::BANK_TRANSFER,
+            'amount'      => 100000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+        $orderItem = $order->items->first();
+        $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        $refund = resolve(CreateRefundAction::class)->handle(new RefundCreateData(
+            order_item_id: $orderItem->id,
+            deduction_amount: 0,
+            deduction_percent: null,
+            transaction_details: new RefundTransactionData(
+                receiver_name: 'John Doe',
+                card_number: '1234567812345678',
+                iban_number: 'DE89370400440532013000',
+                tracking_code: null,
+            ),
+            status: RefundStatusEnum::COMPLETED->value,
+        ));
+
+        expect($refund->amount)->toBe(0);
+    });
+
     // --- Failure and Validation Cases ---
     it('successfully creates a with deduction_amount', function (): void {
         // Arrange
