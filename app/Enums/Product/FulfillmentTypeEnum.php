@@ -15,6 +15,7 @@ enum FulfillmentTypeEnum: string
     case ONLINE_SERVICE    = 'online_service';
     case OFFLINE_SERVICE   = 'offline_service';
     case IN_PERSON_SERVICE = 'in_person_service';
+    case COMPOSITE         = 'composite';
 
     /**
      * @return array<int, DeliveryMethodEnum>
@@ -48,6 +49,7 @@ enum FulfillmentTypeEnum: string
             self::IN_PERSON_SERVICE => [
                 DeliveryMethodEnum::IN_PERSON,
             ],
+            self::COMPOSITE => [DeliveryMethodEnum::BUNDLE],
         };
     }
 

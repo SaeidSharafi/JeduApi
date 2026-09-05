@@ -6,6 +6,7 @@ namespace App\Enums\System;
 
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
+use App\Models\Bundle;
 use App\Models\Category;
 use App\Models\CollaborationRequest;
 use App\Models\Course;
@@ -36,6 +37,7 @@ enum MorphTypeEnum: string
     case COURSE        = 'course';
     case SEMINAR       = 'seminar';
     case DIGITAL_ASSET = 'digital_asset';
+    case BUNDLE        = 'bundle';
     case STAFF         = 'staff';
     case USER          = 'user';
 
@@ -124,6 +126,7 @@ enum MorphTypeEnum: string
             self::COURSE                => Course::class,
             self::SEMINAR               => Seminar::class,
             self::DIGITAL_ASSET         => DigitalAsset::class,
+            self::BUNDLE                => Bundle::class,
             self::STAFF                 => Staff::class,
             self::USER                  => User::class,
             self::TEACHER               => Teacher::class,

@@ -13,15 +13,26 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class UpdateProductDeliveryOptionAction
 {
+    public function __construct(private SyncBundleCompositionAction $composition) {}
+
     /**
      * Execute the action.
      */
     public function handle(ProductDeliveryOptionUpdateData $data, ProductDeliveryOption $deliveryOption): ProductDeliveryOption
     {
         DB::transaction(function () use ($data, $deliveryOption): void {
-            $pdoData = $data->except('teachers')->toArray();
+            $pdoData = $data->except('teachers', 'components')->toArray();
+            if ($deliveryOption->product?->productable_type === 'bundle') {
+                $pdoData['fulfillment_type'] = 'composite';
+                $pdoData['delivery_method']  = 'bundle';
+                $pdoData['details_json']     = [];
+            }
             $deliveryOption->update($pdoData);
             $deliveryOption->teachers()->sync($data->teachers);
+            $this->composition->handle($deliveryOption, $data->components ?? []);
+            if ($deliveryOption->product?->productable_type === 'bundle') {
+                $deliveryOption->increment('composition_version');
+            }
         });
 
         $statusChanged            = $deliveryOption->wasChanged('status');

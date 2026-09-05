@@ -8,6 +8,7 @@ use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAct
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
+use App\Models\Product;
 use App\Rules\ProductDeliveryOptionCheckRule;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -18,26 +19,27 @@ final class ProductDeliveryOptionCreateData extends Data
 {
     public function __construct(
         public string $name,
-        public string $fulfillment_type,
-        public string $delivery_method,
-        public int $price,
-        public array $teachers,
-        public string $status,
+        public ?string $fulfillment_type = null,
+        public ?string $delivery_method = null,
+        public int $price = 0,
+        public array $teachers = [],
+        public string $status = 'draft',
         #[MapInputName('details')]
-        public array $details_json,
-        public bool $is_prepayment_available,
-        public ?int $capacity,
-        public ?int $prepayment_amount,
-        public bool $is_featured,
-        public ?int $featured_price,
-        public ?string $featured_price_start_date,
-        public ?string $featured_price_end_date,
-        public ?string $registration_start_date,
-        public ?string $registration_end_date,
-        public ?string $available_from,
-        public ?string $available_to,
-        public ?int $access_days,
+        public array $details_json = [],
+        public bool $is_prepayment_available = false,
+        public ?int $capacity = null,
+        public ?int $prepayment_amount = null,
+        public bool $is_featured = false,
+        public ?int $featured_price = null,
+        public ?string $featured_price_start_date = null,
+        public ?string $featured_price_end_date = null,
+        public ?string $registration_start_date = null,
+        public ?string $registration_end_date = null,
+        public ?string $available_from = null,
+        public ?string $available_to = null,
+        public ?int $access_days = null,
         public ?string $sku = null,
+        public array $components = [],
     ) {}
 
     public static function prepareForPipeline(array $properties): array
@@ -52,29 +54,42 @@ final class ProductDeliveryOptionCreateData extends Data
      */
     public static function rules(?ValidationContext $context = null): array
     {
+        $isBundleProduct = self::isBundleProduct();
+
         $baseRules = [
             'name'             => ['required', 'string', 'max:255'],
             'sku'              => ['nullable', 'alpha_dash', 'max:255'],
-            'fulfillment_type' => ['required', 'bail', 'string', Rule::enum(FulfillmentTypeEnum::class)],
+            'fulfillment_type' => [Rule::prohibitedIf($isBundleProduct), Rule::requiredIf(! $isBundleProduct), 'bail', 'nullable', 'string', Rule::enum(FulfillmentTypeEnum::class)],
             'delivery_method'  => [
-                'required', 'bail', 'string', Rule::enum(DeliveryMethodEnum::class),
+                Rule::prohibitedIf($isBundleProduct), Rule::requiredIf(! $isBundleProduct), 'bail', 'nullable', 'string', Rule::enum(DeliveryMethodEnum::class),
                 new ProductDeliveryOptionCheckRule(),
             ],
-            'price'                   => ['required', 'integer', 'min:0'],
-            'capacity'                => ['nullable', 'integer', 'min:0'],
-            'status'                  => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
-            'is_prepayment_available' => ['required', 'boolean'],
-            'prepayment_amount'       => ['nullable', 'integer', 'min:0'],
-            'details'                 => ['present', 'array'],
-            'is_featured'             => ['required', 'boolean'],
-            'featured_price'          => ['nullable', 'integer', 'min:0'],
-            'access_days'             => ['nullable', 'integer', 'min:1'],
-            'teachers'                => ['required', 'array'],
-            'teachers.*'              => ['required', 'integer', 'exists:teachers,id'],
-            'details.ims_course_code' => ['nullable', 'string'],
-            'details.schedule_days'   => ['nullable', 'array'],
-            'details.duration'        => ['sometimes', 'integer', 'min:1'],
+            'price'                                     => ['required', 'integer', 'min:0'],
+            'capacity'                                  => ['nullable', 'integer', 'min:0'],
+            'status'                                    => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
+            'is_prepayment_available'                   => ['required', 'boolean'],
+            'prepayment_amount'                         => ['nullable', 'integer', 'min:0'],
+            'details'                                   => ['present', 'array'],
+            'is_featured'                               => ['required', 'boolean'],
+            'featured_price'                            => ['nullable', 'integer', 'min:0'],
+            'access_days'                               => ['nullable', 'integer', 'min:1'],
+            'teachers'                                  => ['required', 'array'],
+            'teachers.*'                                => ['required', 'integer', 'exists:teachers,id'],
+            'details.ims_course_code'                   => ['nullable', 'string'],
+            'details.schedule_days'                     => ['nullable', 'array'],
+            'details.duration'                          => ['sometimes', 'integer', 'min:1'],
+            'components'                                => [Rule::prohibitedIf(! $isBundleProduct), Rule::requiredIf($isBundleProduct), 'array', 'min:1', 'max:'.config('products.bundles.max_components', 30)],
+            'components.*.product_delivery_option_uuid' => ['required_without:components.*.product_delivery_option_id', 'nullable', 'uuid'],
+            'components.*.product_delivery_option_id'   => ['required_without:components.*.product_delivery_option_uuid', 'nullable', 'integer'],
+            'components.*.allocation'                   => ['required_with:components', 'integer', 'min:0'],
+            'components.*.quantity'                     => ['nullable', 'integer', 'in:1'],
         ];
+
+        if ($isBundleProduct) {
+            $baseRules['details'] = ['present', 'array', 'size:0'];
+
+            return $baseRules;
+        }
 
         $detailsRulesAction      = app(GetDeliveryDetailsValidationRulesAction::class);
         $conditionalDetailsRules = $detailsRulesAction->handle(
@@ -459,5 +474,12 @@ Each value determines which `details.*` fields are required.',
                 'example'     => 'Backup room: room-id 43',
             ],
         ];
+    }
+
+    private static function isBundleProduct(): bool
+    {
+        $product = request()->route('product');
+
+        return $product instanceof Product && $product->productable_type === 'bundle';
     }
 }

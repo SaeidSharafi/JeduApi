@@ -96,11 +96,19 @@ final class ProductSearch
                 $query = ProductAvailabilityFilter::applyNearCapacity($query, $capacityThreshold);
             }
             if ($filter->difficulty_level) {
-                $types = $requestData->type !== null
+                $types = collect($requestData->type !== null
                     ? [ProductableEnum::from($requestData->type)->value]
-                    : ProductableEnum::getAllValues();
-                $query->whereHasMorph('productable', $types, fn (Builder $productableQuery): Builder => $productableQuery
-                    ->where('difficulty_level', $filter->difficulty_level));
+                    : ProductableEnum::getAllValues())
+                    ->reject(fn (string $type): bool => $type === ProductableEnum::BUNDLE->value)
+                    ->values()
+                    ->all();
+
+                if ($types === []) {
+                    $query->whereRaw('1 = 0');
+                } else {
+                    $query->whereHasMorph('productable', $types, fn (Builder $productableQuery): Builder => $productableQuery
+                        ->where('difficulty_level', $filter->difficulty_level));
+                }
             }
             if ($filter->fulfillment_types) {
                 $query->whereHas('productDeliveryOptions', fn (Builder $optionQuery): Builder => $optionQuery

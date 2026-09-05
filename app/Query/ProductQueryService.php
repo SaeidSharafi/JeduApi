@@ -365,9 +365,16 @@ final class ProductQueryService
      */
     public function byCourseLevel(CourseDifficultyLevelEnum $difficulty_level): self
     {
-        return $this->addRelationshipConstraint('productable', function ($q) use ($difficulty_level): void {
-            $q->where('difficulty_level', $difficulty_level->value);
+        $types = array_values(array_filter(
+            $this->productableTypes,
+            static fn (string $type): bool => $type !== ProductableEnum::BUNDLE->value,
+        ));
+
+        $this->query->whereHasMorph('productable', $types, function (Builder $query) use ($difficulty_level): void {
+            $query->where('difficulty_level', $difficulty_level->value);
         });
+
+        return $this;
     }
 
     /**

@@ -39,6 +39,7 @@ final class DeliveryOptionDetailCast implements Cast
             DeliveryMethodEnum::LIVE_SESSION_BBB          => LiveSessionBbbDetailsData::from($value),
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM      => LiveSessionSkyroomDetailsData::from($value),
             DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => VideoPlatformSpotplayerDetailsData::from($value),
+            DeliveryMethodEnum::BUNDLE                    => EmptyDetailsData::from([]),
             default                                       => EmptyDetailsData::from([]),
         };
 

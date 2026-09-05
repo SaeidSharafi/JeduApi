@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums\Product;
 
+use App\Models\Bundle;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
@@ -16,6 +17,7 @@ enum ProductableEnum: string
     case COURSE        = 'course';
     case SEMINAR       = 'seminar';
     case DIGITAL_ASSET = 'digital_asset';
+    case BUNDLE        = 'bundle';
 
     public static function getAlias(string $modelClass): ?string
     {
@@ -34,6 +36,7 @@ enum ProductableEnum: string
             self::COURSE->value        => 'courses',
             self::SEMINAR->value       => 'seminars',
             self::DIGITAL_ASSET->value => 'digital_assets',
+            self::BUNDLE->value        => 'bundles',
             default                    => 'courses',
         };
     }
@@ -44,6 +47,7 @@ enum ProductableEnum: string
             self::COURSE        => Course::class,
             self::SEMINAR       => Seminar::class,
             self::DIGITAL_ASSET => DigitalAsset::class,
+            self::BUNDLE        => Bundle::class,
         };
     }
 
@@ -54,6 +58,7 @@ enum ProductableEnum: string
             self::COURSE        => false,
             self::SEMINAR       => false,
             self::DIGITAL_ASSET => false,
+            self::BUNDLE        => false,
         };
     }
 }

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Data\Casts;
 
 use App\Contracts\ProductableContract;
+use App\Data\Admin\Bundle\BundleData;
 use App\Data\Admin\Course\CourseListItemData;
 use App\Data\Admin\Course\ShowCourseData;
 use App\Data\Admin\DigitalAsset\DigitalAssetListItemData;
 use App\Data\Admin\DigitalAsset\ShowDigitalAssetData;
 use App\Data\Admin\Seminar\SeminarListItemData;
 use App\Data\Admin\Seminar\ShowSeminarData;
+use App\Models\Bundle;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
@@ -36,6 +38,7 @@ final readonly class ProductableCast implements Cast
             $value instanceof Course       => $this->getCourseData($value),
             $value instanceof Seminar      => $this->getSeminarData($value),
             $value instanceof DigitalAsset => $this->getDigitalAssetData($value),
+            $value instanceof Bundle       => BundleData::fromModel($value),
             default                        => throw new InvalidArgumentException('Unsupported productable type: '.get_class($value)),
         };
 

@@ -56,7 +56,7 @@
 - **Purpose:** Sellable instances of educational content with polymorphic relationships
 - **Key Fields:** `vendor_id`, `productable_id`, `productable_type`, `term_id`, `status`, `is_visible`, `short_name`, `name`, `slug`, `short_description`, `is_featured`, `price_data_cache`, `details_json`, `event_start_at`, `event_ended_at`, denormalized availability snapshot columns: `has_published_delivery_option`, `productable_status`, `is_term_active`, `earliest_registration_start`, `latest_registration_end`, `earliest_availability_start`, `latest_availability_end`, `near_capacity`, `max_capacity_utilization`
 - **Relationships:**
-  - `morphTo()` - productable (Course, Seminar, DigitalAsset)
+  - `morphTo()` - productable (Course, Seminar, DigitalAsset, Bundle)
   - `belongsTo(Vendor::class)` - vendor
   - `belongsTo(Term::class)` - term
   - `hasMany(ProductDeliveryOption::class)` - productDeliveryOptions
@@ -115,7 +115,21 @@
   - `belongsToMany(Teacher::class, 'product_delivery_option_teacher')` - teachers
   - `hasMany(Enrollment::class, 'product_delivery_option_id')` - enrollments
   - `hasMany(OrderItem::class)` - orderItems
-- **Special Features:** UUID for external references, SKU auto-generation via `SkuGeneratorService` when not provided, capacity tracking backed by the persisted `enrolled_count` column (no more runtime `withCount`), and a `discountPrice` accessor that evaluates active discount windows using `starts_at`/`ends_at` timestamps on `ProductDeliveryOptionDiscountPrice`. **Capacity reservations:** `reserved_count` holds seats held by PENDING orders; committed seats = `enrolled_count + reserved_count`, and capacity validity checks compare `capacity > (enrolled_count + reserved_count)`. Reservations are managed by `ProductReservationService` (`reserve`/`consume`/`release`).
+  - `belongsToMany(ProductDeliveryOption::class, 'bundle_components')` - bundleComponents (pivot: allocation)
+  - `belongsToMany(ProductDeliveryOption::class, 'bundle_components')` - bundleParents (inverse pivot)
+- **Special Features:** UUID for external references, SKU auto-generation via `SkuGeneratorService` when not provided, and monotonic `composition_version` for Bundle PDO composition changes. Bundle PDOs use `fulfillment_type=composite`, `delivery_method=bundle`, empty details, and atomically persist component allocations. Capacity tracking is backed by the persisted `enrolled_count` column (no more runtime `withCount`), and `discountPrice` evaluates active discount windows. **Capacity reservations:** `reserved_count` holds seats held by PENDING orders; committed seats = `enrolled_count + reserved_count`, and capacity validity checks compare `capacity > (enrolled_count + reserved_count)`. Reservations are managed by `ProductReservationService` (`reserve`/`consume`/`release`).
+
+### Bundle (`app/Models/Bundle.php`)
+- **Purpose:** Productable bundle definition whose Product PDO orchestrates fulfillment through component PDOs.
+- **Key Fields:** `slug`, `full_name`, `short_name`, `description`, `thumbnail_url`, `properties`, `additional_info`, `faq`, `status`, `created_by`
+- **Relationships:** `morphToMany(Category::class, 'categorizable')` - categories; polymorphic `productable` relation from Product
+- **Traits:** Uses `IsProductable`, `HasCategories`, `HasMedia`, and `Mediable`
+- **Special Features:** Bundle publication requires every component Product and PDO to be published; bundles do not expose difficulty or virtuality and are excluded from delivery-method promotion selectors.
+
+### BundleComponent (`app/Models/BundleComponent.php`)
+- **Purpose:** Pivot model linking a parent Bundle PDO to each component PDO and storing the component's price allocation.
+- **Key Fields:** `bundle_product_delivery_option_id`, `component_product_delivery_option_id`, `allocation`
+- **Relationships:** Belongs to both the parent and component `ProductDeliveryOption` models; exact duplicate component PDO references are prevented by a unique constraint.
 
 ### Cart (`app/Models/Cart.php`)
 - **Purpose:** Persistent shopping carts for both authenticated customers and guest sessions

@@ -26,7 +26,7 @@ final class DeliveryMethodIsData extends Data
     {
         return [
             'delivery_methods'   => ['required', 'array'],
-            'delivery_methods.*' => ['required', Rule::enum(DeliveryMethodEnum::class)],
+            'delivery_methods.*' => ['required', Rule::enum(DeliveryMethodEnum::class), Rule::notIn([DeliveryMethodEnum::BUNDLE->value])],
         ];
     }
 }

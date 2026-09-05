@@ -15,6 +15,7 @@ use App\Enums\ProvisioningReadinessEnum;
 use App\Enums\ProvisioningStatusEnum;
 use App\Models\ProductDeliveryOption;
 use App\Services\Integrations\AbstractIntegrationService;
+use LogicException;
 
 final readonly class ProvisioningPlanResolver
 {
@@ -36,6 +37,10 @@ final readonly class ProvisioningPlanResolver
 
         if (is_string($details['ims_course_code'] ?? null) && $details['ims_course_code'] !== '') {
             $providers[] = $this->provider(ProvisioningProviderEnum::IMS, $this->ims);
+        }
+
+        if ($deliveryOption->delivery_method === DeliveryMethodEnum::BUNDLE) {
+            throw new LogicException('Bundle delivery options cannot be provisioned directly.');
         }
 
         $deliveryProvider = match ($deliveryOption->delivery_method) {

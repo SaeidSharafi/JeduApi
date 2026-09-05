@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\Category\CategoryController;
 use App\Http\Controllers\Api\Admin\Category\CategoryItemsController;
 use App\Http\Controllers\Api\Admin\Content\GoodForStartController;
 use App\Http\Controllers\Api\Admin\Product\ArchiveProductController;
+use App\Http\Controllers\Api\Admin\Product\BundleController;
 use App\Http\Controllers\Api\Admin\Product\CourseController;
 use App\Http\Controllers\Api\Admin\Product\DigitalAssetController;
 use App\Http\Controllers\Api\Admin\Product\ProductController;
@@ -24,6 +25,7 @@ Route::prefix('categories/{category}')->name('categories.')->group(function (): 
 });
 
 Route::apiResource('courses', CourseController::class);
+Route::apiResource('bundles', BundleController::class);
 Route::apiResource('digital-assets', DigitalAssetController::class);
 Route::apiResource('seminars', SeminarController::class);
 

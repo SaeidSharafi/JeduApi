@@ -35,7 +35,7 @@ final class ProductDeliveryOptionController extends Controller
     {
         Gate::authorize('view-any', ProductDeliveryOption::class);
         $deliveryOptions = $product->productDeliveryOptions()
-            ->with('teachers', fn ($q) => $q->orderBy('id'))
+            ->with(['teachers' => fn ($q) => $q->orderBy('id'), 'product.term'])
             ->get();
 
         return apiResponse()->success(ProductDeliveryOptionShowData::collect($deliveryOptions));
@@ -53,7 +53,7 @@ final class ProductDeliveryOptionController extends Controller
     ): ApiResponseInterface {
         Gate::authorize('create', ProductDeliveryOption::class);
         $deliveryOption = $action->handle($data, $product);
-        $deliveryOption->loadMissing('teachers');
+        $deliveryOption->loadMissing(['teachers', 'product.term']);
 
         return apiResponse()->created(
             ProductDeliveryOptionShowData::from($deliveryOption),
@@ -70,7 +70,7 @@ final class ProductDeliveryOptionController extends Controller
     public function show(Product $product, ProductDeliveryOption $deliveryOption): ApiResponseInterface
     {
         Gate::authorize('view', $deliveryOption);
-        $deliveryOption->loadMissing('teachers');
+        $deliveryOption->loadMissing(['teachers', 'product.term']);
 
         return apiResponse()->success(ProductDeliveryOptionShowData::from($deliveryOption));
     }
@@ -90,7 +90,7 @@ final class ProductDeliveryOptionController extends Controller
     ): ApiResponseInterface {
         Gate::authorize('update', $deliveryOption);
         $deliveryOption = $action->handle($data, $deliveryOption);
-        $deliveryOption->loadMissing('teachers');
+        $deliveryOption->loadMissing(['teachers', 'product.term']);
 
         return apiResponse()->updated(
             ProductDeliveryOptionShowData::from($deliveryOption),

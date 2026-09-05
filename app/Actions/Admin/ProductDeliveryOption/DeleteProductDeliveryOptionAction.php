@@ -28,6 +28,12 @@ final readonly class DeleteProductDeliveryOptionAction
                 ]);
             }
 
+            if ($deliveryOption->bundleParents()->exists()) {
+                throw ValidationException::withMessages([
+                    'product_delivery_option' => 'A component delivery option referenced by a Bundle cannot be deleted.',
+                ]);
+            }
+
             $deliveryOption->delete();
         });
         ProductCacheInvalidated::dispatch($deliveryOption->product_id);

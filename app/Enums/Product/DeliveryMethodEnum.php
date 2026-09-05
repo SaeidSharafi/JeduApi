@@ -11,6 +11,7 @@ use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsDa
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
 use App\Traits\AdvanceEnum;
+use LogicException;
 
 enum DeliveryMethodEnum: string
 {
@@ -23,6 +24,7 @@ enum DeliveryMethodEnum: string
     case IN_PERSON                 = 'in_person';
     case LIVE_SESSION_BBB          = 'live_session_bbb';
     case LIVE_SESSION_SKYROOM      = 'live_session_skyroom';
+    case BUNDLE                    = 'bundle';
 
     /**
      * @return array<int, self|string>
@@ -51,6 +53,7 @@ enum DeliveryMethodEnum: string
             self::IN_PERSON                 => InPersonDetailsData::class,
             self::LIVE_SESSION_BBB          => LiveSessionBbbDetailsData::class,
             self::LIVE_SESSION_SKYROOM      => LiveSessionSkyroomDetailsData::class,
+            self::BUNDLE                    => \App\Data\Admin\ProductDeliveryOption\DetailsData\EmptyDetailsData::class,
         };
     }
 
@@ -63,6 +66,7 @@ enum DeliveryMethodEnum: string
             self::LIVE_SESSION_SKYROOM => FulfillmentTypeEnum::ONLINE_SERVICE,
             self::DIRECT_DOWNLOAD      => FulfillmentTypeEnum::DIGITAL,
             self::IN_PERSON            => FulfillmentTypeEnum::IN_PERSON_SERVICE,
+            self::BUNDLE               => FulfillmentTypeEnum::COMPOSITE,
         };
     }
 
@@ -74,6 +78,7 @@ enum DeliveryMethodEnum: string
             self::VIDEO_PLATFORM_SPOTPLAYER,
             self::LIVE_SESSION_SKYROOM             => true,
             self::DIRECT_DOWNLOAD, self::IN_PERSON => false,
+            self::BUNDLE                           => throw new LogicException('Bundle delivery options do not have virtuality.'),
         };
     }
 }

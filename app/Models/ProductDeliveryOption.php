@@ -48,6 +48,7 @@ final class ProductDeliveryOption extends Model
             'available_from',
             'available_to',
             'access_days',
+            'composition_version',
         ];
 
     protected $with
@@ -85,6 +86,20 @@ final class ProductDeliveryOption extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class, 'product_delivery_option_id');
+    }
+
+    /** @return BelongsToMany<ProductDeliveryOption, $this> */
+    public function bundleComponents(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'bundle_components', 'bundle_product_delivery_option_id', 'component_product_delivery_option_id')
+            ->using(BundleComponent::class)->withPivot('allocation')->withTimestamps();
+    }
+
+    /** @return BelongsToMany<ProductDeliveryOption, $this> */
+    public function bundleParents(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'bundle_components', 'component_product_delivery_option_id', 'bundle_product_delivery_option_id')
+            ->using(BundleComponent::class)->withPivot('allocation')->withTimestamps();
     }
 
     /**

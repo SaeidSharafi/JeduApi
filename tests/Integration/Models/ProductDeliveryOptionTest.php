@@ -36,6 +36,7 @@ test('to array', function (): void {
             'available_from'                         => $productDeliveryOption->available_from?->format('Y-m-d'),
             'available_to'                           => $productDeliveryOption->available_to?->format('Y-m-d'),
             'access_days'                            => $productDeliveryOption->access_days,
+            'composition_version'                    => $productDeliveryOption->composition_version,
             'created_at'                             => $productDeliveryOption->created_at?->utc()?->toJSON(),
             'updated_at'                             => $productDeliveryOption->updated_at?->utc()?->toJSON(),
             'allow_multiple_quantity'                => $productDeliveryOption->allow_multiple_quantity,

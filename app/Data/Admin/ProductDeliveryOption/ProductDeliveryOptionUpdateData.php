@@ -33,6 +33,7 @@ final class ProductDeliveryOptionUpdateData extends Data
         public ?string $available_from,
         public ?string $available_to,
         public ?int $access_days,
+        public array $components = [],
     ) {}
 
     public static function prepareForPipeline(array $properties): array
@@ -70,6 +71,20 @@ final class ProductDeliveryOptionUpdateData extends Data
         $deliveryOption  = request()->route()?->parameter('delivery_option');
         $deliveryMethod  = $deliveryOption?->delivery_method?->value  ?? $context->payload['delivery_method'] ?? null;
         $fulfillmentType = $deliveryOption?->fulfillment_type?->value ?? $context->payload['fulfillment_type'] ?? null;
+        $isBundleProduct = $deliveryOption?->product?->productable_type === 'bundle';
+
+        if ($isBundleProduct) {
+            $baseRules['details']                                   = ['present', 'array', 'size:0'];
+            $baseRules['components']                                = [Rule::requiredIf($isBundleProduct), Rule::prohibitedIf(! $isBundleProduct), 'array', 'min:1', 'max:'.config('products.bundles.max_components', 30)];
+            $baseRules['components.*.product_delivery_option_uuid'] = ['required_without:components.*.product_delivery_option_id', 'nullable', 'uuid'];
+            $baseRules['components.*.product_delivery_option_id']   = ['required_without:components.*.product_delivery_option_uuid', 'nullable', 'integer'];
+            $baseRules['components.*.allocation']                   = ['required', 'integer', 'min:0'];
+            $baseRules['components.*.quantity']                     = ['nullable', 'integer', 'in:1'];
+
+            return $baseRules;
+        }
+
+        $baseRules['components'] = [Rule::requiredIf($isBundleProduct), Rule::prohibitedIf(! $isBundleProduct), 'array'];
 
         $detailsRulesAction      = app(GetDeliveryDetailsValidationRulesAction::class);
         $conditionalDetailsRules = $detailsRulesAction->handle(

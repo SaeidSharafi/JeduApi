@@ -75,6 +75,10 @@
 ---
 ## Product & Catalog Management
 
+### Table: `bundles`
+- Purpose: Productable Bundle definitions used by the normal Product catalog workflow.
+- Columns: `id`, `slug` (unique), `full_name`, `short_name`, `description`, `thumbnail_url`, `properties` (JSON), `additional_info` (JSON), `faq` (JSON), `status`, `created_by` (nullable FK to staff, SET NULL), timestamps.
+
 ### Table: `vendors`
 - Purpose: Product vendors/departments.
 - Columns:
@@ -208,8 +212,18 @@
   - available_from (DATE nullable)
   - available_to (DATE nullable)
   - access_days (INT unsigned nullable, default null) — Number of days user has access to content from enrollment date; null means unlimited
+  - composition_version (INT unsigned default 1) — Monotonic Bundle composition revision
   - created_at/updated_at (TIMESTAMPS)
-- Indexes: UNIQUE(sku), INDEX(status)
+- Indexes: UNIQUE(sku), INDEX(status), INDEX(delivery_method, fulfillment_type)
+
+### Pivot: `bundle_components`
+- Columns:
+  - id (BIGINT, PK)
+  - bundle_product_delivery_option_id (BIGINT) FK -> product_delivery_options(id) CASCADE
+  - component_product_delivery_option_id (BIGINT) FK -> product_delivery_options(id) RESTRICT
+  - allocation (BIGINT unsigned)
+  - created_at/updated_at (TIMESTAMPS)
+- Constraints: UNIQUE(bundle_product_delivery_option_id, component_product_delivery_option_id), indexes on both foreign keys
 
 ### Pivot: `product_delivery_option_teacher`
 - Columns:

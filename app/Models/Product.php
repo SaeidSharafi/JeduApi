@@ -119,7 +119,9 @@ final class Product extends Model
             'productable_full_name'   => $this->productable?->full_name,
             'productable_short_name'  => $this->productable?->short_name,
             'productable_description' => $this->productable?->description,
-            'difficulty_level'        => $this->productable?->difficulty_level?->value,
+            'difficulty_level'        => $this->productable !== null && array_key_exists('difficulty_level', $this->productable->getAttributes())
+                ? $this->productable->difficulty_level?->value
+                : null,
         ];
 
         return $searchableData;
@@ -170,7 +172,7 @@ final class Product extends Model
     }
 
     /**
-     * @return MorphTo<Course|Seminar|DigitalAsset, $this>
+     * @return MorphTo<Course|Seminar|DigitalAsset|Bundle, $this>
      */
     public function productable(): MorphTo
     {
@@ -178,7 +180,7 @@ final class Product extends Model
     }
 
     /**
-     * @return MorphTo<Course|Seminar|DigitalAsset, $this>
+     * @return MorphTo<Course|Seminar|DigitalAsset|Bundle, $this>
      */
     public function productableWithAllRelations(): MorphTo
     {

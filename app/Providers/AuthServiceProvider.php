@@ -8,6 +8,7 @@ use App\Models\AdminActionLog;
 use App\Models\AdviceRequest;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
+use App\Models\Bundle;
 use App\Models\Category;
 use App\Models\CollaborationRequest;
 use App\Models\ContactUsRequest;
@@ -38,6 +39,7 @@ use App\Models\WalletCampaign;
 use App\Policies\Admin\AdminActionLogPolicy;
 use App\Policies\Admin\Blog\BlogCategoryPolicy;
 use App\Policies\Admin\Blog\BlogPostPolicy;
+use App\Policies\Admin\BundlePolicy;
 use App\Policies\Admin\CategoryPolicy;
 use App\Policies\Admin\CollaborationRequestPolicy;
 use App\Policies\Admin\ContactUsRequestPolicy;
@@ -120,6 +122,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(AdviceRequest::class, AdviceRequestPolicy::class);
         Gate::policy(BlogCategory::class, BlogCategoryPolicy::class);
         Gate::policy(BlogPost::class, BlogPostPolicy::class);
+        Gate::policy(Bundle::class, BundlePolicy::class);
 
     }
 }

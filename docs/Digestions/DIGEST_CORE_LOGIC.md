@@ -164,6 +164,12 @@
   - `handle(ProductDeliveryOption $option): void`: Removes delivery options
 - **GetDeliveryDetailsValidationRulesAction** (`app/Actions/Admin/ProductDeliveryOption/GetDeliveryDetailsValidationRulesAction.php`)
   - `handle(string $deliveryType): array`: Provides validation rules for different delivery option types
+- **SyncBundleCompositionAction** (`app/Actions/Admin/ProductDeliveryOption/SyncBundleCompositionAction.php`)
+  - Validates and atomically replaces Bundle PDO components, rejecting nested bundles, self-reference, duplicate PDOs, invalid quantities, invalid allocations, unpublished components on publication, and allocations whose sum differs from the Bundle price.
+
+#### Bundle Actions (`app/Actions/Admin/Bundle/`)
+- **CreateBundleAction** and **UpdateBundleAction**: Persist Bundle metadata transactionally.
+- **DeleteBundleAction**: Deletes unused Bundle products/PDOs and archives identity when orders exist; enrollment-linked bundles cannot be deleted.
 
 #### Discount Actions (`app/Actions/Admin/Discounts/`)
 - **CreateDiscountPromotionAction** (`app/Actions/Admin/Discounts/CreateDiscountPromotionAction.php`)
