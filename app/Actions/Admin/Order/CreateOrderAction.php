@@ -12,8 +12,11 @@ use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
+use App\Enums\Product\BundleUnavailableReasonEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
+use App\Services\BundleAvailabilityService;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\ProductPriceService;
 use App\Services\ProductReservationService;
@@ -28,6 +31,7 @@ final readonly class CreateOrderAction
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
         private ProductPriceService $productPriceService,
         private ProductReservationService $productReservationService,
+        private BundleAvailabilityService $bundleAvailability,
         private ValidatePromotionPerCustomerLimitAction $validatePromotionPerCustomerLimit,
         private RecordPromotionUsageAction $recordPromotionUsage,
     ) {}
@@ -201,6 +205,23 @@ final readonly class CreateOrderAction
                 "items.{$key}" => __('messages.order.item_not_available',
                     ['product' => $deliveryOption->name]),
             ]);
+        }
+
+        if ($deliveryOption->product->productable_type === ProductableEnum::BUNDLE->value) {
+            $status = $this->bundleAvailability->bundlePurchaseStatus($deliveryOption, null, $itemData->qty_ordered);
+            if (! $status['available']) {
+                if ($status['reason'] === BundleUnavailableReasonEnum::CAPACITY_EXCEEDED) {
+                    throw ValidationException::withMessages([
+                        "items.{$key}" => __('messages.order.insufficient_capacity', [
+                            'product'   => $deliveryOption->name,
+                            'available' => $status['remaining'],
+                        ]),
+                    ]);
+                }
+                throw ValidationException::withMessages([
+                    "items.{$key}" => __('messages.order.item_not_available', ['product' => $deliveryOption->name]),
+                ]);
+            }
         }
 
         // Check registration window (Gap #3 fix)

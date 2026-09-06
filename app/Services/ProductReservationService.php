@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\Product\ProductableEnum;
 use App\Models\ProductDeliveryOption;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Tracks seat reservations on ProductDeliveryOption rows.
@@ -27,9 +29,33 @@ final class ProductReservationService
      */
     public function reserve(int $deliveryOptionId, int $qty): void
     {
-        ProductDeliveryOption::query()
-            ->whereKey($deliveryOptionId)
-            ->increment('reserved_count', $qty);
+        $deliveryOption = ProductDeliveryOption::query()
+            ->with(['product', 'bundleComponents'])
+            ->lockForUpdate()
+            ->findOrFail($deliveryOptionId);
+        if ($deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value
+            && $deliveryOption->bundleComponents->isEmpty()
+        ) {
+            throw ValidationException::withMessages([
+                'items' => __('messages.product.bundle_components_required'),
+            ]);
+        }
+
+        $options = $deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value
+            ? $deliveryOption->bundleComponents->sortBy('id')
+            : collect([$deliveryOption]);
+
+        foreach ($options as $option) {
+            $locked = ProductDeliveryOption::query()->lockForUpdate()->findOrFail($option->id);
+            if ($locked->capacity !== null
+                && $locked->enrolled_count + $locked->reserved_count + $qty > $locked->capacity
+            ) {
+                throw ValidationException::withMessages([
+                    'items' => __('messages.product.bundle_component_capacity_exceeded'),
+                ]);
+            }
+            $locked->increment('reserved_count', $qty);
+        }
     }
 
     /**
@@ -53,10 +79,19 @@ final class ProductReservationService
      */
     private function decrement(int $deliveryOptionId, int $qty): void
     {
-        ProductDeliveryOption::query()
-            ->whereKey($deliveryOptionId)
-            ->update([
-                'reserved_count' => DB::raw('GREATEST(reserved_count - '.$qty.', 0)'),
-            ]);
+        $deliveryOption = ProductDeliveryOption::query()
+            ->with(['product', 'bundleComponents'])
+            ->findOrFail($deliveryOptionId);
+        $options = $deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value
+            ? $deliveryOption->bundleComponents
+            : collect([$deliveryOption]);
+
+        foreach ($options as $option) {
+            ProductDeliveryOption::query()
+                ->whereKey($option->id)
+                ->update([
+                    'reserved_count' => DB::raw('GREATEST(reserved_count - '.$qty.', 0)'),
+                ]);
+        }
     }
 }
