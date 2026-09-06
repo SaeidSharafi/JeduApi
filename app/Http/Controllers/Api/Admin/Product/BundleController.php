@@ -14,6 +14,7 @@ use App\Data\Admin\Bundle\BundleUpdateData;
 use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use Illuminate\Support\Facades\Gate;
+use Spatie\QueryBuilder\QueryBuilder;
 
 final class BundleController extends Controller
 {
@@ -21,7 +22,14 @@ final class BundleController extends Controller
     {
         Gate::authorize('view-any', Bundle::class);
 
-        return apiResponse()->success(BundleData::collect(Bundle::query()->latest()->get()));
+        $bundles = QueryBuilder::for(Bundle::class)
+            ->allowedFilters(['slug', 'full_name', 'short_name', 'status'])
+            ->allowedSorts(['slug', 'full_name', 'short_name', 'status', 'created_at', 'updated_at'])
+            ->defaultSort('-created_at')
+            ->paginate(request()->integer('per_page', config('app.page_size')))
+            ->withQueryString();
+
+        return apiResponse()->success(BundleData::collect($bundles));
     }
 
     public function store(BundleCreateData $data, CreateBundleAction $action): ApiResponseInterface
