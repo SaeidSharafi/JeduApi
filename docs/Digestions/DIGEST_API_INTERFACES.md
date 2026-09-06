@@ -594,6 +594,10 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/digital-assets` - **Request DTO:** ProductListRequestData - **Delegates to:** `ProductQueryService::getDigitalAssetList()` with price hydration - **Response DTO:** Paginated `ProductCardData`
 - `show(Product $product)`: **Route:** `GET /api/v1/shop/digital-asset/{product:slug}` - **Delegates to:** `ProductQueryService` detail pipeline + `ProductPriceService` - **Response DTO:** `DigitalAssetDetailData`
 
+#### BundleController (`app/Http/Controllers/Api/Shop/Product/BundleController.php`)
+- `index(PaginationRequestData $request)`: **Route:** `GET /api/v1/shop/bundles` - Accepts only bounded `page` and `per_page` pagination and uses the default catalog ordering. Returns published, visible, reviewed, currently saleable Bundle Products with at least one available composite option as paginated `ProductCardData`.
+- `show(Product $product)`: **Route:** `GET /api/v1/shop/bundles/{product:slug}` - Resolves the Product slug and returns only eligible Bundle Products. `BundleDetailData` exposes every available composite option, component Productable/Product/PDO identity, sanitized fulfillment presentation, allocations, availability, and server-calculated Bundle pricing. Bundles are intentionally absent from global search and category result contracts.
+
 #### GoodForStartCoursesController (`app/Http/Controllers/Api/Shop/Product/GoodForStartCoursesController.php`)
 - `__invoke(Category $category, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/good-for-start/category/{category:slug}/courses` - **Query Param:** `limit` (default 10) - **Delegates to:** Cached `ProductQueryService::goodForStart()` lookup within SmartCache using `CacheKeysEnum::GoodForStart` - **Response DTO:** `ProductCardData` collection
 

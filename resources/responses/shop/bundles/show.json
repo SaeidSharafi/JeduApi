@@ -1,0 +1,5 @@
+{
+  "message": "Success",
+  "data": {"slug": "bundle-slug", "productable_type": "bundle", "product_id": 1, "product_name": "Bundle", "options": []},
+  "metadata": {}
+}

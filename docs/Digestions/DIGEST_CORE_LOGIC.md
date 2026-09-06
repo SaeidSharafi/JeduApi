@@ -796,6 +796,10 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Pattern:** Maintains the deferred constraint collector ensuring `whereHas`/`whereHasMorph` consolidation, preventing redundant joins and enabling reusable query presets.
 - **Scout fallback:** When `capacity_utilization` sorting or capacity-related filters are used, automatically falls back to database query (Typesense cannot handle these natively)
 
+### Public Bundle storefront actions (`app/Actions/Shop/Bundle/`)
+- `ListBundlesAction`: Loads only eligible Bundle Products with an available composite PDO, applies stable default ordering, eager-loads storefront relations, and returns bounded pagination with standard Product card fields.
+- `ShowBundleAction`: Resolves an eligible Product slug, filters unavailable/review-required composite PDOs, and maps component fulfillment details and server-produced base value, selling price, savings, percentage, and current standalone comparison totals into the Bundle storefront DTOs. Provider configuration is not exposed.
+
 ### CategoryQueryService (`app/Query/CategoryQueryService.php`)
 - **Purpose:** Category-focussed product loader that reuses the shared query engine and hydrates pricing in bulk
 - **Public Methods:**

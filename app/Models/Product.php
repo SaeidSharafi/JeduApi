@@ -146,6 +146,10 @@ final class Product extends Model
 
     public function shouldBeSearchable(): bool
     {
+        if ($this->productable_type === ProductableEnum::BUNDLE->value) {
+            return false;
+        }
+
         if (config('products.availability.use_denormalized')) {
             return $this->status === PublicationStatusEnum::PUBLISHED
                 && (bool) $this->is_visible
