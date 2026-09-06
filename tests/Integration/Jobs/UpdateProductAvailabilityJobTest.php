@@ -10,7 +10,17 @@ use App\Models\Course;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Term;
+use App\Services\BundleAvailabilityService;
+use App\Services\CacheInvalidationService;
 use Illuminate\Support\Facades\Event;
+
+function runUpdateProductAvailabilityJob(array $productIds): void
+{
+    (new UpdateProductAvailabilityJob($productIds))->handle(
+        app(CacheInvalidationService::class),
+        app(BundleAvailabilityService::class),
+    );
+}
 
 it('recomputes the complete product availability snapshot', function (): void {
     $course  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
@@ -31,7 +41,7 @@ it('recomputes the complete product availability snapshot', function (): void {
     ]);
 
     $transactionManager = fakeAfterCommitEventsImmediately(ProductSearchIndexInvalidated::class);
-    (new UpdateProductAvailabilityJob([$product->id]))->handle();
+    runUpdateProductAvailabilityJob([$product->id]);
     restoreAfterCommitEventManager($transactionManager);
 
     Event::assertDispatched(ProductSearchIndexInvalidated::class, fn (ProductSearchIndexInvalidated $event): bool => $event->productIds === [$product->id]);
@@ -49,14 +59,14 @@ it('recomputes the complete product availability snapshot', function (): void {
         ->and((float) $product->max_capacity_utilization)->toBe(0.9);
 
     $transactionManager = fakeAfterCommitEventsImmediately(ProductSearchIndexInvalidated::class);
-    (new UpdateProductAvailabilityJob([$product->id]))->handle();
+    runUpdateProductAvailabilityJob([$product->id]);
     restoreAfterCommitEventManager($transactionManager);
 
     Event::assertNotDispatched(ProductSearchIndexInvalidated::class);
 });
 
 it('handles an empty product id list', function (): void {
-    (new UpdateProductAvailabilityJob([]))->handle();
+    runUpdateProductAvailabilityJob([]);
 
     expect(true)->toBeTrue();
 });

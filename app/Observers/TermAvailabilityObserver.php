@@ -6,10 +6,13 @@ namespace App\Observers;
 
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Models\Term;
+use App\Services\BundleAvailabilityPropagationService;
 use Illuminate\Database\Eloquent\Collection;
 
 final class TermAvailabilityObserver
 {
+    public function __construct(private BundleAvailabilityPropagationService $bundlePropagation) {}
+
     public function updated(Term $term): void
     {
         if (! $term->wasChanged('status')) {
@@ -23,5 +26,7 @@ final class TermAvailabilityObserver
             ->chunkById(200, function (Collection $products): void {
                 ProductAvailabilityCacheInvalidated::dispatch($products->pluck('id')->all());
             });
+
+        $this->bundlePropagation->invalidateForComponentProducts($term->products()->pluck('products.id')->all());
     }
 }

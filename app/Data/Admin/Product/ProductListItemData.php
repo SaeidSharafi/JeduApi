@@ -34,6 +34,8 @@ final class ProductListItemData extends Data
         public ?TermListItemData $term,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public \App\Enums\Content\PublicationStatusEnum $status,
-        public ?array $details_json
+        public ?array $details_json,
+        public int $review_required_count = 0,
+        public bool $review_required = false,
     ) {}
 }

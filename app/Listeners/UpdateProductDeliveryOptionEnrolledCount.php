@@ -8,6 +8,7 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Events\EnrollmentStatusChanged;
 use App\Jobs\UpdateProductAvailabilityJob;
 use App\Models\Enrollment;
+use App\Services\BundleAvailabilityPropagationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
@@ -16,6 +17,10 @@ final class UpdateProductDeliveryOptionEnrolledCount implements ShouldQueue
     use InteractsWithQueue;
 
     public bool $afterCommit = true;
+
+    public function __construct(
+        private ?BundleAvailabilityPropagationService $bundlePropagation = null,
+    ) {}
 
     /**
      * Handle the event.
@@ -53,5 +58,7 @@ final class UpdateProductDeliveryOptionEnrolledCount implements ShouldQueue
         $deliveryOption->saveQuietly();
 
         UpdateProductAvailabilityJob::dispatch([$deliveryOption->product_id]);
+        ($this->bundlePropagation ?? app(BundleAvailabilityPropagationService::class))
+            ->invalidateForComponents([$deliveryOption->id]);
     }
 }

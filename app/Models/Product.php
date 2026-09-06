@@ -163,6 +163,14 @@ final class Product extends Model
                 ->exists();
     }
 
+    public function isEligibleForBundleSale(): bool
+    {
+        return $this->status === PublicationStatusEnum::PUBLISHED
+            && (bool) $this->is_visible
+            && (! $this->term || $this->term->status === TermStatusEnum::ACTIVE)
+            && $this->productable?->status === PublicationStatusEnum::PUBLISHED;
+    }
+
     /**
      * @return BelongsTo<Term, $this>
      */

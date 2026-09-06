@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -49,6 +50,8 @@ final class ProductDeliveryOption extends Model
             'available_to',
             'access_days',
             'composition_version',
+            'bundle_review_required_at',
+            'bundle_review_reasons',
         ];
 
     protected $with
@@ -100,6 +103,23 @@ final class ProductDeliveryOption extends Model
     {
         return $this->belongsToMany(self::class, 'bundle_components', 'component_product_delivery_option_id', 'bundle_product_delivery_option_id')
             ->using(BundleComponent::class)->withPivot('allocation')->withTimestamps();
+    }
+
+    public function effectiveRemainingCapacity(): ?int
+    {
+        if ($this->product?->productable_type !== ProductableEnum::BUNDLE->value) {
+            return $this->capacity === null
+                ? null
+                : max(0, $this->capacity - $this->enrolled_count - $this->reserved_count);
+        }
+
+        $remaining = $this->bundleComponents
+            ->map(fn (self $component): ?int => $component->capacity === null
+                ? null
+                : max(0, $component->capacity - $component->enrolled_count - $component->reserved_count))
+            ->filter(fn (?int $value): bool => $value !== null);
+
+        return $remaining->isEmpty() ? null : $remaining->min();
     }
 
     /**
@@ -278,6 +298,8 @@ final class ProductDeliveryOption extends Model
             'available_to'              => 'datetime',
             'registration_start_date'   => 'datetime',
             'registration_end_date'     => 'datetime',
+            'bundle_review_required_at' => 'datetime',
+            'bundle_review_reasons'     => 'array',
             'created_at'                => 'datetime',
             'updated_at'                => 'datetime',
         ];

@@ -72,7 +72,10 @@
     ],
     "product": null,
     "created_at": "1404-03-26 11:11:54",
-    "updated_at": "1404-03-26 11:11:54"
+    "updated_at": "1404-03-26 11:11:54",
+    "composition_version": 1,
+    "bundle_review_required_at": null,
+    "bundle_review_reasons": null
   },
   "metadata": []
 }

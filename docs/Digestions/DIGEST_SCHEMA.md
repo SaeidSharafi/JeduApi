@@ -213,6 +213,8 @@
   - available_to (DATE nullable)
   - access_days (INT unsigned nullable, default null) — Number of days user has access to content from enrollment date; null means unlimited
   - composition_version (INT unsigned default 1) — Monotonic Bundle composition revision
+  - bundle_review_required_at (TIMESTAMP nullable)
+  - bundle_review_reasons (JSON nullable) — Stable material-change reason values
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: UNIQUE(sku), INDEX(status), INDEX(delivery_method, fulfillment_type)
 
@@ -230,6 +232,9 @@
   - product_delivery_option_id (BIGINT) FK -> product_delivery_options(id) CASCADE
   - teacher_id (BIGINT) FK -> teachers(id) RESTRICT
 - Keys: PRIMARY(product_delivery_option_id, teacher_id)
+
+### Table: `cart_items`
+- Columns include `composition_version` (INT unsigned nullable), capturing the Bundle PDO composition revision added to the cart. Checkout rejects a stale revision.
 
 ### Table: `related_products`
 - Purpose: Product merchandising relationships (related, cross-sell, upsell)

@@ -44,7 +44,9 @@
     "short_name": "Alexie Dickens",
     "name": "Keon Sanford",
     "is_featured": false,
-    "details_json": []
+    "details_json": [],
+    "review_required_count": 0,
+    "review_required": false
   },
   "metadata": []
 }

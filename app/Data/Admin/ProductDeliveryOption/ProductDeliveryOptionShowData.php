@@ -54,5 +54,8 @@ final class ProductDeliveryOptionShowData extends Data
         public ?ProductData $product,
         public ?Verta $created_at = null,
         public ?Verta $updated_at = null,
+        public int $composition_version = 1,
+        public ?Verta $bundle_review_required_at = null,
+        public ?array $bundle_review_reasons = null,
     ) {}
 }

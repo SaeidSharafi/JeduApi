@@ -53,7 +53,9 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "details_json": []
+        "details_json": [],
+        "review_required_count": 1,
+        "review_required": true
       },
       {
         "id": 2,
@@ -105,7 +107,9 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "details_json": []
+        "details_json": [],
+        "review_required_count": 0,
+        "review_required": false
       },
       {
         "id": 7,
@@ -157,7 +161,9 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "details_json": []
+        "details_json": [],
+        "review_required_count": 0,
+        "review_required": false
       },
       {
         "id": 9,
@@ -209,7 +215,9 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "details_json": []
+        "details_json": [],
+        "review_required_count": 0,
+        "review_required": false
       },
       {
         "id": 10,
@@ -261,7 +269,9 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "details_json": []
+        "details_json": [],
+        "review_required_count": 0,
+        "review_required": false
       },
       {
         "id": 12,
@@ -313,7 +323,9 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "details_json": []
+        "details_json": [],
+        "review_required_count": 0,
+        "review_required": false
       },
       {
         "id": 23,
@@ -365,7 +377,9 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "details_json": []
+        "details_json": [],
+        "review_required_count": 0,
+        "review_required": false
       }
     ],
     "first_page_url": "http://jedu.test/api/v1/admin/product?page=1",

@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Product;
 
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\BundleReviewReasonEnum;
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
 use App\Models\Product;
+use App\Services\BundleAvailabilityPropagationService;
 use Illuminate\Support\Facades\DB;
 
 final readonly class ArchiveProductAction
 {
+    public function __construct(private BundleAvailabilityPropagationService $bundlePropagation) {}
+
     /**
      * Archive a product and invalidate all dependent caches.
      *
@@ -31,6 +35,11 @@ final readonly class ArchiveProductAction
         ProductCacheInvalidated::dispatch($product->id);
         ProductAvailabilityCacheInvalidated::dispatch([$product->id]);
         ProductSearchIndexInvalidated::dispatch([$product->id]);
+
+        $this->bundlePropagation->requireReviewForComponentProducts(
+            [$product->id],
+            [BundleReviewReasonEnum::COMPONENT_ARCHIVED->value],
+        );
 
         return $product;
     }

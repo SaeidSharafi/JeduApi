@@ -726,3 +726,7 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - **Rate-Limited Shop Routes:** `/api/v1/shop/rate-limited.php` - Public form submissions (contact us, collaboration) protected by `throttle:10,1`
 - **Auth Routes:** `/api/v1/auth.php` - Dual authentication system for both interfaces
 - **Select Options:** `/api/v1/admin/select_option.php` - Dropdown/select data endpoints for admin interface
+### Bundle review
+- `POST /api/v1/admin/products/{product}/delivery-options/{delivery_option}/review` — explicit staff review/revalidation for a Bundle PDO (rejects non-Bundle PDOs with `bundle_review_only_for_bundles`); clears review state only after all components and allocations are valid and eligible, then restores the Bundle PDO to `PUBLISHED`. Response: `ProductDeliveryOptionShowData`.
+- Bundle PDO responses expose `composition_version`, `bundle_review_required_at`, and `bundle_review_reasons`.
+- Admin Product listing/show responses expose `review_required_count` and `review_required`, allowing the Product/PDO workflow to show a review badge without opening every PDO.

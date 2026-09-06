@@ -41,6 +41,39 @@ _Avoid_: Invite, affiliate
 
 ### Commerce
 
+**Bundle**:
+A fixed, non-customizable package of exact Product Delivery Options offered together through the three-layer catalog. The Bundle is the Productable definition, distinct from its purchasable Bundle Product Delivery Options.
+_Avoid_: Learning Path, customizable package
+
+**Bundle Product Delivery Option**:
+The purchasable Bundle SKU whose `BUNDLE` delivery method delegates fulfillment to its component Product Delivery Options. It has no independent learning entitlement or provider delivery.
+_Avoid_: Bundle Delivery Method, Bundle definition
+
+**Bundle Purchase**:
+The immutable commercial record of a customer's purchase of one Bundle Product Delivery Option. It groups the component fulfillment and accounting lines and is the only customer-facing unit for Bundle history, cancellation, and refund.
+_Avoid_: Component Order Item, Enrollment
+
+**Bundle Component Order Item**:
+An internal fulfillment and accounting line created for one component of a Bundle Purchase. It supports the component's Enrollment, allocation, provisioning, and refund audit but is never independently purchased, presented, cancelled, or refunded.
+_Avoid_: Bundle Purchase, standalone Order Item
+
+**Learning Path**:
+A long-lived, goal-oriented ordered guide composed of existing Productable identities. A Learning Path is not a Product, Product Delivery Option, Enrollment, or purchasable package. Its steps resolve to current Products for catalog information; Product archival or replacement does not change the path's stable Productable references.
+_Avoid_: Route, journey, bundle, curriculum enrollment
+
+**Purchase Eligibility**:
+A customer is eligible to purchase an offering only when they have not previously acquired its educational content, directly or through a Bundle. Owning any Bundle component makes that Bundle ineligible.
+_Avoid_: SKU-only ownership
+
+**Component Allocation**:
+The portion of a Bundle's selling price assigned to one component, representing the amount actually paid for that component.
+_Avoid_: Component base price
+
+**Vendor**:
+The school department that owns and presents catalog offerings, including its departmental landing page. It is not an external marketplace seller or a financial-settlement boundary.
+_Avoid_: Marketplace seller
+
+
 **Customer**:
 The shop account (`User`) that places orders. Orders snapshot customer identity (`customer_*` fields). Per-customer limits are keyed on this.
 _Avoid_: buyer, client, shopper, user
