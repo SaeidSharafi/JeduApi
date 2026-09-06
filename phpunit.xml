@@ -31,6 +31,13 @@
             <file>app/Console/Commands/RegenerateDiscountPrices.php</file>
             <file>app/Console/Commands/Discounts/ClearHandlerCache.php</file>
             <file>app/Data/Casts/AdvancedDateTimeInterfaceCast.php</file>
+            <file>app/Services/Payment/SimulatorPaymentProcessor.php</file>
+            <file>app/Services/Testing/E2eResetState.php</file>
+            <file>app/Actions/Testing/ResetE2eEnvironmentAction.php</file>
+            <file>app/Http/Controllers/Testing/TestingDatabaseResetController.php</file>
+            <file>app/Http/Middleware/E2eResetGuard.php</file>
+            <file>app/Exceptions/Testing/E2eResetFailedException.php</file>
+            <file>app/Providers/E2eServiceProvider.php</file>
             <directory>app/Scribe</directory>
             <directory>app/Faker</directory>
             <directory>app/Jobs/Deployment</directory>
