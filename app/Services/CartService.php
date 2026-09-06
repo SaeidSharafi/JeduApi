@@ -90,7 +90,8 @@ final readonly class CartService
         // @codeCoverageIgnoreStart
         if ($existingItem) {
             $existingItem->update([
-                'quantity' => $existingItem->quantity + $data->quantity,
+                'quantity'            => $existingItem->quantity + $data->quantity,
+                'composition_version' => $this->compositionVersionFor($deliveryOption),
             ]);
         } // @codeCoverageIgnoreEnd
         else {
@@ -98,6 +99,7 @@ final readonly class CartService
                 'product_delivery_option_id' => $deliveryOption->id,
                 'payment_type'               => $data->payment_type->value,
                 'quantity'                   => $data->quantity,
+                'composition_version'        => $this->compositionVersionFor($deliveryOption),
             ]);
 
         }
@@ -122,8 +124,9 @@ final readonly class CartService
         $deliveryOption = $cartItem->productDeliveryOption()->with('product')->firstOrFail();
         $this->validateQuantity($deliveryOption, $data->quantity, $cartItem);
         $cartItem->update([
-            'quantity'     => $data->quantity,
-            'payment_type' => $data->payment_type,
+            'quantity'            => $data->quantity,
+            'payment_type'        => $data->payment_type,
+            'composition_version' => $this->compositionVersionFor($deliveryOption),
         ]);
 
         // Reload cart with relationships
@@ -247,7 +250,15 @@ final readonly class CartService
             ->first();
 
         if (! $userCart) {
-            // No user cart exists, convert guest cart to user cart
+            // No user cart exists, convert guest cart to user cart.
+            // Refresh each item snapshot against the current PDO state before
+            // the guest cart is re-bound to the authenticated user.
+            foreach ($guestCart->items as $guestItem) {
+                $guestItem->update([
+                    'composition_version' => $this->compositionVersionFor($guestItem->productDeliveryOption),
+                ]);
+            }
+
             $guestCart->update([
                 'user_id'     => $userId,
                 'guest_token' => null,
@@ -264,9 +275,11 @@ final readonly class CartService
                 ->first();
 
             if (! $existingItem) {
-                // Move item to user cart
+                // Move item to user cart, refreshing the composition version
+                // snapshot against the current PDO state.
                 $guestItem->update([
-                    'cart_id' => $userCart->id,
+                    'cart_id'             => $userCart->id,
+                    'composition_version' => $this->compositionVersionFor($guestItem->productDeliveryOption),
                 ]);
 
                 continue;
@@ -282,7 +295,8 @@ final readonly class CartService
             // and drop the guest duplicate together with the guest cart.
             if ($allowsMultipleQuantity && $existingItem->payment_type === $guestItem->payment_type) {
                 $existingItem->update([
-                    'quantity' => $existingItem->quantity + $guestItem->quantity,
+                    'quantity'            => $existingItem->quantity + $guestItem->quantity,
+                    'composition_version' => $this->compositionVersionFor($deliveryOption),
                 ]);
             }
         }
@@ -415,6 +429,17 @@ final readonly class CartService
             $grandTotal,
             CartItemData::collect($cartItems, DataCollection::class),
         );
+    }
+
+    /**
+     * Return the PDO composition_version to snapshot onto a cart item,
+     * or null when the option is not backed by a bundle product.
+     */
+    private function compositionVersionFor(ProductDeliveryOption $deliveryOption): ?int
+    {
+        return $deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value
+            ? $deliveryOption->composition_version
+            : null;
     }
 
     private function validateQuantity(

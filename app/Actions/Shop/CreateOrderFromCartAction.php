@@ -15,11 +15,14 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
+use App\Enums\Product\BundleUnavailableReasonEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\BundleAvailabilityService;
 use App\Services\CartService;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\Payment\PaymentProcessorFactory;
@@ -36,6 +39,7 @@ final readonly class CreateOrderFromCartAction
         private PaymentProcessorFactory $processorFactory,
         private CompleteFreeOrderPaymentAction $completeFreeOrderPayment,
         private PendingPaymentPreparerContract $preparePendingPayment,
+        private BundleAvailabilityService $bundleAvailability,
     ) {}
 
     /**
@@ -275,6 +279,19 @@ final readonly class CreateOrderFromCartAction
                 $errors["items.{$index}"] = [__('messages.checkout.delivery_option_unavailable', ['name' => $deliveryOption->product->name])];
 
                 continue;
+            }
+
+            if ($deliveryOption->product->productable_type === ProductableEnum::BUNDLE->value) {
+                $status = $this->bundleAvailability->bundlePurchaseStatus($deliveryOption, $cartItem->composition_version, $cartItem->quantity);
+                if (! $status['available']) {
+                    $errors["items.{$index}"] = match ($status['reason']) {
+                        BundleUnavailableReasonEnum::VERSION_CHANGED   => [__('messages.product.bundle_changed')],
+                        BundleUnavailableReasonEnum::CAPACITY_EXCEEDED => [__('validation.custom.checkout.product_delivery_option_sold_out', ['product_name' => $deliveryOption->product->name])],
+                        default                                        => [__('messages.product.no_longer_available', ['name' => $deliveryOption->product->name])],
+                    };
+
+                    continue;
+                }
             }
 
             // Check registration window (Gap #3 fix)
