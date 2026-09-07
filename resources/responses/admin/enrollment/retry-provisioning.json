@@ -1,0 +1,11 @@
+{
+    "message": "Operation successful.",
+    "data": {
+        "message": "Provisioning retry dispatched for 2 provider(s).",
+        "providers": [
+            "moodle",
+            "spotplayer"
+        ]
+    },
+    "metadata": []
+}

@@ -28,7 +28,7 @@ final class ProvisioningPlanController extends Controller
      *
      * Returns a preview of the rebuilt provisioning plan without applying it.
      *
-     * @responseFile 200 resources/responses/admin/enrollment/show.json
+     * @responseFile 200 resources/responses/admin/enrollment/provisioning-plan-preview.json
      * @responseFile 404 resources/responses/404.json
      * @responseFile 403 resources/responses/403.json
      */

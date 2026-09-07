@@ -1,0 +1,31 @@
+{
+    "message": "Operation successful.",
+    "data": {
+        "id": 1,
+        "slug": "full-stack-package",
+        "full_name": "Full Stack Package",
+        "short_name": "FULLSTACK",
+        "description": "A bundle of full stack courses.",
+        "thumbnail_url": "https://example.com/thumb.png",
+        "status": "published",
+        "properties": [
+            {
+                "key": "duration",
+                "value": "3 months"
+            }
+        ],
+        "additional_info": [
+            {
+                "title": "Includes",
+                "value": "12 courses"
+            }
+        ],
+        "faq": [
+            {
+                "question": "Refunds?",
+                "answer": "Within 7 days"
+            }
+        ]
+    },
+    "metadata": []
+}

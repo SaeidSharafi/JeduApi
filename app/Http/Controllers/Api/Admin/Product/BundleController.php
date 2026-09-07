@@ -36,6 +36,8 @@ final class BundleController extends Controller
      *     Prefix with '-' for descending order (e.g., -created_at). Example: -created_at
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
+     *
+     * @responseFile 200 resources/responses/admin/bundle/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -54,7 +56,7 @@ final class BundleController extends Controller
     /**
      * Create a new bundle.
      *
-     * @responseFile 201 resources/responses/201.json
+     * @responseFile 201 resources/responses/admin/bundle/show.json
      * @responseFile 422 resources/responses/422.json
      *
      * @bodyParam name string required The bundle name. Example: Full Stack Package
@@ -77,6 +79,7 @@ final class BundleController extends Controller
     /**
      * Display the specified bundle.
      *
+     * @responseFile 200 resources/responses/admin/bundle/show.json
      * @responseFile 404 resources/responses/404.json
      * @responseFile 422 resources/responses/422.json
      */
@@ -90,6 +93,7 @@ final class BundleController extends Controller
     /**
      * Update the specified bundle.
      *
+     * @responseFile 200 resources/responses/admin/bundle/show.json
      * @responseFile 404 resources/responses/404.json
      * @responseFile 422 resources/responses/422.json
      * @responseFile 403 resources/responses/403.json
