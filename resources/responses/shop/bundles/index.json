@@ -1,5 +1,104 @@
 {
-  "message": "Success",
-  "data": {"current_page": 1, "data": [], "per_page": 15, "total": 0},
-  "metadata": {}
+    "message": "Operation successful.",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "slug": "qui-qui-quia-aut-distinctio-odio-exercitationem",
+                "name": "Rubye Cremin",
+                "excerpt": "Inventore aut voluptatibus hic est qui. Explicabo possimus et architecto corporis aut iure fugit. Ratione voluptas rerum expedita necessitatibus tempora. Quam accusamus enim dolores labore.",
+                "price": 75000,
+                "original_price": 75000,
+                "price_range": {
+                    "min": 75000,
+                    "max": 75000
+                },
+                "has_discount": false,
+                "discount_percent": null,
+                "is_free": false,
+                "is_featured": false,
+                "provides_certificate": false,
+                "product_type": {
+                    "value": "bundle",
+                    "label": "enums.ProductableEnum.bundle"
+                },
+                "thumbnail_url": null,
+                "available_from": null,
+                "available_to": null,
+                "registration_start_date": null,
+                "registration_end_date": null,
+                "teachers": [],
+                "reviews_count": 0,
+                "average_rating": 0,
+                "registration_status": {
+                    "value": "in_progress",
+                    "label": "In Progress"
+                },
+                "delivery_type": null,
+                "price_data": {
+                    "min_price": 75000,
+                    "min_original_price": 75000,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "has_pre_payment": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "highest_discount_amount": null,
+                    "range": {
+                        "min": 75000,
+                        "max": 75000
+                    },
+                    "prices": [
+                        {
+                            "current_price": 75000,
+                            "original_price": 75000,
+                            "pre_payment_price": null,
+                            "featured_price": null,
+                            "discount_amount": null,
+                            "has_pre_payment_price": false,
+                            "has_featured_price": false,
+                            "has_discount": false,
+                            "discount_type": null,
+                            "discount_percentage": null,
+                            "range": null,
+                            "uuid": "01a07b30-390e-715e-8b4b-c5d184a22e3f"
+                        }
+                    ]
+                },
+                "event_start_at": null,
+                "event_ended_at": null
+            }
+        ],
+        "first_page_url": "http://jedu.test/api/v1/shop/bundles?per_page=15&page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://jedu.test/api/v1/shop/bundles?per_page=15&page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Previous",
+                "page": null,
+                "active": false
+            },
+            {
+                "url": "http://jedu.test/api/v1/shop/bundles?per_page=15&page=1",
+                "label": "1",
+                "page": 1,
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "Next &raquo;",
+                "page": null,
+                "active": false
+            }
+        ],
+        "next_page_url": null,
+        "path": "http://jedu.test/api/v1/shop/bundles",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 1,
+        "total": 1
+    },
+    "metadata": []
 }

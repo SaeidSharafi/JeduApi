@@ -16,8 +16,27 @@ use App\Models\Bundle;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\QueryBuilder;
 
+/**
+ * @group Admin - Bundle Management
+ *
+ * APIs for managing courses
+ *
+ * @authenticated Staff
+ */
 final class BundleController extends Controller
 {
+    /**
+     * return a list of the bundles.
+     *
+     * @queryParam filter[slug] string Filter by bundle slug. Example: bundle-101
+     * @queryParam filter[full_name] string Filter by bundle full name. Example: Full Stack Package
+     * @queryParam filter[short_name] string Filter by bundle short name. Example: FULLSTACK
+     * @queryParam filter[status] string Filter by bundle status. Example: published
+     * @queryParam sort string Sort by a field. Allowed values: slug, short_name, status, created_at, updated_at.
+     *     Prefix with '-' for descending order (e.g., -created_at). Example: -created_at
+     * @queryParam page integer Page number for pagination. Example: 2
+     * @queryParam per_page integer Number of results per page. Example: 15
+     */
     public function index(): ApiResponseInterface
     {
         Gate::authorize('view-any', Bundle::class);
@@ -32,6 +51,22 @@ final class BundleController extends Controller
         return apiResponse()->success(BundleData::collect($bundles));
     }
 
+    /**
+     * Create a new bundle.
+     *
+     * @responseFile 201 resources/responses/201.json
+     * @responseFile 422 resources/responses/422.json
+     *
+     * @bodyParam name string required The bundle name. Example: Full Stack Package
+     * @bodyParam slug string required A unique URL-safe slug for the bundle. Example: full-stack-package
+     * @bodyParam description string required The bundle description. Example: A bundle of full stack courses.
+     * @bodyParam status string required Publication status. Available values: `draft`, `published`, `archived`. Example: published
+     * @bodyParam short_name string nullable A short display name. Example: FULLSTACK
+     * @bodyParam thumbnail_url string nullable The URL of the bundle thumbnail. Example: https://example.com/thumb.png
+     * @bodyParam properties array nullable Additional custom properties. Example: [{"key":"duration","value":"3 months"}]
+     * @bodyParam additional_info array nullable Additional information. Example: [{"title":"Includes","value":"12 courses"}]
+     * @bodyParam faq array nullable List of FAQ items. Example: [{"question":"Refunds?","answer":"Within 7 days"}]
+     */
     public function store(BundleCreateData $data, CreateBundleAction $action): ApiResponseInterface
     {
         Gate::authorize('create', Bundle::class);
@@ -39,6 +74,12 @@ final class BundleController extends Controller
         return apiResponse()->created(BundleData::from($action->handle($data)), model: Bundle::class);
     }
 
+    /**
+     * Display the specified bundle.
+     *
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
+     */
     public function show(Bundle $bundle): ApiResponseInterface
     {
         Gate::authorize('view', $bundle);
@@ -46,6 +87,20 @@ final class BundleController extends Controller
         return apiResponse()->success(BundleData::from($bundle));
     }
 
+    /**
+     * Update the specified bundle.
+     *
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 403 resources/responses/403.json
+     *
+     * @bodyParam name string optional The bundle name. Example: Full Stack Package
+     * @bodyParam slug string optional A unique URL-safe slug for the bundle. Example: full-stack-package
+     * @bodyParam description string optional The bundle description. Example: A bundle of full stack courses.
+     * @bodyParam status string optional Publication status. Available values: `draft`, `published`, `archived`. Example: published
+     * @bodyParam short_name string nullable A short display name. Example: FULLSTACK
+     * @bodyParam thumbnail_url string nullable The URL of the bundle thumbnail. Example: https://example.com/thumb.png
+     */
     public function update(BundleUpdateData $data, Bundle $bundle, UpdateBundleAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $bundle);
@@ -53,6 +108,14 @@ final class BundleController extends Controller
         return apiResponse()->updated(BundleData::from($action->handle($data, $bundle)), model: Bundle::class);
     }
 
+    /**
+     * Remove the specified bundle.
+     *
+     * @response 204
+     *
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
+     */
     public function destroy(Bundle $bundle, DeleteBundleAction $action): ApiResponseInterface
     {
         Gate::authorize('delete', $bundle);
