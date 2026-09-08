@@ -24,6 +24,21 @@ it('can get list of categories', function (): void {
                         'created_by',
                         'created_at',
                         'updated_at',
+                        'parent' => [
+                            'id',
+                            'name',
+                            'slug',
+                            'description',
+                            'image_url',
+                            'icon_url',
+                            'educational_calendar_url',
+                            'color_scheme',
+                            'status',
+                            'created_by',
+                            'created_at',
+                            'updated_at',
+                            'parent',
+                        ],
                     ],
                 ],
             ],
@@ -186,7 +201,7 @@ it('can delete category', function (): void {
 it('can not delete category if there is related data', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_DELETE->value]);
     $category = App\Models\Category::factory()->create();
-    $product  = App\Models\Product::factory()->create();
+    $product = App\Models\Product::factory()->create();
     $product->categories()->attach($category->id);
     $response = $this->deleteJson(route('api.v1.admin.categories.destroy', ['category' => $category->id]));
     $response->assertStatus(422)

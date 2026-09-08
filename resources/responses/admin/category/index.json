@@ -16,7 +16,23 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": {
+          "id": 1,
+          "name": "برنامه‌نویسی",
+          "slug": "programming",
+          "status": {
+            "value": "published",
+            "label": "منتشر شده"
+          },
+          "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+          "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+          "educational_calendar_url": null,
+          "parent": null,
+          "created_by": 1,
+          "created_at": "1405-06-17 13:29:33",
+          "updated_at": "1405-06-17 13:29:34"
+        }
       },
       {
         "id": 3,
@@ -31,7 +47,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 4,
@@ -46,7 +63,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 5,
@@ -61,7 +79,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 6,
@@ -76,7 +95,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 7,
@@ -91,7 +111,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 8,
@@ -106,7 +127,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 9,
@@ -121,7 +143,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 10,
@@ -136,7 +159,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 11,
@@ -151,7 +175,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 12,
@@ -166,7 +191,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 14,
@@ -181,7 +207,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 15,
@@ -196,7 +223,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 16,
@@ -211,7 +239,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       },
       {
         "id": 17,
@@ -226,7 +255,8 @@
         "educational_calendar_url": "http://jedu.test/storage/fake-media/calendar.pdf",
         "created_by": 1,
         "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:08"
+        "updated_at": "1404-03-08 08:51:08",
+        "parent": null
       }
     ],
     "first_page_url": "http://jedu.test/api/v1/admin/category?page=1",
