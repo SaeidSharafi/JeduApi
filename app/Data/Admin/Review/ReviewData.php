@@ -25,6 +25,7 @@ final class ReviewData extends Data
         public int $reviewable_id,
         public int $rating,
         public ?string $title,
+        public ?string $comment,
         #[WithTransformer(TranslatableEnumData::class)]
         public ReviewStatusEnum $status,
         public bool $is_featured,

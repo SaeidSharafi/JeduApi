@@ -10,6 +10,7 @@
     "reviewable_id": 1,
     "rating": 3,
     "title": "فیلم",
+    "comment": "متن نظر",
     "status": {
       "value": "rejected",
       "label": "enums.ReviewStatusEnum.rejected"
