@@ -50,7 +50,11 @@ final readonly class UpdateProductDeliveryOptionAction
                 $pdoData['prepayment_amount']       = null;
             }
             $deliveryOption->update($pdoData);
-            $deliveryOption->teachers()->sync($data->teachers);
+            $deliveryOption->teachers()->sync(
+                $deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value
+                    ? []
+                    : $data->teachers
+            );
             $this->composition->handle($deliveryOption, $data->components ?? []);
         });
 

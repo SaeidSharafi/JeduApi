@@ -17,13 +17,9 @@ final readonly class UpdateBundleAction
     public function handle(BundleUpdateData $data, Bundle $bundle): Bundle
     {
         return DB::transaction(function () use ($data, $bundle): Bundle {
-            $bundleData                  = $data->except('name', 'short_name', 'media')->toArray();
+            $bundleData                  = $data->except('media')->toArray();
             $bundleData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
-            $bundle->update([
-                'full_name'  => $data->name,
-                'short_name' => $data->short_name ?? $data->name,
-                ...$bundleData,
-            ]);
+            $bundle->update($bundleData);
 
             foreach (MediaTagEnum::getAllValues() as $tag) {
                 $mediaIds = $data->media[$tag] ?? null;

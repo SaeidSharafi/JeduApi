@@ -20,7 +20,6 @@ final class ProductDeliveryOptionUpdateData extends Data
         public string $status,
         #[MapInputName('details')]
         public array $details_json,
-        public array $teachers,
         public ?int $capacity,
         public bool $is_prepayment_available,
         public ?int $prepayment_amount,
@@ -34,6 +33,7 @@ final class ProductDeliveryOptionUpdateData extends Data
         public ?string $available_to,
         public ?int $access_days,
         public array $components = [],
+        public array $teachers = [],
     ) {}
 
     public static function prepareForPipeline(array $properties): array
@@ -74,6 +74,7 @@ final class ProductDeliveryOptionUpdateData extends Data
         $isBundleProduct = $deliveryOption?->product?->productable_type === 'bundle';
 
         if ($isBundleProduct) {
+            $baseRules['teachers']                                = ['prohibited'];
             $baseRules['details']                                 = ['present', 'array', 'size:0'];
             $baseRules['components']                              = [Rule::requiredIf($isBundleProduct), Rule::prohibitedIf(! $isBundleProduct), 'array', 'min:1', 'max:'.config('products.bundles.max_components', 30)];
             $baseRules['components.*.product_delivery_option_id'] = ['required', 'integer'];

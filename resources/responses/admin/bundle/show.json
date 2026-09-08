@@ -25,7 +25,50 @@
                 "question": "Refunds?",
                 "answer": "Within 7 days"
             }
-        ]
+        ],
+        "media": {
+            "gallery": [
+                {
+                    "id": 39,
+                    "url": "http://jedu.test/storage/Generated-Image-August-14-2026---1_48PM-2.jpg",
+                    "size": 830669,
+                    "file_name": "Generated-Image-August-14-2026---1_48PM-2",
+                    "alt": "Bundle gallery",
+                    "mime_type": "image/jpeg",
+                    "extension": "jpg",
+                    "tag": "gallery",
+                    "thumbnail": null
+                }
+            ],
+            "video": [
+                {
+                    "id": 40,
+                    "url": "http://jedu.test/storage/doc_2026-05-26_11-40-26-2.mp4",
+                    "size": 149629,
+                    "file_name": "doc_2026-05-26_11-40-26-2",
+                    "alt": "Bundle video",
+                    "mime_type": "video/mp4",
+                    "extension": "mp4",
+                    "tag": "video",
+                    "thumbnail": null
+                }
+            ],
+            "cover": [
+                {
+                    "id": 38,
+                    "url": "http://jedu.test/storage/aBXZKuwqvFOpG0WlO5HaCvyvVdiFxGLE8ZWdlBzi-4.jpg",
+                    "size": 59134,
+                    "file_name": "aBXZKuwqvFOpG0WlO5HaCvyvVdiFxGLE8ZWdlBzi-4",
+                    "alt": "Bundle cover",
+                    "mime_type": "image/jpeg",
+                    "extension": "jpg",
+                    "tag": "cover",
+                    "thumbnail": null
+                }
+            ],
+            "certificate": [],
+            "main": []
+        }
     },
     "metadata": []
 }

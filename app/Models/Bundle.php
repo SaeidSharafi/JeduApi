@@ -24,8 +24,19 @@ final class Bundle extends Model implements ProductableContract
 
     protected $fillable
         = [
-            'slug', 'full_name', 'short_name', 'description', 'thumbnail_url', 'properties', 'additional_info', 'faq',
-            'status', 'created_by',
+            'slug',
+            'full_name',
+            'short_name',
+            'description',
+            'thumbnail_url',
+            'properties',
+            'additional_info',
+            'faq',
+            'status',
+            'meta_title',
+            'meta_description',
+            'meta_keywords',
+            'created_by',
         ];
 
     /** @return MorphToMany<Category, $this> */

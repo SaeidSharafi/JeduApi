@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Actions\Shop\Bundle\ListBundlesAction;
-use App\Actions\Shop\Bundle\ShowBundleAction;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
@@ -12,7 +10,7 @@ use App\Models\Bundle;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 
-covers(ListBundlesAction::class, ShowBundleAction::class);
+covers(App\Http\Controllers\Api\Shop\Product\BundleController::class, App\Query\ProductQueryService::class);
 
 function makeBundleStorefrontFixture(array $parentOverrides = []): array
 {

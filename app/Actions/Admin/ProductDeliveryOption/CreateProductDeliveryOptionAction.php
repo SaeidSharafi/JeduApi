@@ -43,7 +43,9 @@ final readonly class CreateProductDeliveryOptionAction
                     ? 'BND-'.$product->id.'-'.Str::upper(Str::random(8))
                     : $this->skuGenerator->generateBaseSku($data, $product));
             $pdo = $product->productDeliveryOptions()->create($pdoData)->fresh();
-            $pdo->teachers()->attach($data->teachers);
+            if ($product->productable_type !== ProductableEnum::BUNDLE->value) {
+                $pdo->teachers()->attach($data->teachers);
+            }
             $this->composition->handle($pdo, $data->components);
 
             return $pdo;

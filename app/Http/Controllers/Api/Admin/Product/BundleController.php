@@ -72,8 +72,15 @@ final class BundleController extends Controller
     public function store(BundleCreateData $data, CreateBundleAction $action): ApiResponseInterface
     {
         Gate::authorize('create', Bundle::class);
+        $bundle = $action->handle($data);
+        $bundle->loadMediaWithVariantsMatchAll();
+        $media = $bundle->getAllMedia();
 
-        return apiResponse()->created(BundleData::from($action->handle($data)), model: Bundle::class);
+
+        return apiResponse()->created(BundleData::from([
+            ...$bundle->toArray(),
+            'media' => $media,
+        ]), model: Bundle::class);
     }
 
     /**

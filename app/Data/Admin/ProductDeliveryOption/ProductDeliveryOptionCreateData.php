@@ -73,7 +73,7 @@ final class ProductDeliveryOptionCreateData extends Data
             'is_featured'                             => ['required', 'boolean'],
             'featured_price'                          => ['nullable', 'integer', 'min:0'],
             'access_days'                             => ['nullable', 'integer', 'min:1'],
-            'teachers'                                => ['required', 'array'],
+            'teachers'                                => [Rule::prohibitedIf($isBundleProduct), Rule::requiredIf(! $isBundleProduct), 'array'],
             'teachers.*'                              => ['required', 'integer', 'exists:teachers,id'],
             'details.ims_course_code'                 => ['nullable', 'string'],
             'details.schedule_days'                   => ['nullable', 'array'],

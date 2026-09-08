@@ -17,14 +17,10 @@ final readonly class CreateBundleAction
     {
         return DB::transaction(function () use ($data): Bundle {
             $mediaToAttach               = $data->media;
-            $bundleData                  = $data->except('name', 'short_name', 'media')->toArray();
+            $bundleData                  = $data->except('media')->toArray();
             $bundleData['thumbnail_url'] = $this->thumbnailUrlAction->handle($mediaToAttach);
 
-            $bundle = Bundle::create([
-                'full_name'  => $data->name,
-                'short_name' => $data->short_name ?? $data->name,
-                ...$bundleData,
-            ]);
+            $bundle = Bundle::create($bundleData);
 
             foreach ($mediaToAttach as $tag => $mediaIds) {
                 if (is_array($mediaIds)) {
