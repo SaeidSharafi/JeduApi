@@ -27,6 +27,9 @@ final class BundleData extends Data implements ProductableDataContract
 
     public static function fromModel(Bundle $bundle): self
     {
-        return self::factory()->withoutMagicalCreation()->from($bundle->toArray());
+        return self::factory()->withoutMagicalCreation()->from([
+            ...$bundle->toArray(),
+            'media' => $bundle->getAllMedia(),
+        ]);
     }
 }

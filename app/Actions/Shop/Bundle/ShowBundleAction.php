@@ -41,6 +41,8 @@ final readonly class ShowBundleAction
             throw new NotFoundHttpException;
         }
 
+        $product->productable->loadMediaWithVariantsMatchAll();
+
         $options = $product->productDeliveryOptions
             ->filter(fn ($option): bool => $this->availability->isAvailable($option))
             ->map(function ($option): BundleOptionData {
