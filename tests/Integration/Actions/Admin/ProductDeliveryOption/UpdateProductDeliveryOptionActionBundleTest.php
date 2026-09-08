@@ -320,6 +320,8 @@ function bundleUpdateData(
     ProductDeliveryOption $option,
     ?int $price = null,
     array $components = [],
+    ?bool $isPrepaymentAvailable = null,
+    ?int $prepaymentAmount = null,
 ): ProductDeliveryOptionUpdateData {
     return new ProductDeliveryOptionUpdateData(
         name: $option->name,
@@ -329,8 +331,8 @@ function bundleUpdateData(
         details_json: $option->details_json,
         teachers: [],
         capacity: $option->capacity,
-        is_prepayment_available: $option->is_prepayment_available,
-        prepayment_amount: $option->prepayment_amount,
+        is_prepayment_available: $isPrepaymentAvailable ?? $option->is_prepayment_available,
+        prepayment_amount: $prepaymentAmount            ?? $option->prepayment_amount,
         is_featured: $option->is_featured,
         featured_price: $option->featured_price,
         featured_price_start_date: $option->featured_price_start_date,
@@ -343,3 +345,43 @@ function bundleUpdateData(
         components: $components,
     );
 }
+
+it('normalizes prepayment fields off for a Bundle PDO', function (): void {
+    [, , $parent] = makeBundledProduct(500000);
+    $component    = makeBundledComponent(500000);
+    $parent->bundleComponents()->attach($component->id, ['allocation' => 500000]);
+
+    $updated = app(UpdateProductDeliveryOptionAction::class)->handle(
+        bundleUpdateData(
+            $parent,
+            components: [['product_delivery_option_id' => $component->id, 'allocation' => 500000]],
+            isPrepaymentAvailable: true,
+            prepaymentAmount: 100000,
+        ),
+        $parent,
+    );
+
+    expect($updated->is_prepayment_available)->toBeFalse()
+        ->and($updated->prepayment_amount)->toBeNull();
+});
+
+it('normalizes prepayment fields off for any composite PDO', function (): void {
+    $composite = makeBundledComponent(500000);
+    $composite->update([
+        'fulfillment_type'        => FulfillmentTypeEnum::COMPOSITE,
+        'is_prepayment_available' => true,
+        'prepayment_amount'       => 100000,
+    ]);
+
+    $updated = app(UpdateProductDeliveryOptionAction::class)->handle(
+        bundleUpdateData(
+            $composite,
+            isPrepaymentAvailable: true,
+            prepaymentAmount: 100000,
+        ),
+        $composite,
+    );
+
+    expect($updated->is_prepayment_available)->toBeFalse()
+        ->and($updated->prepayment_amount)->toBeNull();
+});

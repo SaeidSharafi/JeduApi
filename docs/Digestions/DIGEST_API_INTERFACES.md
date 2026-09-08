@@ -123,9 +123,9 @@
 
 ### ProductDeliveryOptionController (`app/Http/Controllers/Api/Admin/Product/ProductDeliveryOptionController.php`)
 - `index(Product $product)`: **Route:** `GET /api/v1/admin/product/{product}/delivery-option` - **Response DTO:** ProductDeliveryOptionData collection
-- `store(ProductDeliveryOptionCreateData $request, Product $product)`: **Route:** `POST /api/v1/admin/product/{product}/delivery-option` - **Request DTO:** ProductDeliveryOptionCreateData - **Response DTO:** ProductDeliveryOptionData
+- `store(ProductDeliveryOptionCreateData $request, Product $product)`: **Route:** `POST /api/v1/admin/product/{product}/delivery-option` - **Request DTO:** ProductDeliveryOptionCreateData - **Response DTO:** ProductDeliveryOptionData. Bundle Product requests are server-normalized to `composite + bundle` with prepayment disabled and no prepayment amount.
 - `show(Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `GET /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Response DTO:** ProductDeliveryOptionData
-- `update(ProductDeliveryOptionUpdateData $request, Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `PUT /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Response DTO:** ProductDeliveryOptionData
+- `update(ProductDeliveryOptionUpdateData $request, Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `PUT /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Response DTO:** ProductDeliveryOptionData. Bundle Product updates reassert the structural classification and clear any submitted prepayment configuration.
 - `destroy(Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `DELETE /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Delegates to:** Delivery option deletion
 
 ### RelatedProductController (`app/Http/Controllers/Api/Admin/Product/RelatedProductController.php`)
@@ -552,14 +552,14 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 
 #### CartController (`app/Http/Controllers/Api/Shop/Sale/CartController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/cart` - **Guards:** Supports authenticated users or guests (via `X-Guest-Token`) - **Response DTO:** `CartData`; each item includes effective `current_price`, `original_price`, product/cart/total discount amounts, `line_total`, `prepayment_amount`, `is_prepayment_available`, and discount metadata.
-- `store(AddCartItemData $request)`: **Route:** `POST /api/v1/shop/cart/items` - Adds a delivery option to the cart after validating capacity/payment type - **Response DTO:** `CartData` with the same calculated item pricing fields.
-- `update(UpdateCartItemData $request, CartItem $cartItem)`: **Route:** `PUT /api/v1/shop/cart/items/{cartItem}` - Updates quantity for an existing cart item - **Response DTO:** `CartData` with the same calculated item pricing fields.
+- `store(AddCartItemData $request)`: **Route:** `POST /api/v1/shop/cart/items` - Adds a delivery option after validating capacity/payment type and Productable-level Purchase Eligibility. Returns `422` with an `items` validation error for known ownership or Bundle/standalone/Bundle cart overlap. **Response DTO:** `CartData` with the same calculated item pricing fields.
+- `update(UpdateCartItemData $request, CartItem $cartItem)`: **Route:** `PUT /api/v1/shop/cart/items/{cartItem}` - Updates quantity after revalidating Productable-level Purchase Eligibility for the cart. **Response DTO:** `CartData` with the same calculated item pricing fields.
 - `destroy(CartItem $cartItem)`: **Route:** `DELETE /api/v1/shop/cart/items/{cartItem}` - Removes an item - **Response:** `204 No Content`
 - `applyCoupon(ApplyCouponData $request)`: **Route:** `POST /api/v1/shop/cart/coupon` - Applies a coupon via `PromotionService::findPromotionByCoupon()` + condition checks - **Response DTO:** `CartData`
 - `removeCoupon()`: **Route:** `DELETE /api/v1/shop/cart/coupon` - Clears any applied coupon - **Response DTO:** `CartData`
 
 #### CheckoutController (`app/Http/Controllers/Api/Shop/Sale/CheckoutController.php`)
-- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Validates registration window and availability window on each cart item at checkout. Checkout order items expose both base `price` and captured effective `current_price`, plus `prepayment_amount` and `is_prepayment_available`. **Request DTO:** CheckoutData includes optional `payment_data` array for gateway-specific parameters.
+- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Validates registration/availability windows and authoritatively rechecks Productable-level Purchase Eligibility under a Customer row lock inside order creation. Checkout order items expose both base `price` and captured effective `current_price`, plus `prepayment_amount` and `is_prepayment_available`. **Request DTO:** CheckoutData includes optional `payment_data` array for gateway-specific parameters.
 
 ### Shop Public Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access

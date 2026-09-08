@@ -826,8 +826,9 @@ describe('CreateOrderAction', function (): void {
         // gift and has no matching OrderItemCreateData in the request. The
         // action must fall back to the calculated item's properties instead
         // of passing null into validateItem() (regression for #43).
-        $user    = User::factory()->create();
-        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $user            = User::factory()->create();
+        $product         = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $injectedProduct = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
 
         $inputOption = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
@@ -836,7 +837,7 @@ describe('CreateOrderAction', function (): void {
             'price'      => 50000,
         ]);
         $injectedOption = ProductDeliveryOption::factory()->create([
-            'product_id'              => $product->id,
+            'product_id'              => $injectedProduct->id,
             'status'                  => PublicationStatusEnum::PUBLISHED,
             'capacity'                => 20,
             'price'                   => 30000,
@@ -896,8 +897,9 @@ describe('CreateOrderAction', function (): void {
     });
 
     it('validates injected gift line items as full payment with quantity one', function (): void {
-        $user    = User::factory()->create();
-        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $user        = User::factory()->create();
+        $product     = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $giftProduct = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
 
         $option = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
@@ -906,7 +908,7 @@ describe('CreateOrderAction', function (): void {
             'price'      => 50000,
         ]);
         $giftOption = ProductDeliveryOption::factory()->create([
-            'product_id' => $product->id,
+            'product_id' => $giftProduct->id,
             'status'     => PublicationStatusEnum::PUBLISHED,
             'capacity'   => 20,
             'price'      => 5000,

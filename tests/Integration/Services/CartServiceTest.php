@@ -19,6 +19,7 @@ use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use App\Services\CartService;
+use Illuminate\Validation\ValidationException;
 use Mockery\MockInterface;
 
 use function Pest\Laravel\assertDatabaseMissing;
@@ -334,15 +335,15 @@ describe('CartService', function (): void {
         expect(fn () => resolve(CartService::class)->addItem(new AddCartItemData(
             product_delivery_option_uuid: $plain->uuid,
             quantity: 2,
-        )))->toThrow(\Illuminate\Validation\ValidationException::class)
+        )))->toThrow(ValidationException::class)
             ->and(fn () => resolve(CartService::class)->updateItem(
                 $existing->id,
                 new UpdateCartItemData(quantity: 2, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT),
-            ))->toThrow(\Illuminate\Validation\ValidationException::class)
+            ))->toThrow(ValidationException::class)
             ->and(fn () => resolve(CartService::class)->addItem(new AddCartItemData(
                 product_delivery_option_uuid: $plain->uuid,
                 payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT,
-            )))->toThrow(\Illuminate\Validation\ValidationException::class);
+            )))->toThrow(ValidationException::class);
     });
 
     it('rejects re-adding a non-multiple-quantity item once quantity is already occupied', function (): void {
@@ -365,7 +366,7 @@ describe('CartService', function (): void {
             'quantity'                   => 1,
         ]);
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         resolve(CartService::class)->addItem(new AddCartItemData(
             product_delivery_option_uuid: $plain->uuid,
             quantity: 1,
@@ -501,7 +502,7 @@ describe('CartService', function (): void {
             'is_active'             => true,
         ]);
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         resolve(CartService::class)->applyCoupon(new \App\Data\Shop\Cart\ApplyCouponData(coupon_code: 'NEED10K'));
     });
 
@@ -524,7 +525,7 @@ describe('CartService', function (): void {
             ->and($cartData->discount_amount)->toBe(0)
             ->and($cartData->grand_total)->toBe(0);
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         resolve(CartService::class)->applyCoupon(new \App\Data\Shop\Cart\ApplyCouponData(coupon_code: 'NOPE'));
     });
 
@@ -559,7 +560,7 @@ describe('CartService', function (): void {
         expect(fn () => resolve(CartService::class)->addItem(new AddCartItemData(
             product_delivery_option_uuid: $disabledOption->uuid,
             payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT,
-        )))->toThrow(\Illuminate\Validation\ValidationException::class);
+        )))->toThrow(ValidationException::class);
 
         $result = resolve(CartService::class)->addItem(new AddCartItemData(
             product_delivery_option_uuid: $enabledOption->uuid,
@@ -614,5 +615,28 @@ describe('CartService', function (): void {
 
         expect(Cart::query()->where('user_id', $user->id)->count())->toBe(0)
             ->and($guestCart->fresh()->exists())->toBeTrue();
+    });
+
+    it('rejects changing a composite cart item to prepayment despite stale flags', function (): void {
+        $user = User::factory()->create();
+        $this->mock(CartIdentifier::class, function (MockInterface $mock) use ($user): void {
+            $mock->shouldReceive('userId')->zeroOrMoreTimes()->andReturn($user->id);
+            $mock->shouldReceive('guestToken')->zeroOrMoreTimes()->andReturnNull();
+        });
+
+        $cart      = Cart::factory()->create(['user_id' => $user->id]);
+        $composite = makeBundleCartOption();
+        $composite->update([
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 1,
+        ]);
+        $cartItem = seedCartItem($cart, $composite, $composite->composition_version);
+
+        expect(fn () => resolve(CartService::class)->updateItem(
+            $cartItem->id,
+            new UpdateCartItemData(1, OrderItemPaymentTypeEnum::PRE_PAYMENT),
+        ))->toThrow(ValidationException::class);
+
+        expect($cartItem->fresh()->payment_type)->toBe(OrderItemPaymentTypeEnum::FULL_PAYMENT);
     });
 });

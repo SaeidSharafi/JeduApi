@@ -157,9 +157,9 @@
 
 #### ProductDeliveryOption Actions (`app/Actions/Admin/ProductDeliveryOption/`)
 - **CreateProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/CreateProductDeliveryOptionAction.php`)
-  - `handle(ProductDeliveryOptionCreateData $data, Product $product): ProductDeliveryOption`: Creates new delivery methods for products with automatic SKU generation via `SkuGeneratorService` when SKU not provided in request data
+  - `handle(ProductDeliveryOptionCreateData $data, Product $product): ProductDeliveryOption`: Creates new delivery methods for products with automatic SKU generation via `SkuGeneratorService` when SKU not provided in request data. Bundle PDOs are normalized to structural `composite + bundle` delivery with empty details and prepayment disabled (`is_prepayment_available=false`, `prepayment_amount=null`).
 - **UpdateProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/UpdateProductDeliveryOptionAction.php`)
-  - `handle(ProductDeliveryOptionUpdateData $data, ProductDeliveryOption $option): ProductDeliveryOption`: Updates delivery option pricing and terms
+  - `handle(ProductDeliveryOptionUpdateData $data, ProductDeliveryOption $option): ProductDeliveryOption`: Updates delivery option pricing and terms while reasserting the same Bundle structural and no-prepayment invariants.
 - **DeleteProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/DeleteProductDeliveryOptionAction.php`)
   - `handle(ProductDeliveryOption $option): void`: Removes delivery options
 - **GetDeliveryDetailsValidationRulesAction** (`app/Actions/Admin/ProductDeliveryOption/GetDeliveryDetailsValidationRulesAction.php`)
@@ -377,7 +377,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### Checkout & Payment Actions (`app/Actions/Shop/*`)
 - **CreateOrderFromCartAction** (`app/Actions/Shop/CreateOrderFromCartAction.php`)
-  - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart with `lockForUpdate` (capacity, **registration window, availability window**, publication, duplicate ownership, order velocity), converts it into `OrderCreateData` inside a DB transaction, reuses `CreateOrderAction`. Deletes the cart inside the transaction, then dispatches the selected payment processor **outside** the transaction. Uses `PreparePendingPaymentAction` to create a PENDING Payment before calling `processor->process($payment)`. Free orders (grand total 0) complete immediately through `CompleteFreeOrderPaymentAction` (creates a COMPLETED `NO_PAYMENT` payment record and dispatches `PaymentCompletedEvent` inside the transaction). Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows.
+  - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart with `lockForUpdate` (capacity, **registration window, availability window**, publication, Productable-level Purchase Eligibility, order velocity), converts it into `OrderCreateData` inside a DB transaction, and reuses `CreateOrderAction`. `CreateOrderAction` locks the Customer and invokes the authoritative Purchase Eligibility rule again inside its transaction, so checkout does not trust cart-time validation. Deletes the cart inside the transaction, then dispatches the selected payment processor **outside** the transaction. Uses `PreparePendingPaymentAction` to create a PENDING Payment before calling `processor->process($payment)`. Free orders (grand total 0) complete immediately through `CompleteFreeOrderPaymentAction` (creates a COMPLETED `NO_PAYMENT` payment record and dispatches `PaymentCompletedEvent` inside the transaction). Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows.
 - **TopupWalletAction** (`app/Actions/Shop/Wallet/TopupWalletAction.php`)
   - `handle(Payment $payment): void`: Credits wallet from a completed `WALLET_TOPUP` payment. Validates payment purpose and status. Creates wallet if missing. Records DEPOSIT transaction linked to the payment.
 - **RetryOrderPaymentAction** (`app/Actions/Shop/RetryOrderPaymentAction.php`)
@@ -493,11 +493,17 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Purpose:** Single façade for cart lifecycle management across authenticated and guest flows
 - **Key Capabilities:**
   - `findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart`: Resolves carts via the `CartIdentifier` contract (user or guest token) and eagerly loads delivery options/products. Supports `lockForUpdate` for transactional checkout flows.
-  - `addItem`, `updateItem`, `removeItem`: Validate capacity/payment type constraints before mutating cart rows
+  - `addItem`, `updateItem`, `removeItem`: Validate capacity/payment type constraints before mutating cart rows. Add/update invokes `ValidateNoDuplicatePurchasesAction` so known Customer ownership and Bundle-versus-standalone/Bundle-versus-Bundle cart overlap are rejected by underlying `(productable_type, productable_id)` identity before checkout.
   - `applyCoupon(ApplyCouponData $data): CartData`: Validates coupon codes via `PromotionService::findPromotionByCoupon()`, checks condition gates via `checkPromotionConditions()`, tracks them on the cart, and recalculates totals through `OrderCalculationService`
   - `buildCartDataWithTotals(Cart $cart): CartData`: Hydrates DTOs with current pricing/discount context for API responses
 - **Internal:** `resolveCart()` implements the find-or-create pattern with unique constraint race recovery for concurrent requests.
 - **Special Notes:** Enforces an order velocity limit (5 orders/hour) during checkout and delegates cart persistence cleanup post-successful conversion
+
+### Purchase Eligibility (`app/Actions/Admin/Order/ValidateNoDuplicatePurchasesAction.php`)
+- Expands each Bundle PDO into its component PDO Productables and deduplicates repeated underlying `(productable_type, productable_id)` identities within that Bundle.
+- Rejects overlap between separate selected offerings and Customer ownership through any alternate PDO. Component Enrollments created by Bundle checkout therefore block later standalone or overlapping Bundle purchases without treating the structural Bundle PDO as an entitlement.
+- `ACTIVE` and `SUSPENDED` Enrollments block repurchase; only non-occupying states such as `CANCELLED` restore eligibility, keeping incomplete revocation conservative. The composition setting `products.bundles.allow_repeated_productables` does not weaken ownership or overlap checks.
+- Supports guest cart-overlap checks without an ownership query. `CreateOrderAction` owns the Customer row lock before invoking this rule for authoritative transactional checkout validation.
 
 ### RequestCartIdentifier (`app/Services/Cart/RequestCartIdentifier.php`)
 - **Purpose:** HTTP-scoped implementation of `CartIdentifier` that decides whether to use an authenticated user ID or a persistent guest token (via `X-Guest-Token` header)

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
 use App\Contracts\CartIdentifier;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Order\OrderCreateData;
@@ -15,6 +16,7 @@ use App\Data\Shop\Cart\CartItemData;
 use App\Data\Shop\Cart\UpdateCartItemData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -36,6 +38,7 @@ final readonly class CartService
         private OrderCalculationService $orderCalculationService,
         private PromotionService $promotionService,
         private ProductPriceService $productPriceService,
+        private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
     ) {}
 
     public function findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart
@@ -86,6 +89,7 @@ final readonly class CartService
             ->first();
         $this->validateQuantity($deliveryOption, $data->quantity, $existingItem);
         $this->validatePaymentType($deliveryOption, $data->payment_type);
+        $this->validatePurchaseEligibility($cart, $deliveryOption);
         // Right now, we do not have any products that allow multiple quantities in cart
         // @codeCoverageIgnoreStart
         if ($existingItem) {
@@ -123,6 +127,8 @@ final readonly class CartService
             ->firstOrFail();
         $deliveryOption = $cartItem->productDeliveryOption()->with('product')->firstOrFail();
         $this->validateQuantity($deliveryOption, $data->quantity, $cartItem);
+        $this->validatePaymentType($deliveryOption, $data->payment_type);
+        $this->validatePurchaseEligibility($cart, $deliveryOption);
         $cartItem->update([
             'quantity'            => $data->quantity,
             'payment_type'        => $data->payment_type,
@@ -442,6 +448,20 @@ final readonly class CartService
             : null;
     }
 
+    private function validatePurchaseEligibility(Cart $cart, ProductDeliveryOption $deliveryOption): void
+    {
+        $deliveryOptionIds = $cart->items()
+            ->pluck('product_delivery_option_id')
+            ->push($deliveryOption->id)
+            ->unique();
+        $deliveryOptions = ProductDeliveryOption::query()
+            ->whereIn('id', $deliveryOptionIds)
+            ->with('product')
+            ->get();
+
+        $this->validateNoDuplicatePurchases->handle($cart->user()->first(), $deliveryOptions);
+    }
+
     private function validateQuantity(
         ProductDeliveryOption $deliveryOption,
         int $quantity = 1,
@@ -475,7 +495,9 @@ final readonly class CartService
         ProductDeliveryOption $deliveryOption,
         OrderItemPaymentTypeEnum $paymentType
     ): void {
-        $allowPrePayment = $deliveryOption->is_prepayment_available ?? false;
+        $allowPrePayment = $deliveryOption->fulfillment_type !== FulfillmentTypeEnum::COMPOSITE
+            && $deliveryOption->product->productable_type    !== ProductableEnum::BUNDLE->value
+            && ($deliveryOption->is_prepayment_available ?? false);
 
         if (! $allowPrePayment && $paymentType === OrderItemPaymentTypeEnum::PRE_PAYMENT) {
             throw ValidationException::withMessages([

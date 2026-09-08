@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\ProductDeliveryOption;
 
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionUpdateData;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
@@ -38,10 +39,15 @@ final readonly class UpdateProductDeliveryOptionAction
 
         DB::transaction(function () use ($data, $deliveryOption): void {
             $pdoData = $data->except('teachers', 'components')->toArray();
-            if ($deliveryOption->product?->productable_type === 'bundle') {
+            if ($deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value) {
                 $pdoData['fulfillment_type'] = 'composite';
                 $pdoData['delivery_method']  = 'bundle';
                 $pdoData['details_json']     = [];
+            }
+            $fulfillmentType = $pdoData['fulfillment_type'] ?? $deliveryOption->fulfillment_type?->value;
+            if ($fulfillmentType === FulfillmentTypeEnum::COMPOSITE->value) {
+                $pdoData['is_prepayment_available'] = false;
+                $pdoData['prepayment_amount']       = null;
             }
             $deliveryOption->update($pdoData);
             $deliveryOption->teachers()->sync($data->teachers);

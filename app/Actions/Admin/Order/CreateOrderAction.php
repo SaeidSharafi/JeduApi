@@ -13,9 +13,11 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Product\BundleUnavailableReasonEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
+use App\Models\User;
 use App\Services\BundleAvailabilityService;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\ProductPriceService;
@@ -43,15 +45,16 @@ final readonly class CreateOrderAction
      */
     public function handle(OrderCreateData $data): Order
     {
-        $context                  = $this->orderCalculationService->calculate($data);
-        $initialDeliveryOptionIds = $context->items->pluck('product_delivery_option.id');
-        $deliveryOptions          = ProductDeliveryOption::query()
-            ->whereIn('id', $initialDeliveryOptionIds)
-            ->with('product')
-            ->get();
-        $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
+        $context = $this->orderCalculationService->calculate($data);
+        $order   = DB::transaction(function () use ($data, $context): Order {
+            $initialDeliveryOptionIds = $context->items->pluck('product_delivery_option.id');
+            $deliveryOptions          = ProductDeliveryOption::query()
+                ->whereIn('id', $initialDeliveryOptionIds)
+                ->with('product')
+                ->get();
+            User::query()->whereKey($context->customer->id)->lockForUpdate()->firstOrFail();
+            $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
 
-        $order = DB::transaction(function () use ($data, $context): Order {
             // Enforce the per-customer promotion limit before anything else is
             // reserved/created in this transaction (locks each applied promotion row).
             $this->validatePromotionPerCustomerLimit->handle($context);
@@ -272,8 +275,10 @@ final readonly class CreateOrderAction
 
         // --- Validate Payment Intent ---
         // If admin chose 'pre_payment', make sure the product allows it.
-        if ($itemData->payment_type === 'pre_payment'
-            && ! $deliveryOption->is_prepayment_available
+        if ($itemData->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT->value
+            && ($deliveryOption->fulfillment_type             === FulfillmentTypeEnum::COMPOSITE
+                || $deliveryOption->product->productable_type === ProductableEnum::BUNDLE->value
+                || ! $deliveryOption->is_prepayment_available)
         ) {
             throw ValidationException::withMessages([
                 "items.{$key}" => __('messages.order.prepayment_not_available', [
