@@ -116,7 +116,7 @@
 - `show(Bundle $bundle)`: **Route:** `GET /api/v1/admin/bundles/{bundle}` - Returns Bundle metadata.
 - `update(BundleUpdateData $data, Bundle $bundle)`: **Route:** `PUT /api/v1/admin/bundles/{bundle}` - Updates Bundle metadata.
 - `destroy(Bundle $bundle)`: **Route:** `DELETE /api/v1/admin/bundles/{bundle}` - Deletes or archives the Bundle according to order/enrollment usage.
-- Bundle Product PDO creation/update remains under `POST|PUT /api/v1/admin/product/{product}/delivery-option`; Bundle requests provide `components` and the server derives `fulfillment_type=composite`, `delivery_method=bundle`, and empty details.
+- Bundle Product PDO creation/update remains under `POST|PUT /api/v1/admin/product/{product}/delivery-option`; Bundle requests provide `components` entries containing `product_delivery_option_id` and `allocation`, and the server derives `fulfillment_type=composite`, `delivery_method=bundle`, and empty details.
 
 ### ArchiveProductController (`app/Http/Controllers/Api/Admin/Product/ArchiveProductController.php`)
 - `__invoke(Product $product)`: **Route:** `POST /api/v1/admin/product/{product}/archive` - **Delegates to:** Product archival - **Response DTO:** ProductData

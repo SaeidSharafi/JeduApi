@@ -86,8 +86,13 @@ final class BundleController extends Controller
     public function show(Bundle $bundle): ApiResponseInterface
     {
         Gate::authorize('view', $bundle);
+        $bundle->loadMediaWithVariantsMatchAll();
+        $media = $bundle->getAllMedia();
 
-        return apiResponse()->success(BundleData::from($bundle));
+        return apiResponse()->success(BundleData::from([
+            ...$bundle->toArray(),
+            'media' => $media,
+        ]));
     }
 
     /**
@@ -109,7 +114,13 @@ final class BundleController extends Controller
     {
         Gate::authorize('update', $bundle);
 
-        return apiResponse()->updated(BundleData::from($action->handle($data, $bundle)), model: Bundle::class);
+        $updatedBundle = $action->handle($data, $bundle);
+        $updatedBundle->loadMediaWithVariantsMatchAll();
+
+        return apiResponse()->updated(BundleData::from([
+            ...$updatedBundle->toArray(),
+            'media' => $updatedBundle->getAllMedia(),
+        ]), model: Bundle::class);
     }
 
     /**

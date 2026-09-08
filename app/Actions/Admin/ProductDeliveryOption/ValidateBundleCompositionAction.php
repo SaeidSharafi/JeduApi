@@ -29,8 +29,10 @@ final readonly class ValidateBundleCompositionAction
             return;
         }
 
-        $componentIds = collect($components)->map(fn (array $component): ?int => $this->resolveComponentId($component));
-        if ($componentIds->contains(null) || $componentIds->duplicates()->isNotEmpty()) {
+        $componentIds = collect($components)
+            ->pluck('product_delivery_option_id')
+            ->map(fn (mixed $id): int => (int) $id);
+        if ($componentIds->contains(0) || $componentIds->duplicates()->isNotEmpty()) {
             throw new BundleCompositionValidationException(
                 __('messages.product.bundle_components_unique_required'),
                 bundleName: $bundleName,
@@ -102,25 +104,5 @@ final readonly class ValidateBundleCompositionAction
                 bundleName: $bundleName,
             );
         }
-    }
-
-    /**
-     * @param  array<string, mixed>  $component
-     */
-    private function resolveComponentId(array $component): ?int
-    {
-        if (isset($component['product_delivery_option_id'])) {
-            return (int) $component['product_delivery_option_id'];
-        }
-
-        if (isset($component['product_delivery_option_uuid'])) {
-            $id = ProductDeliveryOption::query()
-                ->where('uuid', $component['product_delivery_option_uuid'])
-                ->value('id');
-
-            return $id === null ? null : (int) $id;
-        }
-
-        return null;
     }
 }

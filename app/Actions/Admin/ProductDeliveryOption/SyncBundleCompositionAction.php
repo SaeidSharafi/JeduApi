@@ -34,11 +34,9 @@ final readonly class SyncBundleCompositionAction
 
         $sync = [];
         foreach ($components as $component) {
-            $id = $component['product_delivery_option_id'] ?? null;
-            if ($id === null && isset($component['product_delivery_option_uuid'])) {
-                $id = ProductDeliveryOption::query()->where('uuid', $component['product_delivery_option_uuid'])->value('id');
-            }
-            $sync[(int) $id] = ['allocation' => (int) $component['allocation']];
+            $sync[(int) $component['product_delivery_option_id']] = [
+                'allocation' => (int) $component['allocation'],
+            ];
         }
 
         $bundleOption->bundleComponents()->sync($sync);

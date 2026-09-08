@@ -22,6 +22,7 @@ final class BundleData extends Data implements ProductableDataContract
         public ?array $properties,
         public ?array $additional_info,
         public ?array $faq,
+        public array $media = [],
     ) {}
 
     public static function fromModel(Bundle $bundle): self

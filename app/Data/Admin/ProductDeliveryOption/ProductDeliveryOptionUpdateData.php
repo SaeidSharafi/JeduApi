@@ -74,12 +74,11 @@ final class ProductDeliveryOptionUpdateData extends Data
         $isBundleProduct = $deliveryOption?->product?->productable_type === 'bundle';
 
         if ($isBundleProduct) {
-            $baseRules['details']                                   = ['present', 'array', 'size:0'];
-            $baseRules['components']                                = [Rule::requiredIf($isBundleProduct), Rule::prohibitedIf(! $isBundleProduct), 'array', 'min:1', 'max:'.config('products.bundles.max_components', 30)];
-            $baseRules['components.*.product_delivery_option_uuid'] = ['required_without:components.*.product_delivery_option_id', 'nullable', 'uuid'];
-            $baseRules['components.*.product_delivery_option_id']   = ['required_without:components.*.product_delivery_option_uuid', 'nullable', 'integer'];
-            $baseRules['components.*.allocation']                   = ['required', 'integer', 'min:0'];
-            $baseRules['components.*.quantity']                     = ['nullable', 'integer', 'in:1'];
+            $baseRules['details']                                 = ['present', 'array', 'size:0'];
+            $baseRules['components']                              = [Rule::requiredIf($isBundleProduct), Rule::prohibitedIf(! $isBundleProduct), 'array', 'min:1', 'max:'.config('products.bundles.max_components', 30)];
+            $baseRules['components.*.product_delivery_option_id'] = ['required', 'integer'];
+            $baseRules['components.*.allocation']                 = ['required', 'integer', 'min:0'];
+            $baseRules['components.*.quantity']                   = ['nullable', 'integer', 'in:1'];
 
             return $baseRules;
         }

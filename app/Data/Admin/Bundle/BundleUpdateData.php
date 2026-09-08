@@ -20,6 +20,7 @@ final class BundleUpdateData extends Data
         public ?array $properties = null,
         public ?array $additional_info = null,
         public ?array $faq = null,
+        public array $media = [],
     ) {}
 
     public static function rules(): array
@@ -37,6 +38,13 @@ final class BundleUpdateData extends Data
             'additional_info' => ['nullable', 'array'],
             'faq'             => ['nullable', 'array'],
             'slug'            => ['sometimes', 'alpha_dash', 'unique:bundles,slug,'.$id],
+            'media'           => ['required', 'array'],
+            'media.gallery'   => ['nullable', 'array'],
+            'media.cover'     => ['required', 'array'],
+            'media.video'     => ['nullable', 'array'],
+            'media.cover.*'   => ['required', 'integer', 'exists:media,id'],
+            'media.gallery.*' => ['nullable', 'integer', 'exists:media,id'],
+            'media.video.*'   => ['nullable', 'integer', 'exists:media,id'],
         ];
     }
 }
