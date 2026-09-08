@@ -158,8 +158,6 @@ describe('User with permissions', function (): void {
                 'price'                   => $component->price,
                 'status'                  => 'published',
                 'details'                 => [],
-                'is_prepayment_available' => true,
-                'prepayment_amount'       => 100,
                 'is_featured'             => false,
                 'components'              => [[
                     'product_delivery_option_id' => $component->id,
@@ -405,7 +403,7 @@ describe('User with permissions', function (): void {
 
     });
 
-    it('should update a Bundle composite delivery option and keep prepayment disabled', function (): void {
+    it('should update a Bundle composite delivery option', function (): void {
         $bundle        = Bundle::factory()->create();
         $bundleProduct = App\Models\Product::factory()->create([
             'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
@@ -416,6 +414,8 @@ describe('User with permissions', function (): void {
             'product_id'       => $bundleProduct->id,
             'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::COMPOSITE,
             'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::BUNDLE,
+            'is_prepayment_available' => false,
+            'prepayment_amount' => null,
             'price'            => $component->price,
             'details_json'     => [],
         ]);
@@ -434,8 +434,6 @@ describe('User with permissions', function (): void {
                 'status'                    => 'published',
                 'details'                   => [],
                 'capacity'                  => null,
-                'is_prepayment_available'   => true,
-                'prepayment_amount'         => 100,
                 'is_featured'               => false,
                 'featured_price'            => null,
                 'featured_price_start_date' => null,
@@ -452,7 +450,8 @@ describe('User with permissions', function (): void {
             ]
         );
 
-        $response->assertOk();
+        $response->assertSuccessful();
+
         $this->assertDatabaseHas('product_delivery_options', [
             'id'                      => $deliveryOption->id,
             'name'                    => 'Updated Bundle Option',

@@ -6,6 +6,7 @@ namespace App\Data\Admin\ProductDeliveryOption;
 
 use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Rules\ValidNormalizedJalaliDateRule;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
@@ -21,8 +22,6 @@ final class ProductDeliveryOptionUpdateData extends Data
         #[MapInputName('details')]
         public array $details_json,
         public ?int $capacity,
-        public bool $is_prepayment_available,
-        public ?int $prepayment_amount,
         public bool $is_featured,
         public ?int $featured_price,
         public ?string $featured_price_start_date,
@@ -34,6 +33,8 @@ final class ProductDeliveryOptionUpdateData extends Data
         public ?int $access_days,
         public array $components = [],
         public array $teachers = [],
+        public bool $is_prepayment_available = false,
+        public ?int $prepayment_amount = null,
     ) {}
 
     public static function prepareForPipeline(array $properties): array
@@ -48,53 +49,62 @@ final class ProductDeliveryOptionUpdateData extends Data
      */
     public static function rules(?ValidationContext $context = null): array
     {
+        $isBundle = ProductDeliveryOptionCreateData::isBundleProduct();
+
         $baseRules = [
-            'name'                    => ['required', 'string', 'max:255'],
-            'sku'                     => ['required', 'alpha_dash', 'max:255'],
-            'price'                   => ['required', 'integer', 'min:0'],
-            'capacity'                => ['nullable', 'integer', 'min:0'],
-            'status'                  => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
-            'is_prepayment_available' => ['boolean'],
+            'name'                      => ['required', 'string', 'max:255'],
+            'sku'                       => ['required', 'alpha_dash', 'max:255'],
+            'price'                     => ['required', 'integer', 'min:0'],
+            'capacity'                  => ['nullable', 'integer', 'min:0'],
+            'status'                    => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
+            'is_featured'               => ['required', 'boolean'],
+            'featured_price'            => ['nullable', 'integer', 'min:0'],
+            'featured_price_start_date' => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s'],
+            'featured_price_end_date'   => [
+                'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s',
+                'after_or_equal:featured_price_start_date',
+            ],
+            'registration_start_date'   => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
+            'registration_end_date'     => [
+                'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
+                'after_or_equal:registration_start_date',
+            ],
+            'available_from'            => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
+            'available_to'              => [
+                'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
+                'after_or_equal:available_from',
+            ],
+            'access_days'               => ['nullable', 'integer', 'min:1'],
+        ];
+
+        if ($isBundle) {
+            return array_merge($baseRules, ProductDeliveryOptionCreateData::bundleRules(), ProductDeliveryOptionDateNormalizer::rules());
+        }
+
+        $nonBundleRules = [
+            'is_prepayment_available' => ['required', 'boolean'],
             'prepayment_amount'       => ['nullable', 'integer', 'min:0'],
-            'details'                 => ['present', 'array'],
-            'is_featured'             => ['required', 'boolean'],
-            'featured_price'          => ['nullable', 'integer', 'min:0'],
-            'access_days'             => ['nullable', 'integer', 'min:1'],
             'teachers'                => ['required', 'array'],
             'teachers.*'              => ['required', 'integer', 'exists:teachers,id'],
+            'components'              => ['prohibited'],
+            'details'                 => ['present', 'array'],
             'details.ims_course_code' => ['nullable', 'string'],
             'details.schedule_days'   => ['nullable', 'array'],
             'details.duration'        => ['sometimes', 'integer', 'min:1'],
         ];
 
-        // Get the existing delivery option to determine its delivery method for details validation
         $deliveryOption  = request()->route()?->parameter('delivery_option');
-        $deliveryMethod  = $deliveryOption?->delivery_method?->value  ?? $context->payload['delivery_method'] ?? null;
-        $fulfillmentType = $deliveryOption?->fulfillment_type?->value ?? $context->payload['fulfillment_type'] ?? null;
-        $isBundleProduct = $deliveryOption?->product?->productable_type === 'bundle';
+        $deliveryMethod  = $deliveryOption?->delivery_method?->value  ?? $context?->payload['delivery_method'] ?? null;
+        $fulfillmentType = $deliveryOption?->fulfillment_type?->value ?? $context?->payload['fulfillment_type'] ?? null;
 
-        if ($isBundleProduct) {
-            $baseRules['teachers']                                = ['prohibited'];
-            $baseRules['details']                                 = ['present', 'array', 'size:0'];
-            $baseRules['components']                              = [Rule::requiredIf($isBundleProduct), Rule::prohibitedIf(! $isBundleProduct), 'array', 'min:1', 'max:'.config('products.bundles.max_components', 30)];
-            $baseRules['components.*.product_delivery_option_id'] = ['required', 'integer'];
-            $baseRules['components.*.allocation']                 = ['required', 'integer', 'min:0'];
-            $baseRules['components.*.quantity']                   = ['nullable', 'integer', 'in:1'];
-
-            return $baseRules;
-        }
-
-        $baseRules['components'] = [Rule::requiredIf($isBundleProduct), Rule::prohibitedIf(! $isBundleProduct), 'array'];
-
-        $detailsRulesAction      = app(GetDeliveryDetailsValidationRulesAction::class);
-        $conditionalDetailsRules = $detailsRulesAction->handle(
+        $detailsRules = app(GetDeliveryDetailsValidationRulesAction::class)->handle(
             $fulfillmentType,
             $deliveryMethod,
-            $context->payload['details'] ?? null,
+            $context?->payload['details'] ?? null,
             'details'
         );
 
-        return array_merge($baseRules, $conditionalDetailsRules, ProductDeliveryOptionDateNormalizer::rules());
+        return array_merge($baseRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
     }
 
     public static function attributes(...$args): array
@@ -163,12 +173,12 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'example'     => 'published',
             ],
             'is_prepayment_available' => [
-                'description' => 'Whether students can reserve a seat by paying a partial amount upfront. Requires `prepayment_amount` when true.',
+                'description' => 'Whether students can reserve a seat by paying a partial amount upfront. Requires `prepayment_amount` when true.  Prohibited for bundle products.',
                 'required'    => true,
                 'example'     => false,
             ],
             'prepayment_amount' => [
-                'description' => 'Partial payment amount in Rials required to reserve a seat. Only relevant when `is_prepayment_available` is true.',
+                'description' => 'Partial payment amount in Rials required to reserve a seat. Only relevant when `is_prepayment_available` is true. Prohibited for bundle products.',
                 'required'    => false,
                 'example'     => 1000000,
             ],
@@ -218,12 +228,12 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'example'     => 90,
             ],
             'teachers' => [
-                'description' => 'Array of teacher IDs to associate with this delivery option. Send an empty array to remove all teachers.',
+                'description' => 'Array of teacher IDs to associate with this delivery option. Send an empty array to remove all teachers. Prohibited for bundle products.',
                 'required'    => true,
                 'example'     => [1, 2],
             ],
             'teachers.*' => [
-                'description' => 'A valid teacher ID (must exist in the teachers table).',
+                'description' => 'A valid teacher ID (must exist in the teachers table). Prohibited for bundle products.',
                 'required'    => true,
                 'example'     => 1,
             ],

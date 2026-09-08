@@ -367,7 +367,12 @@ describe('CartController - Guest Users', function (): void {
 
     describe('update', function (): void {
         it('should update cart item quantity for guest user', function (): void {
-            $deliveryOption = ProductDeliveryOption::factory()->create();
+            $deliveryOption = ProductDeliveryOption::factory()->create(
+                [
+                    'is_prepayment_available' => true,
+                    'prepayment_amount'       => 10,
+                ]
+            );
             $guestToken     = Str::uuid()->toString();
 
             $cart     = Cart::factory()->create(['guest_token' => $guestToken]);
