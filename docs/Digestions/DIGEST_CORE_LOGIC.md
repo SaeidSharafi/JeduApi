@@ -477,7 +477,7 @@ Administrative status and access-date changes reconcile deliberately with applic
    - `manual_approval`: Never auto-provisions — sets order to PROCESSING, requiring staff to call `ApproveOrderAction`
    - When payment completion completes items on an order already marked `COMPLETED` (the admin create-order flow), it still dispatches `OrderStatusUpdatedEvent` so provisioning attempts are created; repeated completion with no item changes does not dispatch a duplicate event.
    - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items set enrolments to `ACTIVE`, setting `access_start_date` when first activated; refunded/cancelled items set `CANCELLED`). Uses `save()` to fire model events for `enrolled_count` synchronization.
-  - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates. Creates enrollment via `firstOrCreate()` if none exists (status `ACTIVE`), then calls `updateEnrollmentStatus()`.
+  - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates. Creates enrollment via `firstOrCreate()` if none exists (status `ACTIVE`), then calls `updateEnrollmentStatus()`. Structural Bundle lines are an exception: the item completes and its component seats are consumed, but NO enrollment is created on the Bundle PDO (the Bundle is not an enrollable entitlement; creating one would trip the structural provisioning guard).
   - `updateParentOrderStatus(Order $order): void`: Determines parent order status from collective item states: all refunded → REFUNDED, all cancelled → CANCELLED, any refunded → PARTIALLY_REFUNDED, all completed → COMPLETED, default → PROCESSING
 - **Reservations:** Depends on `ProductReservationService` — consumes reservations (`consume()`) for items reaching a paid/completed state so `enrolled_count + reserved_count` stays within capacity.
 
@@ -763,6 +763,12 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 ### Price Field Invariant on Order Items
 - `order_items.price` always stores the base price from `product_delivery_option.price` at order creation. It never includes any discounts (product-level or cart-level). Discount information is tracked separately: product-level discounts in `pricing_metadata`, cart-level discounts in `discount_amount`.
+
+### Bundle Pricing Invariants
+- A Bundle PDO always prices at its reviewed selling price (its `price` column). `ProductPriceService::getPriceDataForOption()` short-circuits Bundle PDOs so featured prices, indexed product-promotion discount prices, and prepayment never affect the effective price.
+- Admin Bundle PDO create/update DTOs prohibit `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date` (plus the existing prepayment/teachers/details prohibitions) so the frontend schema exposes no senseless fields; the create/update actions additionally force these off for composite PDOs, mirroring the prepayment normalization.
+- `ProductDiscountIndexer` never writes a `product_delivery_option_discount_price` row for a Bundle PDO; product-level promotions cannot mark a Bundle down regardless of condition scope.
+- `CalculatedOrderItemData.is_bundle` (set in `PromotionService::buildOrderContext`) marks Bundle lines, and the cart promotion actions (`ApplyPercentageDiscountToItemsAction`, `ApplyFixedAmountOffAction`, `ApplyTieredPercentageOffAction`) skip them, so coupons/cart promotions discount unrelated standalone lines in a mixed cart but never the Bundle line.
 
 ### Discount Snapshots on Orders
 - `Order.applied_cart_discounts_json` and `OrderItem.applied_discount_details_json` persist the applied discounts as immutable snapshots of checkout state.

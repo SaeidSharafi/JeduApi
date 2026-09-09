@@ -34,6 +34,12 @@ final class ApplyTieredPercentageOffAction implements DiscountActionContract
         }
 
         foreach ($context->items as $item) {
+            // Bundle lines keep their reviewed selling price — they never
+            // participate in tiered cart promotions.
+            if ($item->is_bundle) {
+                continue;
+            }
+
             $itemDiscount = (int) ($item->total * ($applicablePercentage / 100));
             $itemDiscount = min($itemDiscount, $item->total);
 

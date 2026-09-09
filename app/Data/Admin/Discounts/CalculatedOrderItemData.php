@@ -25,5 +25,12 @@ final class CalculatedOrderItemData extends Data
          */
         public array $applied_discount_details = [],
         public bool $is_gift = false,
+        /**
+         * True when this line is a Bundle PDO (composite SKU). Bundle lines
+         * are priced at their reviewed selling price and must never receive a
+         * coupon or cart-promotion markdown; unrelated standalone lines in the
+         * same cart keep their otherwise eligible discounts.
+         */
+        public bool $is_bundle = false,
     ) {}
 }

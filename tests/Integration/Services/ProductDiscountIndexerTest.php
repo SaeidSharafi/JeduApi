@@ -286,4 +286,41 @@ describe('ProductDiscountIndexer', function (): void {
         expect($result)->toBeFalse();
     });
 
+    describe('Bundle exclusion', function (): void {
+        it('never writes a product-level promotion discount price row for a Bundle PDO', function (): void {
+            $normalProduct = Product::factory()->create();
+            $normalOption  = ProductDeliveryOption::factory()->for($normalProduct)->create(['price' => 1000]);
+
+            $bundle        = App\Models\Bundle::factory()->create();
+            $bundleProduct = Product::factory()->create([
+                'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+                'productable_id'   => $bundle->id,
+            ]);
+            $bundleOption = ProductDeliveryOption::factory()->create([
+                'product_id'       => $bundleProduct->id,
+                'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::COMPOSITE,
+                'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::BUNDLE,
+                'details_json'     => [],
+                'price'            => 5000,
+            ]);
+
+            $promo = DiscountPromotion::factory()->create(['priority' => 1]);
+            DiscountPromotionRule::factory()->create([
+                'discount_promotion_id' => $promo->id,
+                'type'                  => 'action',
+                'handler'               => 'apply_fixed_discount_product',
+                'configuration'         => ['amount' => 200],
+            ]);
+
+            $this->indexer->reIndexComplete();
+
+            $this->assertDatabaseHas('product_delivery_option_discount_prices', [
+                'product_delivery_option_id' => $normalOption->id,
+            ]);
+            $this->assertDatabaseMissing('product_delivery_option_discount_prices', [
+                'product_delivery_option_id' => $bundleOption->id,
+            ]);
+        });
+    });
+
 });

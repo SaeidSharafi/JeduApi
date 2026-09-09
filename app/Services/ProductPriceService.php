@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Data\Shop\ProductDeliveryOptionPriceData;
 use App\Data\Shop\ProductPriceData;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductPrice;
@@ -105,6 +106,18 @@ final readonly class ProductPriceService
      */
     public function getPriceDataForOption(ProductDeliveryOption $option): ProductDeliveryOptionPriceData
     {
+        // Bundle PDOs always price at their reviewed selling price. They are
+        // structurally barred from featured prices, product-level automatic
+        // promotion discount prices, and prepayment, so their current price
+        // is the plain `price` column no matter what legacy rows exist.
+        if ($option->product?->productable_type === ProductableEnum::BUNDLE->value) {
+            return ProductDeliveryOptionPriceData::make(
+                currentPrice: $option->price,
+                originalPrice: $option->price,
+                uuid: $option->uuid,
+            );
+        }
+
         $standardPrice   = $option->price;
         $featuredPrice   = $this->getActiveFeaturedPrice($option);
         $discountPrice   = $option->discount_price;

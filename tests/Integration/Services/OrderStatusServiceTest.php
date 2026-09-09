@@ -9,14 +9,19 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
+use App\Models\Bundle;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Services\OrderStatusService;
 use Illuminate\Support\Facades\Event;
@@ -358,4 +363,39 @@ describe('OrderStatusService', function (): void {
 
             config()->set('order.provisioning.trigger', 'any_payment');
         });
+
+    it('completes a Bundle line item without creating a structural enrollment', function (): void {
+        $bundle  = Bundle::factory()->create();
+        $product = Product::factory()->create([
+            'productable_type' => ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+        ]);
+        $bundleOption = ProductDeliveryOption::factory()->create([
+            'product_id'       => $product->id,
+            'fulfillment_type' => FulfillmentTypeEnum::COMPOSITE,
+            'delivery_method'  => DeliveryMethodEnum::BUNDLE,
+            'details_json'     => [],
+        ]);
+
+        $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+        $item  = OrderItem::factory()->for($order)->create([
+            'product_delivery_option_id' => $bundleOption->id,
+            'status'                     => OrderItemStatusEnum::PENDING,
+        ]);
+
+        app(OrderStatusService::class)->handlePaymentCompletion($order->fresh());
+
+        $this->assertDatabaseHas('order_items', [
+            'id'     => $item->id,
+            'status' => OrderItemStatusEnum::COMPLETED->value,
+        ]);
+        $this->assertDatabaseMissing('enrollments', [
+            'order_item_id'              => $item->id,
+            'product_delivery_option_id' => $bundleOption->id,
+        ]);
+        $this->assertDatabaseHas('orders', [
+            'id'     => $order->id,
+            'status' => OrderStatusEnum::COMPLETED->value,
+        ]);
+    });
 });

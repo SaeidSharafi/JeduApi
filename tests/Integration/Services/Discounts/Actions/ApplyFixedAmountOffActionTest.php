@@ -66,4 +66,61 @@ describe('ApplyFixedAmountOffAction', function (): void {
         expect($context->items[0]->discount_amount)->toBe(4000)
             ->and($context->items[0]->total)->toBe(0);
     });
+
+    test('it distributes the flat discount over standalone lines only, leaving a bundle line untouched', function (): void {
+        $action = new ApplyFixedAmountOffAction();
+        $config = new ApplyFixedAmountOffData(amount: 3000); // 3000 total discount
+
+        $standalone = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
+            price: 8000, total: 8000
+        );
+        $bundle = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
+            price: 2000, total: 2000,
+            is_bundle: true
+        );
+
+        $context = OrderContextData::from([
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$standalone, $bundle],
+            'subtotal_full_payment_items' => 10000,
+            'subtotal_all_items'          => 10000,
+        ]);
+
+        $action->apply($context, $config);
+
+        // The bundle is excluded from the distribution weight, so the standalone
+        // line (the only eligible line) absorbs the full 3000.
+        expect($context->items[0]->discount_amount)->toBe(3000)
+            ->and($context->items[0]->total)->toBe(5000)
+            ->and($context->items[1]->discount_amount)->toBe(0)
+            ->and($context->items[1]->total)->toBe(2000);
+    });
+
+    test('it applies no discount when the cart holds only a bundle line', function (): void {
+        $action = new ApplyFixedAmountOffAction();
+        $config = new ApplyFixedAmountOffData(amount: 3000);
+
+        $bundle = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
+            price: 2000, total: 2000,
+            is_bundle: true
+        );
+
+        $context = OrderContextData::from([
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$bundle],
+            'subtotal_full_payment_items' => 2000,
+            'subtotal_all_items'          => 2000,
+        ]);
+
+        $action->apply($context, $config);
+
+        expect($context->items[0]->discount_amount)->toBe(0)
+            ->and($context->items[0]->total)->toBe(2000);
+    });
 });

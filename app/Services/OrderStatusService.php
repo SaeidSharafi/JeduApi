@@ -10,6 +10,7 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderProvisioningTriggerEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -146,6 +147,17 @@ final class OrderStatusService
             $this->productReservationService->consume($item->product_delivery_option_id, $item->qty_ordered);
             $item->status = $newStatus;
             $item->saveQuietly();
+        }
+
+        // A structural Bundle line is not an enrollable entitlement: its component
+        // seats were reserved/consumed at checkout and each component materializes
+        // its own enrollment. Creating one on the Bundle PDO would trip the
+        // structural provisioning guard in ProvisioningPlanResolver.
+        $item->loadMissing('productDeliveryOption.product');
+        $isBundleLine = $item->productDeliveryOption?->product?->productable_type === ProductableEnum::BUNDLE->value;
+
+        if ($isBundleLine) {
+            return $wasPending;
         }
 
         // Create enrollment if it doesn't exist yet (payment completed -> activate access)

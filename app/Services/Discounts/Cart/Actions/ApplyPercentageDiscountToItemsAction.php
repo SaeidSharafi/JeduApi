@@ -29,6 +29,13 @@ final class ApplyPercentageDiscountToItemsAction implements DiscountActionContra
         $promotionName = $context->evaluating_promotion->name ?? 'Discount';
 
         foreach ($context->items as $item) {
+            // Bundle lines keep their reviewed selling price — no coupons or
+            // cart promotions may mark them down. Unrelated standalone lines
+            // in the same cart remain eligible.
+            if ($item->is_bundle) {
+                continue;
+            }
+
             // HERE IS THE CRITICAL LOGIC FOR PREPAYMENTS
             $paymentType = $item->payment_type;
             if ($paymentType === OrderItemPaymentTypeEnum::PRE_PAYMENT) {

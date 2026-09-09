@@ -33,8 +33,12 @@ final readonly class CreateProductDeliveryOptionAction
                 $pdoData['details_json']     = [];
             }
             if (($pdoData['fulfillment_type'] ?? null) === FulfillmentTypeEnum::COMPOSITE->value) {
-                $pdoData['is_prepayment_available'] = false;
-                $pdoData['prepayment_amount']       = null;
+                $pdoData['is_prepayment_available']   = false;
+                $pdoData['prepayment_amount']         = null;
+                $pdoData['is_featured']               = false;
+                $pdoData['featured_price']            = null;
+                $pdoData['featured_price_start_date'] = null;
+                $pdoData['featured_price_end_date']   = null;
             }
             $providedSku    = data_get($pdoData, 'sku');
             $pdoData['sku'] = filled($providedSku)

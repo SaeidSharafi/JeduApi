@@ -73,4 +73,67 @@ describe('ApplyTieredPercentageOffAction', function (): void {
         expect($context->items[0]->discount_amount)->toBe(0)
             ->and($context->items[0]->total)->toBe(10000);
     });
+
+    test('it leaves a bundle line undiscounted while tiering a standalone line', function (): void {
+        $action = new ApplyTieredPercentageOffAction();
+        $config = new ApplyTieredPercentageOffData(tiers: [
+            new TierData(min_amount: 20000, percentage: 20),
+        ]);
+
+        $standalone = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
+            price: 10000, total: 10000
+        );
+        $bundle = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
+            price: 50000, total: 50000,
+            is_bundle: true
+        );
+
+        // Cart subtotal of 60000 reaches the 20000 tier.
+        $context = OrderContextData::from([
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$standalone, $bundle],
+            'subtotal_full_payment_items' => 60000,
+            'subtotal_all_items'          => 60000,
+        ]);
+
+        $action->apply($context, $config);
+
+        // 20% of 10000 = 2000 on the standalone line.
+        expect($context->items[0]->discount_amount)->toBe(2000)
+            ->and($context->items[0]->total)->toBe(8000);
+
+        // The bundle line keeps its full total.
+        expect($context->items[1]->discount_amount)->toBe(0)
+            ->and($context->items[1]->total)->toBe(50000);
+    });
+
+    test('it applies nothing when the cart holds only a bundle line', function (): void {
+        $action = new ApplyTieredPercentageOffAction();
+        $config = new ApplyTieredPercentageOffData(tiers: [
+            new TierData(min_amount: 10000, percentage: 50),
+        ]);
+
+        $bundle = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
+            price: 50000, total: 50000,
+            is_bundle: true
+        );
+
+        $context = OrderContextData::from([
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$bundle],
+            'subtotal_full_payment_items' => 50000,
+            'subtotal_all_items'          => 50000,
+        ]);
+
+        $action->apply($context, $config);
+
+        expect($context->items[0]->discount_amount)->toBe(0)
+            ->and($context->items[0]->total)->toBe(50000);
+    });
 });

@@ -154,12 +154,11 @@ describe('User with permissions', function (): void {
         $response = $this->postJson(
             route('api.v1.admin.delivery-options.store', ['product' => $bundleProduct->id]),
             [
-                'name'                    => 'Bundle Option',
-                'price'                   => $component->price,
-                'status'                  => 'published',
-                'details'                 => [],
-                'is_featured'             => false,
-                'components'              => [[
+                'name'       => 'Bundle Option',
+                'price'      => $component->price,
+                'status'     => 'published',
+                'details'    => [],
+                'components' => [[
                     'product_delivery_option_id' => $component->id,
                     'allocation'                 => $component->price,
                 ]],
@@ -210,6 +209,35 @@ describe('User with permissions', function (): void {
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['fulfillment_type', 'delivery_method']);
+    });
+
+    it('should reject is_featured on Bundle delivery option create requests', function (): void {
+        $bundle        = Bundle::factory()->create();
+        $bundleProduct = App\Models\Product::factory()->create([
+            'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+        ]);
+        $component = ProductDeliveryOption::factory()->create();
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE]);
+
+        $this->postJson(
+            route('api.v1.admin.delivery-options.store', ['product' => $bundleProduct->id]),
+            [
+                'name'                    => 'Bundle Option With Featured Price',
+                'price'                   => $component->price,
+                'status'                  => 'published',
+                'details'                 => [],
+                'is_featured'             => true,
+                'featured_price'          => 123,
+                'is_prepayment_available' => false,
+                'components'              => [[
+                    'product_delivery_option_id' => $component->id,
+                    'allocation'                 => $component->price,
+                ]],
+            ]
+        )
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['is_featured', 'featured_price']);
     });
 
     it('prohibits teachers on Bundle delivery option requests', function (): void {
@@ -411,13 +439,13 @@ describe('User with permissions', function (): void {
         ]);
         $component      = ProductDeliveryOption::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
-            'product_id'       => $bundleProduct->id,
-            'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::COMPOSITE,
-            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::BUNDLE,
+            'product_id'              => $bundleProduct->id,
+            'fulfillment_type'        => App\Enums\Product\FulfillmentTypeEnum::COMPOSITE,
+            'delivery_method'         => App\Enums\Product\DeliveryMethodEnum::BUNDLE,
             'is_prepayment_available' => false,
-            'prepayment_amount' => null,
-            'price'            => $component->price,
-            'details_json'     => [],
+            'prepayment_amount'       => null,
+            'price'                   => $component->price,
+            'details_json'            => [],
         ]);
         $deliveryOption->bundleComponents()->attach($component->id, ['allocation' => $component->price]);
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_UPDATE]);
@@ -428,22 +456,18 @@ describe('User with permissions', function (): void {
                 'delivery_option' => $deliveryOption->id,
             ]),
             [
-                'name'                      => 'Updated Bundle Option',
-                'sku'                       => $deliveryOption->sku,
-                'price'                     => $component->price,
-                'status'                    => 'published',
-                'details'                   => [],
-                'capacity'                  => null,
-                'is_featured'               => false,
-                'featured_price'            => null,
-                'featured_price_start_date' => null,
-                'featured_price_end_date'   => null,
-                'registration_start_date'   => null,
-                'registration_end_date'     => null,
-                'available_from'            => null,
-                'available_to'              => null,
-                'access_days'               => null,
-                'components'                => [[
+                'name'                    => 'Updated Bundle Option',
+                'sku'                     => $deliveryOption->sku,
+                'price'                   => $component->price,
+                'status'                  => 'published',
+                'details'                 => [],
+                'capacity'                => null,
+                'registration_start_date' => null,
+                'registration_end_date'   => null,
+                'available_from'          => null,
+                'available_to'            => null,
+                'access_days'             => null,
+                'components'              => [[
                     'product_delivery_option_id' => $component->id,
                     'allocation'                 => $component->price,
                 ]],
@@ -458,6 +482,53 @@ describe('User with permissions', function (): void {
             'is_prepayment_available' => false,
             'prepayment_amount'       => null,
         ]);
+    });
+    it('should reject is_featured on Bundle delivery option update requests', function (): void {
+        $bundle        = Bundle::factory()->create();
+        $bundleProduct = App\Models\Product::factory()->create([
+            'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+        ]);
+        $component      = ProductDeliveryOption::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $bundleProduct->id,
+            'fulfillment_type'        => App\Enums\Product\FulfillmentTypeEnum::COMPOSITE,
+            'delivery_method'         => App\Enums\Product\DeliveryMethodEnum::BUNDLE,
+            'is_prepayment_available' => false,
+            'prepayment_amount'       => null,
+            'price'                   => $component->price,
+            'details_json'            => [],
+        ]);
+        $deliveryOption->bundleComponents()->attach($component->id, ['allocation' => $component->price]);
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_UPDATE]);
+
+        $this->putJson(
+            route('api.v1.admin.delivery-options.update', [
+                'product'         => $bundleProduct->id,
+                'delivery_option' => $deliveryOption->id,
+            ]),
+            [
+                'name'                    => 'Bundle Option With Featured Price',
+                'sku'                     => $deliveryOption->sku,
+                'price'                   => $component->price,
+                'status'                  => 'published',
+                'details'                 => [],
+                'capacity'                => null,
+                'is_featured'             => true,
+                'featured_price'          => 123,
+                'registration_start_date' => null,
+                'registration_end_date'   => null,
+                'available_from'          => null,
+                'available_to'            => null,
+                'access_days'             => null,
+                'components'              => [[
+                    'product_delivery_option_id' => $component->id,
+                    'allocation'                 => $component->price,
+                ]],
+            ]
+        )
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['is_featured']);
     });
     it('should convert detail dates when updating a delivery option', function (): void {
         $this->authorized_user([

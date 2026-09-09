@@ -125,3 +125,57 @@ it('does not apply discount to a prepayment item', function (): void {
     expect($context->items[0]->discount_amount)->toBe(0)
         ->and($context->items[0]->total)->toBe(2000);
 });
+
+it('does not apply a percentage discount to a bundle line while discounting a standalone line', function (): void {
+    $handler = new ApplyPercentageDiscountToItemsAction();
+    $config  = new ApplyPercentageDiscountConfigData(percentage: 25);
+
+    $standalone = new CalculatedOrderItemData(
+        product_delivery_option: ProductDeliveryOption::factory()->make(['price' => 20000]),
+        qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT, price: 20000, total: 20000
+    );
+    $bundle = new CalculatedOrderItemData(
+        product_delivery_option: ProductDeliveryOption::factory()->make(['price' => 500000]),
+        qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT, price: 500000, total: 500000,
+        is_bundle: true
+    );
+    $context = OrderContextData::from(
+        [
+            'customer'                    => App\Models\User::factory()->create(),
+            'items'                       => [$standalone, $bundle],
+            'subtotal_full_payment_items' => 520000,
+            'subtotal_all_items'          => 520000,
+        ]
+    );
+
+    $handler->apply($context, $config);
+
+    expect($context->items[0]->discount_amount)->toBe(5000) // 25% of 20000
+        ->and($context->items[0]->total)->toBe(15000)
+        ->and($context->items[1]->discount_amount)->toBe(0)
+        ->and($context->items[1]->total)->toBe(500000);
+});
+
+it('does not apply a percentage discount when every line is a bundle line', function (): void {
+    $handler = new ApplyPercentageDiscountToItemsAction();
+    $config  = new ApplyPercentageDiscountConfigData(percentage: 25);
+
+    $bundle = new CalculatedOrderItemData(
+        product_delivery_option: ProductDeliveryOption::factory()->make(['price' => 500000]),
+        qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT, price: 500000, total: 500000,
+        is_bundle: true
+    );
+    $context = OrderContextData::from(
+        [
+            'customer'                    => App\Models\User::factory()->create(),
+            'items'                       => [$bundle],
+            'subtotal_full_payment_items' => 500000,
+            'subtotal_all_items'          => 500000,
+        ]
+    );
+
+    $handler->apply($context, $config);
+
+    expect($context->items[0]->discount_amount)->toBe(0)
+        ->and($context->items[0]->total)->toBe(500000);
+});

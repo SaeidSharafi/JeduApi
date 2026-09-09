@@ -22,15 +22,15 @@ final class ProductDeliveryOptionUpdateData extends Data
         #[MapInputName('details')]
         public array $details_json,
         public ?int $capacity,
-        public bool $is_featured,
-        public ?int $featured_price,
-        public ?string $featured_price_start_date,
-        public ?string $featured_price_end_date,
-        public ?string $registration_start_date,
-        public ?string $registration_end_date,
-        public ?string $available_from,
-        public ?string $available_to,
-        public ?int $access_days,
+        public bool $is_featured = false,
+        public ?int $featured_price = null,
+        public ?string $featured_price_start_date = null,
+        public ?string $featured_price_end_date = null,
+        public ?string $registration_start_date = null,
+        public ?string $registration_end_date = null,
+        public ?string $available_from = null,
+        public ?string $available_to = null,
+        public ?int $access_days = null,
         public array $components = [],
         public array $teachers = [],
         public bool $is_prepayment_available = false,
@@ -64,17 +64,17 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s',
                 'after_or_equal:featured_price_start_date',
             ],
-            'registration_start_date'   => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
-            'registration_end_date'     => [
+            'registration_start_date' => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
+            'registration_end_date'   => [
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
                 'after_or_equal:registration_start_date',
             ],
-            'available_from'            => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
-            'available_to'              => [
+            'available_from' => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
+            'available_to'   => [
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
                 'after_or_equal:available_from',
             ],
-            'access_days'               => ['nullable', 'integer', 'min:1'],
+            'access_days' => ['nullable', 'integer', 'min:1'],
         ];
 
         if ($isBundle) {
@@ -183,22 +183,22 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'example'     => 1000000,
             ],
             'is_featured' => [
-                'description' => 'Marks this option as featured, this is not related to featured_price.',
+                'description' => 'Marks this option as featured, this is not related to featured_price. Prohibited for bundle products.',
                 'required'    => true,
                 'example'     => false,
             ],
             'featured_price' => [
-                'description' => 'Discounted price to display. Must be less than `price`.',
+                'description' => 'Discounted price to display. Must be less than `price`. Prohibited for bundle products.',
                 'required'    => false,
                 'example'     => 4500000,
             ],
             'featured_price_start_date' => [
-                'description' => 'Jalali datetime (Y-m-d H:i:s) when the featured price becomes active. Null means immediately.',
+                'description' => 'Jalali datetime (Y-m-d H:i:s) when the featured price becomes active. Null means immediately. Prohibited for bundle products.',
                 'required'    => false,
                 'example'     => '1404-06-15 00:00:00',
             ],
             'featured_price_end_date' => [
-                'description' => 'Jalali datetime (Y-m-d H:i:s) when the featured price expires. Must be after `featured_price_start_date`.',
+                'description' => 'Jalali datetime (Y-m-d H:i:s) when the featured price expires. Must be after `featured_price_start_date`. Prohibited for bundle products.',
                 'required'    => false,
                 'example'     => '1404-07-15 23:59:59',
             ],

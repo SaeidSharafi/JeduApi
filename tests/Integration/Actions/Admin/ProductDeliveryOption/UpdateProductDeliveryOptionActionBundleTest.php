@@ -322,6 +322,10 @@ function bundleUpdateData(
     array $components = [],
     ?bool $isPrepaymentAvailable = null,
     ?int $prepaymentAmount = null,
+    ?bool $isFeatured = null,
+    ?int $featuredPrice = null,
+    ?string $featuredPriceStartDate = null,
+    ?string $featuredPriceEndDate = null,
 ): ProductDeliveryOptionUpdateData {
     return new ProductDeliveryOptionUpdateData(
         name: $option->name,
@@ -331,12 +335,12 @@ function bundleUpdateData(
         details_json: $option->details_json,
         teachers: [],
         capacity: $option->capacity,
-        is_prepayment_available: $isPrepaymentAvailable ?? $option->is_prepayment_available,
-        prepayment_amount: $prepaymentAmount            ?? $option->prepayment_amount,
-        is_featured: $option->is_featured,
-        featured_price: $option->featured_price,
-        featured_price_start_date: $option->featured_price_start_date,
-        featured_price_end_date: $option->featured_price_end_date,
+        is_prepayment_available: $isPrepaymentAvailable    ?? $option->is_prepayment_available,
+        prepayment_amount: $prepaymentAmount               ?? $option->prepayment_amount,
+        is_featured: $isFeatured                           ?? (bool) $option->is_featured,
+        featured_price: $featuredPrice                     ?? $option->featured_price,
+        featured_price_start_date: $featuredPriceStartDate ?? $option->featured_price_start_date,
+        featured_price_end_date: $featuredPriceEndDate     ?? $option->featured_price_end_date,
         registration_start_date: $option->registration_start_date,
         registration_end_date: $option->registration_end_date,
         available_from: $option->available_from,
@@ -363,6 +367,30 @@ it('normalizes prepayment fields off for a Bundle PDO', function (): void {
 
     expect($updated->is_prepayment_available)->toBeFalse()
         ->and($updated->prepayment_amount)->toBeNull();
+});
+
+it('normalizes featured price fields off for a Bundle PDO even when supplied programmatically', function (): void {
+    [, , $parent] = makeBundledProduct(500000);
+    $component    = makeBundledComponent(500000);
+    $parent->bundleComponents()->attach($component->id, ['allocation' => 500000]);
+
+    $updated = app(UpdateProductDeliveryOptionAction::class)->handle(
+        bundleUpdateData(
+            $parent,
+            components: [['product_delivery_option_id' => $component->id, 'allocation' => 500000]],
+            isFeatured: true,
+            featuredPrice: 123,
+            featuredPriceStartDate: '1404-06-15 00:00:00',
+            featuredPriceEndDate: '1404-07-15 23:59:59',
+        ),
+        $parent,
+    );
+
+    $fresh = $updated->fresh();
+    expect($fresh->is_featured)->toBeFalse()
+        ->and($fresh->featured_price)->toBeNull()
+        ->and($fresh->featured_price_start_date)->toBeNull()
+        ->and($fresh->featured_price_end_date)->toBeNull();
 });
 
 it('normalizes prepayment fields off for any composite PDO', function (): void {

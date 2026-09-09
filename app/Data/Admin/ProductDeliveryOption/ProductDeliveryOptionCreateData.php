@@ -60,6 +60,10 @@ final class ProductDeliveryOptionCreateData extends Data
             'teachers'                                => ['prohibited'],
             'is_prepayment_available'                 => ['prohibited'],
             'prepayment_amount'                       => ['prohibited'],
+            'is_featured'                             => ['prohibited'],
+            'featured_price'                          => ['prohibited'],
+            'featured_price_start_date'               => ['prohibited'],
+            'featured_price_end_date'                 => ['prohibited'],
             'components'                              => ['required', 'array', 'min:1', 'max:'.config('products.bundles.max_components', 30)],
             'components.*.product_delivery_option_id' => ['required', 'integer'],
             'components.*.allocation'                 => ['required', 'integer', 'min:0'],
@@ -89,17 +93,17 @@ final class ProductDeliveryOptionCreateData extends Data
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s',
                 'after_or_equal:featured_price_start_date',
             ],
-            'registration_start_date'   => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
-            'registration_end_date'     => [
+            'registration_start_date' => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
+            'registration_end_date'   => [
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
                 'after_or_equal:registration_start_date',
             ],
-            'available_from'            => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
-            'available_to'              => [
+            'available_from' => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d'],
+            'available_to'   => [
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
                 'after_or_equal:available_from',
             ],
-            'access_days'               => ['nullable', 'integer', 'min:1'],
+            'access_days' => ['nullable', 'integer', 'min:1'],
         ];
 
         if ($isBundle) {
@@ -243,22 +247,22 @@ Each value determines which `details.*` fields are required.',
                 'example'     => 1000000,
             ],
             'is_featured' => [
-                'description' => 'Marks this option as featured, enabling a promotional discounted price display. Requires `featured_price` and optionally date bounds.',
+                'description' => 'Marks this option as featured, enabling a promotional discounted price display. Requires `featured_price` and optionally date bounds. Prohibited for bundle products.',
                 'required'    => true,
                 'example'     => false,
             ],
             'featured_price' => [
-                'description' => 'Discounted price to display when `is_featured` is true. Must be less than `price`.',
+                'description' => 'Discounted price to display when `is_featured` is true. Must be less than `price`. Prohibited for bundle products.',
                 'required'    => false,
                 'example'     => 4500000,
             ],
             'featured_price_start_date' => [
-                'description' => 'Jalali datetime (Y-m-d H:i:s) when the featured price becomes active. Null means immediately.',
+                'description' => 'Jalali datetime (Y-m-d H:i:s) when the featured price becomes active. Null means immediately. Prohibited for bundle products.',
                 'required'    => false,
                 'example'     => '1404-06-15 00:00:00',
             ],
             'featured_price_end_date' => [
-                'description' => 'Jalali datetime (Y-m-d H:i:s) when the featured price expires. Must be after `featured_price_start_date`.',
+                'description' => 'Jalali datetime (Y-m-d H:i:s) when the featured price expires. Must be after `featured_price_start_date`. Prohibited for bundle products.',
                 'required'    => false,
                 'example'     => '1404-07-15 23:59:59',
             ],

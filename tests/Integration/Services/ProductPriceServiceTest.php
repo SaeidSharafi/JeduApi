@@ -299,3 +299,75 @@ describe('ProductPriceService: Updating Data', function (): void {
     });
 
 });
+
+describe('ProductPriceService: Bundle PDOs', function (): void {
+    it('prices a Bundle PDO at its reviewed selling price despite active featured and indexed discount prices', function (): void {
+        [, , $bundleOption] = makeBundlePriceOffer(500000);
+
+        $bundleOption->update([
+            'is_featured'               => true,
+            'featured_price'            => 400000,
+            'featured_price_start_date' => Carbon::yesterday(),
+            'featured_price_end_date'   => Carbon::tomorrow(),
+        ]);
+        ProductDeliveryOptionDiscountPrice::factory()
+            ->forProductDeliveryOption($bundleOption)
+            ->withPrice(300000)
+            ->create(['starts_at' => Carbon::yesterday(), 'ends_at' => Carbon::tomorrow()]);
+
+        $priceData = $this->priceService->getPriceDataForOption($bundleOption->fresh());
+
+        expect($priceData->current_price)->toBe(500000)
+            ->and($priceData->original_price)->toBe(500000)
+            ->and($priceData->discount_amount)->toBeNull()
+            ->and($priceData->discount_type)->toBeNull()
+            ->and($priceData->featured_price)->toBeNull()
+            ->and($priceData->discount_percentage)->toBeNull()
+            ->and($priceData->has_discount)->toBeFalse()
+            ->and($priceData->has_featured_price)->toBeFalse()
+            ->and($priceData->has_pre_payment_price)->toBeFalse()
+            ->and($priceData->pre_payment_price)->toBeNull();
+    });
+
+    it('still applies featured and indexed discount prices to a plain non-bundle PDO', function (): void {
+        $option = ProductDeliveryOption::factory([
+            'price'                     => 500000,
+            'is_featured'               => true,
+            'featured_price'            => 400000,
+            'featured_price_start_date' => Carbon::yesterday(),
+            'featured_price_end_date'   => Carbon::tomorrow(),
+        ])->has(ProductDeliveryOptionDiscountPrice::factory([
+            'discounted_price' => 300000,
+            'starts_at'        => Carbon::yesterday(),
+            'ends_at'          => Carbon::tomorrow(),
+        ]))->create();
+        $option->load('productDeliveryOptionDiscountPrice');
+
+        $priceData = $this->priceService->getPriceDataForOption($option);
+
+        expect($priceData->current_price)->toBe(300000)
+            ->and($priceData->original_price)->toBe(500000)
+            ->and($priceData->has_discount)->toBeTrue()
+            ->and($priceData->featured_price)->toBe(400000);
+    });
+});
+
+function makeBundlePriceOffer(int $price): array
+{
+    $bundle  = App\Models\Bundle::factory()->create();
+    $product = Product::factory()->create([
+        'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+        'productable_id'   => $bundle->id,
+        'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+    ]);
+    $option = ProductDeliveryOption::factory()->create([
+        'product_id'       => $product->id,
+        'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::COMPOSITE,
+        'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::BUNDLE,
+        'details_json'     => [],
+        'price'            => $price,
+        'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+    ]);
+
+    return [$bundle, $product, $option];
+}

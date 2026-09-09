@@ -46,8 +46,12 @@ final readonly class UpdateProductDeliveryOptionAction
             }
             $fulfillmentType = $pdoData['fulfillment_type'] ?? $deliveryOption->fulfillment_type?->value;
             if ($fulfillmentType === FulfillmentTypeEnum::COMPOSITE->value) {
-                $pdoData['is_prepayment_available'] = false;
-                $pdoData['prepayment_amount']       = null;
+                $pdoData['is_prepayment_available']   = false;
+                $pdoData['prepayment_amount']         = null;
+                $pdoData['is_featured']               = false;
+                $pdoData['featured_price']            = null;
+                $pdoData['featured_price_start_date'] = null;
+                $pdoData['featured_price_end_date']   = null;
             }
             $deliveryOption->update($pdoData);
             $deliveryOption->teachers()->sync(
