@@ -128,7 +128,7 @@ it('keeps mixed pending and completed order history grouped and immutable', func
         ->assertJsonCount(1, 'data.items')
         ->assertJsonCount(1, 'data.bundle_purchases')
         ->assertJsonPath('data.grand_total', 150000)
-        ->assertJsonPath('data.bundle_purchases.0.status.value', $pay ? 'completed' : 'pending')
+        ->assertJsonPath('data.bundle_purchases.0.status.value', $pay ? 'active' : 'pending_payment')
         ->assertJsonPath('data.bundle_purchases.0.components.0.enrollment_status.value', $pay ? 'active' : 'awaiting_payment')
         ->json('data');
 

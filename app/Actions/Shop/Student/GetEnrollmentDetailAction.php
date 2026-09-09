@@ -15,8 +15,10 @@ use App\Data\Shop\Student\Enrollment\EnrollmentSurveyBlockData;
 use App\Data\Shop\Teacher\TeacherDetailData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Enums\ProvisioningOutcomeStatusEnum;
 use App\Enums\User\GenderEnum;
+use App\Exceptions\BundleStructuralInvariantException;
 use App\Models\DigitalAsset;
 use App\Models\Enrollment;
 use App\Models\Review;
@@ -33,6 +35,10 @@ final readonly class GetEnrollmentDetailAction
             'orderItem',
             'customer',
         ]);
+
+        if ($enrollment->productDeliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value) {
+            throw new BundleStructuralInvariantException();
+        }
 
         $deliveryOption = $enrollment->productDeliveryOption;
         $product        = ProductDeliveryOptionCardData::fromModel($deliveryOption);

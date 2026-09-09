@@ -54,5 +54,7 @@ final class OrderData extends Data implements WalletTransactionSourceableDataCon
         public array $customer_snapshot,
         #[DataCollectionOf(OrderItemData::class)]
         public Collection $items,
+        #[DataCollectionOf(BundlePurchaseData::class)]
+        public Collection $bundle_purchases = new Collection(),
     ) {}
 }

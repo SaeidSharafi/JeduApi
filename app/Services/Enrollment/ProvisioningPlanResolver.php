@@ -13,9 +13,9 @@ use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningReadinessEnum;
 use App\Enums\ProvisioningStatusEnum;
+use App\Exceptions\BundleStructuralInvariantException;
 use App\Models\ProductDeliveryOption;
 use App\Services\Integrations\AbstractIntegrationService;
-use LogicException;
 
 final readonly class ProvisioningPlanResolver
 {
@@ -40,7 +40,7 @@ final readonly class ProvisioningPlanResolver
         }
 
         if ($deliveryOption->delivery_method === DeliveryMethodEnum::BUNDLE) {
-            throw new LogicException('Bundle delivery options cannot be provisioned directly.');
+            throw new BundleStructuralInvariantException();
         }
 
         $deliveryProvider = match ($deliveryOption->delivery_method) {

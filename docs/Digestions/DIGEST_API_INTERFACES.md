@@ -151,7 +151,7 @@
 ### OrderController (`app/Http/Controllers/Api/Admin/Order/OrderController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/orders` - **Delegates to:** Order listing with filtering - **Response DTO:** OrderListItemData collection
 - `store(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/orders` - **Request DTO:** OrderCreateData - **Delegates to:** CreateOrderAction::handle() — validates registration window and availability window on each item - **Response DTO:** OrderData
-- `show(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}` - **Delegates to:** Order retrieval with relationships - **Response DTO:** OrderData
+- `show(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}` - **Delegates to:** Order retrieval with relationships - **Response DTO:** OrderData (detail now also returns a `bundle_purchases` collection: each group exposes the aggregate `status` plus its component lines with immutable price snapshot and nested `enrollment` (`id`, `uuid`, `enrollment_status`, `provisioning_status`))
 - `update(OrderUpdateData $request, Order $order)`: **Route:** `PUT /api/v1/admin/orders/{order}` - **Request DTO:** OrderUpdateData - **Response DTO:** OrderData
 - `destroy(Order $order)`: **Route:** `DELETE /api/v1/admin/orders/{order}` - **Delegates to:** Order deletion
 
@@ -514,6 +514,7 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 ##### OrderController (`app/Http/Controllers/Api/Shop/Student/OrderController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/student/orders` - Lists authenticated user orders with standalone commercial `items`, `bundle_purchases` (each nesting physical components and Enrollment/status data), and payments. **Response DTO:** `OrderData` paginator.
 - `show(string $incrementId)`: **Route:** `GET /api/v1/shop/student/orders/{order:increment_id}` - Returns the same grouping. Internal component Order Items never appear in flat Customer `items`. **Response DTO:** `OrderData`.
+- `bundle_purchases[].status` uses `BundlePurchaseStatusEnum`: `pending_payment | provisioning | active | partially_failed | failed | revocation_pending | refunded | cancelled`. Component nodes expose `paid_amount`, `bundle_discount_amount`, `status`, `enrollment_id`, `enrollment_uuid`, `enrollment_status`, and `provisioning_status`.
 
 ##### CancelOrderController (`app/Http/Controllers/Api/Shop/Student/CancelOrderController.php`)
 - `__invoke(Order $order)`: **Route:** `POST /api/v1/shop/student/orders/{order:increment_id}/cancel` - **Delegates to:** CancelOrderByCustomerAction::execute(). **Response DTO:** OrderData.

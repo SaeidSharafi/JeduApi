@@ -138,6 +138,7 @@ return [
         'payment_method_error'                        => 'An error occurred with the payment method. Please try again.',
         'payment_method_not_allowed'                  => 'The selected payment method is not allowed for this order.',
         'order_number'                                => 'Order :order_id',
+        'bundle_provisioning_identity'                => 'Bundle: :name (SKU: :sku)',
         'payment'                                     => [
             'delete_completed_payment_error'        => 'Cannot delete a completed payment.',
             'update_completed_payment_status_error' => 'Cannot update a completed payment status.',
@@ -392,7 +393,8 @@ return [
         'bundle_component_allocation_invalid' => 'An allocation cannot exceed the component base price.',
         'bundle_component_repeated_invalid'   => 'Repeated Productables are not allowed in this Bundle.',
         'bundle_component_status_invalid'     => 'A published Bundle requires published components.',
-        'bundle_component_total_invalid'      => 'Component allocations must equal the Bundle price.',
+        'bundle_component_total_invalid'      => 'The allocation total must equal the Bundle selling price.',
+        'bundle_not_directly_provisionable'   => 'A Bundle is a commercial grouping record and is only accessible through its components.',
     ],
 
     'enrollment' => [

@@ -6,12 +6,14 @@ namespace App\Services\Provisioning;
 
 use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Enums\ProvisioningAttemptStatusEnum;
 use App\Enums\ProvisioningOutcomeStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningReadinessEnum;
 use App\Enums\ProvisioningStatusEnum;
 use App\Enums\ProvisioningTriggerEnum;
+use App\Exceptions\BundleStructuralInvariantException;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Models\Enrollment;
 use App\Models\ProvisioningAttempt;
@@ -31,6 +33,10 @@ final class ProvisioningAttemptService
     ): ProvisioningAttempt {
         return DB::transaction(function () use ($enrollment, $trigger, $staffId, $provider): ProvisioningAttempt {
             Enrollment::query()->lockForUpdate()->findOrFail($enrollment->id);
+            $enrollment->loadMissing('productDeliveryOption.product');
+            if ($enrollment->productDeliveryOption?->product?->productable_type === ProductableEnum::BUNDLE->value) {
+                throw new BundleStructuralInvariantException();
+            }
             $active = ProvisioningAttempt::query()
                 ->where('enrollment_id', $enrollment->id)
                 ->where('provider', $provider->value)

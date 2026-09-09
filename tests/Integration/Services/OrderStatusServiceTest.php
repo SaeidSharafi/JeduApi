@@ -364,7 +364,7 @@ describe('OrderStatusService', function (): void {
             config()->set('order.provisioning.trigger', 'any_payment');
         });
 
-    it('completes a Bundle line item without creating a structural enrollment', function (): void {
+    it('rejects a structural Bundle line reaching payment completion with a domain invariant error', function (): void {
         $bundle  = Bundle::factory()->create();
         $product = Product::factory()->create([
             'productable_type' => ProductableEnum::BUNDLE->value,
@@ -383,19 +383,16 @@ describe('OrderStatusService', function (): void {
             'status'                     => OrderItemStatusEnum::PENDING,
         ]);
 
-        app(OrderStatusService::class)->handlePaymentCompletion($order->fresh());
+        // A parent Bundle PDO never becomes a standalone Order Item (checkout
+        // expands it into component items only). If one ever reaches payment
+        // completion the invariant guard must fail loudly instead of silently
+        // skipping or materializing a structural Enrollment.
+        expect(fn () => app(OrderStatusService::class)->handlePaymentCompletion($order->fresh()))
+            ->toThrow(\App\Exceptions\BundleStructuralInvariantException::class);
 
-        $this->assertDatabaseHas('order_items', [
-            'id'     => $item->id,
-            'status' => OrderItemStatusEnum::COMPLETED->value,
-        ]);
         $this->assertDatabaseMissing('enrollments', [
             'order_item_id'              => $item->id,
             'product_delivery_option_id' => $bundleOption->id,
-        ]);
-        $this->assertDatabaseHas('orders', [
-            'id'     => $order->id,
-            'status' => OrderStatusEnum::COMPLETED->value,
         ]);
     });
 });

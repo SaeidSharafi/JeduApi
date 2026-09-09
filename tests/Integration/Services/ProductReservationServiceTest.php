@@ -15,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 mutates(ProductReservationService::class);
 
 it('increments reserved_count on reserve', function (): void {
-    $option = ProductDeliveryOption::factory()->create(['reserved_count' => 0]);
+    $option = ProductDeliveryOption::factory()->create(['reserved_count' => 0, 'capacity' => null]);
 
     app(ProductReservationService::class)->reserve($option->id, 3);
 
@@ -100,7 +100,7 @@ it('never decrements reserved_count below zero', function (): void {
 });
 
 it('accumulates multiple reserves', function (): void {
-    $option  = ProductDeliveryOption::factory()->create(['reserved_count' => 0]);
+    $option  = ProductDeliveryOption::factory()->create(['reserved_count' => 0, 'capacity' => null]);
     $service = app(ProductReservationService::class);
 
     $service->reserve($option->id, 2);

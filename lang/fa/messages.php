@@ -115,6 +115,7 @@ return [
         'bundle_component_repeated_invalid'   => 'محصولات تکراری در این بسته مجاز نیستند.',
         'bundle_component_status_invalid'     => 'بسته منتشرشده به اجزای منتشرشده نیاز دارد.',
         'bundle_component_total_invalid'      => 'جمع تخصیص‌ها باید برابر قیمت بسته باشد.',
+        'bundle_not_directly_provisionable'   => 'بسته یک موجودیت گروه‌بندی فروش است و فقط از طریق اجزای آن قابل دسترسی است.',
     ],
     'order' => [
         'items_already_purchased'                     => 'کاربر قبلاً این محصولات را خریداری کرده است: :products.',
@@ -154,6 +155,7 @@ return [
         'payment_method_error'                        => 'خطایی در درگاه پرداخت رخ داده است. لطفاً دوباره تلاش کنید.',
         'payment_method_not_allowed'                  => 'استفاده از این روش پرداخت برای سفارش فعلی مجاز نیست.',
         'order_number'                                => 'سفارش شماره :order_id',
+        'bundle_provisioning_identity'                => 'بسته: :name (کد: :sku)',
         'cannot_cancel_order_with_completed_payments' => 'امکان لغو سفارش :order_id به دلیل وجود پرداخت‌های موفق وجود ندارد. برای لغو خرید و بازگشت وجه لطفا با پشتیبانی تماس بگیرید.',
         'only_pending_orders_can_be_cancelled'        => 'تنها سفارش‌های «در انتظار» امکان لغو دارند. وضعیت فعلی این سفارش: :status.',
         'order_cancelled_successfully'                => 'سفارش با موفقیت لغو شد.',

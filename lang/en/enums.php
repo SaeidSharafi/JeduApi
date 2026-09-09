@@ -244,6 +244,16 @@ return [
         'refunded'           => 'Refunded',
         'partially_refunded' => 'Partially Refunded',
     ],
+    'BundlePurchaseStatusEnum' => [
+        'pending_payment'    => 'Pending Payment',
+        'provisioning'       => 'Provisioning',
+        'active'             => 'Active',
+        'partially_failed'   => 'Partially Failed',
+        'failed'             => 'Failed',
+        'revocation_pending' => 'Revocation Pending',
+        'refunded'           => 'Refunded',
+        'cancelled'          => 'Cancelled',
+    ],
     'PaymentMethodEnum' => [
         'bank_transfer'  => 'Bank Transfer',
         'mellat_gateway' => 'Mellat Gateway',

@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Api\Shop\Teacher;
 use App\Contracts\ApiResponseInterface;
 use App\Contracts\Integrations\MoodleClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\ProductableEnum;
+use App\Exceptions\BundleStructuralInvariantException;
 use App\Http\Controllers\Controller;
 use App\Models\ProductDeliveryOption;
 use App\Models\Teacher;
@@ -51,6 +53,10 @@ final class TeacherMoodleSsoController extends Controller
             ->exists();
 
         abort_unless($teacherOwnsOption, 403);
+
+        if ($deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value) {
+            throw new BundleStructuralInvariantException();
+        }
 
         if ($deliveryOption->delivery_method !== DeliveryMethodEnum::LMS_MOODLE) {
             return apiResponse()->validationError(__('messages.enrollments.not_moodle'));

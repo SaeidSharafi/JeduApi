@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Api\Shop\Student;
 use App\Contracts\ApiResponseInterface;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\MediaTagEnum;
+use App\Enums\Product\ProductableEnum;
+use App\Exceptions\BundleStructuralInvariantException;
 use App\Http\Controllers\Controller;
 use App\Models\DigitalAsset;
 use App\Models\Enrollment;
@@ -44,6 +46,12 @@ final class DigitalAssetDownloadController extends Controller
         // 2. Verify enrollment is ACTIVE
         if ($enrollment->enrollment_status !== EnrollmentStatusEnum::ACTIVE) {
             return apiResponse()->forbidden(__('messages.digital_asset.enrollment_not_active'));
+        }
+
+        // 2.5 Defensive seam: a structural Bundle PDO has no downloadable
+        // entitlement of its own.
+        if ($enrollment->productDeliveryOption->product->productable_type === ProductableEnum::BUNDLE->value) {
+            throw new BundleStructuralInvariantException();
         }
 
         // 3. Verify the digital asset belongs to this enrollment's productable context

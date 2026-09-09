@@ -37,7 +37,7 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
             throw new UnrecoverableProvisioningException('IMS provider is disabled.');
         }
         $this->ims->assertConfigured();
-        $enrollment = $enrollment->fresh(['customer', 'order', 'orderItem', 'productDeliveryOption']);
+        $enrollment = $enrollment->fresh(['customer', 'order', 'orderItem.bundlePurchase', 'productDeliveryOption']);
         $code       = data_get($enrollment->productDeliveryOption?->details_json, 'ims_course_code');
         if (! is_string($code) || $code === '') {
             throw new UnrecoverableProvisioningException(__('messages.provisioning.ims_course_code_missing'));
@@ -66,13 +66,26 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
                 0, $exception, array_merge($exception->metaData, ['ambiguous_outcome' => true]));
         }
         try {
+            $orderItem = $enrollment->orderItem;
+            $bundle    = $orderItem?->bundlePurchase;
+            // Bundle components are priced by immutable per-item snapshots: the
+            // allocation is the actual paid amount, base price minus allocation is
+            // a manual discount, and a Bundle never carries a discount code.
+            $discountCode = $bundle ? null : $enrollment->order?->applied_coupon_code;
+            $note         = __('messages.online_enrollment').PHP_EOL
+                .__('messages.order.order_number', ['order_id' => $enrollment->order?->increment_id]).PHP_EOL
+                .($bundle ? __('messages.order.bundle_provisioning_identity', [
+                    'name' => $bundle->bundle_name, 'sku' => $bundle->sku,
+                ]).PHP_EOL : '')
+                .$enrollment->notes;
+
             $result = $this->ims->storeEnrollment($customer, [
                 'civil_id' => $customer->civil_id, 'civil_id_type' => $customer->civil_id_type, 'course_code' => $code,
                 'payment'  => [
-                    'amount'          => $enrollment->orderItem?->paid_amount ?? 0,
-                    'discount_type'   => ($enrollment->orderItem?->applicable_discount_amount ?? 0) > 0 ? 'manual' : 'none',
-                    'discount_amount' => $enrollment->orderItem?->applicable_discount_amount ?? 0,
-                    'discount_code'   => $enrollment->order?->applied_coupon_code,
+                    'amount'          => $orderItem?->paid_amount ?? 0,
+                    'discount_type'   => ($orderItem?->applicable_discount_amount ?? 0) > 0 ? 'manual' : 'none',
+                    'discount_amount' => $orderItem?->applicable_discount_amount ?? 0,
+                    'discount_code'   => $discountCode,
                     'tracking_code'   => $payment->last_gateway_reference ?? data_get($payment->data,
                         'transaction_id') ?? $enrollment->order?->increment_id,
                     'date'                => $this->resolvePaymentDate($payment->data, $payment->created_at),
@@ -83,9 +96,7 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
                         default                           => null,
                     },
                 ],
-                'note' => __('messages.online_enrollment').PHP_EOL
-                    .__('messages.order.order_number', ['order_id' => $enrollment->order?->increment_id]).PHP_EOL
-                    .$enrollment->notes,
+                'note' => $note,
             ]);
         } catch (RecoverableProvisioningException $exception) {
             throw new UnrecoverableProvisioningException('IMS outcome is ambiguous; manual verification required.', 0,

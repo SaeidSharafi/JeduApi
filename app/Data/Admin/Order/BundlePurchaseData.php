@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Shop\Student\Order;
+namespace App\Data\Admin\Order;
 
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\BundlePurchaseStatusEnum;
@@ -11,6 +11,10 @@ use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 
+/**
+ * Admin surface for one immutable Bundle Purchase group: aggregate derived
+ * status plus every physical component with its Enrollment statuses.
+ */
 final class BundlePurchaseData extends Data
 {
     public function __construct(
@@ -25,7 +29,7 @@ final class BundlePurchaseData extends Data
         public int $composition_version,
         #[WithTransformer(TranslatableEnumData::class)]
         public BundlePurchaseStatusEnum $status,
-        #[DataCollectionOf(BundleComponentOrderItemData::class)]
+        #[DataCollectionOf(BundleComponentItemData::class)]
         public Collection $components,
     ) {}
 }

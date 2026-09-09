@@ -8,6 +8,8 @@ use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Data\Shop\Student\JoinUrlData;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\ProductableEnum;
+use App\Exceptions\BundleStructuralInvariantException;
 use App\Exceptions\Integrations\ResourceNotProvisionedException;
 use App\Models\Enrollment;
 use InvalidArgumentException;
@@ -24,6 +26,11 @@ final readonly class GetJoinUrlAction
         $deliveryOption = $enrollment->productDeliveryOption;
         $deliveryMethod = $deliveryOption->delivery_method;
         $provisioning   = $enrollment->provisioning_data['providers'] ?? [];
+
+        $deliveryOption->loadMissing('product');
+        if ($deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value) {
+            throw new BundleStructuralInvariantException();
+        }
 
         return match ($deliveryMethod) {
             DeliveryMethodEnum::LIVE_SESSION_BBB     => $this->buildBbbJoinUrl($enrollment, $provisioning),
