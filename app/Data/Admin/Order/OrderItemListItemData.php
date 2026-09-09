@@ -28,5 +28,6 @@ final class OrderItemListItemData extends Data
         public ?int $prepayment_amount = null,
         public ?int $qty_refunded = null,
         public ?int $total_refunded = null,
+        public ?int $bundle_purchase_id = null,
     ) {}
 }

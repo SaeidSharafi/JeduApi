@@ -9,9 +9,11 @@ use App\Data\Shop\Payment\PaymentData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Order\OrderPaymentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Models\Order;
 use Hekmatinasser\Verta\Verta;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
@@ -47,8 +49,25 @@ final class OrderData extends Data implements WalletTransactionSourceableDataCon
         public ?Verta $created_at,
         public ?Verta $updated_at,
         #[DataCollectionOf(OrderItemData::class)]
+        #[MapInputName('standalone_items')]
         public Collection $items,
+        #[DataCollectionOf(BundlePurchaseData::class)]
+        public Collection $bundle_purchases,
         #[DataCollectionOf(PaymentData::class)]
         public ?Collection $payments = null,
     ) {}
+
+    public static function fromModel(Order $order): self
+    {
+        $order->loadMissing('standaloneItems.productDeliveryOption', 'bundlePurchases.components.enrollment');
+
+        $attributes = $order->toArray();
+        foreach (['total_product_discount', 'total_cart_discount', 'total_discount', 'total_paid', 'balance_due', 'payment_status'] as $attribute) {
+            $attributes[$attribute] = $order->getAttribute($attribute);
+        }
+        $attributes['standalone_items'] = OrderItemData::collect($order->standaloneItems);
+        $attributes['bundle_purchases'] = BundlePurchaseData::collect($order->bundlePurchases);
+
+        return self::factory()->withoutMagicalCreation()->from($attributes);
+    }
 }

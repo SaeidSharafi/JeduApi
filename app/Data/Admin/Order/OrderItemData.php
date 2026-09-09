@@ -40,5 +40,6 @@ final class OrderItemData extends Data
         public ShowVendorData $vendor,
         #[MapOutputName('product_snapshot')]
         public array $product_data_snapshot_json,
+        public ?int $bundle_purchase_id = null,
     ) {}
 }

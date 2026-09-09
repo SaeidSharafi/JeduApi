@@ -467,7 +467,7 @@ it('rejects prepayment as a payment mode for a Bundle PDO', function (): void {
 });
 
 it('requires explicit reconfirmation after a Bundle composition change', function (): void {
-    $course       = v11CoursePair();
+    $course       = v11CoursePair(200000);
     $bundleOption = v11BundleFor([['pdo' => $course['pdo_a'], 'allocation' => 200000]]);
     $user         = User::factory()->create();
     $this->customer($user);
@@ -512,7 +512,8 @@ it('requires explicit reconfirmation after a Bundle composition change', functio
         ],
     ])->assertCreated()
         ->assertJsonPath('data.order.grand_total', 200000)
-        ->assertJsonCount(1, 'data.order.items');
+        ->assertJsonCount(0, 'data.order.items')
+        ->assertJsonCount(1, 'data.order.bundle_purchases');
 });
 
 it('rejects checkout of a Bundle that became review-required after it was added', function (): void {

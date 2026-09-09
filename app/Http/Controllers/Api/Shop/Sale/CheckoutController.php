@@ -66,8 +66,8 @@ final class CheckoutController extends Controller
         $result = $action->handle($data, auth()->user());
 
         // Build response with order data and optional redirect information
-        $order     = $result->payment->order->fresh(['items.productDeliveryOption.product', 'customer', 'payments.transactions']);
-        $orderData = OrderData::from($order);
+        $order     = $result->payment->order->fresh(['items.productDeliveryOption.product', 'standaloneItems.productDeliveryOption', 'bundlePurchases.components.enrollment', 'customer', 'payments.transactions']);
+        $orderData = OrderData::fromModel($order);
 
         if ($result->redirect_url) {
             // Multi-step payment requiring redirect

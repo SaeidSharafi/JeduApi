@@ -10,6 +10,7 @@ test('to array', function (): void {
             'id'                            => $orderItem->id,
             'order_id'                      => $orderItem->order_id,
             'product_delivery_option_id'    => $orderItem->product_delivery_option_id,
+            'bundle_purchase_id'            => $orderItem->bundle_purchase_id,
             'qty_ordered'                   => $orderItem->qty_ordered,
             'payment_type'                  => $orderItem->payment_type->value,
             'name'                          => $orderItem->name,

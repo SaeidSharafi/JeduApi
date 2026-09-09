@@ -31,12 +31,12 @@ final class OrderController extends Controller
         $user   = Auth::guard('user')->user();
         $orders = $user
             ->orders()
-            ->with(['items.productDeliveryOption.product', 'payments'])
+            ->with(['items.productDeliveryOption.product', 'standaloneItems.productDeliveryOption', 'bundlePurchases.components.enrollment', 'payments'])
             ->latest()
             ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
-        return apiResponse()->success(OrderData::collect($orders));
+        return apiResponse()->success($orders->through(OrderData::fromModel(...)));
     }
 
     /**
@@ -52,9 +52,9 @@ final class OrderController extends Controller
         $user  = Auth::guard('user')->user();
         $order = $user->orders()
             ->where('increment_id', $incrementId)
-            ->with(['items.productDeliveryOption.product', 'payments'])
+            ->with(['items.productDeliveryOption.product', 'standaloneItems.productDeliveryOption', 'bundlePurchases.components.enrollment', 'payments'])
             ->firstOrFail();
 
-        return apiResponse()->success(OrderData::from($order)->include('items'));
+        return apiResponse()->success(OrderData::fromModel($order));
     }
 }

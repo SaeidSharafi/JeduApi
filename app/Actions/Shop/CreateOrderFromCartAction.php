@@ -358,7 +358,8 @@ final readonly class CreateOrderFromCartAction
             $orderItems[] = new OrderItemCreateData(
                 product_delivery_option_id: $cartItem->product_delivery_option_id,
                 payment_type: $cartItem->payment_type->value,
-                qty_ordered: $cartItem->quantity
+                qty_ordered: $cartItem->quantity,
+                composition_version: $cartItem->composition_version,
             );
         }
 

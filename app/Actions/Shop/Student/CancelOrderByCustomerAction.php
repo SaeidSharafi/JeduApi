@@ -81,6 +81,8 @@ final class CancelOrderByCustomerAction
 
             $order->load([
                 'items',
+                'standaloneItems.productDeliveryOption',
+                'bundlePurchases.components.enrollment',
                 'payments',
                 'enrollments',
             ]);

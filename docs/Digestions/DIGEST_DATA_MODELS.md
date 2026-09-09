@@ -42,6 +42,8 @@
 - **Key Fields:** `increment_id`, `status`, `customer_id`, `total_item_count`, `subtotal`, `discount_amount`, `grand_total`, `full_value_grand_total`, `total_refunded`, `applied_coupon_code`
 - **Relationships:**
   - `hasMany(OrderItem::class)` - items
+  - `hasMany(OrderItem::class)->whereNull('bundle_purchase_id')` - standaloneItems, the only commercial lines shown in Customer history
+  - `hasMany(BundlePurchase::class)` - bundlePurchases
   - `hasMany(Payment::class)` - payments
   - `hasMany(Enrollment::class, 'order_id')` - enrollments
   - `belongsTo(User::class, 'customer_id')` - customer
@@ -158,6 +160,7 @@
 - **Key Fields:** `order_id`, `product_delivery_option_id`, `qty_ordered`, `status`, `price`, `total`, `discount_amount`, `pricing_metadata`
 - **Relationships:**
   - `belongsTo(Order::class)` - order
+  - `belongsTo(BundlePurchase::class)` - bundlePurchase (nullable; populated only for internal Bundle component lines)
   - `belongsTo(ProductDeliveryOption::class)` - productDeliveryOption
   - `hasOne(Enrollment::class)` - enrollment
   - `hasMany(Refund::class)` - refunds
@@ -166,6 +169,12 @@
   - `productDiscountAmount()` — product-level discount from `pricing_metadata['discount_amount']` multiplied by `qty_ordered`; zero for pre-payment items
   - `totalDiscountAmount()` — sum of `product_discount_amount` + `discount_amount` (cart-level coupon)
 - **Special Features:** Immutable checkout pricing snapshot: `pricing_metadata` stores `{original_price, base_price_amount, paid_amount, product_discount_amount, cart_discount_amount, total_discount_amount, discount_type, discount_amount, discount_percentage}`. IMS provisioning and refunds use `base_price_amount`, `paid_amount`, and `total_discount_amount`; the parent completed payment is only an existence gate. The `price` column always stores the base price from `product_delivery_option.price` with no discounts applied. Pre-payment items receive zero discount values in `pricing_metadata`.
+
+### BundlePurchase (`app/Models/BundlePurchase.php`)
+- **Purpose:** Immutable Customer-facing commercial record for one purchased Bundle PDO.
+- **Key Fields:** `order_id`, `product_delivery_option_id`, parent Bundle/Product names, PDO name/SKU, `base_value`, `selling_price`, `composition_version`, `checkout_status`, `product_data_snapshot_json`.
+- **Relationships:** `belongsTo(Order::class)`, `belongsTo(ProductDeliveryOption::class)`, and `hasMany(OrderItem::class)` as component lines.
+- **Special Features:** Its status is derived from component item and Enrollment states. A Bundle Purchase owns no parent Order Item or Enrollment; internal components snapshot their base price, paid allocation, and Bundle discount in `pricing_metadata`.
 
 ### Enrollment (`app/Models/Enrollment.php`)
 - **Purpose:** Student access records linking customers to purchased delivery options

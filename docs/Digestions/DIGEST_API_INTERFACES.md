@@ -512,8 +512,8 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 - `__invoke(Enrollment $enrollment, DigitalAsset $digitalAsset)`: **Route:** `GET /api/v1/shop/student/digital-assets/{enrollment:uuid}/download/{digitalAsset}` - Generates signed download URL for digital asset file.
 
 ##### OrderController (`app/Http/Controllers/Api/Shop/Student/OrderController.php`)
-- `index()`: **Route:** `GET /api/v1/shop/student/orders` - Lists authenticated user orders (with items + payments). **Response DTO:** `OrderData` paginator.
-- `show(string $incrementId)`: **Route:** `GET /api/v1/shop/student/orders/{order:increment_id}` - Returns single order with nested items/payments. **Response DTO:** `OrderData`.
+- `index()`: **Route:** `GET /api/v1/shop/student/orders` - Lists authenticated user orders with standalone commercial `items`, `bundle_purchases` (each nesting physical components and Enrollment/status data), and payments. **Response DTO:** `OrderData` paginator.
+- `show(string $incrementId)`: **Route:** `GET /api/v1/shop/student/orders/{order:increment_id}` - Returns the same grouping. Internal component Order Items never appear in flat Customer `items`. **Response DTO:** `OrderData`.
 
 ##### CancelOrderController (`app/Http/Controllers/Api/Shop/Student/CancelOrderController.php`)
 - `__invoke(Order $order)`: **Route:** `POST /api/v1/shop/student/orders/{order:increment_id}/cancel` - **Delegates to:** CancelOrderByCustomerAction::execute(). **Response DTO:** OrderData.
@@ -559,7 +559,7 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - `removeCoupon()`: **Route:** `DELETE /api/v1/shop/cart/coupon` - Clears any applied coupon - **Response DTO:** `CartData`
 
 #### CheckoutController (`app/Http/Controllers/Api/Shop/Sale/CheckoutController.php`)
-- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Validates registration/availability windows and authoritatively rechecks Productable-level Purchase Eligibility under a Customer row lock inside order creation. Checkout order items expose both base `price` and captured effective `current_price`, plus `prepayment_amount` and `is_prepayment_available`. **Request DTO:** CheckoutData includes optional `payment_data` array for gateway-specific parameters.
+- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Bundle selections are represented as `bundle_purchases`, never as parent Order Items or Enrollments; their components expose immutable base price, paid allocation, Bundle discount, Enrollment, and status data. **Request DTO:** CheckoutData includes optional `payment_data` array for gateway-specific parameters.
 
 ### Shop Public Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access

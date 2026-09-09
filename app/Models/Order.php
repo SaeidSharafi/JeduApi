@@ -70,6 +70,18 @@ final class Order extends Model implements WalletTransactionSourceableContract
         return $this->hasMany(OrderItem::class);
     }
 
+    /** @return HasMany<OrderItem, $this> */
+    public function standaloneItems(): HasMany
+    {
+        return $this->items()->whereNull('bundle_purchase_id');
+    }
+
+    /** @return HasMany<BundlePurchase, $this> */
+    public function bundlePurchases(): HasMany
+    {
+        return $this->hasMany(BundlePurchase::class)->orderBy('id');
+    }
+
     /**
      * @return HasMany<Payment, $this>
      */

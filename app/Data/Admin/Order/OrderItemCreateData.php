@@ -15,6 +15,7 @@ final class OrderItemCreateData extends Data
         public int $product_delivery_option_id,
         public string $payment_type,
         public int $qty_ordered = 1,
+        public ?int $composition_version = null,
     ) {}
 
     public static function rules(?ValidationContext $context = null): array

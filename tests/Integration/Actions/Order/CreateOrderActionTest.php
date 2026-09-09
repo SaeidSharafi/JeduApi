@@ -871,7 +871,10 @@ describe('CreateOrderAction', function (): void {
         );
 
         $mock = Mockery::mock(OrderCalculationService::class);
-        $mock->shouldReceive('calculate')->once()->andReturn($context);
+        // CreateOrderAction calculates once to lock the relevant PDO rows and
+        // a second time inside the transaction so order totals reflect the
+        // locked, current pricing state.
+        $mock->shouldReceive('calculate')->twice()->andReturn($context);
         $this->app->instance(OrderCalculationService::class, $mock);
 
         $data = new OrderCreateData(

@@ -305,7 +305,7 @@
   - INDEX(customer_id, created_at) as idx_customer_created
 
 ### Table: `order_items`
-- Purpose: Order line items.
+- Purpose: Order line items. A nullable `bundle_purchase_id` makes a line an internal Bundle component rather than a standalone commercial item; the `(bundle_purchase_id, product_delivery_option_id)` uniqueness constraint prevents duplicate component lines.
 - Columns:
   - id (BIGINT, PK)
   - order_id (BIGINT) FK -> orders(id) CASCADE
@@ -671,3 +671,8 @@
 - telescope_entries: sequence (PRIMARY), uuid (UNIQUE), batch_id (INDEXED), family_hash (INDEXED), should_display_on_index, type (20), content (LONGTEXT), created_at (INDEXED), plus INDEX(type, should_display_on_index)
 - telescope_entries_tags: PRIMARY(entry_uuid, tag), INDEX(tag), FK(entry_uuid) -> telescope_entries(uuid)
 - telescope_monitoring: tag (PRIMARY)
+
+### Table: `bundle_purchases`
+- Purpose: Immutable Customer-facing grouping record for a purchased Bundle PDO.
+- Columns: `id`, `order_id` (FK, cascade), `product_delivery_option_id` (FK, restrict), `bundle_name`, `product_name`, `name`, `sku`, `base_value`, `selling_price`, `composition_version`, `checkout_status`, `product_data_snapshot_json` (JSONB), timestamps.
+- Constraints: UNIQUE(`order_id`, `product_delivery_option_id`). Component `order_items.bundle_purchase_id` references this table with restricted deletion.
