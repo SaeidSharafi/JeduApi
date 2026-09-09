@@ -241,6 +241,118 @@ it('rejects a Bundle whose component Productable the Customer already owns', fun
     assertDatabaseCount('cart_items', 0);
 });
 
+it('rejects a Bundle added after a standalone line already overlaps its component Productable', function (): void {
+    $course       = v11CoursePair();
+    $bundleOption = v11BundleFor([['pdo' => $course['pdo_b'], 'allocation' => 100000]]);
+    $user         = User::factory()->create();
+    $this->customer($user);
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $course['pdo_a']->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $bundleOption->uuid,
+        'quantity'                     => 1,
+    ])->assertUnprocessable()->assertJsonValidationErrors(['items']);
+
+    assertDatabaseCount('cart_items', 1);
+});
+
+it('removes a Bundle line cleanly from a mixed cart', function (): void {
+    $course       = v11CoursePair();
+    $bundleOption = v11BundleFor([['pdo' => $course['pdo_a'], 'allocation' => 150000]]);
+    $standalone   = v11CoursePair(100000);
+    $user         = User::factory()->create();
+    $this->customer($user);
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $standalone['pdo_a']->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $bundleOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    $bundleItemId = CartItem::query()
+        ->where('product_delivery_option_id', $bundleOption->id)
+        ->value('id');
+
+    deleteJson(route('api.v1.shop.cart.items.destroy', $bundleItemId))->assertNoContent();
+
+    $data = getJson(route('api.v1.shop.cart.index'))->assertOk()->json('data');
+
+    expect($data['total_items_count'])->toBe(1)
+        ->and($data['items'][0]['sku'])->toBe($standalone['pdo_a']->sku)
+        ->and($data['grand_total'])->toBe(100000);
+
+    assertDatabaseCount('cart_items', 1);
+
+    // Re-adding after removal restores a fresh snapshot.
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $bundleOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk()
+        ->assertJsonPath('data.total_items_count', 2);
+});
+
+it('keeps a multi-component Bundle as one line at the sum of its fixed allocations', function (): void {
+    $courseOne    = v11CoursePair(100000);
+    $courseTwo    = v11CoursePair(200000);
+    $bundleOption = v11BundleFor([
+        ['pdo' => $courseOne['pdo_a'], 'allocation' => 80000],
+        ['pdo' => $courseTwo['pdo_a'], 'allocation' => 120000],
+    ]);
+    $user = User::factory()->create();
+    $this->customer($user);
+
+    $response = postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $bundleOption->uuid,
+        'quantity'                     => 1,
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.total_items_count', 1)
+        ->assertJsonCount(1, 'data.items')
+        ->assertJsonPath('data.items.0.current_price', 200000)
+        ->assertJsonPath('data.items.0.line_total', 200000)
+        ->assertJsonPath('data.grand_total', 200000);
+
+    assertDatabaseCount('cart_items', 1);
+    expect($bundleOption->bundleComponents()->get()->map(fn ($c): int => (int) $c->pivot->allocation)->sort()->values()->all())
+        ->toBe([80000, 120000]);
+});
+
+it('rejects checkout when a Bundle component became unavailable after the Bundle was added', function (): void {
+    $course       = v11CoursePair();
+    $bundleOption = v11BundleFor([['pdo' => $course['pdo_a'], 'allocation' => 200000]]);
+    $user         = User::factory()->create();
+    $this->customer($user);
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $bundleOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    $course['pdo_a']->update(['status' => PublicationStatusEnum::ARCHIVED]);
+
+    postJson(route('api.v1.shop.checkout'), [
+        'payment_method' => 'bank_transfer',
+        'payment_data'   => [
+            'transaction_id'   => 'unavailable-1',
+            'transaction_date' => verta()->formatDate(),
+            'sender_name'      => 'John Doe',
+        ],
+    ])->assertUnprocessable()->assertJsonValidationErrors(['items.0']);
+
+    assertDatabaseHas('cart_items', [
+        'product_delivery_option_id' => $bundleOption->id,
+        'quantity'                   => 1,
+    ]);
+});
+
 it('rejects a standalone purchase of a Productable already owned through a Bundle component', function (): void {
     $course       = v11CoursePair();
     $bundleOption = v11BundleFor([['pdo' => $course['pdo_a'], 'allocation' => 100000]]);

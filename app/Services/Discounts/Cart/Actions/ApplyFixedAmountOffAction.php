@@ -22,25 +22,24 @@ final class ApplyFixedAmountOffAction implements DiscountActionContract
     public function apply(OrderContextData $context, Data $configuration): void
     {
         /** @var ApplyFixedAmountOffData $configuration */
-        // Distribute across non-Bundle lines only: Bundle lines keep their
-        // reviewed selling price. Without bundles the eligible weight equals
-        // the whole cart, preserving the historical proportional split.
+        // Bundle lines keep their reviewed selling price, so the flat amount is
+        // distributed over the other lines only. A bundle-free cart keeps the
+        // exact historical split over `subtotal_all_items`; once a Bundle is
+        // present the eligible weight is the sum of the remaining lines.
         $eligibleItems = $context->items->reject(
             fn (CalculatedOrderItemData $item): bool => $item->is_bundle
         );
-        $totalWeight = $eligibleItems->sum('total');
+
+        $hasBundle   = $context->items->contains(fn (CalculatedOrderItemData $item): bool => $item->is_bundle);
+        $totalWeight = $hasBundle ? $eligibleItems->sum('total') : $context->subtotal_all_items;
         if ($totalWeight <= 0) {
             return;
         }
 
         $remainingDiscount = min($configuration->amount, $totalWeight);
 
-        // Proportional distribution across items
-        foreach ($context->items as $item) {
-            if ($item->is_bundle) {
-                continue;
-            }
-
+        // Proportional distribution across eligible items
+        foreach ($eligibleItems as $item) {
             $ratio        = $item->total / $totalWeight;
             $itemDiscount = (int) round($remainingDiscount * $ratio);
 
