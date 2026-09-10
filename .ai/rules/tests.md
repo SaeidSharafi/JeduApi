@@ -27,6 +27,10 @@ Use `covers()` when the target should also be included in code-coverage reports;
 
 For every newly written or materially changed feature test, run the normal focused test command first, then run Pest mutation testing for the same scope through Sail with parallelism:
 
-`vendor/bin/sail bin pest <same-test-scope> --mutate --parallel --min=100`
+`vendor/bin/sail bin pest <same-test-scope> --mutate --parallel`
 
-Always pass `--parallel` for mutation runs, including single-file scopes. Pest reports mutations as tested, untested, or uncovered. Strengthen the behavior tests until every meaningful mutation is killed—especially mutations that remove a branch, alter a comparison, change a returned value, or skip a side effect. A surviving mutant may be left only when it is demonstrably equivalent or intentionally outside the contract, and the reason must be recorded beside the test or in the ticket. Do not hide surviving mutants by excluding broad classes or lowering the minimum score.
+Always pass `--parallel` for mutation runs, including single-file scopes. Pest reports mutations as tested, untested, or uncovered.
+
+The goal is **meaningful coverage, not a 100% score**. Strengthen the behavior tests until every mutation that reflects a real decision is killed — especially mutations that remove a branch, alter a comparison, change a returned value, or skip a side effect. Do not add tests whose only purpose is to move the number, and do not chase survivors that cannot change observable behavior.
+
+A surviving mutant may be left only when it is demonstrably equivalent or intentionally outside the contract, and the reason must be recorded beside the test (see the `Mutation notes` blocks in `tests/Unit/Services/WeightedApportionmentTest.php` and `tests/Integration/Services/BundleAvailabilityPropagationServiceTest.php`) or in the ticket. Do not hide survivors by excluding broad classes of code.
