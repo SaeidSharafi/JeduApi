@@ -232,57 +232,6 @@ it('confirms an externally unsupported revocation manually', function (): void {
     ]);
 });
 
-it('settles a started revocation when the reconciliation path removed provider access', function (): void {
-    $enrollment = revocationEnrollment(['moodle']);
-    $this->service->begin($enrollment);
-
-    ProvisioningAttempt::query()->create([
-        'enrollment_id'    => $enrollment->id,
-        'provider'         => ProvisioningProviderEnum::MOODLE,
-        'trigger'          => ProvisioningTriggerEnum::MANUAL,
-        'status'           => ProvisioningAttemptStatusEnum::SUCCEEDED,
-        'sequence'         => 99,
-        'retryable'        => false,
-        'succeeded_at'     => now(),
-        'failure_metadata' => ['kind' => 'access_reconciliation', 'requested_status' => 'cancelled'],
-    ]);
-
-    $this->service->syncFromReconciliation($enrollment);
-
-    $fresh = $enrollment->fresh();
-    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::REVOKED)
-        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::CANCELLED);
-});
-
-it('settles an in-flight revocation when the cancellation reconciliation attempt succeeds', function (): void {
-    $enrollment = revocationEnrollment(['moodle']);
-
-    // A cancellation reconciliation is already running, so revocation waits
-    // for it instead of creating a competing active attempt for the provider.
-    $reconciliation = ProvisioningAttempt::query()->create([
-        'enrollment_id'    => $enrollment->id,
-        'provider'         => ProvisioningProviderEnum::MOODLE,
-        'trigger'          => ProvisioningTriggerEnum::MANUAL,
-        'status'           => ProvisioningAttemptStatusEnum::RUNNING,
-        'sequence'         => 1,
-        'retryable'        => false,
-        'running_at'       => now(),
-        'failure_metadata' => ['kind' => 'access_reconciliation', 'requested_status' => 'cancelled'],
-    ]);
-
-    expect($this->service->begin($enrollment))->toBe([]);
-    expect($enrollment->fresh()->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING);
-
-    app(ProvisioningAttemptService::class)->succeed(
-        $reconciliation,
-        ['moodle_user_id' => 11, 'moodle_course_id' => 22],
-    );
-
-    $fresh = $enrollment->fresh();
-    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::REVOKED)
-        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::CANCELLED);
-});
-
 it('queues the revocation that begin could not create when a provisioning attempt is in flight', function (): void {
     $enrollment = revocationEnrollment(['moodle']);
 
@@ -308,23 +257,4 @@ it('queues the revocation that begin could not create when a provisioning attemp
         'status'        => ProvisioningAttemptStatusEnum::QUEUED->value,
     ]);
     Queue::assertPushed(RevokeEnrollmentProviderJob::class, 1);
-});
-
-it('ignores reconciliation success for enrollments outside a revocation flow', function (): void {
-    $enrollment = revocationEnrollment(['moodle']);
-
-    ProvisioningAttempt::query()->create([
-        'enrollment_id'    => $enrollment->id,
-        'provider'         => ProvisioningProviderEnum::MOODLE,
-        'trigger'          => ProvisioningTriggerEnum::MANUAL,
-        'status'           => ProvisioningAttemptStatusEnum::SUCCEEDED,
-        'sequence'         => 1,
-        'retryable'        => false,
-        'succeeded_at'     => now(),
-        'failure_metadata' => ['kind' => 'access_reconciliation', 'requested_status' => 'cancelled'],
-    ]);
-
-    $this->service->syncFromReconciliation($enrollment);
-
-    expect($enrollment->fresh()->revocation_status)->toBeNull();
 });

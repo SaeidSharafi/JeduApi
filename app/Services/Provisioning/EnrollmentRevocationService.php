@@ -199,27 +199,6 @@ final class EnrollmentRevocationService
         });
     }
 
-    /**
-     * Converge a started revocation after the legacy access-reconciliation
-     * path removed provider access. Only applies to Enrollments that are
-     * already in a revocation flow; ordinary staff status changes are not
-     * affected.
-     */
-    public function syncFromReconciliation(Enrollment $enrollment): void
-    {
-        DB::transaction(function () use ($enrollment): void {
-            $locked = Enrollment::query()->lockForUpdate()->find($enrollment->id);
-            if (! $locked || $locked->revocation_status === null || $locked->isRevocationComplete()) {
-                return;
-            }
-
-            $this->recalculate($locked);
-            if ($locked->isRevocationComplete()) {
-                $locked->save();
-            }
-        });
-    }
-
     /** @param array<string, mixed> $metadata */
     public function fail(
         ProvisioningAttempt $attempt,
@@ -445,25 +424,11 @@ final class EnrollmentRevocationService
 
     private function providerRevoked(Enrollment $enrollment, ProvisioningProviderEnum $provider): bool
     {
-        $revocationSucceeded = ProvisioningAttempt::query()
+        return ProvisioningAttempt::query()
             ->where('enrollment_id', $enrollment->id)
             ->where('provider', $provider->value)
             ->where('trigger', ProvisioningTriggerEnum::REVOCATION->value)
             ->where('status', ProvisioningAttemptStatusEnum::SUCCEEDED->value)
-            ->exists();
-
-        if ($revocationSucceeded) {
-            return true;
-        }
-
-        // Bridge: the legacy access-reconciliation path physically removes
-        // access for a cancelled Enrollment, so it settles revocation too.
-        return ProvisioningAttempt::query()
-            ->where('enrollment_id', $enrollment->id)
-            ->where('provider', $provider->value)
-            ->where('status', ProvisioningAttemptStatusEnum::SUCCEEDED->value)
-            ->where('failure_metadata->kind', 'access_reconciliation')
-            ->where('failure_metadata->requested_status', EnrollmentStatusEnum::CANCELLED->value)
             ->exists();
     }
 

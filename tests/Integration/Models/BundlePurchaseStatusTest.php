@@ -129,13 +129,27 @@ it('derives failed when every component provisioning failed', function (): void 
     expect($purchase->status)->toBe(BundlePurchaseStatusEnum::FAILED);
 });
 
-it('derives refunded when every component item is refunded', function (): void {
+it('derives refunded when every component item is refunded and revoked', function (): void {
     $purchase = bundlePurchaseWithComponents([
-        ['status' => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::CANCELLED],
-        ['status' => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::CANCELLED],
+        [
+            'status'            => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::CANCELLED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::REVOKED,
+        ],
+        [
+            'status'            => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::CANCELLED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::REVOKED,
+        ],
     ]);
 
     expect($purchase->status)->toBe(BundlePurchaseStatusEnum::REFUNDED);
+});
+
+it('derives revocation_pending when a refunded component has no revocation record', function (): void {
+    $purchase = bundlePurchaseWithComponents([
+        ['status' => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::CANCELLED],
+    ]);
+
+    expect($purchase->status)->toBe(BundlePurchaseStatusEnum::REVOCATION_PENDING);
 });
 
 it('keeps one successful component active while another is failed', function (): void {

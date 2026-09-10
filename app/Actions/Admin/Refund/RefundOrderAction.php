@@ -438,6 +438,11 @@ final class RefundOrderAction
         );
     }
 
+    /**
+     * The established "Single Ledger" paid value for a standalone line: the
+     * full line value once the order is settled, otherwise the amount paid so
+     * far (prepayment).
+     */
     private function calculateAmountPaidForItem(Order $order, OrderItem $item): int
     {
         if ($order->balance_due <= 0) {

@@ -61,11 +61,8 @@ final readonly class MoodleQuizProvisioningProvider implements ProvisioningProvi
 
         $this->moodle->assertConfigured();
         $references = data_get($enrollment->provisioning_data, 'providers.moodle_quiz.data', []);
-        if ($references === []) {
-            $references = data_get($enrollment->provisioning_data, 'providers.moodle.data', []);
-        }
-        $userId   = data_get($references, 'moodle_user_id');
-        $courseId = data_get($references, 'moodle_course_id');
+        $userId     = data_get($references, 'moodle_user_id');
+        $courseId   = data_get($references, 'moodle_course_id');
         if (! is_numeric($userId) || ! is_numeric($courseId)) {
             throw new UnrecoverableProvisioningException('Moodle enrollment references are missing.');
         }

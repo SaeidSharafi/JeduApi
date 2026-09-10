@@ -195,9 +195,8 @@ final class BundlePurchase extends Model
     /**
      * Whether every refunded component's external provider access is revoked.
      *
-     * A component without an Enrollment has nothing to revoke; a component
-     * cancelled without a revocation record (ordinary refunds) is complete. Any
-     * pending, failed, or manual revocation keeps the Purchase in
+     * A component without an Enrollment has nothing to revoke. Any other state
+     * — including a missing revocation record — keeps the Purchase in
      * `revocation_pending`, which also keeps Purchase Eligibility blocked.
      *
      * @param  Collection<int, OrderItem>  $components
@@ -210,17 +209,9 @@ final class BundlePurchase extends Model
                 continue;
             }
 
-            if ($enrollment->revocation_status === EnrollmentRevocationStatusEnum::REVOKED) {
-                continue;
+            if ($enrollment->revocation_status !== EnrollmentRevocationStatusEnum::REVOKED) {
+                return false;
             }
-
-            if ($enrollment->revocation_status    === null
-                && $enrollment->enrollment_status === EnrollmentStatusEnum::CANCELLED
-            ) {
-                continue;
-            }
-
-            return false;
         }
 
         return true;
