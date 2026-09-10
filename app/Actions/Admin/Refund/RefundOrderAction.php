@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Refund;
 
 use App\Data\Admin\Refund\RefundOrderData;
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
@@ -149,7 +148,6 @@ final class RefundOrderAction
             }
         }
 
-        $attemptIds = [];
         try {
             $attemptIds = DB::transaction(function () use ($state, $data, $gatewayTrackingCode): array {
                 // Re-lock the order to safely apply status updates
@@ -191,30 +189,16 @@ final class RefundOrderAction
                             'qty_refunded'   => $item->qty_ordered,
                         ]);
 
-                        if ($unit['is_bundle']) {
-                            // The component keeps its seat (SUSPENDED still
-                            // occupies) and locally loses access immediately;
-                            // the Enrollment only becomes CANCELLED once every
-                            // required provider revocation has succeeded.
-                            $enrollment = $item->enrollment;
-                            if ($enrollment && ! $enrollment->isRevocationComplete()) {
-                                $enrollment->enrollment_status = EnrollmentStatusEnum::SUSPENDED;
-                                $enrollment->save();
-                            }
-                        } else {
-                            $this->orderStatusService->updateEnrollmentStatus($item);
+                        // Every refunded unit loses access: the Enrollment keeps
+                        // its seat (SUSPENDED still occupies) and locally blocks
+                        // access until every required provider revocation has
+                        // succeeded, then becomes CANCELLED.
+                        $enrollment = $item->enrollment;
+                        if ($enrollment) {
+                            $attemptIds = array_merge($attemptIds, $this->revocations->begin($enrollment));
                         }
 
                         RefundCompletedEvent::dispatch($refund);
-                    }
-
-                    $purchase = $unit['bundle_purchase'];
-                    if ($purchase instanceof BundlePurchase) {
-                        foreach ($purchase->components as $component) {
-                            if ($component->enrollment) {
-                                $attemptIds = array_merge($attemptIds, $this->revocations->begin($component->enrollment));
-                            }
-                        }
                     }
                 }
 

@@ -21,12 +21,11 @@ use Throwable;
 /**
  * Owns the per-Enrollment external provider revocation lifecycle.
  *
- * Revocation is deliberately separate from provisioning health: a component
- * Enrollment whose Bundle Purchase was refunded keeps its seat and its
- * provisioning state, but enters `revocation_status`. Purchase Eligibility
- * stays blocked until every required provider revocation has succeeded. A
- * successful revocation is terminal and is never restored because a sibling
- * component failed.
+ * Revocation is deliberately separate from provisioning health: a refunded
+ * Enrollment keeps its seat and its provisioning state, but enters
+ * `revocation_status`. Purchase Eligibility stays blocked until every required
+ * provider revocation has succeeded. A successful revocation is terminal and is
+ * never restored because another provider failed.
  */
 final class EnrollmentRevocationService
 {
@@ -273,7 +272,9 @@ final class EnrollmentRevocationService
     /**
      * Providers that actually granted external access and therefore must be
      * revoked. Providers that only failed, were waived, or were never
-     * provisioned grant nothing and are skipped.
+     * provisioned grant nothing and are skipped. A provider whose provisioning
+     * is still in flight stays required, because it may grant access after the
+     * refund; its revocation is queued once the attempt settles.
      *
      * @return list<ProvisioningProviderEnum>
      */
@@ -290,12 +291,9 @@ final class EnrollmentRevocationService
                 continue;
             }
 
-            $outcome = data_get($enrollment->provisioning_data, "providers.{$provider->value}.status");
-            if (in_array($outcome, [
-                ProvisioningOutcomeStatusEnum::FAILED->value,
-                ProvisioningOutcomeStatusEnum::MANUAL_ACTION_REQUIRED->value,
-                ProvisioningOutcomeStatusEnum::WAIVED->value,
-            ], true)) {
+            $grantedAccess = data_get($enrollment->provisioning_data, "providers.{$provider->value}.status")
+                === ProvisioningOutcomeStatusEnum::SUCCESS->value;
+            if (! $grantedAccess && ! $this->hasActiveAttempt($enrollment, $provider)) {
                 continue;
             }
 

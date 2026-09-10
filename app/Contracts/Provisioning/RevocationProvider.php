@@ -9,8 +9,8 @@ use App\Models\Enrollment;
 /**
  * Implemented by provisioning adapters whose provider exposes a real API for
  * removing access. Adapters that do not implement this contract cannot be
- * revoked automatically; the Bundle refund flow records their component as
- * explicit manual work instead.
+ * revoked automatically; the refund flow records their Enrollment as explicit
+ * manual work instead.
  */
 interface RevocationProvider
 {

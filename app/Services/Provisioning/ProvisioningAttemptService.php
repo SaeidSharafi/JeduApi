@@ -329,10 +329,10 @@ final class ProvisioningAttemptService
     }
 
     /**
-     * A refunded component may still have had an in-flight provisioning attempt
-     * when its Bundle Purchase was refunded. That attempt can grant provider
-     * access after the refund, so a successful provisioning outcome must queue
-     * the revocation that begin() could not create while the attempt was active.
+     * A refunded Enrollment may still have had an in-flight provisioning attempt
+     * when it was refunded. That attempt can grant provider access after the
+     * refund, so a successful provisioning outcome must queue the revocation
+     * that begin() could not create while the attempt was active.
      */
     private function settleRevocationAfterProvisioning(Enrollment $enrollment): void
     {

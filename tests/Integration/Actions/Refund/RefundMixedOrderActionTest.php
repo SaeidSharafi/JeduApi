@@ -41,7 +41,7 @@ use function Pest\Laravel\assertDatabaseCount;
 covers(RefundOrderAction::class);
 
 /**
- * @param  list<array{base: int, paid: int, status?: OrderItemStatusEnum}>  $standalone
+ * @param  list<array{base: int, paid: int, status?: OrderItemStatusEnum, provider?: string}>  $standalone
  * @param  list<list<array{base: int, paid: int, provider?: string}>>  $bundles
  * @return array{
  *     order: Order,
@@ -100,12 +100,26 @@ function mixedOrderScenario(
                 'discount_amount'       => $spec['base'] - $spec['paid'],
             ],
         ]);
-        Enrollment::factory()->create([
+        $enrollment = Enrollment::factory()->create([
             'order_item_id'              => $item->id,
             'order_id'                   => $order->id,
             'customer_id'                => $customer->id,
             'product_delivery_option_id' => $option->id,
             'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        ]);
+        // Deterministic plan: a plain standalone item grants no external
+        // provider access unless the spec explicitly names one.
+        $enrollment->update([
+            'provisioning_plan' => [
+                'version'   => 1, 'status' => 'healthy', 'resolved_at' => now()->toISOString(),
+                'providers' => ($spec['provider'] ?? null) === null ? [] : [[
+                    'provider' => $spec['provider'], 'applicable' => true, 'readiness' => 'ready', 'configuration_issue' => null,
+                ]],
+            ],
+            'provisioning_data' => ($spec['provider'] ?? null) === null ? [] : ['providers' => [$spec['provider'] => [
+                'status' => 'success', 'data' => ['moodle_user_id' => 3, 'moodle_course_id' => 4],
+            ]]],
+            'provisioning_status' => ProvisioningStatusEnum::HEALTHY,
         ]);
         $standaloneItems[] = $item->fresh();
     }
@@ -502,4 +516,36 @@ it('preserves successful revocations when another component cannot be revoked an
     // Manually confirming the unsupported IMS revocation completes the Bundle.
     $revocations->confirmManually($scenario['enrollments'][0][1], $staff->id);
     expect($scenario['purchases'][0]->fresh()->status)->toBe(BundlePurchaseStatusEnum::REFUNDED);
+});
+
+it('revokes a standalone provider enrollment when it is refunded', function (): void {
+    $scenario = mixedOrderScenario(
+        standalone: [['base' => 100000, 'paid' => 100000, 'provider' => 'moodle']],
+    );
+
+    app(RefundOrderAction::class)->handle($scenario['order'], new RefundOrderData());
+
+    $enrollment = Enrollment::query()->where('order_item_id', $scenario['standalone'][0]->id)->sole();
+    expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED)
+        ->and($enrollment->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING);
+    $this->assertDatabaseHas('provisioning_attempts', [
+        'enrollment_id' => $enrollment->id,
+        'provider'      => ProvisioningProviderEnum::MOODLE->value,
+        'trigger'       => ProvisioningTriggerEnum::REVOCATION->value,
+        'status'        => ProvisioningAttemptStatusEnum::QUEUED->value,
+    ]);
+    Queue::assertPushed(RevokeEnrollmentProviderJob::class, 1);
+});
+
+it('completes revocation immediately for a standalone unit with no external provider', function (): void {
+    $scenario = mixedOrderScenario(
+        standalone: [['base' => 100000, 'paid' => 100000]],
+    );
+
+    app(RefundOrderAction::class)->handle($scenario['order'], new RefundOrderData());
+
+    $enrollment = Enrollment::query()->where('order_item_id', $scenario['standalone'][0]->id)->sole();
+    expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::CANCELLED)
+        ->and($enrollment->revocation_status)->toBe(EnrollmentRevocationStatusEnum::REVOKED);
+    Queue::assertNotPushed(RevokeEnrollmentProviderJob::class);
 });

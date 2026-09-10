@@ -16,6 +16,7 @@ use App\Models\OrderItem;
 use App\Models\Refund;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
+use App\Services\Provisioning\EnrollmentRevocationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -26,6 +27,7 @@ final class UpdateRefundStatusAction
         private readonly OrderStatusService $orderStatusService,
         private readonly RefundProcessorFactory $processorFactory,
         private readonly UpdateOrderRefundedAmountAction $updateOrderRefundedAmount,
+        private readonly EnrollmentRevocationService $revocations,
     ) {}
 
     public function handle(Refund $refund, RefundStatusUpdateData $data): Refund
@@ -103,11 +105,11 @@ final class UpdateRefundStatusAction
             }
         }
 
-        return DB::transaction(function () use ($refund, $data, $gatewayTrackingCode): Refund {
+        $result = DB::transaction(function () use ($refund, $data, $gatewayTrackingCode): object {
             $lockedRefund = Refund::query()->whereKey($refund->id)->lockForUpdate()->firstOrFail();
 
             if ($lockedRefund->status === RefundStatusEnum::COMPLETED) {
-                return $lockedRefund->fresh();
+                return (object) ['refund' => $lockedRefund->fresh(), 'attemptIds' => []];
             }
 
             if ($lockedRefund->status === RefundStatusEnum::FAILED || $lockedRefund->status === RefundStatusEnum::CANCELLED) {
@@ -165,14 +167,26 @@ final class UpdateRefundStatusAction
                 $processor->process($lockedRefund, $order, $lockedRefund->amount);
             }
 
-            $this->orderStatusService->updateEnrollmentStatus($orderItem);
+            // Every refunded unit loses access: the Enrollment keeps its seat and
+            // locally blocks access until every required provider revocation has
+            // succeeded.
+            $attemptIds = [];
+            $enrollment = $orderItem->enrollment;
+            if ($enrollment) {
+                $attemptIds = $this->revocations->begin($enrollment);
+            }
+
             $this->orderStatusService->updateParentOrderStatus($order);
             $this->updateOrderRefundedAmount->handle($order->fresh());
 
             RefundCompletedEvent::dispatch($lockedRefund);
 
-            return $lockedRefund->fresh();
+            return (object) ['refund' => $lockedRefund->fresh(), 'attemptIds' => $attemptIds];
         });
+
+        $this->revocations->dispatchAttempts($result->attemptIds);
+
+        return $result->refund;
     }
 
     private function validateStatusTransition(RefundStatusEnum $from, string $to): void

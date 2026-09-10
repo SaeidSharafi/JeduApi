@@ -135,8 +135,7 @@ final class BundlePurchase extends Model
 
             // CANCELLED and SUSPENDED Enrollments do not grant active access:
             // they count as non-active rather than inflating the aggregate to
-            // ACTIVE. (The dedicated revocation_pending mapping arrives with
-            // the Bundle refund/revocation flow.)
+            // ACTIVE.
             if ($enrollment->enrollment_status    === EnrollmentStatusEnum::CANCELLED
                 || $enrollment->enrollment_status === EnrollmentStatusEnum::SUSPENDED
             ) {

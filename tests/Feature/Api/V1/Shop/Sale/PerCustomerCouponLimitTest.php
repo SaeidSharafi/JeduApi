@@ -7,6 +7,8 @@ use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\PermissionEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Events\RefundCompletedEvent;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Models\Course;
@@ -60,6 +62,11 @@ function createLimitDeliveryOption(int $price = 100000): ProductDeliveryOption
         'capacity'   => 10,
         'uuid'       => Str::uuid()->toString(),
         'status'     => PublicationStatusEnum::PUBLISHED,
+        // A provider-free delivery method keeps refunds free of external
+        // revocation work, so these tests exercise coupon usage only.
+        'delivery_method'  => DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
+        'fulfillment_type' => FulfillmentTypeEnum::DIGITAL->value,
+        'details_json'     => ['max_downloads' => 1],
     ]);
 }
 

@@ -131,6 +131,20 @@ it('completes immediately when no provider granted external access', function ()
     $this->assertDatabaseCount('provisioning_attempts', 0);
 });
 
+it('skips a planned provider that never granted external access', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    // Planned, but provisioning never ran, so nothing external can be revoked.
+    $enrollment->update(['provisioning_data' => []]);
+
+    $attemptIds = $this->service->begin($enrollment);
+
+    expect($attemptIds)->toBe([]);
+    $fresh = $enrollment->fresh();
+    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::REVOKED)
+        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::CANCELLED);
+    $this->assertDatabaseCount('provisioning_attempts', 0);
+});
+
 it('marks the enrollment revoked and cancelled only once every required provider succeeded', function (): void {
     $enrollment = revocationEnrollment(['moodle', 'moodle_quiz']);
     $this->service->begin($enrollment);
@@ -257,4 +271,19 @@ it('queues the revocation that begin could not create when a provisioning attemp
         'status'        => ProvisioningAttemptStatusEnum::QUEUED->value,
     ]);
     Queue::assertPushed(RevokeEnrollmentProviderJob::class, 1);
+});
+
+it('waits for an in-flight provisioning attempt that has not produced an outcome yet', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $enrollment->update(['provisioning_data' => []]);
+
+    // The attempt has started but has not written an outcome, so access may
+    // still be granted: revocation must wait rather than complete.
+    $provisioning = app(ProvisioningAttemptService::class)->queue($enrollment, ProvisioningTriggerEnum::PAYMENT);
+    app(ProvisioningAttemptService::class)->start($provisioning->id);
+
+    expect($this->service->begin($enrollment))->toBe([]);
+    $fresh = $enrollment->fresh();
+    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING)
+        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
 });

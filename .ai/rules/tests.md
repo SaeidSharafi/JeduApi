@@ -8,7 +8,7 @@ paths:
 ## Always run every Pest command with --parallel
 Never run `sail artisan test` or `sail bin pest` without `--parallel`, including single-file scopes. Use `vendor/bin/sail artisan test --compact --parallel` for the full suite and `vendor/bin/sail bin pest <scope> --parallel` for focused runs. Keep piping through `tail` to limit output if desired.
 
-Run exactly one Pest command at a time. Interleaving or sequentially stacking Pest invocations corrupts the per-process `testing_test_*` databases; wait for each command to finish before starting the next. If the databases do get corrupted, reset them with `vendor/bin/sail down -v` followed by `vendor/bin/sail up -d`.
+Run exactly one Pest command at a time. Interleaving or sequentially stacking Pest invocations corrupts the per-process `testing_test_*` databases; wait for each command to finish before starting the next. Killing a Pest run mid-flight (including an aborted or timed-out `--mutate` run) corrupts them the same way. If the databases do get corrupted — typically `149 failed` migration/table errors right after a killed run — reset them with `vendor/bin/sail down -v` followed by `vendor/bin/sail up -d` before re-running.
 
 ## Mutation-test new behavior
 Mutation testing does not require a special kind of test. Write ordinary Pest behavior tests with meaningful setup and assertions, then declare which production code the file tests with `covers()` or `mutates()`:
