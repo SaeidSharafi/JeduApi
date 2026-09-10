@@ -6,6 +6,7 @@ use App\Actions\Admin\Order\CreateOrderAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
@@ -88,7 +89,48 @@ it('exposes grouped Bundle Purchases with aggregate and component statuses on th
         ->assertJsonPath('data.bundle_purchases.0.status.value', 'active')
         ->assertJsonPath('data.bundle_purchases.0.components.0.product_delivery_option_id', $component->id)
         ->assertJsonPath('data.bundle_purchases.0.components.0.enrollment.enrollment_status.value', 'active')
-        ->assertJsonPath('data.bundle_purchases.0.components.0.enrollment.provisioning_status.value', 'healthy');
+        ->assertJsonPath('data.bundle_purchases.0.components.0.enrollment.provisioning_status.value', 'healthy')
+        ->assertJsonPath('data.bundle_purchases.0.components.0.enrollment.revocation_status', null);
 
     expect(Order::query()->count())->toBe(1);
+});
+
+it('exposes the component enrollment revocation status on the admin order detail', function (): void {
+    Queue::fake([App\Jobs\Provisioning\ProvisionEnrollmentProviderJob::class]);
+    $this->authorized_user([PermissionEnum::ORDER_VIEW->value]);
+
+    [$parent] = adminBundleFixture();
+    $customer = User::factory()->create();
+    $order    = app(CreateOrderAction::class)->handle(new OrderCreateData(
+        status: 'pending', customer_id: $customer->id,
+        items: [new OrderItemCreateData($parent->id, 'full_payment', composition_version: 1)],
+    ));
+
+    $order->payments()->create([
+        'amount' => 100000, 'method' => PaymentMethodEnum::BANK_TRANSFER->value,
+        'status' => PaymentStatusEnum::COMPLETED->value, 'customer_id' => $customer->id,
+    ]);
+    $order->update(['status' => OrderStatusEnum::COMPLETED->value]);
+
+    // A refunded component whose external revocation is still staff work: the
+    // aggregate status and the nested enrollment must both expose it.
+    foreach ($order->bundlePurchases->first()->components as $item) {
+        $item->update(['status' => OrderItemStatusEnum::REFUNDED->value]);
+        $item->enrollment()->update([
+            'enrollment_status' => EnrollmentStatusEnum::SUSPENDED->value,
+            'revocation_status' => EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED->value,
+        ]);
+    }
+
+    getJson(route('api.v1.admin.orders.show', ['order' => $order->id]))
+        ->assertOk()
+        ->assertJsonPath('data.bundle_purchases.0.status.value', 'revocation_pending')
+        ->assertJsonPath(
+            'data.bundle_purchases.0.components.0.enrollment.revocation_status.value',
+            EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED->value,
+        )
+        ->assertJsonPath(
+            'data.bundle_purchases.0.components.0.enrollment.revocation_status.label',
+            'Manual Revocation Required',
+        );
 });

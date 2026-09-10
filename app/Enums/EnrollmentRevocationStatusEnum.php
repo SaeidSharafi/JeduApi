@@ -9,10 +9,10 @@ use App\Traits\AdvanceEnum;
 /**
  * Lifecycle of an external provider revocation for one Enrollment.
  *
- * A null value means no revocation was ever required (ordinary enrollments).
- * `revoked` is terminal and monotonic: a successful revocation is never undone
- * because a sibling component failed, so only a state machine that never leaves
- * `revoked` is valid.
+ * A null value means no revocation was ever required — the enrollment was
+ * never refunded. `revoked` is terminal and monotonic: a successful revocation
+ * is never undone because another provider failed, so only a state machine that
+ * never leaves `revoked` is valid.
  */
 enum EnrollmentRevocationStatusEnum: string
 {

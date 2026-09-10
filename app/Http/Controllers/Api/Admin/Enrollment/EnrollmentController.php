@@ -33,6 +33,8 @@ final class EnrollmentController extends Controller
      *
      * @queryParam filter[enrollment_status] string Filter by enrollment status.
      *             available values: `awaiting_payment`, `active`, `suspended`, `expired`, `cancelled`. Example: active
+     * @queryParam filter[revocation_status] string Filter by external provider revocation status, so the panel can build a revocation work queue.
+     *             available values: `pending`, `failed`, `manual_action_required`, `revoked`. Example: manual_action_required
      * @queryParam filter[customer_id] string Filter by customer ID. Example: 1
      * @queryParam filter[order_id] string Filter by order ID. Example: 1
      * @queryParam filter[product_id] string Filter by product ID. Example: 1
@@ -48,6 +50,7 @@ final class EnrollmentController extends Controller
         $enrollments = QueryBuilder::for(Enrollment::class)
             ->allowedFilters([
                 AllowedFilter::exact('enrollment_status'),
+                AllowedFilter::exact('revocation_status'),
                 AllowedFilter::exact('customer_id'),
                 AllowedFilter::exact('order_id'),
                 AllowedFilter::callback('product_id', function ($query, $value): void {

@@ -10,6 +10,7 @@
                     "value": "active",
                     "label": "Active"
                 },
+                "revocation_status": null,
                 "access_start_date": "1403-01-02",
                 "access_end_date": "1403-12-30",
                 "created_at": "1405-06-16 12:55:53",

@@ -99,6 +99,12 @@ return [
         'expired'          => 'Expired',
         'cancelled'        => 'Cancelled',
     ],
+    'EnrollmentRevocationStatusEnum' => [
+        'pending'                => 'Revocation Pending',
+        'failed'                 => 'Revocation Failed',
+        'manual_action_required' => 'Manual Revocation Required',
+        'revoked'                => 'Access Revoked',
+    ],
     'ProvisioningStatusEnum' => [
         'ready'                  => 'Ready',
         'in_progress'            => 'In Progress',

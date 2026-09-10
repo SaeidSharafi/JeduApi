@@ -99,6 +99,12 @@ return [
         'expired'          => 'منقضی شده',
         'cancelled'        => 'لغو شده',
     ],
+    'EnrollmentRevocationStatusEnum' => [
+        'pending'                => 'در انتظار لغو دسترسی',
+        'failed'                 => 'لغو دسترسی ناموفق',
+        'manual_action_required' => 'نیازمند لغو دسترسی دستی',
+        'revoked'                => 'لغو دسترسی انجام‌شده',
+    ],
     'ProvisioningStatusEnum' => [
         'ready'                  => 'آماده',
         'in_progress'            => 'در حال آماده‌سازی',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Order;
 
 use App\Data\Transformer\TranslatableEnumData;
+use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\ProvisioningStatusEnum;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -21,5 +22,7 @@ final class BundleEnrollmentStatusData extends Data
         public EnrollmentStatusEnum $enrollment_status,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ProvisioningStatusEnum $provisioning_status,
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
+        public ?EnrollmentRevocationStatusEnum $revocation_status = null,
     ) {}
 }
