@@ -287,3 +287,456 @@ it('waits for an in-flight provisioning attempt that has not produced an outcome
     expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING)
         ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
 });
+
+it('skips an already revoked provider while still queueing the remaining providers', function (): void {
+    $enrollment = revocationEnrollment(['moodle', 'moodle_quiz']);
+
+    // Moodle was already revoked by an earlier run; the quiz provider still needs it.
+    ProvisioningAttempt::query()->create([
+        'enrollment_id' => $enrollment->id,
+        'provider'      => ProvisioningProviderEnum::MOODLE,
+        'trigger'       => ProvisioningTriggerEnum::REVOCATION,
+        'status'        => ProvisioningAttemptStatusEnum::SUCCEEDED,
+        'sequence'      => 1,
+        'retryable'     => false,
+        'succeeded_at'  => now(),
+    ]);
+
+    $attemptIds = $this->service->begin($enrollment);
+
+    expect($attemptIds)->toHaveCount(1);
+    $this->assertDatabaseHas('provisioning_attempts', [
+        'enrollment_id' => $enrollment->id,
+        'provider'      => ProvisioningProviderEnum::MOODLE_QUIZ->value,
+        'trigger'       => ProvisioningTriggerEnum::REVOCATION->value,
+        'status'        => ProvisioningAttemptStatusEnum::QUEUED->value,
+    ]);
+    expect($enrollment->fresh()->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING);
+});
+
+it('waits for one provider in flight while queueing revocation for another', function (): void {
+    $enrollment = revocationEnrollment(['moodle', 'moodle_quiz']);
+
+    // Moodle is still provisioning, so begin() must wait for it and revoke the quiz now.
+    $inFlight = app(ProvisioningAttemptService::class)->queue(
+        $enrollment,
+        ProvisioningTriggerEnum::PAYMENT,
+        provider: ProvisioningProviderEnum::MOODLE,
+    );
+    app(ProvisioningAttemptService::class)->start($inFlight->id);
+
+    $attemptIds = $this->service->begin($enrollment);
+
+    expect($attemptIds)->toHaveCount(1);
+    $this->assertDatabaseHas('provisioning_attempts', [
+        'enrollment_id' => $enrollment->id,
+        'provider'      => ProvisioningProviderEnum::MOODLE_QUIZ->value,
+        'trigger'       => ProvisioningTriggerEnum::REVOCATION->value,
+        'status'        => ProvisioningAttemptStatusEnum::QUEUED->value,
+    ]);
+});
+
+it('reports pending while a provider is in flight even though another needs manual work', function (): void {
+    $enrollment = revocationEnrollment(['moodle', 'ims']);
+
+    // One provider may still grant access; another needs a human. Waiting wins:
+    // an in-flight attempt is not a completed revocation, so the state is pending.
+    $inFlight = app(ProvisioningAttemptService::class)->queue(
+        $enrollment,
+        ProvisioningTriggerEnum::PAYMENT,
+        provider: ProvisioningProviderEnum::MOODLE,
+    );
+    app(ProvisioningAttemptService::class)->start($inFlight->id);
+
+    expect($this->service->begin($enrollment))->toBe([]);
+    $fresh = $enrollment->fresh();
+    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING)
+        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
+});
+
+it('returns a failed revocation to pending when a retry is queued', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+    $attempt = revocationStart($this->service, $enrollment, 'moodle');
+    $this->service->fail($attempt, new RuntimeException('Moodle unavailable'));
+
+    expect($enrollment->fresh()->revocation_status)->toBe(EnrollmentRevocationStatusEnum::FAILED);
+
+    expect($this->service->retry($enrollment))->toHaveCount(1);
+
+    $fresh = $enrollment->fresh();
+    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING)
+        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
+});
+
+it('keeps an unsupported provider in manual work when a retry is requested', function (): void {
+    $enrollment = revocationEnrollment(['ims']);
+    $this->service->begin($enrollment);
+
+    expect($this->service->retry($enrollment))->toBe([]);
+
+    $fresh = $enrollment->fresh();
+    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED)
+        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
+    $this->assertDatabaseCount('provisioning_attempts', 1);
+});
+
+it('records the unsupported-provider work item with its full audit detail', function (): void {
+    $enrollment = revocationEnrollment(['ims']);
+
+    $this->service->begin($enrollment);
+
+    $attempt = ProvisioningAttempt::query()
+        ->where('enrollment_id', $enrollment->id)
+        ->where('provider', ProvisioningProviderEnum::IMS->value)
+        ->where('trigger', ProvisioningTriggerEnum::REVOCATION->value)
+        ->sole();
+
+    expect((int) $attempt->sequence)->toBe(1)
+        ->and($attempt->status)->toBe(ProvisioningAttemptStatusEnum::MANUAL_ACTION_REQUIRED)
+        ->and($attempt->retryable)->toBeFalse()
+        ->and($attempt->failure_message)->toBe(__('messages.provisioning.revocation_not_supported'))
+        ->and($attempt->failure_metadata)->toBe(['kind' => 'revocation', 'provider_supported' => false])
+        ->and($attempt->failed_at)->not->toBeNull()
+        ->and($attempt->manual_action_required_at)->not->toBeNull();
+});
+
+it('records a fully audited succeeding attempt when staff confirm manual revocation', function (): void {
+    $staff      = App\Models\Staff::factory()->create();
+    $enrollment = revocationEnrollment(['ims']);
+    $this->service->begin($enrollment);
+
+    $this->service->confirmManually($enrollment, $staff->id, 'Removed in IMS by hand');
+
+    $attempt = ProvisioningAttempt::query()
+        ->where('enrollment_id', $enrollment->id)
+        ->where('provider', ProvisioningProviderEnum::IMS->value)
+        ->where('status', ProvisioningAttemptStatusEnum::SUCCEEDED->value)
+        ->sole();
+
+    expect($attempt->retryable)->toBeFalse()
+        ->and($attempt->staff_id)->toBe($staff->id)
+        ->and($attempt->succeeded_at)->not->toBeNull()
+        ->and($attempt->failure_metadata)->toEqual([
+            'kind'                => 'revocation',
+            'manual_confirmation' => true,
+            'reason'              => 'Removed in IMS by hand',
+        ])
+        ->and($enrollment->fresh()->revocation_status)->toBe(EnrollmentRevocationStatusEnum::REVOKED);
+});
+
+it('omits the manual reason from the audit when staff give none', function (): void {
+    $staff      = App\Models\Staff::factory()->create();
+    $enrollment = revocationEnrollment(['ims']);
+    $this->service->begin($enrollment);
+
+    $this->service->confirmManually($enrollment, $staff->id);
+
+    $attempt = ProvisioningAttempt::query()
+        ->where('enrollment_id', $enrollment->id)
+        ->where('provider', ProvisioningProviderEnum::IMS->value)
+        ->where('status', ProvisioningAttemptStatusEnum::SUCCEEDED->value)
+        ->sole();
+
+    expect($attempt->failure_metadata)->toEqual([
+        'kind'                => 'revocation',
+        'manual_confirmation' => true,
+    ]);
+});
+
+it('confirms only the providers whose revocation is still outstanding', function (): void {
+    $staff      = App\Models\Staff::factory()->create();
+    $enrollment = revocationEnrollment(['moodle', 'ims']);
+    $this->service->begin($enrollment);
+
+    // Moodle was revoked successfully; only IMS still needs manual work.
+    $moodle = revocationStart($this->service, $enrollment, 'moodle');
+    $this->service->succeed($moodle, ['moodle_user_id' => 11, 'moodle_course_id' => 22]);
+
+    $this->service->confirmManually($enrollment, $staff->id, 'Removed in IMS by hand');
+
+    expect(ProvisioningAttempt::query()
+        ->where('enrollment_id', $enrollment->id)
+        ->where('provider', ProvisioningProviderEnum::MOODLE->value)
+        ->where('trigger', ProvisioningTriggerEnum::REVOCATION->value)
+        ->count())->toBe(1)
+        ->and($enrollment->fresh()->revocation_status)->toBe(EnrollmentRevocationStatusEnum::REVOKED);
+});
+
+it('stores only the canonical safe references when a provider revocation succeeds', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+    $attempt = revocationStart($this->service, $enrollment, 'moodle');
+
+    $this->service->succeed($attempt, [
+        'moodle_user_id'   => 11,
+        'moodle_course_id' => 22,
+        'revoked_at'       => '2026-09-10T00:00:00+00:00',
+        'api_token'        => 'super-secret',
+        'password'         => 'hunter2',
+    ]);
+
+    $record = $enrollment->fresh()->provisioning_data['revocation']['providers']['moodle'];
+
+    expect($record['status'])->toBe('revoked')
+        ->and((int) $record['attempt_sequence'])->toBe((int) $attempt->sequence)
+        ->and($record['data'])->toEqual([
+            'moodle_user_id'   => 11,
+            'moodle_course_id' => 22,
+            'revoked_at'       => '2026-09-10T00:00:00+00:00',
+        ])
+        ->and($record['revoked_at'])->not->toBeNull()
+        ->and($attempt->fresh()->retryable)->toBeFalse()
+        ->and($attempt->fresh()->succeeded_at)->not->toBeNull();
+});
+
+it('ignores a success report for an attempt that was never started', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+
+    $queued = ProvisioningAttempt::query()
+        ->where('enrollment_id', $enrollment->id)
+        ->where('provider', ProvisioningProviderEnum::MOODLE->value)
+        ->where('status', ProvisioningAttemptStatusEnum::QUEUED->value)
+        ->sole();
+
+    $this->service->succeed($queued, ['moodle_user_id' => 11, 'moodle_course_id' => 22]);
+
+    expect($queued->fresh()->status)->toBe(ProvisioningAttemptStatusEnum::QUEUED)
+        ->and($enrollment->fresh()->provisioning_data)->not->toHaveKey('revocation');
+});
+
+it('ignores a failure report for an attempt that was never started', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+
+    $queued = ProvisioningAttempt::query()
+        ->where('enrollment_id', $enrollment->id)
+        ->where('provider', ProvisioningProviderEnum::MOODLE->value)
+        ->where('status', ProvisioningAttemptStatusEnum::QUEUED->value)
+        ->sole();
+
+    $this->service->fail($queued, new RuntimeException('Moodle unavailable'));
+
+    expect($queued->fresh()->status)->toBe(ProvisioningAttemptStatusEnum::QUEUED);
+});
+
+it('marks the attempt as manual work when the provider needs a human', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+    $attempt = revocationStart($this->service, $enrollment, 'moodle');
+
+    $this->service->fail($attempt, new RuntimeException('Moodle rejected the request'), true);
+
+    expect($attempt->fresh()->status)->toBe(ProvisioningAttemptStatusEnum::MANUAL_ACTION_REQUIRED)
+        ->and($attempt->fresh()->manual_action_required_at)->not->toBeNull()
+        ->and($enrollment->fresh()->revocation_status)
+        ->toBe(EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED);
+});
+
+it('leaves a completed revocation untouched when a late attempt succeeds', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+    $attempt = revocationStart($this->service, $enrollment, 'moodle');
+
+    $enrollment->forceFill([
+        'revocation_status' => EnrollmentRevocationStatusEnum::REVOKED,
+        'enrollment_status' => EnrollmentStatusEnum::CANCELLED,
+    ])->save();
+
+    $this->service->succeed($attempt, ['moodle_user_id' => 11, 'moodle_course_id' => 22]);
+
+    expect($enrollment->fresh()->provisioning_data)->not->toHaveKey('revocation');
+});
+
+it('records the failure audit with code, metadata and a truncated message', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+    $attempt = revocationStart($this->service, $enrollment, 'moodle');
+
+    $this->service->fail(
+        $attempt,
+        new RuntimeException(str_repeat('x', 1500), 503),
+        false,
+        ['http_status' => 503, 'endpoint' => '/webservice/rest/server.php', 'errorcode' => 'webserviceerror'],
+    );
+
+    $failed = $attempt->fresh();
+    expect($failed->status)->toBe(ProvisioningAttemptStatusEnum::FAILED)
+        ->and($failed->retryable)->toBeTrue()
+        ->and($failed->failure_code)->toBe('503')
+        ->and(mb_strlen((string) $failed->failure_message))->toBe(1000)
+        ->and($failed->failure_message)->toBe(str_repeat('x', 1000))
+        ->and($failed->failed_at)->not->toBeNull()
+        ->and($failed->manual_action_required_at)->toBeNull()
+        ->and($failed->failure_metadata)->toEqual([
+            'kind'        => 'revocation',
+            'http_status' => 503,
+            'endpoint'    => '/webservice/rest/server.php',
+            'errorcode'   => 'webserviceerror',
+        ]);
+});
+
+it('filters absent provider metadata out of the failure audit', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+    $attempt = revocationStart($this->service, $enrollment, 'moodle');
+
+    $this->service->fail($attempt, new RuntimeException('Moodle unavailable'));
+
+    expect($attempt->fresh()->failure_metadata)->toBe(['kind' => 'revocation']);
+});
+
+it('schedules a retry, marks the attempt retry-scheduled and returns the enrollment to pending', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+    $attempt = revocationStart($this->service, $enrollment, 'moodle');
+
+    // A previously failed revocation being retried: re-deriving the state from
+    // the attempt log must return it to pending rather than leave it failed.
+    $enrollment->forceFill(['revocation_status' => EnrollmentRevocationStatusEnum::FAILED])->save();
+
+    $this->service->scheduleRetry($attempt);
+
+    $scheduled = $attempt->fresh();
+    expect($scheduled->status)->toBe(ProvisioningAttemptStatusEnum::RETRY_SCHEDULED)
+        ->and($scheduled->retry_scheduled_at)->not->toBeNull();
+
+    $fresh = $enrollment->fresh();
+    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING)
+        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
+});
+
+it('ignores a retry schedule for an attempt that is no longer running', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $this->service->begin($enrollment);
+    $attempt = revocationStart($this->service, $enrollment, 'moodle');
+    $this->service->succeed($attempt, ['moodle_user_id' => 11, 'moodle_course_id' => 22]);
+
+    $this->service->scheduleRetry($attempt);
+
+    expect($attempt->fresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED);
+});
+
+it('skips inapplicable and unknown plan entries while revoking the applicable providers', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $enrollment->update(['provisioning_plan' => [
+        'version'   => 1, 'status' => 'healthy', 'resolved_at' => now()->toISOString(),
+        'providers' => [
+            ['provider' => 'moodle',  'applicable' => false, 'readiness' => 'ready', 'configuration_issue' => null],
+            ['provider' => 'unknown', 'applicable' => true,  'readiness' => 'ready', 'configuration_issue' => null],
+            ['provider' => 'moodle',  'applicable' => true,  'readiness' => 'ready', 'configuration_issue' => null],
+        ],
+    ]]);
+
+    expect($this->service->begin($enrollment))->toHaveCount(1);
+
+    $this->assertDatabaseHas('provisioning_attempts', [
+        'enrollment_id' => $enrollment->id,
+        'provider'      => ProvisioningProviderEnum::MOODLE->value,
+        'trigger'       => ProvisioningTriggerEnum::REVOCATION->value,
+        'status'        => ProvisioningAttemptStatusEnum::QUEUED->value,
+    ]);
+});
+
+it('ignores a provider that never granted access while revoking a later granted provider', function (): void {
+    $enrollment = revocationEnrollment(['moodle', 'moodle_quiz']);
+    $enrollment->update(['provisioning_data' => [
+        'providers' => [
+            'moodle'      => ['status' => 'failed', 'data' => ['moodle_user_id' => 11, 'moodle_course_id' => 22]],
+            'moodle_quiz' => ['status' => 'success', 'data' => ['moodle_user_id' => 33, 'moodle_course_id' => 44]],
+        ],
+    ]]);
+
+    expect($this->service->begin($enrollment))->toHaveCount(1);
+
+    $this->assertDatabaseHas('provisioning_attempts', [
+        'enrollment_id' => $enrollment->id,
+        'provider'      => ProvisioningProviderEnum::MOODLE_QUIZ->value,
+        'trigger'       => ProvisioningTriggerEnum::REVOCATION->value,
+    ]);
+    $this->assertDatabaseMissing('provisioning_attempts', [
+        'enrollment_id' => $enrollment->id,
+        'provider'      => ProvisioningProviderEnum::MOODLE->value,
+        'trigger'       => ProvisioningTriggerEnum::REVOCATION->value,
+    ]);
+});
+
+it('treats a revocable provider with no stored references as manual work', function (): void {
+    $enrollment = revocationEnrollment(['moodle']);
+    $enrollment->update(['provisioning_data' => [
+        'providers' => ['moodle' => ['status' => 'success', 'data' => []]],
+    ]]);
+
+    expect($this->service->begin($enrollment))->toBe([]);
+    $fresh = $enrollment->fresh();
+    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED)
+        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
+    Queue::assertNothingPushed();
+});
+
+it('stays pending, not failed, when one provider failed and another has no attempt yet', function (): void {
+    $enrollment = revocationEnrollment(['moodle_quiz', 'moodle']);
+
+    // The quiz provider is still provisioning, so begin() waits for it and creates
+    // no revocation attempt for it; Moodle's revocation attempt then fails.
+    $inFlight = app(ProvisioningAttemptService::class)->queue(
+        $enrollment,
+        ProvisioningTriggerEnum::PAYMENT,
+        provider: ProvisioningProviderEnum::MOODLE_QUIZ,
+    );
+    app(ProvisioningAttemptService::class)->start($inFlight->id);
+
+    $this->service->begin($enrollment);
+    $moodle = revocationStart($this->service, $enrollment, 'moodle');
+    $this->service->fail($moodle, new RuntimeException('Moodle unavailable'));
+
+    // A provider that may still revoke keeps the purchase pending: the failure is
+    // not final until every required provider has settled.
+    $fresh = $enrollment->fresh();
+    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING)
+        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
+});
+
+it('reports manual work when a missing attempt precedes an unsupported provider', function (): void {
+    $enrollment = revocationEnrollment(['moodle_quiz', 'ims']);
+
+    // The quiz provider is still provisioning, so it can grant access later and
+    // counts as required even though it has no revocation attempt yet.
+    $inFlight = app(ProvisioningAttemptService::class)->queue(
+        $enrollment,
+        ProvisioningTriggerEnum::PAYMENT,
+        provider: ProvisioningProviderEnum::MOODLE_QUIZ,
+    );
+    app(ProvisioningAttemptService::class)->start($inFlight->id);
+
+    $this->service->begin($enrollment);
+
+    expect($this->service->retry($enrollment))->toBe([]);
+    $fresh = $enrollment->fresh();
+    expect($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED)
+        ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
+    $this->assertDatabaseCount('provisioning_attempts', 2);
+});
+/*
+ * Mutation notes (`pest --mutate --parallel`):
+ * The remaining survivors are equivalent mutants, not uncovered behavior:
+ * - L218 RemoveArrayItem in fail(): `retryable` is already true on every attempt
+ *   `queue()` creates, and no reachable path starts a RUNNING attempt with it
+ *   false, so dropping the explicit `true` persists the same value.
+ * - L219 RemoveStringCast: the code is stored in the varchar `failure_code`
+ *   column, which coerces an int to the identical string the cast produces.
+ * - L232 + L255 BooleanOrToBooleanAnd: `! $enrollment && ...` is false on every
+ *   reachable call (the enrollment always exists), and recalculate() itself
+ *   early-returns on a completed enrollment, so both forms are indistinguishable.
+ * - L329 FalseToTrue in canRevoke(): unreachable — ProvisioningProviderRegistry is
+ *   final and every ProvisioningProviderEnum case has an adapter, so resolve()
+ *   never throws and the catch never runs.
+ * - L352 Decrement/IncrementInteger on `mb_substr(..., 0, 1000)`: the translated
+ *   string is far shorter than 999 characters, so the length never truncates.
+ * - L366 + L374 RemoveEarlyReturn in recalculate(): both guards are defensive —
+ *   no caller reaches recalculate() with a completed enrollment, and falling
+ *   through the `required === []` branch re-derives the same REVOKED/CANCELLED.
+ * - L448 RemoveIntegerCast on max('sequence'): PHP coerces the numeric string or
+ *   null to int for the `+ 1` and the int return type, so the cast is a no-op.
+ */
