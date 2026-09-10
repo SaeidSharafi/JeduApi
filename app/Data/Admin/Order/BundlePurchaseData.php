@@ -14,6 +14,9 @@ use Spatie\LaravelData\Data;
 /**
  * Admin surface for one immutable Bundle Purchase group: aggregate derived
  * status plus every physical component with its Enrollment statuses.
+ *
+ * It is also the Bundle grouping entry in the unified order `items` list, where
+ * `type` is always `bundle`.
  */
 final class BundlePurchaseData extends Data
 {
@@ -31,5 +34,6 @@ final class BundlePurchaseData extends Data
         public BundlePurchaseStatusEnum $status,
         #[DataCollectionOf(BundleComponentItemData::class)]
         public Collection $components,
+        public string $type = 'bundle',
     ) {}
 }

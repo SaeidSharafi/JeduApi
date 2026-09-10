@@ -74,27 +74,28 @@ it('checks out one Bundle Purchase with allocated components and no parent entit
     ]);
 
     $response->assertCreated()
-        ->assertJsonCount(0, 'data.order.items')
-        ->assertJsonCount(1, 'data.order.bundle_purchases')
+        // The Bundle is one purchased line; its components are nested, not top-level.
+        ->assertJsonCount(1, 'data.order.items')
+        ->assertJsonPath('data.order.items.0.type', 'bundle')
         ->assertJsonPath('data.order.grand_total', 100000)
         ->assertJsonPath('data.order.total_item_count', 1)
-        ->assertJsonPath('data.order.bundle_purchases.0.base_value', 200000)
-        ->assertJsonPath('data.order.bundle_purchases.0.selling_price', 100000)
-        ->assertJsonCount(2, 'data.order.bundle_purchases.0.components')
-        ->assertJsonPath('data.order.bundle_purchases.0.components.0.product_delivery_option_id', $first->id)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.0.name', $first->product->name)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.0.sku', $first->sku)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.0.price', 120000)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.0.paid_amount', 100000)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.0.bundle_discount_amount', 20000)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.0.status.value', 'completed')
-        ->assertJsonPath('data.order.bundle_purchases.0.components.0.enrollment_status.value', 'active')
-        ->assertJsonPath('data.order.bundle_purchases.0.components.1.product_delivery_option_id', $second->id)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.1.price', 80000)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.1.paid_amount', 0)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.1.bundle_discount_amount', 80000)
-        ->assertJsonPath('data.order.bundle_purchases.0.components.1.status.value', 'completed')
-        ->assertJsonPath('data.order.bundle_purchases.0.components.1.enrollment_status.value', 'active');
+        ->assertJsonPath('data.order.items.0.base_value', 200000)
+        ->assertJsonPath('data.order.items.0.selling_price', 100000)
+        ->assertJsonCount(2, 'data.order.items.0.components')
+        ->assertJsonPath('data.order.items.0.components.0.product_delivery_option_id', $first->id)
+        ->assertJsonPath('data.order.items.0.components.0.name', $first->product->name)
+        ->assertJsonPath('data.order.items.0.components.0.sku', $first->sku)
+        ->assertJsonPath('data.order.items.0.components.0.price', 120000)
+        ->assertJsonPath('data.order.items.0.components.0.paid_amount', 100000)
+        ->assertJsonPath('data.order.items.0.components.0.bundle_discount_amount', 20000)
+        ->assertJsonPath('data.order.items.0.components.0.status.value', 'completed')
+        ->assertJsonPath('data.order.items.0.components.0.enrollment_status.value', 'active')
+        ->assertJsonPath('data.order.items.0.components.1.product_delivery_option_id', $second->id)
+        ->assertJsonPath('data.order.items.0.components.1.price', 80000)
+        ->assertJsonPath('data.order.items.0.components.1.paid_amount', 0)
+        ->assertJsonPath('data.order.items.0.components.1.bundle_discount_amount', 80000)
+        ->assertJsonPath('data.order.items.0.components.1.status.value', 'completed')
+        ->assertJsonPath('data.order.items.0.components.1.enrollment_status.value', 'active');
     assertDatabaseCount('bundle_purchases', 1);
     assertDatabaseCount('order_items', 2);
     assertDatabaseCount('enrollments', 2);
@@ -125,12 +126,17 @@ it('keeps mixed pending and completed order history grouped and immutable', func
     $order  = Order::query()->sole();
     $url    = '/api/v1/shop/student/orders/'.$order->increment_id;
     $before = getJson($url)->assertOk()
-        ->assertJsonCount(1, 'data.items')
-        ->assertJsonCount(1, 'data.bundle_purchases')
+        // One Bundle line and one standalone line, both as purchased lines.
+        ->assertJsonCount(2, 'data.items')
         ->assertJsonPath('data.grand_total', 150000)
-        ->assertJsonPath('data.bundle_purchases.0.status.value', $pay ? 'active' : 'pending_payment')
-        ->assertJsonPath('data.bundle_purchases.0.components.0.enrollment_status.value', $pay ? 'active' : 'awaiting_payment')
         ->json('data');
+
+    $bundleLine = collect($before['items'])->firstWhere('type', 'bundle');
+
+    expect($bundleLine)->not->toBeNull()
+        ->and($bundleLine['status']['value'])->toBe($pay ? 'active' : 'pending_payment')
+        ->and($bundleLine['components'][0]['enrollment_status']['value'])->toBe($pay ? 'active' : 'awaiting_payment')
+        ->and(collect($before['items'])->where('type', 'product'))->toHaveCount(1);
 
     $first->updateQuietly(['price' => 400000, 'name' => 'New component name']);
     $first->product->updateQuietly(['name' => 'New Product name']);
@@ -140,7 +146,7 @@ it('keeps mixed pending and completed order history grouped and immutable', func
 
     getJson($url)->assertOk()->assertJsonPath('data', $before);
     getJson('/api/v1/shop/student/orders')->assertOk()
-        ->assertJsonPath('data.data.0.bundle_purchases', $before['bundle_purchases']);
+        ->assertJsonPath('data.data.0.items', $before['items']);
 })->with(['pending' => false, 'completed' => true]);
 
 it('revalidates a Bundle selection at checkout before writing any purchase records', function (Closure $change): void {
@@ -204,7 +210,8 @@ it('cancels the original reserved components even after the Bundle is recomposed
 
     postJson('/api/v1/shop/student/orders/'.$order->increment_id.'/cancel')
         ->assertOk()
-        ->assertJsonPath('data.bundle_purchases.0.status.value', 'cancelled');
+        ->assertJsonPath('data.items.0.type', 'bundle')
+        ->assertJsonPath('data.items.0.status.value', 'cancelled');
 
     expect($first->fresh()->reserved_count)->toBe(0);
     expect($second->fresh()->reserved_count)->toBe(0);

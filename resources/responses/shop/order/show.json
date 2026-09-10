@@ -11,17 +11,17 @@
     "customer_phone": "9120000001",
     "customer_first_name": "محمد",
     "customer_last_name": "رضایی",
-    "total_qty_ordered": 2,
-    "total_item_count": 2,
-    "subtotal": 1950000,
+    "total_qty_ordered": 4,
+    "total_item_count": 4,
+    "subtotal": 4350000,
     "discount_amount": 0,
     "tax_amount": 0,
-    "grand_total": 1950000,
-    "full_value_grand_total": 1950000,
-    "total_product_discount": 0,
+    "grand_total": 3750000,
+    "full_value_grand_total": 4350000,
+    "total_product_discount": 600000,
     "total_cart_discount": 0,
-    "total_discount": 0,
-    "total_paid": 1950000,
+    "total_discount": 600000,
+    "total_paid": 3750000,
     "balance_due": 0,
     "currency_code": "IRR",
     "payment_status": {
@@ -41,6 +41,7 @@
         "name": "دوره جامع پایتون - دسترسی ویدیویی آنلاین",
         "sku": "spotplayer-pdo-1",
         "price": 1200000,
+        "current_price": 1200000,
         "total": 1200000,
         "original_price": 1200000,
         "product_discount_amount": 0,
@@ -50,12 +51,14 @@
           "label": "پرداخت کامل"
         },
         "prepayment_amount": null,
+        "is_prepayment_available": false,
         "qty_refunded": 0,
         "total_refunded": 0,
         "status": {
           "value": "completed",
           "label": "enums.OrderItemStatusEnum.completed"
-        }
+        },
+        "type": "product"
       },
       {
         "id": 2,
@@ -66,6 +69,7 @@
         "name": "وبینار عکاسی دیجیتال - دسترسی آنلاین (Skyroom)",
         "sku": "skyroom-pdo-9",
         "price": 750000,
+        "current_price": 750000,
         "total": 750000,
         "original_price": 750000,
         "product_discount_amount": 0,
@@ -75,12 +79,78 @@
           "label": "پرداخت کامل"
         },
         "prepayment_amount": null,
+        "is_prepayment_available": false,
         "qty_refunded": 0,
         "total_refunded": 0,
         "status": {
           "value": "completed",
           "label": "enums.OrderItemStatusEnum.completed"
-        }
+        },
+        "type": "product"
+      },
+      {
+        "id": 1,
+        "product_delivery_option_id": 42,
+        "bundle_name": "بسته جامع مهارت‌های برنامه‌نویسی",
+        "product_name": "بسته جامع مهارت‌های برنامه‌نویسی",
+        "name": "بسته جامع مهارت‌های برنامه‌نویسی - استاندارد",
+        "sku": "BUNDLE-PDO-42",
+        "base_value": 2400000,
+        "selling_price": 1800000,
+        "composition_version": 3,
+        "status": {
+          "value": "active",
+          "label": "فعال"
+        },
+        "components": [
+          {
+            "id": 3,
+            "product_delivery_option_id": 21,
+            "name": "دوره پیشرفته لاراول - دسترسی ویدیویی آنلاین",
+            "sku": "spotplayer-pdo-21",
+            "price": 1500000,
+            "paid_amount": 1125000,
+            "bundle_discount_amount": 375000,
+            "status": {
+              "value": "completed",
+              "label": "تکمیل شده"
+            },
+            "enrollment_id": 55,
+            "enrollment_uuid": "b2000001-0000-4000-a000-000000000055",
+            "enrollment_status": {
+              "value": "active",
+              "label": "فعال"
+            },
+            "provisioning_status": {
+              "value": "healthy",
+              "label": "بدون مشکل / سالم"
+            }
+          },
+          {
+            "id": 4,
+            "product_delivery_option_id": 33,
+            "name": "کارگاه امنیت سایبری - Moodle",
+            "sku": "moodle-pdo-33",
+            "price": 900000,
+            "paid_amount": 675000,
+            "bundle_discount_amount": 225000,
+            "status": {
+              "value": "completed",
+              "label": "تکمیل شده"
+            },
+            "enrollment_id": 56,
+            "enrollment_uuid": "b2000001-0000-4000-a000-000000000056",
+            "enrollment_status": {
+              "value": "active",
+              "label": "فعال"
+            },
+            "provisioning_status": {
+              "value": "healthy",
+              "label": "بدون مشکل / سالم"
+            }
+          }
+        ],
+        "type": "bundle"
       }
     ],
     "payments": [

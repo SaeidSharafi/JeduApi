@@ -12,6 +12,10 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
+/**
+ * One standalone purchased line. `type` discriminates it from a Bundle grouping
+ * entry in the unified order `items` list.
+ */
 final class OrderItemData extends Data
 {
     public function __construct(
@@ -35,6 +39,7 @@ final class OrderItemData extends Data
         public ?int $qty_refunded,
         public ?int $total_refunded,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public OrderItemStatusEnum $status
+        public OrderItemStatusEnum $status,
+        public string $type = 'product',
     ) {}
 }

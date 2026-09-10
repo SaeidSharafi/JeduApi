@@ -11,6 +11,11 @@ use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 
+/**
+ * One Bundle grouping entry in the unified order `items` list. `type` is always
+ * `bundle`; the underlying component Order Items are nested here and never
+ * appear as top-level lines.
+ */
 final class BundlePurchaseData extends Data
 {
     public function __construct(
@@ -27,5 +32,6 @@ final class BundlePurchaseData extends Data
         public BundlePurchaseStatusEnum $status,
         #[DataCollectionOf(BundleComponentOrderItemData::class)]
         public Collection $components,
+        public string $type = 'bundle',
     ) {}
 }

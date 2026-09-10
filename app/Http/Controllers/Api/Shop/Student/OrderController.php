@@ -31,7 +31,7 @@ final class OrderController extends Controller
         $user   = Auth::guard('user')->user();
         $orders = $user
             ->orders()
-            ->with(['items.productDeliveryOption.product', 'standaloneItems.productDeliveryOption', 'bundlePurchases.components.enrollment', 'payments'])
+            ->with(['standaloneItems.productDeliveryOption', 'bundlePurchases.components.enrollment', 'payments'])
             ->latest()
             ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
@@ -52,7 +52,7 @@ final class OrderController extends Controller
         $user  = Auth::guard('user')->user();
         $order = $user->orders()
             ->where('increment_id', $incrementId)
-            ->with(['items.productDeliveryOption.product', 'standaloneItems.productDeliveryOption', 'bundlePurchases.components.enrollment', 'payments'])
+            ->with(['standaloneItems.productDeliveryOption', 'bundlePurchases.components.enrollment', 'payments'])
             ->firstOrFail();
 
         return apiResponse()->success(OrderData::fromModel($order));

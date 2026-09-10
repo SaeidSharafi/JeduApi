@@ -512,8 +512,8 @@ it('requires explicit reconfirmation after a Bundle composition change', functio
         ],
     ])->assertCreated()
         ->assertJsonPath('data.order.grand_total', 200000)
-        ->assertJsonCount(0, 'data.order.items')
-        ->assertJsonCount(1, 'data.order.bundle_purchases');
+        ->assertJsonCount(1, 'data.order.items')
+        ->assertJsonPath('data.order.items.0.type', 'bundle');
 });
 
 it('rejects checkout of a Bundle that became review-required after it was added', function (): void {

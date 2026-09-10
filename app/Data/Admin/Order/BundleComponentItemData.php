@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Order;
 
+use App\Data\Admin\Vendor\ShowVendorData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Order\OrderItemStatusEnum;
+use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
@@ -29,6 +31,9 @@ final class BundleComponentItemData extends Data
         public int $total_discount_amount,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public OrderItemStatusEnum $status,
+        public ShowVendorData $vendor,
+        #[MapOutputName('product_snapshot')]
+        public array $product_data_snapshot_json,
         public ?BundleEnrollmentStatusData $enrollment = null,
     ) {}
 }

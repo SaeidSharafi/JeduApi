@@ -84,13 +84,14 @@ it('exposes grouped Bundle Purchases with aggregate and component statuses on th
 
     getJson(route('api.v1.admin.orders.show', ['order' => $order->id]))
         ->assertOk()
-        ->assertJsonCount(1, 'data.bundle_purchases')
-        ->assertJsonPath('data.bundle_purchases.0.bundle_name', 'Admin Career Bundle')
-        ->assertJsonPath('data.bundle_purchases.0.status.value', 'active')
-        ->assertJsonPath('data.bundle_purchases.0.components.0.product_delivery_option_id', $component->id)
-        ->assertJsonPath('data.bundle_purchases.0.components.0.enrollment.enrollment_status.value', 'active')
-        ->assertJsonPath('data.bundle_purchases.0.components.0.enrollment.provisioning_status.value', 'healthy')
-        ->assertJsonPath('data.bundle_purchases.0.components.0.enrollment.revocation_status', null);
+        ->assertJsonCount(1, 'data.items')
+        ->assertJsonPath('data.items.0.type', 'bundle')
+        ->assertJsonPath('data.items.0.bundle_name', 'Admin Career Bundle')
+        ->assertJsonPath('data.items.0.status.value', 'active')
+        ->assertJsonPath('data.items.0.components.0.product_delivery_option_id', $component->id)
+        ->assertJsonPath('data.items.0.components.0.enrollment.enrollment_status.value', 'active')
+        ->assertJsonPath('data.items.0.components.0.enrollment.provisioning_status.value', 'healthy')
+        ->assertJsonPath('data.items.0.components.0.enrollment.revocation_status', null);
 
     expect(Order::query()->count())->toBe(1);
 });
@@ -124,13 +125,13 @@ it('exposes the component enrollment revocation status on the admin order detail
 
     getJson(route('api.v1.admin.orders.show', ['order' => $order->id]))
         ->assertOk()
-        ->assertJsonPath('data.bundle_purchases.0.status.value', 'revocation_pending')
+        ->assertJsonPath('data.items.0.status.value', 'revocation_pending')
         ->assertJsonPath(
-            'data.bundle_purchases.0.components.0.enrollment.revocation_status.value',
+            'data.items.0.components.0.enrollment.revocation_status.value',
             EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED->value,
         )
         ->assertJsonPath(
-            'data.bundle_purchases.0.components.0.enrollment.revocation_status.label',
+            'data.items.0.components.0.enrollment.revocation_status.label',
             'Manual Revocation Required',
         );
 });

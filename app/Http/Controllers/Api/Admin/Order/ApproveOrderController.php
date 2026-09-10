@@ -42,10 +42,9 @@ final class ApproveOrderController extends Controller
         Gate::authorize('approve', $order);
 
         $order = $action->handle($order);
-        $order->load('items.vendor', 'payments', 'bundlePurchases.components.enrollment');
 
         return apiResponse()->success(
-            data: OrderData::from($order),
+            data: OrderData::fromModel($order),
             message: __('messages.order.approved_successfully')
         );
     }
