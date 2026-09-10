@@ -14,9 +14,10 @@ namespace App\Services;
  * actually paid, so any share that lands on a zero-paid or insufficiently
  * allocated component is redistributed to components with remaining paid value.
  * The result is a deterministic, reproducible, and auditable split.
- */
-final class BundleRefundDeductionCalculator
+ */ final class BundleRefundDeductionCalculator
 {
+    public function __construct(private readonly WeightedApportionment $apportionment) {}
+
     /**
      * @param  list<array{order_item_id: int, product_delivery_option_id: int, base_price: int, paid_amount: int}>  $components
      * @return array{
@@ -35,9 +36,8 @@ final class BundleRefundDeductionCalculator
      *     }>
      * }
      */
-    public function calculate(int $baseValue, int $paidAmount, array $components, int $policyDeductionAmount): array
+    public function calculate(int $paidAmount, array $components, int $policyDeductionAmount): array
     {
-        $baseValue   = max(0, $baseValue);
         $paidAmount  = max(0, $paidAmount);
         $policyTotal = max(0, $policyDeductionAmount);
 
@@ -50,7 +50,7 @@ final class BundleRefundDeductionCalculator
             $components,
         );
 
-        $policyShares = $this->weightedShares($policyTotal, $basePrices);
+        $policyShares = $this->apportionment->distribute($policyTotal, $basePrices);
         $effective    = [];
         foreach ($components as $index => $component) {
             $effective[$index] = min($policyShares[$index], $paidShares[$index]);
@@ -86,67 +86,6 @@ final class BundleRefundDeductionCalculator
     }
 
     /**
-     * Largest-remainder apportionment with a stable, lowest-index tie-break.
-     *
-     * @param  list<int>  $weights
-     * @return list<int>
-     */
-    private function weightedShares(int $amount, array $weights): array
-    {
-        $count = count($weights);
-        if ($count === 0) {
-            return [];
-        }
-
-        $totalWeight = array_sum($weights);
-        if ($totalWeight <= 0) {
-            return $this->equalShares($amount, $count);
-        }
-
-        $shares     = [];
-        $remainders = [];
-        $allocated  = 0;
-        foreach ($weights as $index => $weight) {
-            $product            = $amount * $weight;
-            $shares[$index]     = intdiv($product, $totalWeight);
-            $remainders[$index] = $product % $totalWeight;
-            $allocated += $shares[$index];
-        }
-
-        $remaining = $amount - $allocated;
-        if ($remaining > 0) {
-            $order = range(0, $count - 1);
-            usort($order, function (int $left, int $right) use ($remainders): int {
-                return $remainders[$right] <=> $remainders[$left] ?: $left <=> $right;
-            });
-
-            for ($position = 0; $position < $remaining && $position < $count; $position++) {
-                $shares[$order[$position]]++;
-            }
-        }
-
-        ksort($shares);
-
-        return array_values($shares);
-    }
-
-    /**
-     * @return list<int>
-     */
-    private function equalShares(int $amount, int $count): array
-    {
-        $base      = intdiv($amount, $count);
-        $remainder = $amount % $count;
-
-        $shares = [];
-        for ($index = 0; $index < $count; $index++) {
-            $shares[$index] = $base + ($index < $remainder ? 1 : 0);
-        }
-
-        return $shares;
-    }
-
-    /**
      * @param  list<int>  $paidShares
      * @param  array<int, int>  $effective
      */
@@ -169,7 +108,7 @@ final class BundleRefundDeductionCalculator
                 return;
             }
 
-            $distribution = $this->weightedShares($shortfall, array_values($capacities));
+            $distribution = $this->apportionment->distribute($shortfall, array_values($capacities));
             $applied      = 0;
             foreach ($eligible as $position => $index) {
                 $increment = min($distribution[$position], $capacities[$index]);

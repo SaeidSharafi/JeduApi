@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Services\BundleRefundDeductionCalculator;
+use App\Services\WeightedApportionment;
 
 covers(BundleRefundDeductionCalculator::class);
 
@@ -20,12 +21,11 @@ function deductionComponent(int $id, int $basePrice, int $paidAmount): array
 }
 
 beforeEach(function (): void {
-    $this->calculator = new BundleRefundDeductionCalculator();
+    $this->calculator = new BundleRefundDeductionCalculator(new WeightedApportionment());
 });
 
 it('distributes a percentage of Bundle Base Value by snapshotted base-price weight', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 300000,
         paidAmount: 300000,
         components: [
             deductionComponent(1, 200000, 200000),
@@ -45,7 +45,6 @@ it('distributes a percentage of Bundle Base Value by snapshotted base-price weig
 
 it('distributes a fixed Bundle deduction with the same base-price weighting', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 300000,
         paidAmount: 300000,
         components: [
             deductionComponent(1, 100000, 100000),
@@ -61,7 +60,6 @@ it('distributes a fixed Bundle deduction with the same base-price weighting', fu
 
 it('redistributes the share of a zero-paid component onto paid components', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 300000,
         paidAmount: 100000,
         components: [
             deductionComponent(1, 200000, 100000),
@@ -83,7 +81,6 @@ it('redistributes the share of a zero-paid component onto paid components', func
 
 it('redistributes an over-cap share onto a component with remaining paid value', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 400000,
         paidAmount: 105000,
         components: [
             deductionComponent(1, 300000, 100000),
@@ -106,7 +103,6 @@ it('redistributes an over-cap share onto a component with remaining paid value',
 
 it('caps the effective deduction at the actual Bundle amount paid so a refund cannot go negative', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 200000,
         paidAmount: 50000,
         components: [
             deductionComponent(1, 200000, 50000),
@@ -122,7 +118,6 @@ it('caps the effective deduction at the actual Bundle amount paid so a refund ca
 
 it('assigns rounding remainders deterministically by largest remainder then component order', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 100000,
         paidAmount: 100000,
         components: [
             deductionComponent(1, 33333, 33333),
@@ -138,7 +133,6 @@ it('assigns rounding remainders deterministically by largest remainder then comp
 
 it('returns an all-zero calculation when nothing was actually paid', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 200000,
         paidAmount: 0,
         components: [
             deductionComponent(1, 100000, 0),
@@ -155,7 +149,6 @@ it('returns an all-zero calculation when nothing was actually paid', function ()
 
 it('produces the identical split for repeated calls', function (): void {
     $arguments = [
-        'baseValue'  => 333333,
         'paidAmount' => 200000,
         'components' => [
             deductionComponent(1, 111111, 100000),
@@ -171,7 +164,6 @@ it('produces the identical split for repeated calls', function (): void {
 
 it('returns an empty breakdown when the Bundle has no component lines', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 0,
         paidAmount: 0,
         components: [],
         policyDeductionAmount: 5000,
@@ -185,7 +177,6 @@ it('returns an empty breakdown when the Bundle has no component lines', function
 
 it('splits equally when every component base price is zero', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 0,
         paidAmount: 30000,
         components: [
             deductionComponent(1, 0, 10000),
@@ -202,7 +193,6 @@ it('splits equally when every component base price is zero', function (): void {
 
 it('assigns no deductible weight to a zero base-price component', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 100000,
         paidAmount: 100000,
         components: [
             deductionComponent(1, 100000, 50000),
@@ -220,7 +210,6 @@ it('assigns no deductible weight to a zero base-price component', function (): v
 
 it('makes no deduction when the policy amount is zero', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 200000,
         paidAmount: 150000,
         components: [
             deductionComponent(1, 120000, 100000),
@@ -236,7 +225,6 @@ it('makes no deduction when the policy amount is zero', function (): void {
 
 it('redistributes across every component that still has paid value', function (): void {
     $result = $this->calculator->calculate(
-        baseValue: 1000000,
         paidAmount: 640100,
         components: [
             deductionComponent(1, 600000, 600000),

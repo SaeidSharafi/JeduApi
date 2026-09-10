@@ -180,7 +180,6 @@ return [
             'gateway_skipped_by_admin_at'           => 'درگاه پرداخت توسط مدیر در تاریخ :date نادیده گرفته شد (تأیید دستی).',
 
             'bundle_component_requires_bundle_refund' => 'این آیتم جزئی از یک بسته است. لغو و بازگشت وجه آن باید از طریق خود خرید بسته انجام شود.',
-            'bundle_purchase_requires_bundle_refund'  => 'این سفارش شامل خرید بسته است. هر خرید بسته باید از طریق عملیات بازگشت وجه بسته انجام شود.',
             'bundle_purchase_not_refundable'          => 'این خرید بسته قابل لغو و بازگشت وجه نیست.',
         ],
     ],

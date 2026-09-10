@@ -167,15 +167,29 @@ it('rejects an ordinary item refund for an internal Bundle component', function 
     assertDatabaseCount('refunds', 0);
 });
 
-it('rejects a full-order refund when the order contains a Bundle Purchase', function (): void {
+it('refunds a Bundle Purchase through the full-order refund endpoint', function (): void {
     $this->authorized_user([PermissionEnum::REFUND_CREATE]);
     $scenario = bundleHttpPurchase();
 
-    postJson(route('api.v1.admin.orders.refund', ['order' => $scenario['order']->id]), [])
-        ->assertUnprocessable()
-        ->assertJsonPath('message', __('messages.order.refund.bundle_purchase_requires_bundle_refund'));
+    postJson(route('api.v1.admin.orders.refund', ['order' => $scenario['order']->id]))
+        ->assertCreated()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.status.value', RefundStatusEnum::COMPLETED->value)
+        ->assertJsonPath('data.0.deduction_amount', 0);
 
-    assertDatabaseCount('refunds', 0);
+    assertDatabaseCount('refunds', 1);
+    $this->assertDatabaseHas('refunds', [
+        'order_item_id' => $scenario['items'][0]->id,
+        'amount'        => 100000,
+    ]);
+    $this->assertDatabaseHas('order_items', [
+        'id'     => $scenario['items'][0]->id,
+        'status' => OrderItemStatusEnum::REFUNDED->value,
+    ]);
+    $this->assertDatabaseHas('enrollments', [
+        'id'                => $scenario['enrollments'][0]->id,
+        'revocation_status' => EnrollmentRevocationStatusEnum::PENDING->value,
+    ]);
 });
 
 it('retries only the outstanding component revocation of a Bundle Purchase', function (): void {

@@ -324,7 +324,7 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
   - `update(RefundUpdateData $request, Refund $refund)`: **Route:** `PUT /api/v1/admin/refunds/{refund}` - **Response DTO:** RefundData
   - `destroy(Refund $refund)`: **Route:** `DELETE /api/v1/admin/refunds/{refund}` - **Delegates to:** Refund deletion
 - **OrderRefundController** (`app/Http/Controllers/Api/Admin/Order/OrderRefundController.php`):
-  - `store(RefundCreateData $request, Order $order)`: **Route:** `POST /api/v1/admin/orders/{order}/refund` - **Request DTO:** RefundCreateData - **Response DTO:** RefundData - Initiates full or partial refund at order level.
+  - `store(RefundOrderData $request, Order $order)`: **Route:** `POST /api/v1/admin/orders/{order}/refund` - **Request DTO:** RefundOrderData - **Response DTO:** RefundData collection - Refunds the whole order atomically, treating standalone Order Items and Bundle Purchases as commercial units with one combined gateway refund.
 - **RefundUpdateStatusController** (`app/Http/Controllers/Api/Admin/Order/RefundUpdateStatusController.php`):
   - `__invoke(RefundStatusUpdateData $request, Refund $refund)`: **Route:** `PUT /api/v1/admin/refunds/{refund}/status` - **Request DTO:** RefundStatusUpdateData - **Response DTO:** RefundData
 - **BundlePurchaseRefundController** (`app/Http/Controllers/Api/Admin/Order/BundlePurchaseRefundController.php`):
@@ -335,7 +335,7 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
   - `__invoke(Enrollment $enrollment)`: **Route:** `POST /api/v1/admin/enrollments/{enrollment}/retry-revocation` - **Response DTO:** EnrollmentRevocationData - Requires `enrollments.retry_provision`.
 - **ConfirmEnrollmentRevocationController** (`app/Http/Controllers/Api/Admin/Enrollment/ConfirmEnrollmentRevocationController.php`):
   - `__invoke(ConfirmEnrollmentRevocationData $request, Enrollment $enrollment)`: **Route:** `POST /api/v1/admin/enrollments/{enrollment}/confirm-revocation` - **Request DTO:** ConfirmEnrollmentRevocationData - **Response DTO:** EnrollmentRevocationData - Records staff confirmation that an externally unsupported revocation was performed; releases Purchase Eligibility. Requires `enrollments.waive_provision`.
-- Ordinary refund endpoints reject internal Bundle components: `POST /api/v1/admin/refunds` returns a validation error for a component Order Item, and `POST /api/v1/admin/orders/{order}/refund` rejects any order containing Bundle Purchase lines, directing callers to the Bundle refund endpoint. Full-order grouping of Bundle Purchases (one combined gateway refund with fixed deductions weighted across units) is deferred; the order-level endpoint refuses rather than under-refunding.
+- Ordinary item refunds still reject internal Bundle components: `POST /api/v1/admin/refunds` returns a validation error for a component Order Item. `POST /api/v1/admin/orders/{order}/refund` now refunds mixed orders atomically: standalone Order Items individually and each Bundle Purchase as one indivisible unit, with exactly one combined gateway refund and component revocations dispatched after financial success.
 
 ### Digipay Admin Endpoints
 - **DigipayAdminController** (`app/Http/Controllers/Api/Admin/Payment/DigipayAdminController.php`):

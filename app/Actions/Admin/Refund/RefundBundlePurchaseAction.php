@@ -11,7 +11,6 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
-use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\RefundCompletedEvent;
 use App\Exceptions\RefundGatewayException;
 use App\Exceptions\RefundValidationException;
@@ -20,10 +19,12 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Services\BundlePurchaseRefundGuard;
 use App\Services\BundleRefundDeductionCalculator;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
 use App\Services\Provisioning\EnrollmentRevocationService;
+use App\Services\RefundPaymentGuard;
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -48,6 +49,8 @@ final class RefundBundlePurchaseAction
         private readonly OrderStatusService $orderStatusService,
         private readonly BundleRefundDeductionCalculator $calculator,
         private readonly EnrollmentRevocationService $revocations,
+        private readonly RefundPaymentGuard $paymentGuard,
+        private readonly BundlePurchaseRefundGuard $bundleGuard,
     ) {}
 
     public function handle(BundlePurchase $bundlePurchase, RefundBundlePurchaseData $data): BundleRefundData
@@ -59,7 +62,7 @@ final class RefundBundlePurchaseAction
 
             $this->assertRefundable($order, $purchase);
 
-            $payment         = $this->resolvePayment($order);
+            $payment         = $this->paymentGuard->resolveCompletedPayment($order);
             $paymentMethod   = $payment?->method->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
             $processor       = $this->processorFactory->make($paymentMethod);
             $requiresGateway = $paymentMethod === PaymentMethodEnum::DIGIPAY->value && ! $data->skip_gateway;
@@ -79,14 +82,13 @@ final class RefundBundlePurchaseAction
                 ->all();
 
             $calculation = $this->calculator->calculate(
-                $purchase->base_value,
                 $purchase->selling_price,
                 $components,
                 $this->resolvePolicyTarget($purchase->base_value, $data),
             );
 
             if ($requiresGateway && $payment instanceof Payment) {
-                $this->validateGatewayLimits($payment, $calculation['refund_amount']);
+                $this->paymentGuard->assertRefundWithinPaymentLimit($payment, $calculation['refund_amount']);
             }
 
             /** @var Collection<int, Refund> $refunds */
@@ -201,7 +203,7 @@ final class RefundBundlePurchaseAction
                     // becomes CANCELLED once every required provider revocation
                     // has succeeded.
                     $enrollment = $item->enrollment;
-                    if ($enrollment) {
+                    if ($enrollment && ! $enrollment->isRevocationComplete()) {
                         $enrollment->enrollment_status = EnrollmentStatusEnum::SUSPENDED;
                         $enrollment->save();
                     }
@@ -246,22 +248,11 @@ final class RefundBundlePurchaseAction
             throw new RefundValidationException(__('messages.order.refund.no_completed_payments'));
         }
 
-        $components = $purchase->components;
-        if ($components->isEmpty()) {
+        if ($purchase->components->isEmpty()) {
             throw new RefundValidationException(__('messages.order.refund.no_refundable_items'));
         }
 
-        foreach ($components as $component) {
-            if ($component->status === OrderItemStatusEnum::REFUNDED) {
-                throw new RefundValidationException(__('messages.order.refund.already_refunded'));
-            }
-            if ($component->status === OrderItemStatusEnum::CANCELLED) {
-                throw new RefundValidationException(__('messages.order.refund.bundle_purchase_not_refundable'));
-            }
-            if ($component->refunds()->whereNot('status', RefundStatusEnum::FAILED)->exists()) {
-                throw new RefundValidationException(__('messages.order.refund.refund_request_exists'));
-            }
-        }
+        $this->bundleGuard->assertRefundable($purchase);
     }
 
     private function assertPaymentCanCoverPurchaseAlone(Order $order, BundlePurchase $purchase): void
@@ -289,26 +280,6 @@ final class RefundBundlePurchaseAction
         }
 
         return $data->deduction_amount ?? $percentTarget ?? 0;
-    }
-
-    private function resolvePayment(Order $order): ?Payment
-    {
-        return $order->payments()
-            ->where('status', PaymentStatusEnum::COMPLETED)
-            ->oldest()
-            ->first();
-    }
-
-    private function validateGatewayLimits(Payment $payment, int $totalRefundAmount): void
-    {
-        $alreadyRefunded = Refund::query()
-            ->where('payment_id', $payment->id)
-            ->where('status', RefundStatusEnum::COMPLETED)
-            ->sum('amount');
-
-        if (($alreadyRefunded + $totalRefundAmount) > $payment->amount) {
-            throw new RefundValidationException(__('validation.custom.refund.exceeds_payment_amount'));
-        }
     }
 
     /**

@@ -159,7 +159,6 @@ return [
             'no_refundable_items'                     => 'There are no refundable items in this order.',
             'gateway_skipped_by_admin_at'             => 'Payment gateway was skipped by admin on :date.',
             'bundle_component_requires_bundle_refund' => 'This item is an internal Bundle component. Refund its Bundle Purchase instead.',
-            'bundle_purchase_requires_bundle_refund'  => 'This order contains Bundle Purchases. Refund every Bundle Purchase through the Bundle refund operation.',
             'bundle_purchase_not_refundable'          => 'This Bundle Purchase is not refundable.',
         ],
     ],

@@ -337,7 +337,7 @@ it('excludes cancelled items from refund', function (): void {
         ->and($refunds->first()->order_item_id)->toBe($sortedItems[0]->id);
 });
 
-it('excludes items with existing non-failed refunds', function (): void {
+it('rejects the whole refund when an item has an in-flight refund request', function (): void {
     $order = Order::factory()->withCalculatedTotals([
         ['price' => 100000, 'total' => 100000],
         ['price' => 200000, 'total' => 200000],
@@ -354,7 +354,8 @@ it('excludes items with existing non-failed refunds', function (): void {
 
     $sortedItems = $order->items->sortBy('price')->values();
 
-    // Item 1 (100k) has a pending refund
+    // Item 1 (100k) has an in-flight refund, so a full-order refund would be
+    // partial; it must abort before any money moves.
     Refund::factory()->create([
         'order_item_id' => $sortedItems[0]->id,
         'status'        => RefundStatusEnum::PENDING,
@@ -370,9 +371,31 @@ it('excludes items with existing non-failed refunds', function (): void {
         iban: 'DE89370400440532013000',
     );
 
-    $refunds = (resolve(RefundOrderAction::class))->handle($order, $data);
+    expect(fn () => (resolve(RefundOrderAction::class))->handle($order, $data))
+        ->toThrow(RefundValidationException::class, __('messages.order.refund.refund_request_exists'));
 
-    // Only item 2 (200k) is refunded
+    expect(Refund::query()->where('status', RefundStatusEnum::COMPLETED->value)->count())->toBe(0);
+});
+
+it('skips a previously refunded item and refunds the remaining item', function (): void {
+    $order = Order::factory()->withCalculatedTotals([
+        ['price' => 100000, 'total' => 100000],
+        ['price' => 200000, 'total' => 200000],
+    ])->create();
+
+    $order->payments()->create([
+        'customer_id' => $order->customer_id,
+        'method'      => PaymentMethodEnum::BANK_TRANSFER,
+        'amount'      => 300000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    $order->items->each->update(['status' => OrderItemStatusEnum::COMPLETED]);
+    $sortedItems = $order->items->sortBy('price')->values();
+    $sortedItems[0]->update(['status' => OrderItemStatusEnum::REFUNDED]);
+
+    $refunds = (resolve(RefundOrderAction::class))->handle($order, new RefundOrderData());
+
     expect($refunds)->toHaveCount(1)
         ->and($refunds->first()->order_item_id)->toBe($sortedItems[1]->id);
 });
