@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
+use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Enrollment;
@@ -49,7 +50,13 @@ final class ValidateNoDuplicatePurchasesAction
 
         $existingEnrollments = Enrollment::query()
             ->where('customer_id', $customer->id)
-            ->whereIn('enrollment_status', EnrollmentStatusEnum::occupyingStatuses())
+            ->where(function ($query): void {
+                $query->whereIn('enrollment_status', EnrollmentStatusEnum::occupyingStatuses())
+                    ->orWhereIn('revocation_status', array_map(
+                        fn (EnrollmentRevocationStatusEnum $status): string => $status->value,
+                        EnrollmentRevocationStatusEnum::blockingStatuses(),
+                    ));
+            })
             ->whereHas('productDeliveryOption.product', function ($query) use ($selectedProductables): void {
                 $query->where(function ($productQuery) use ($selectedProductables): void {
                     foreach ($selectedProductables as $productable) {

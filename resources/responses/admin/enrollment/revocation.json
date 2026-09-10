@@ -1,0 +1,15 @@
+{
+    "message": "Enrollment revocation retried.",
+    "data": {
+        "enrollment_id": 42,
+        "uuid": "01a07b30-3c69-719c-8c81-cda76a3b2575",
+        "enrollment_status": {
+            "value": "suspended",
+            "label": "Suspended"
+        },
+        "revocation_status": {
+            "value": "pending",
+            "label": "Pending"
+        }
+    }
+}

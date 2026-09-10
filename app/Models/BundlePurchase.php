@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\BundlePurchaseStatusEnum;
+use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 final class BundlePurchase extends Model
 {
@@ -44,12 +46,13 @@ final class BundlePurchase extends Model
      * Derived aggregate status of the whole Bundle Purchase.
      *
      * Deterministic function of the owning Order's payment state and every
-     * component OrderItem's status, its Enrollment's lifecycle status, and the
-     * Enrollment's aggregate provisioning health. `refunded` is reachable once
-     * every component item is refunded on a paid order; `revocation_pending`
-     * is reserved for the upcoming Bundle refund/revocation flow and has no
-     * reachable trigger yet. A suspended Enrollment keeps its seat but does
-     * not grant active access, so it is counted as non-active.
+     * component OrderItem's status, its Enrollment's lifecycle status, the
+     * Enrollment's aggregate provisioning health, and — once refunded — the
+     * per-component revocation state. `revocation_pending` is returned while at
+     * least one refunded component's provider access is not yet revoked;
+     * `refunded` requires every required revocation to have succeeded. A
+     * suspended Enrollment keeps its seat but does not grant active access, so
+     * it is counted as non-active.
      *
      * @return Attribute<BundlePurchaseStatusEnum, never>
      */
@@ -99,7 +102,9 @@ final class BundlePurchase extends Model
         }
 
         if ($itemStatuses->every(fn ($status): bool => $status === OrderItemStatusEnum::REFUNDED)) {
-            return BundlePurchaseStatusEnum::REFUNDED;
+            return $this->allRevocationsComplete($components)
+                ? BundlePurchaseStatusEnum::REFUNDED
+                : BundlePurchaseStatusEnum::REVOCATION_PENDING;
         }
 
         // Payment received: every component Order Item is COMPLETED and each
@@ -159,9 +164,13 @@ final class BundlePurchase extends Model
         }
 
         if ($inactive === $components->count()) {
-            return $allItemsCancelled
-                ? BundlePurchaseStatusEnum::CANCELLED
-                : BundlePurchaseStatusEnum::REFUNDED;
+            if ($allItemsCancelled) {
+                return BundlePurchaseStatusEnum::CANCELLED;
+            }
+
+            return $this->allRevocationsComplete($components)
+                ? BundlePurchaseStatusEnum::REFUNDED
+                : BundlePurchaseStatusEnum::REVOCATION_PENDING;
         }
 
         if ($pending > 0) {
@@ -181,5 +190,39 @@ final class BundlePurchase extends Model
         }
 
         return BundlePurchaseStatusEnum::PROVISIONING;
+    }
+
+    /**
+     * Whether every refunded component's external provider access is revoked.
+     *
+     * A component without an Enrollment has nothing to revoke; a component
+     * cancelled without a revocation record (ordinary refunds) is complete. Any
+     * pending, failed, or manual revocation keeps the Purchase in
+     * `revocation_pending`, which also keeps Purchase Eligibility blocked.
+     *
+     * @param  Collection<int, OrderItem>  $components
+     */
+    private function allRevocationsComplete(Collection $components): bool
+    {
+        foreach ($components as $component) {
+            $enrollment = $component->enrollment;
+            if (! $enrollment) {
+                continue;
+            }
+
+            if ($enrollment->revocation_status === EnrollmentRevocationStatusEnum::REVOKED) {
+                continue;
+            }
+
+            if ($enrollment->revocation_status    === null
+                && $enrollment->enrollment_status === EnrollmentStatusEnum::CANCELLED
+            ) {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
     }
 }

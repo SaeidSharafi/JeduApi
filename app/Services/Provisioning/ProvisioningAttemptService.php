@@ -131,6 +131,8 @@ final class ProvisioningAttemptService
                 $this->resolveEnrollment($enrollment);
             }
             $enrollment->save();
+
+            $this->settleRevocationAfterProvisioning($enrollment, $lockedAttempt, $isAccessReconciliation);
         });
     }
 
@@ -324,6 +326,36 @@ final class ProvisioningAttemptService
             }
             $enrollment->save();
         });
+    }
+
+    /**
+     * A refunded component may still have had an in-flight provisioning attempt
+     * when its Bundle Purchase was refunded. That attempt can grant provider
+     * access after the refund, so a successful provisioning outcome must either
+     * settle revocation (a cancellation reconciliation already removed access)
+     * or queue the revocation that begin() could not create while the attempt
+     * was active.
+     */
+    private function settleRevocationAfterProvisioning(
+        Enrollment $enrollment,
+        ProvisioningAttempt $attempt,
+        bool $isAccessReconciliation,
+    ): void {
+        if (! $enrollment->hasIncompleteRevocation()) {
+            return;
+        }
+
+        $revocations = app(EnrollmentRevocationService::class);
+
+        if ($isAccessReconciliation
+            && data_get($attempt->failure_metadata, 'requested_status') === EnrollmentStatusEnum::CANCELLED->value
+        ) {
+            $revocations->syncFromReconciliation($enrollment);
+
+            return;
+        }
+
+        $revocations->dispatchAttempts($revocations->retry($enrollment));
     }
 
     /** @param  array<string, mixed>  $references */

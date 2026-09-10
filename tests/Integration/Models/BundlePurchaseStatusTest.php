@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\BundlePurchaseStatusEnum;
+use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
@@ -20,7 +21,7 @@ use function Pest\Laravel\assertDatabaseCount;
 
 covers(BundlePurchase::class);
 
-/** @param  array<int, array{status: OrderItemStatusEnum, enrollment_status?: EnrollmentStatusEnum, provisioning_status?: ProvisioningStatusEnum, no_enrollment?: bool}>  $components */
+/** @param  array<int, array{status: OrderItemStatusEnum, enrollment_status?: EnrollmentStatusEnum, provisioning_status?: ProvisioningStatusEnum, revocation_status?: EnrollmentRevocationStatusEnum, no_enrollment?: bool}>  $components */
 function bundlePurchaseWithComponents(array $components, bool $paid = true, bool $orderCancelled = false): BundlePurchase
 {
     $customer = User::factory()->create();
@@ -69,6 +70,7 @@ function bundlePurchaseWithComponents(array $components, bool $paid = true, bool
             'enrollment_status'          => ($config['enrollment_status'] ?? EnrollmentStatusEnum::ACTIVE)->value,
         ])->update([
             'provisioning_status' => ($config['provisioning_status'] ?? ProvisioningStatusEnum::HEALTHY)->value,
+            'revocation_status'   => ($config['revocation_status'] ?? null)?->value,
         ]);
     }
 
@@ -276,14 +278,57 @@ it('derives failed for a single failed component after payment', function (): vo
 
     expect($purchase->status)->toBe(BundlePurchaseStatusEnum::FAILED);
 });
+
+it('derives revocation_pending while a refunded component is not yet revoked', function (): void {
+    $purchase = bundlePurchaseWithComponents([
+        [
+            'status'            => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::SUSPENDED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::PENDING,
+        ],
+        [
+            'status'            => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::SUSPENDED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED,
+        ],
+    ]);
+
+    expect($purchase->status)->toBe(BundlePurchaseStatusEnum::REVOCATION_PENDING);
+});
+
+it('derives refunded only once every component revocation succeeded', function (): void {
+    $purchase = bundlePurchaseWithComponents([
+        [
+            'status'            => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::CANCELLED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::REVOKED,
+        ],
+        [
+            'status'            => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::CANCELLED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::REVOKED,
+        ],
+    ]);
+
+    expect($purchase->status)->toBe(BundlePurchaseStatusEnum::REFUNDED);
+});
+
+it('keeps revocation_pending when one component is revoked and another still blocked', function (): void {
+    $purchase = bundlePurchaseWithComponents([
+        [
+            'status'            => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::CANCELLED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::REVOKED,
+        ],
+        [
+            'status'            => OrderItemStatusEnum::REFUNDED, 'enrollment_status' => EnrollmentStatusEnum::SUSPENDED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::FAILED,
+        ],
+    ]);
+
+    expect($purchase->status)->toBe(BundlePurchaseStatusEnum::REVOCATION_PENDING);
+});
 /*
  * Mutation notes (pest --mutate --parallel):
  * Runs consistently score ~85% on this file. The surviving mutants cluster on
  * the BundlePurchase $fillable array (RemoveArrayItem) and on early-return /
  * disjunct branches whose alternatives produce an identical derived status for
  * every reachable input (e.g. all-REFUNDED is returned both by the dedicated
- * guard and by the inactive-components fallback). The remaining untested
- * mutants are either provably equivalent or belong to the future Bundle
- * refund/revocation flow (revocation_pending), which has no reachable trigger
- * yet. See issue #13 acceptance criteria.
+ * guard and by the inactive-components fallback). See issue #13 acceptance
+ * criteria.
  */

@@ -237,6 +237,12 @@ final class CreateRefundAction
     {
         $order = $orderItem->order;
 
+        if ($orderItem->bundle_purchase_id !== null) {
+            throw ValidationException::withMessages([
+                'order_item_id' => __('messages.order.refund.bundle_component_requires_bundle_refund'),
+            ]);
+        }
+
         if ($order->total_paid <= 0) {
             throw ValidationException::withMessages([
                 'order_item_id' => __('messages.order.refund.no_completed_payments'),

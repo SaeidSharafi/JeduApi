@@ -48,6 +48,24 @@ final class EnrollmentPolicy
         return $user->can(PermissionEnum::ENROLLMENT_WAIVE_PROVISION->value);
     }
 
+    /**
+     * Bundle revocation retry reuses the provisioning-retry permission; it is
+     * the same class of "re-run an external provider operation" work.
+     */
+    public function retryRevocation(Staff $user, Enrollment $enrollment): bool
+    {
+        return $user->can(PermissionEnum::ENROLLMENT_RETRY_PROVISION->value);
+    }
+
+    /**
+     * Manual revocation confirmation reuses the provisioning-waive permission;
+     * both record that staff resolved an external provider operation by hand.
+     */
+    public function confirmRevocation(Staff $user, Enrollment $enrollment): bool
+    {
+        return $user->can(PermissionEnum::ENROLLMENT_WAIVE_PROVISION->value);
+    }
+
     public function viewDiagnostics(Staff $user, Enrollment $enrollment): bool
     {
         return $user->can(PermissionEnum::ENROLLMENT_DIAGNOSTICS_VIEW->value);

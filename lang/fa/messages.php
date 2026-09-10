@@ -179,6 +179,9 @@ return [
             'no_refundable_items'                   => 'هیچ آیتم قابل لغو و بازگشت وجهی در این سفارش وجود ندارد.',
             'gateway_skipped_by_admin_at'           => 'درگاه پرداخت توسط مدیر در تاریخ :date نادیده گرفته شد (تأیید دستی).',
 
+            'bundle_component_requires_bundle_refund' => 'این آیتم جزئی از یک بسته است. لغو و بازگشت وجه آن باید از طریق خود خرید بسته انجام شود.',
+            'bundle_purchase_requires_bundle_refund'  => 'این سفارش شامل خرید بسته است. هر خرید بسته باید از طریق عملیات بازگشت وجه بسته انجام شود.',
+            'bundle_purchase_not_refundable'          => 'این خرید بسته قابل لغو و بازگشت وجه نیست.',
         ],
     ],
     'auth' => [
@@ -394,6 +397,8 @@ return [
         'delivery_no_join_url'    => 'روش ارائه [:method] از پیوند ورود مستقیم (Join URL) پشتیبانی نمی‌کند.',
         'bbb_not_provisioned'     => 'جلسه کلاس مجازی BBB هنوز ایجاد یا آماده نشده است.',
         'skyroom_not_provisioned' => 'اتاق اسکای‌روم هنوز ایجاد یا آماده نشده است.',
+        'revocation_retried'      => 'تلاش مجدد برای لغو دسترسی ثبت‌نام انجام شد.',
+        'revocation_confirmed'    => 'لغو دسترسی ثبت‌نام به‌صورت دستی تأیید شد.',
     ],
 
     'validation' => [
@@ -480,6 +485,7 @@ return [
         'moodle_course_id_missing'      => 'شناسه دوره مودل در جزئیات گزینه تحویل مشخص نشده است.',
         'spotplayer_spot_id_missing'    => 'شناسه دوره اسپات‌پلیر در جزئیات گزینه تحویل یافت نشد.',
         'bbb_meeting_id_missing'        => 'شناسه کلاس BBB در جزئیات گزینه تحویل مشخص نشده است.',
+        'revocation_not_supported'      => 'این سرویس‌دهنده API لغو دسترسی ندارد؛ دسترسی را به‌صورت دستی لغو کنید.',
     ],
 
     'exceptions' => [

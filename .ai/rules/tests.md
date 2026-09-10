@@ -5,9 +5,10 @@ paths:
 
 # Tests
 
-## Always run the test suite with --parallel
-Never run `sail artisan test` without `--parallel`. Use `vendor/bin/sail artisan test --compact --parallel` for the full suite and for multi-file runs. Keep piping through `tail` to limit output if desired, but the --parallel flag is mandatory — single-file runs may omit it when parallelism offers nothing.
-Never run multiple Pest commands concurrently; use one combined `--parallel` command or run commands sequentially.
+## Always run every Pest command with --parallel
+Never run `sail artisan test` or `sail bin pest` without `--parallel`, including single-file scopes. Use `vendor/bin/sail artisan test --compact --parallel` for the full suite and `vendor/bin/sail bin pest <scope> --parallel` for focused runs. Keep piping through `tail` to limit output if desired.
+
+Run exactly one Pest command at a time. Interleaving or sequentially stacking Pest invocations corrupts the per-process `testing_test_*` databases; wait for each command to finish before starting the next. If the databases do get corrupted, reset them with `vendor/bin/sail down -v` followed by `vendor/bin/sail up -d`.
 
 ## Mutation-test new behavior
 Mutation testing does not require a special kind of test. Write ordinary Pest behavior tests with meaningful setup and assertions, then declare which production code the file tests with `covers()` or `mutates()`:
@@ -28,4 +29,4 @@ For every newly written or materially changed feature test, run the normal focus
 
 `vendor/bin/sail bin pest <same-test-scope> --mutate --parallel --min=100`
 
-If the scope is a single test file and parallelism offers no benefit, `--parallel` may be omitted. Pest reports mutations as tested, untested, or uncovered. Strengthen the behavior tests until every meaningful mutation is killed—especially mutations that remove a branch, alter a comparison, change a returned value, or skip a side effect. A surviving mutant may be left only when it is demonstrably equivalent or intentionally outside the contract, and the reason must be recorded beside the test or in the ticket. Do not hide surviving mutants by excluding broad classes or lowering the minimum score.
+Always pass `--parallel` for mutation runs, including single-file scopes. Pest reports mutations as tested, untested, or uncovered. Strengthen the behavior tests until every meaningful mutation is killed—especially mutations that remove a branch, alter a comparison, change a returned value, or skip a side effect. A surviving mutant may be left only when it is demonstrably equivalent or intentionally outside the contract, and the reason must be recorded beside the test or in the ticket. Do not hide surviving mutants by excluding broad classes or lowering the minimum score.

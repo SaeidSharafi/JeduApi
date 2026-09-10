@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
@@ -144,4 +145,32 @@ it('keeps eligibility blocked until access revocation is complete', function (En
     'active access'               => [EnrollmentStatusEnum::ACTIVE, false],
     'suspended/incomplete revoke' => [EnrollmentStatusEnum::SUSPENDED, false],
     'cancelled/complete revoke'   => [EnrollmentStatusEnum::CANCELLED, true],
+]);
+
+it('keeps eligibility blocked after a refund until every required revocation succeeded', function (?EnrollmentRevocationStatusEnum $revocation, bool $eligible): void {
+    $customer = User::factory()->create();
+    [$owned]  = makeEligibilityOptionsFor(Course::factory()->create(), ProductableEnum::COURSE);
+    Enrollment::factory()->create([
+        'customer_id'                => $customer->id,
+        'product_delivery_option_id' => $owned->id,
+        'enrollment_status'          => EnrollmentStatusEnum::CANCELLED,
+        'revocation_status'          => $revocation,
+    ]);
+
+    $check = fn () => resolve(ValidateNoDuplicatePurchasesAction::class)->handle($customer, collect([$owned]));
+
+    if ($eligible) {
+        $check();
+        expect(true)->toBeTrue();
+
+        return;
+    }
+
+    expect($check)->toThrow(ValidationException::class);
+})->with([
+    'revocation pending'   => [EnrollmentRevocationStatusEnum::PENDING, false],
+    'revocation failed'    => [EnrollmentRevocationStatusEnum::FAILED, false],
+    'revocation manual'    => [EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED, false],
+    'revocation complete'  => [EnrollmentRevocationStatusEnum::REVOKED, true],
+    'no revocation needed' => [null, true],
 ]);

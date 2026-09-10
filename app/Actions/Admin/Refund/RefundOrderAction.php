@@ -202,6 +202,10 @@ final class RefundOrderAction
      */
     private function getRefundableItems(Order $order): Collection
     {
+        if ($order->items()->whereNotNull('bundle_purchase_id')->exists()) {
+            throw new RefundValidationException(__('messages.order.refund.bundle_purchase_requires_bundle_refund'));
+        }
+
         $refundableItems = $order->items()
             ->whereNotIn('status', [OrderItemStatusEnum::REFUNDED, OrderItemStatusEnum::CANCELLED])
             ->whereDoesntHave('refunds', fn ($q) => $q->where('status', '!=', RefundStatusEnum::FAILED))

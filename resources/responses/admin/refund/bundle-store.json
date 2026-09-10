@@ -1,0 +1,53 @@
+{
+    "message": "Operation successful.",
+    "data": {
+        "bundle_purchase_id": 12,
+        "bundle_name": "Career Bundle",
+        "sku": "BUNDLE-CAREER-1",
+        "base_value": 2000000,
+        "paid_amount": 1500000,
+        "policy_deduction_amount": 200000,
+        "effective_deduction_amount": 200000,
+        "refund_amount": 1300000,
+        "status": {
+            "value": "revocation_pending",
+            "label": "Revocation Pending"
+        },
+        "components": [
+            {
+                "order_item_id": 501,
+                "product_delivery_option_id": 87,
+                "name": "Advanced Java",
+                "sku": "PDO-JAVA-ADV",
+                "base_price": 1200000,
+                "paid_amount": 1500000,
+                "policy_deduction_amount": 120000,
+                "effective_deduction_amount": 200000,
+                "redistributed_amount": 80000,
+                "refund_amount": 1300000,
+                "refund_id": 903,
+                "revocation_status": {
+                    "value": "pending",
+                    "label": "Pending"
+                }
+            },
+            {
+                "order_item_id": 502,
+                "product_delivery_option_id": 91,
+                "name": "Intro to Databases",
+                "sku": "PDO-DB-INTRO",
+                "base_price": 800000,
+                "paid_amount": 0,
+                "policy_deduction_amount": 80000,
+                "effective_deduction_amount": 0,
+                "redistributed_amount": -80000,
+                "refund_amount": 0,
+                "refund_id": 904,
+                "revocation_status": {
+                    "value": "manual_action_required",
+                    "label": "Manual Action Required"
+                }
+            }
+        ]
+    }
+}

@@ -381,6 +381,7 @@
   - provisioning_data (JSONB nullable) — per-provider execution payload with canonical references
   - provisioning_plan (JSONB not null, default version 1 empty provider plan) — canonical versioned applicability/readiness snapshot
   - provisioning_status (VARCHAR, default `healthy`, indexed) — aggregate provisioning health (`ready`, `in_progress`, `healthy`, `degraded`, `manual_action_required`)
+  - revocation_status (VARCHAR nullable, indexed) — external access revocation lifecycle (`pending`, `failed`, `manual_action_required`, `revoked`); null when no revocation was ever required
   - notes (TEXT nullable)
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: UNIQUE(uuid), INDEX(uuid)
