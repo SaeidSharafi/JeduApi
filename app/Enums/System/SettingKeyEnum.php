@@ -19,6 +19,8 @@ enum SettingKeyEnum: string
     case BIG_BLUE_BUTTON  = 'big_blue_button';
     case SPOT_PLAYER      = 'spot_player';
     case SKYROOM          = 'skyroom';
+    case NILIROOM         = 'niliroom';
+    case SMS_IPPANEL      = 'sms.ippanel';
 
     case MELLAT        = 'payment.mellat';
     case WALLET        = 'payment.wallet';
@@ -26,7 +28,12 @@ enum SettingKeyEnum: string
     case DIGIPAY       = 'payment.digipay';
 
     /**
-     * Secret sub-fields that must be encrypted at rest for each integration key.
+     * Secret sub-fields for each setting key.
+     *
+     * This is the single registry for secret handling: every key named here is
+     * encrypted when written through SettingsService, decrypted on read, redacted
+     * in responses and audit logs via SettingSecretRedactor, and excluded from the
+     * admin settings media skip list.
      *
      * @return list<string>
      */
@@ -38,9 +45,19 @@ enum SettingKeyEnum: string
             self::BIG_BLUE_BUTTON => ['secret', 'default_attendee_password', 'default_moderator_password'],
             self::SPOT_PLAYER     => ['api_key'],
             self::SKYROOM         => ['api_key', 'secret'],
+            self::NILIROOM        => ['api_token'],
+            self::SMS_IPPANEL     => ['api_key'],
             self::MELLAT          => ['password'],
             self::DIGIPAY         => ['client_secret', 'password'],
             default               => [],
         };
+    }
+
+    /**
+     * Whether this key carries any encrypted secret fields.
+     */
+    public function hasSecrets(): bool
+    {
+        return $this->secretFields() !== [];
     }
 }

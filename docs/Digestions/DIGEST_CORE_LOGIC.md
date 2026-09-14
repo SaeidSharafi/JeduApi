@@ -610,12 +610,12 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Mechanism:** Resolves each `PaymentMethodEnum` with a `settingKey()` against `SettingsService`, falling back to `PaymentMethodEnum::defaultConfig()` (reads from `config/payments.php`) when no stored settings exist.
 
 ### SettingSecretRedactor (`app/Services/SettingSecretRedactor.php`)
-- **Purpose:** Redacts secret field values from integration setting arrays before API responses and audit logging
+- **Purpose:** Redacts secret field values from setting arrays before API responses and audit logging. The field list is built once per process from `SettingKeyEnum::secretFields()` — the single registry of secret-bearing keys — so a key cannot be registered without also being redacted.
 - **Methods:**
-  - `redact(string $settingKey, mixed $value): mixed`: Replaces known secret field values with `***REDACTED***`
-  - `hasSecrets(string $settingKey): bool`: Whether a setting key has any secret fields
-- **Secret fields per key:** IMS (`api_key`), Moodle (`token`, `auth_userkey_token`), BBB (`secret`, `default_attendee_password`, `default_moderator_password`), SpotPlayer (`api_key`)
-- **Usage:** Applied in `SettingData::fromModel()`, `SettingsService::auditIntegrationWrite()`, and during `set()` for placeholder detection
+  - `redact(string $settingKey, mixed $value): mixed`: Replaces known secret field values with `***REDACTED***`. Top-level fields only: a secret nested inside another object is not reached.
+  - `hasSecrets(string $settingKey): bool`: Whether a setting key has any registered secret fields
+- **Registered secret fields:** IMS (`api_key`), Moodle (`token`, `auth_userkey_token`), BBB (`secret`, `default_attendee_password`, `default_moderator_password`), SpotPlayer (`api_key`), Skyroom (`api_key`, `secret`), Niliroom (`api_token`), SMS IPPanel (`api_key`), plus the pre-existing Mellat (`password`) and Digipay (`client_secret`, `password`) declarations.
+- **Usage:** Applied in `SettingData::fromModel()` (the admin settings read path), in `SettingsService::auditIntegrationWrite()`, and during `set()` for placeholder detection. Runtime consumers that need the real credential call `SettingsService::get()` directly and must never let the value reach a response.
 
 ### Integration Services (`app/Services/Integrations/`)
 
@@ -899,13 +899,14 @@ Administrative status and access-date changes reconcile deliberately with applic
 ### SettingsService (`app/Services/SettingsService.php`)
 - **Purpose:** SmartCache-backed facade over `Setting` models powering CMS content payloads and integration credentials
 - **Public Methods:**
-  - `get(SettingKeyEnum $key, mixed $default = null): mixed`: Reads a single setting from cached collection. Skips `witImages()` for integration keys (SKIP_MEDIA optimization — IMS, Moodle, BBB, SpotPlayer) to avoid unnecessary media queries. Automatically tries decryption of registered secret fields via `Crypt::decryptString()` on read.
-  - `set(SettingKeyEnum $key, mixed $value): bool`: Persists value. Encrypts registered secret fields via `Crypt::encryptString()` before write. Preserves existing secrets when `***REDACTED***` placeholder is sent. Creates audit log entries for integration key writes via `SettingSecretRedactor`.
+  - `get(SettingKeyEnum $key, mixed $default = null): mixed`: Reads a single setting from cached collection. Skips `witImages()` for the integration keys (listed in `INTEGRATION_KEYS`) to avoid unnecessary media queries — payment gateways are excluded so their `icon` still hydrates into `MediaData`. Automatically tries decryption of registered secret fields via `Crypt::decryptString()` on read.
+  - `set(SettingKeyEnum $key, mixed $value, string $type = 'json', ?string $group = null): Setting`: Persists value. Encrypts registered secret fields via `Crypt::encryptString()` before write. Preserves existing secrets when `***REDACTED***` placeholder is sent. Creates audit log entries for secret-bearing key writes via `SettingSecretRedactor`.
   - `forget(): void`: Exposes cache invalidation hook used by observers/actions to refresh settings payloads
-- **SKIP_MEDIA Optimization:** Four integration keys (IMS, Moodle, BBB, SpotPlayer) skip `witImages()` media hydration since they store credentials, not content with media references
+- **INTEGRATION_KEYS:** IMS, Moodle, BBB, SpotPlayer, Skyroom, Niliroom and the SMS IPPanel gateway skip `witImages()` media hydration, because they store credentials rather than content with media references. The list is explicit: deriving it from the secret registry would also skip media for Mellat/Digipay, whose top-level `icon` the payment-gateway endpoints still hydrate.
 - **Encryption on Write:** Secret fields defined by `SettingKeyEnum::secretFields()` are encrypted at rest using Laravel's `Crypt::encryptString()`
 - **Decryption on Read:** Encrypted values are transparently decrypted when retrieved via `get()`, with graceful fallback for legacy plaintext
-- **Audit Logging:** Integration setting writes are logged via `AdminActionLog` with secrets redacted, risk level "high"
+- **Audit Logging:** Writes to any secret-bearing key are logged via `AdminActionLog` with secrets redacted, risk level "high" (staff-guard only — unauthenticated writes are not logged)
+- **Known gap:** Mellat/Digipay declare flat secret fields, but the gateway writes them nested under a `config` object and neither `set()`'s encryption nor `SettingSecretRedactor` reaches inside it. Aligning the payment-gateway settings surface with the integration conventions is a separate cleanup.
 - **Implementation Notes:** Caches the full settings collection forever using `SmartCache` keyed by `CacheKeysEnum::Settings`, ensuring single query hydration per deploy cycle
 
 ## Observers, Events & Async Processing
