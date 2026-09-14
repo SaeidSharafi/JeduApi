@@ -1,0 +1,11 @@
+# Centralized spreadsheet import and export
+
+Accepted: administrative spreadsheet operations use a fixed resource registry, shared resource query definitions, and resource-specific import/export contracts. The engine response is resource-agnostic: row lifecycle metadata uses stable engine keys, while selected-resource values and identifiers are nested under each row's `data` field. The first vertical slice is User import/export using `maatwebsite/excel`; XLSX is the initial template/output format while the engine remains capable of CSV. Imports validate synchronously, require explicit approval, commit valid local users atomically, and queue external provider provisioning afterward as independently retryable operations. Approval returns queued provider state; final provider outcomes are read from the Import Run status endpoint. This separates database transaction guarantees from external systems that cannot participate in the same transaction, while preserving a small upload-and-results frontend flow.
+
+## Considered Options
+
+Putting filters separately in list and export controllers would allow the two views to diverge, so both consume the same query definition. Dynamic class resolution from the route was rejected in favor of a fixed registry. A single generic provider contract was rejected for direct reuse because enrollment provisioning and standalone user provisioning have different inputs and lifecycles; import contracts may declare supported provider capabilities, while provider-user operations use their own capability contract. Synchronous provider calls during preview were rejected because previews must have no external side effects. Full atomicity across the database and providers is not possible without distributed transaction support.
+
+## Consequences
+
+Local users have an all-or-nothing commit boundary, but provider outcomes are eventually consistent and tracked per user/provider. Provider operations require idempotency keys, bounded automatic retries, and reconciliation. Import contracts own spreadsheet headings, localized aliases, normalization, validation, translated enum output, Verta-formatted dates, and safe field allowlists; API DTOs are not reused as spreadsheet schemas. Passwords may be imported as optional local fields but are never exported, audited, or included in result artifacts.

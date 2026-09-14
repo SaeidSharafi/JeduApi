@@ -124,6 +124,24 @@ _Avoid_: suspend, block, deactivate, disable
 Server-side hash of IP address + User-Agent, used to correlate anonymous activity across requests. Not a persistent hardware ID.
 _Avoid_: device ID, hardware fingerprint
 
+### Administrative Data Operations
+
+**Import Run**:
+The tracked administrative operation created from an uploaded spreadsheet, including its preview, approval decision, local commit result, provider outcomes, and downloadable error report.
+_Avoid_: import job, upload session
+
+**Import Preview**:
+The validation result for an uploaded spreadsheet before any local user or provider data is changed. It identifies valid rows, invalid rows, identity conflicts, and requested provider provisioning.
+_Avoid_: dry run, validation-only import
+
+**Provider Provisioning Request**:
+An explicit row-level request to ensure that a user's account exists in a named external learning provider. It is additive: an absent or false request does not remove or disable an external account.
+_Avoid_: provider enablement, provider sync
+
+**Spreadsheet Template**:
+The XLSX example file generated from an import contract, containing the supported headings, localized aliases, optional fields, provider request columns, and example values.
+_Avoid_: sample upload, import example
+
 ### Inbound Requests
 
 **Contact Request**:
