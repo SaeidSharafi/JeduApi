@@ -28,7 +28,7 @@ describe('OrderStatusUpdateListener', function (): void {
             'enabled' => true, 'endpoint' => 'https://spot.test', 'api_key' => 'spot-key',
         ], 'json', 'integrations');
         Setting::setValue(SettingKeyEnum::MOODLE, [
-            'enabled' => true, 'base_url' => 'https://moodle.test', 'token' => 'moodle-key',
+            'enabled' => true, 'base_url' => 'https://moodle.test', 'token' => 'moodle-key', 'auth_userkey_token' => 'moodle-login-key',
         ], 'json', 'integrations');
         Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, [
             'enabled' => true, 'base_url' => 'https://bbb.test', 'secret' => 'bbb-key',

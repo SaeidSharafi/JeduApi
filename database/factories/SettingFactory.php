@@ -88,6 +88,7 @@ final class SettingFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'key'   => 'spot_player',
             'value' => [
+                'enabled'  => false,
                 'endpoint' => 'https://panel.spotplayer.ir/license/edit/',
                 'api_key'  => 'spotplayer-api-key-secret',
                 'sandbox'  => false,

@@ -65,7 +65,7 @@ return [
     ],
 
     'spotplayer' => [
-        'enabled'  => env('SPOTPER_ENABLED', false),
+        'enabled'  => env('SPOTPLAYER_ENABLED', false),
         'endpoint' => env('SPOTPLAYER_ENDPOINT', 'https://panel.spotplayer.ir/license/edit/'),
         'api_key'  => env('SPOTPLAYER_API_KEY'),
         'sandbox'  => (bool) env('SPOTPLAYER_SANDBOX', false),

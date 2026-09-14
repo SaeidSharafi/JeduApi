@@ -16,11 +16,11 @@ beforeEach(function (): void {
     $settings->shouldReceive('get')
         ->with(SettingKeyEnum::BIG_BLUE_BUTTON, Mockery::any())
         ->andReturn([
-            'base_url'             => 'https://bbb.test',
-            'secret'               => 'secret',
-            'api_path'             => '/bigbluebutton/api',
-            'default_attendee_pw'  => 'ap-default',
-            'default_moderator_pw' => 'mp-default',
+            'base_url'                   => 'https://bbb.test',
+            'secret'                     => 'secret',
+            'api_path'                   => '/bigbluebutton/api',
+            'default_attendee_password'  => 'ap-default',
+            'default_moderator_password' => 'mp-default',
         ]);
 
     $this->service = app(BbbService::class);
@@ -51,6 +51,33 @@ it('throws when create meeting request fails', function (): void {
 
     expect(fn () => $this->service->createMeeting('MEET-100', 'Physics 101', 'ap', 'mp'))
         ->toThrow(RecoverableProvisioningException::class, 'BBB create meeting request failed.');
+});
+
+it('builds a join url carrying the configured attendee password when none is given', function (): void {
+    $url = $this->service->buildJoinUrl('MEET-100', 'Student One');
+
+    parse_str((string) parse_url($url, PHP_URL_QUERY), $params);
+
+    expect($params['meetingID'])->toBe('MEET-100')
+        ->and($params['fullName'])->toBe('Student One')
+        ->and($params['password'])->toBe('ap-default')
+        ->and($params['checksum'])->not->toBeEmpty();
+});
+
+it('uses the configured attendee and moderator passwords when none are given to createMeeting', function (): void {
+    Http::fake([
+        'https://bbb.test/*' => Http::response([], 200),
+    ]);
+
+    $this->service->createMeeting('MEET-100', 'Physics 101');
+
+    Http::assertSent(function ($request): bool {
+        $payload = $request->data();
+
+        return str_contains($request->url(), 'https://bbb.test/bigbluebutton/api/create')
+            && ($payload['attendeePW'] ?? null)  === 'ap-default'
+            && ($payload['moderatorPW'] ?? null) === 'mp-default';
+    });
 });
 
 it('throws when service used before configuration', function (): void {

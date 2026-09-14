@@ -114,6 +114,28 @@ _Avoid_: meeting, BBB room
 The provider-side conference room for a Skyroom seminar, created manually in the Skyroom panel and referenced by its numeric ID stored in the delivery option's details (`room_id`). Never created via API.
 _Avoid_: session, conference
 
+### Providers & Integrations
+
+**Provisioning Provider**:
+An external system that a customer's or teacher's access is delivered through: IMS, Moodle, SpotPlayer, and the live-session panels BBB, Skyroom, and Niliroom. Niliroom is the panel behind BBB live sessions, and Moodle Quiz is served by the Moodle configuration rather than being a Provisioning Provider of its own.
+_Avoid_: enrollment provider, integration, gateway
+
+**SMS Gateway**:
+The external provider that delivers transactional SMS (IPPanel today). One gateway serves every SMS Notification Option, and switching it off stops all sending.
+_Avoid_: SMS provider, SMS service
+
+**SMS Notification Option**:
+One transactional SMS the platform can send — a login code, a refund confirmation, an order-paid notice, an enrollment-ready notice, a wallet-credit notice — each with its own enabled switch and pattern code.
+_Avoid_: SMS template, SMS type
+
+**Moodle Login Token**:
+A Moodle web-service token whose only permission is to request a customer's login URL. Never interchangeable with the Moodle Service Token.
+_Avoid_: SSO token, auth token
+
+**Moodle Service Token**:
+The Moodle web-service token used for administrative calls (users, courses, enrolments). It carries far wider access than the Moodle Login Token and must not be used to log customers in.
+_Avoid_: admin token, API token
+
 ### Account Security
 
 **Ban**:
