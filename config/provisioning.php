@@ -13,9 +13,10 @@ return [
     | used when no database setting row exists yet, so a never-saved provider
     | still renders a complete form. A stored setting wins field by field.
     |
-    | The environment names are unchanged from the runtime `services.*` blocks,
-    | so existing deployments keep working and the provider adapters keep
-    | resolving the same values.
+    | The environment names mirror the runtime `services.*` blocks wherever an
+    | adapter reads them, so existing deployments keep working and the provider
+    | adapters keep resolving the same values. Niliroom's names are new because
+    | it is settings-only until its adapter lands.
     |
     */
 
@@ -43,6 +44,18 @@ return [
             'api_key'  => env('SPOTPLAYER_API_KEY'),
             'sandbox'  => (bool) env('SPOTPLAYER_SANDBOX', false),
             'timeout'  => (int) env('SPOTPLAYER_TIMEOUT', 15),
+        ],
+
+        'skyroom' => [
+            'enabled'  => (bool) env('SKYROOM_ENABLED', false),
+            'base_url' => env('SKYROOM_BASE_URL', 'https://www.skyroom.online/skyroom/api'),
+            'api_key'  => env('SKYROOM_API_KEY'),
+        ],
+
+        'niliroom' => [
+            'enabled'   => (bool) env('NILIROOM_ENABLED', false),
+            'base_url'  => env('NILIROOM_BASE_URL'),
+            'api_token' => env('NILIROOM_API_TOKEN'),
         ],
     ],
 

@@ -28,13 +28,7 @@ final class SpotPlayerProviderSettingData extends ProvisioningProviderSettingDat
     {
         return [
             'general' => [
-                [
-                    'key'      => 'enabled',
-                    'type'     => 'boolean',
-                    'label'    => __('provisioning.fields.enabled'),
-                    'required' => true,
-                    'default'  => false,
-                ],
+                self::enabledField(),
                 [
                     'key'      => 'sandbox',
                     'type'     => 'boolean',
@@ -74,7 +68,7 @@ final class SpotPlayerProviderSettingData extends ProvisioningProviderSettingDat
     public static function rules(): array
     {
         return [
-            'enabled'  => ['required', 'boolean'],
+            'enabled'  => self::enabledRule(),
             'endpoint' => ['nullable', 'url'],
             'api_key'  => ['nullable', 'string'],
             'sandbox'  => ['nullable', 'boolean'],

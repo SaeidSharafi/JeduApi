@@ -176,6 +176,86 @@
         "sandbox": false,
         "timeout": 15
       }
+    },
+    {
+      "key": "skyroom",
+      "label": "اسکای‌روم",
+      "state": {
+        "enabled": false,
+        "configured": true,
+        "ready": false
+      },
+      "schema": {
+        "general": [
+          {
+            "key": "enabled",
+            "type": "boolean",
+            "label": "فعال",
+            "required": true,
+            "default": false
+          }
+        ],
+        "connection": [
+          {
+            "key": "base_url",
+            "type": "url",
+            "label": "آدرس سرویس",
+            "required": false
+          },
+          {
+            "key": "api_key",
+            "type": "password",
+            "label": "کلید API",
+            "required": true,
+            "sensitive": true
+          }
+        ]
+      },
+      "settings": {
+        "enabled": false,
+        "base_url": "https://www.skyroom.online/skyroom/api",
+        "api_key": "***REDACTED***"
+      }
+    },
+    {
+      "key": "niliroom",
+      "label": "نیلی‌روم",
+      "state": {
+        "enabled": false,
+        "configured": true,
+        "ready": false
+      },
+      "schema": {
+        "general": [
+          {
+            "key": "enabled",
+            "type": "boolean",
+            "label": "فعال",
+            "required": true,
+            "default": false
+          }
+        ],
+        "connection": [
+          {
+            "key": "base_url",
+            "type": "url",
+            "label": "آدرس سرویس",
+            "required": true
+          },
+          {
+            "key": "api_token",
+            "type": "password",
+            "label": "توکن API",
+            "required": true,
+            "sensitive": true
+          }
+        ]
+      },
+      "settings": {
+        "enabled": false,
+        "base_url": "https://niliroom.example.ir",
+        "api_token": "***REDACTED***"
+      }
     }
   ],
   "metadata": []

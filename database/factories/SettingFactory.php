@@ -122,6 +122,44 @@ final class SettingFactory extends Factory
     }
 
     /**
+     * Create a Skyroom integration setting with a plaintext api_key.
+     *
+     * Carries the legacy `secret` credential the panel does not expose, so a
+     * save can be asserted to preserve it.
+     */
+    public function skyroom(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'skyroom',
+            'value' => [
+                'enabled'  => true,
+                'base_url' => 'https://skyroom.example.com',
+                'api_key'  => 'skyroom-api-key',
+                'secret'   => 'skyroom-secret',
+            ],
+            'type'  => 'json',
+            'group' => 'integrations',
+        ]);
+    }
+
+    /**
+     * Create a Niliroom integration setting with a plaintext api_token.
+     */
+    public function niliroom(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'niliroom',
+            'value' => [
+                'enabled'   => true,
+                'base_url'  => 'https://niliroom.example.com',
+                'api_token' => 'niliroom-api-token',
+            ],
+            'type'  => 'json',
+            'group' => 'integrations',
+        ]);
+    }
+
+    /**
      * Create an SMS IPPanel gateway setting with an encrypted api_key.
      */
     public function smsIppanel(): static

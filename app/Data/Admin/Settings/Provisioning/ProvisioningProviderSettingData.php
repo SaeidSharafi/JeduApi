@@ -108,4 +108,30 @@ abstract class ProvisioningProviderSettingData extends Data
 
         return $payload;
     }
+
+    /**
+     * The enable switch every provider form opens with.
+     *
+     * @return array<string, mixed>
+     */
+    protected static function enabledField(): array
+    {
+        return [
+            'key'      => 'enabled',
+            'type'     => 'boolean',
+            'label'    => __('provisioning.fields.enabled'),
+            'required' => true,
+            'default'  => false,
+        ];
+    }
+
+    /**
+     * The validation rule for the enable switch.
+     *
+     * @return list<string>
+     */
+    protected static function enabledRule(): array
+    {
+        return ['required', 'boolean'];
+    }
 }

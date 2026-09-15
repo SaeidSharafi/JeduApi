@@ -33,13 +33,7 @@ final class MoodleProviderSettingData extends ProvisioningProviderSettingData
     {
         return [
             'general' => [
-                [
-                    'key'      => 'enabled',
-                    'type'     => 'boolean',
-                    'label'    => __('provisioning.fields.enabled'),
-                    'required' => true,
-                    'default'  => false,
-                ],
+                self::enabledField(),
                 [
                     'key'      => 'default_role_id',
                     'type'     => 'number',
@@ -93,7 +87,7 @@ final class MoodleProviderSettingData extends ProvisioningProviderSettingData
     public static function rules(): array
     {
         return [
-            'enabled'                       => ['required', 'boolean'],
+            'enabled'                       => self::enabledRule(),
             'base_url'                      => ['nullable', 'url'],
             'token'                         => ['nullable', 'string'],
             'auth_userkey_token'            => ['nullable', 'string'],

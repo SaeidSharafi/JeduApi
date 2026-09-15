@@ -5,7 +5,9 @@ declare(strict_types=1);
 use App\Actions\Admin\Settings\Provisioning\BuildProvisioningProviderSettingAction;
 use App\Data\Admin\Settings\Provisioning\ImsProviderSettingData;
 use App\Data\Admin\Settings\Provisioning\MoodleProviderSettingData;
+use App\Data\Admin\Settings\Provisioning\NiliroomProviderSettingData;
 use App\Data\Admin\Settings\Provisioning\ProvisioningProviderSettingData;
+use App\Data\Admin\Settings\Provisioning\SkyroomProviderSettingData;
 use App\Data\Admin\Settings\Provisioning\SpotPlayerProviderSettingData;
 use App\Enums\Provisioning\ProvisioningProviderSettingsEnum;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
@@ -20,6 +22,8 @@ covers(
     ImsProviderSettingData::class,
     MoodleProviderSettingData::class,
     SpotPlayerProviderSettingData::class,
+    SkyroomProviderSettingData::class,
+    NiliroomProviderSettingData::class,
 );
 
 dataset('provider configurations', ['complete', 'incomplete', 'disabled but complete']);
@@ -48,12 +52,24 @@ function providerAgreementValues(ProvisioningProviderSettingsEnum $provider, str
             'endpoint' => 'https://panel.spotplayer.ir/license/edit/',
             'api_key'  => 'spotplayer-key',
         ],
+        ProvisioningProviderSettingsEnum::SKYROOM => [
+            'api_key' => 'skyroom-key',
+        ],
+        ProvisioningProviderSettingsEnum::NILIROOM => [
+            'base_url'  => 'https://niliroom.test',
+            'api_token' => 'niliroom-token',
+        ],
     };
 
+    // The behaviour fields the schema declares, so the stored rows match what
+    // the panel would write for providers that have them (Skyroom and Niliroom
+    // declare no timeout).
+    $behaviour = array_key_exists('timeout', $provider->defaultConfig()) ? ['timeout' => 15] : [];
+
     return match ($kind) {
-        'complete'   => ['enabled' => true]  + $required + ['timeout' => 15],
+        'complete'   => ['enabled' => true]  + $required + $behaviour,
         'incomplete' => ['enabled' => true]  + array_map(static fn (): string => '', $required),
-        default      => ['enabled' => false] + $required + ['timeout' => 15],
+        default      => ['enabled' => false] + $required + $behaviour,
     };
 }
 
@@ -83,8 +99,18 @@ it('agrees with each provider adapter', function (string $kind): void {
 
         $state = app(BuildProvisioningProviderSettingAction::class)->handle($provider)['state'];
 
+        $serviceClass = $provider->serviceClass();
+
+        if ($serviceClass === null) {
+            // Settings-only provider (Niliroom): no adapter exists yet, so there
+            // is nothing to agree with beyond `ready = enabled && configured`.
+            expect($state['ready'])->toBe($state['enabled'] && $state['configured']);
+
+            continue;
+        }
+
         /** @var AbstractIntegrationService $service */
-        $service = app($provider->serviceClass());
+        $service = app($serviceClass);
 
         $adapterConfigured = true;
 

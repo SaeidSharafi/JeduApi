@@ -13,6 +13,12 @@ return [
         'spotplayer' => [
             'label' => 'اسپات‌پلیر',
         ],
+        'skyroom' => [
+            'label' => 'اسکای‌روم',
+        ],
+        'niliroom' => [
+            'label' => 'نیلی‌روم',
+        ],
     ],
 
     'fields' => [
@@ -20,6 +26,7 @@ return [
         'base_url'                      => 'آدرس سرویس',
         'endpoint'                      => 'آدرس سرویس',
         'api_key'                       => 'کلید API',
+        'api_token'                     => 'توکن API',
         'service_token'                 => 'توکن سرویس',
         'login_token'                   => 'توکن ورود',
         'default_role_id'               => 'شناسه نقش پیش‌فرض',

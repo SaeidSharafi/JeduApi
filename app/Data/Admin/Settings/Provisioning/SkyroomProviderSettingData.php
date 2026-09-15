@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace App\Data\Admin\Settings\Provisioning;
 
 /**
- * The flat IMS provider settings the panel edits.
+ * The flat Skyroom provider settings the panel edits.
  *
- * Required fields follow the adapter's own readiness check: an enabled IMS
- * provider needs both a base URL and an API key, while a disabled one may be
- * staged with empty connection fields.
+ * The base URL is optional and falls back to the shipped Skyroom API endpoint;
+ * the API key alone decides whether the provider is configured, which is exactly
+ * what `SkyroomService::validateConfig()` checks.
  */
-final class ImsProviderSettingData extends ProvisioningProviderSettingData
+final class SkyroomProviderSettingData extends ProvisioningProviderSettingData
 {
     public function __construct(
         public bool $enabled,
         public ?string $base_url = null,
         public ?string $api_key = null,
-        public ?int $timeout = null,
     ) {}
 
     /**
@@ -28,20 +27,13 @@ final class ImsProviderSettingData extends ProvisioningProviderSettingData
         return [
             'general' => [
                 self::enabledField(),
-                [
-                    'key'      => 'timeout',
-                    'type'     => 'number',
-                    'label'    => __('provisioning.fields.timeout'),
-                    'required' => false,
-                    'default'  => 15,
-                ],
             ],
             'connection' => [
                 [
                     'key'      => 'base_url',
                     'type'     => 'url',
                     'label'    => __('provisioning.fields.base_url'),
-                    'required' => true,
+                    'required' => false,
                 ],
                 [
                     'key'       => 'api_key',
@@ -63,7 +55,6 @@ final class ImsProviderSettingData extends ProvisioningProviderSettingData
             'enabled'  => self::enabledRule(),
             'base_url' => ['nullable', 'url'],
             'api_key'  => ['nullable', 'string'],
-            'timeout'  => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

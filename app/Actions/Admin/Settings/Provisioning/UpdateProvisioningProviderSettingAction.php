@@ -64,6 +64,15 @@ final class UpdateProvisioningProviderSettingAction
             $effective[$key] = $resolved;
         }
 
+        // Carry over a registered secret the panel does not expose yet (Skyroom
+        // also stores a legacy `secret`), so a save through the panel cannot
+        // silently drop a credential it never showed.
+        foreach ($secretFields as $field) {
+            if (! array_key_exists($field, $settings) && array_key_exists($field, $stored)) {
+                $settings[$field] = $stored[$field];
+            }
+        }
+
         if (($effective['enabled'] ?? false) === true) {
             $this->assertConfiguredWhenEnabled($dataClass, $effective);
         }

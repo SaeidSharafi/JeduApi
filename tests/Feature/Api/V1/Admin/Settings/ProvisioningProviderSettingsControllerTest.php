@@ -6,7 +6,9 @@ use App\Actions\Admin\Settings\Provisioning\BuildProvisioningProviderSettingActi
 use App\Actions\Admin\Settings\Provisioning\UpdateProvisioningProviderSettingAction;
 use App\Data\Admin\Settings\Provisioning\ImsProviderSettingData;
 use App\Data\Admin\Settings\Provisioning\MoodleProviderSettingData;
+use App\Data\Admin\Settings\Provisioning\NiliroomProviderSettingData;
 use App\Data\Admin\Settings\Provisioning\ProvisioningProviderSettingData;
+use App\Data\Admin\Settings\Provisioning\SkyroomProviderSettingData;
 use App\Data\Admin\Settings\Provisioning\SpotPlayerProviderSettingData;
 use App\Enums\PermissionEnum;
 use App\Enums\Provisioning\ProvisioningProviderSettingsEnum;
@@ -26,6 +28,8 @@ covers(
     ImsProviderSettingData::class,
     MoodleProviderSettingData::class,
     SpotPlayerProviderSettingData::class,
+    SkyroomProviderSettingData::class,
+    NiliroomProviderSettingData::class,
 );
 
 function provisioningProviderUrl(string $name, array $parameters = []): string
@@ -59,6 +63,15 @@ function provisioningProviderPayload(string $provider, array $overrides = []): a
             'endpoint' => 'https://spotplayer.test/license/edit/',
             'api_key'  => 'spot-key',
         ],
+        ProvisioningProviderSettingsEnum::SKYROOM->value => [
+            'enabled' => true,
+            'api_key' => 'skyroom-key',
+        ],
+        ProvisioningProviderSettingsEnum::NILIROOM->value => [
+            'enabled'   => true,
+            'base_url'  => 'https://niliroom.test',
+            'api_token' => 'niliroom-token',
+        ],
     };
 
     return array_merge($base, $overrides);
@@ -85,16 +98,22 @@ function provisioningProviderPayload(string $provider, array $overrides = []): a
 |   endpoint URL, and `sandbox` false, which the emptiness check counts as
 |   present), so the computed state cannot change; and every label is already a
 |   string, so dropping the `(string)` cast is a no-op.
-| - Dropping a whole rule entry from a provider's `rules()` (e.g. `api_key`):
-|   spatie/laravel-data then applies the rule it derives from the typed property
-|   (`?string` → `nullable|string`, `bool` → `required|boolean`), so the `422`
-|   contract is unchanged — verified by removing the entry and re-running the
-|   non-string dataset.
-| - Pest also reports a varying number of mutants as timeouts (4 to 24 across runs
-|   of identical production code; this file grew from 50 to 70 HTTP tests). The
-|   changed code has no unbounded loop or recursion, so those are the shared
-|   12-process mutation runner exceeding its per-mutation budget under load, not
-|   uncovered behaviour.
+| - Dropping a whole rule entry from a provider's `rules()` when that entry is
+|   exactly the rule spatie/laravel-data derives from the typed property —
+|   `bool` → `required|boolean`, `?string` → `nullable|string`, `?bool` →
+|   `nullable|boolean`. Every other entry is load-bearing and killed: dropping
+|   `base_url`/`endpoint` loses `url` (caught by the url dataset) and dropping a
+|   `?int` entry loses `min:1` (caught by the minimum dataset). Verified
+|   empirically by removing the `api_key` entry and re-running the non-string
+|   dataset.
+| - `ProvisioningProviderSettingData::normalizePayload()` `continue` → `break`:
+|   in every provider the sensitive fields sit last inside `connection`, after
+|   which only further sensitive fields follow, so breaking out of the walk skips
+|   nothing the sensitive guard would not skip anyway.
+| - Pest also reports a varying number of mutants as timeouts (0 to 24 across runs
+|   of identical production code). The changed code has no unbounded loop or
+|   recursion, so those are the shared 12-process mutation runner exceeding its
+|   per-mutation budget under load, not uncovered behaviour.
 */
 
 describe('index', function (): void {
@@ -105,7 +124,7 @@ describe('index', function (): void {
         $response = $this->getJson(provisioningProviderUrl('index'));
 
         $response->assertOk()
-            ->assertJsonCount(3, 'data')
+            ->assertJsonCount(5, 'data')
             ->assertJsonPath('data.0.key', ProvisioningProviderSettingsEnum::IMS->value)
             ->assertJsonPath('data.0.label', 'IMS')
             ->assertJsonPath('data.0.state', ['enabled' => false, 'configured' => false, 'ready' => false])
@@ -120,6 +139,8 @@ describe('index', function (): void {
             ProvisioningProviderSettingsEnum::IMS->value,
             ProvisioningProviderSettingsEnum::MOODLE->value,
             ProvisioningProviderSettingsEnum::SPOTPLAYER->value,
+            ProvisioningProviderSettingsEnum::SKYROOM->value,
+            ProvisioningProviderSettingsEnum::NILIROOM->value,
         ]);
 
         expect($response->json('data.0.schema'))->toBe([
@@ -267,6 +288,62 @@ describe('index', function (): void {
         expect($response->json('data.2.settings'))->not->toHaveKey('base_url');
     });
 
+    it('returns the skyroom provider with an optional base url and a required sensitive key', function (): void {
+        $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
+        app()->setLocale('fa');
+
+        $response = $this->getJson(provisioningProviderUrl('index'));
+
+        $response->assertOk()
+            ->assertJsonPath('data.3.key', ProvisioningProviderSettingsEnum::SKYROOM->value)
+            ->assertJsonPath('data.3.label', 'اسکای‌روم')
+            ->assertJsonPath('data.3.state', ['enabled' => false, 'configured' => false, 'ready' => false])
+            ->assertJsonPath('data.3.settings', [
+                'enabled'  => false,
+                'base_url' => 'https://www.skyroom.online/skyroom/api',
+                'api_key'  => SettingSecretRedactor::REDACTED,
+            ]);
+
+        expect($response->json('data.3.schema'))->toBe([
+            'general' => [
+                ['key' => 'enabled', 'type' => 'boolean', 'label' => 'فعال', 'required' => true, 'default' => false],
+            ],
+            'connection' => [
+                ['key' => 'base_url', 'type' => 'url', 'label' => 'آدرس سرویس', 'required' => false],
+                ['key' => 'api_key', 'type' => 'password', 'label' => 'کلید API', 'required' => true, 'sensitive' => true],
+            ],
+        ]);
+    });
+
+    it('returns the niliroom provider with its api token, resolving values from configuration', function (): void {
+        $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
+        app()->setLocale('fa');
+        config()->set('provisioning.providers.niliroom.base_url', 'https://niliroom.test');
+        config()->set('provisioning.providers.niliroom.api_token', 'configured-token');
+
+        $response = $this->getJson(provisioningProviderUrl('index'));
+
+        $response->assertOk()
+            ->assertJsonPath('data.4.key', ProvisioningProviderSettingsEnum::NILIROOM->value)
+            ->assertJsonPath('data.4.label', 'نیلی‌روم')
+            ->assertJsonPath('data.4.state', ['enabled' => false, 'configured' => true, 'ready' => false])
+            ->assertJsonPath('data.4.settings', [
+                'enabled'   => false,
+                'base_url'  => 'https://niliroom.test',
+                'api_token' => SettingSecretRedactor::REDACTED,
+            ]);
+
+        expect($response->json('data.4.schema'))->toBe([
+            'general' => [
+                ['key' => 'enabled', 'type' => 'boolean', 'label' => 'فعال', 'required' => true, 'default' => false],
+            ],
+            'connection' => [
+                ['key' => 'base_url', 'type' => 'url', 'label' => 'آدرس سرویس', 'required' => true],
+                ['key' => 'api_token', 'type' => 'password', 'label' => 'توکن API', 'required' => true, 'sensitive' => true],
+            ],
+        ]);
+    });
+
     it('resolves spot player defaults from the seeded row and the provisioning config', function (): void {
         $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
         $this->seed(SettingsSeeder::class);
@@ -306,13 +383,19 @@ describe('index', function (): void {
         $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
         Setting::factory()->moodle()->create();
         Setting::factory()->spotPlayer()->create();
+        Setting::factory()->skyroom()->create();
+        Setting::factory()->niliroom()->create();
 
         $this->getJson(provisioningProviderUrl('index'))
             ->assertOk()
             ->assertJsonPath('data.1.settings.token', SettingSecretRedactor::REDACTED)
             ->assertJsonPath('data.1.settings.auth_userkey_token', SettingSecretRedactor::REDACTED)
             ->assertJsonPath('data.2.settings.api_key', SettingSecretRedactor::REDACTED)
-            ->assertJsonPath('data.2.settings.endpoint', 'https://panel.spotplayer.ir/license/edit/');
+            ->assertJsonPath('data.2.settings.endpoint', 'https://panel.spotplayer.ir/license/edit/')
+            ->assertJsonPath('data.3.settings.api_key', SettingSecretRedactor::REDACTED)
+            ->assertJsonPath('data.3.settings.base_url', 'https://skyroom.example.com')
+            ->assertJsonPath('data.4.settings.api_token', SettingSecretRedactor::REDACTED)
+            ->assertJsonPath('data.4.settings.base_url', 'https://niliroom.example.com');
     });
 
     it('returns 401 when unauthenticated', function (): void {
@@ -482,7 +565,7 @@ describe('update', function (): void {
             ->assertOk()
             ->assertJsonPath('data.state.enabled', false)
             ->assertJsonPath('data.state.ready', false);
-    })->with(['ims', 'moodle', 'spotplayer']);
+    })->with(['ims', 'moodle', 'spotplayer', 'skyroom', 'niliroom']);
 
     it('rejects enabling the provider without a base url or an api key', function (): void {
         $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
@@ -544,7 +627,7 @@ describe('update', function (): void {
         $this->putJson(provisioningProviderUrl('update', ['provider' => $provider]), $payload)
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['enabled']);
-    })->with(['ims', 'moodle', 'spotplayer']);
+    })->with(['ims', 'moodle', 'spotplayer', 'skyroom', 'niliroom']);
 
     it('rejects a non boolean switch', function (string $provider, string $field): void {
         $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
@@ -557,6 +640,8 @@ describe('update', function (): void {
         ['moodle', 'enabled'],
         ['spotplayer', 'enabled'],
         ['spotplayer', 'sandbox'],
+        ['skyroom', 'enabled'],
+        ['niliroom', 'enabled'],
     ]);
 
     it('rejects a non string field', function (string $provider, string $field): void {
@@ -571,6 +656,8 @@ describe('update', function (): void {
         ['moodle', 'auth_userkey_token'],
         ['moodle', 'default_login_redirect_script'],
         ['spotplayer', 'api_key'],
+        ['skyroom', 'api_key'],
+        ['niliroom', 'api_token'],
     ]);
 
     it('rejects a service url that is not a url', function (string $provider, string $field): void {
@@ -583,6 +670,8 @@ describe('update', function (): void {
         ['ims', 'base_url'],
         ['moodle', 'base_url'],
         ['spotplayer', 'endpoint'],
+        ['skyroom', 'base_url'],
+        ['niliroom', 'base_url'],
     ]);
 
     it('rejects a non numeric field', function (string $provider, string $field): void {
@@ -747,6 +836,92 @@ describe('update', function (): void {
         ])->assertOk()
             ->assertJsonPath('data.state', ['enabled' => true, 'configured' => true, 'ready' => true])
             ->assertJsonPath('data.settings.endpoint', 'https://panel.spotplayer.ir/license/edit/');
+    });
+
+    it('stores the skyroom key and falls back to the shipped skyroom base url', function (): void {
+        $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
+
+        $this->putJson(provisioningProviderUrl('update', ['provider' => ProvisioningProviderSettingsEnum::SKYROOM->value]), [
+            'enabled' => true,
+            'api_key' => 'skyroom-key',
+        ])->assertOk()
+            ->assertJsonPath('data.key', ProvisioningProviderSettingsEnum::SKYROOM->value)
+            ->assertJsonPath('data.state', ['enabled' => true, 'configured' => true, 'ready' => true])
+            ->assertJsonPath('data.settings.base_url', 'https://www.skyroom.online/skyroom/api')
+            ->assertJsonPath('data.settings.api_key', SettingSecretRedactor::REDACTED);
+
+        $stored = Setting::where('key', SettingKeyEnum::SKYROOM->value)->firstOrFail();
+
+        expect($stored->group)->toBe('integrations')
+            ->and(Crypt::decryptString($stored->value['api_key']))->toBe('skyroom-key');
+    });
+
+    it('rejects enabling skyroom without its key', function (): void {
+        $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
+
+        $this->putJson(provisioningProviderUrl('update', ['provider' => ProvisioningProviderSettingsEnum::SKYROOM->value]), [
+            'enabled' => true,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['api_key']);
+    });
+
+    it('preserves a registered skyroom secret the panel does not expose', function (): void {
+        $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
+        Setting::factory()->skyroom()->create();
+
+        $this->putJson(provisioningProviderUrl('update', ['provider' => ProvisioningProviderSettingsEnum::SKYROOM->value]), [
+            'enabled' => true,
+            'api_key' => 'skyroom-key',
+        ])->assertOk();
+
+        $stored = Setting::where('key', SettingKeyEnum::SKYROOM->value)->firstOrFail();
+
+        expect(Crypt::decryptString($stored->value['secret']))->toBe('skyroom-secret')
+            ->and(Crypt::decryptString($stored->value['api_key']))->toBe('skyroom-key');
+    });
+
+    it('stores the niliroom row with its token masked', function (): void {
+        $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
+
+        $this->putJson(provisioningProviderUrl('update', ['provider' => ProvisioningProviderSettingsEnum::NILIROOM->value]), [
+            'enabled'   => true,
+            'base_url'  => 'https://niliroom.test',
+            'api_token' => 'niliroom-token',
+        ])->assertOk()
+            ->assertJsonPath('data.key', ProvisioningProviderSettingsEnum::NILIROOM->value)
+            ->assertJsonPath('data.state', ['enabled' => true, 'configured' => true, 'ready' => true])
+            ->assertJsonPath('data.settings.base_url', 'https://niliroom.test')
+            ->assertJsonPath('data.settings.api_token', SettingSecretRedactor::REDACTED);
+
+        $stored = Setting::where('key', SettingKeyEnum::NILIROOM->value)->firstOrFail();
+
+        expect($stored->group)->toBe('integrations')
+            ->and(Crypt::decryptString($stored->value['api_token']))->toBe('niliroom-token');
+    });
+
+    it('keeps the stored niliroom token when it is omitted', function (): void {
+        $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
+        Setting::factory()->niliroom()->create();
+
+        $this->putJson(provisioningProviderUrl('update', ['provider' => ProvisioningProviderSettingsEnum::NILIROOM->value]), [
+            'enabled'  => true,
+            'base_url' => 'https://niliroom.example.com',
+        ])->assertOk()
+            ->assertJsonPath('data.state', ['enabled' => true, 'configured' => true, 'ready' => true])
+            ->assertJsonPath('data.settings.api_token', SettingSecretRedactor::REDACTED);
+
+        $stored = Setting::where('key', SettingKeyEnum::NILIROOM->value)->firstOrFail();
+
+        expect($stored->value['api_token'])->toBe('niliroom-api-token');
+    });
+
+    it('rejects enabling niliroom without its url or token', function (): void {
+        $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
+
+        $this->putJson(provisioningProviderUrl('update', ['provider' => ProvisioningProviderSettingsEnum::NILIROOM->value]), [
+            'enabled' => true,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['base_url', 'api_token']);
     });
 
     it('returns 404 for a provider that is not offered', function (): void {

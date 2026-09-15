@@ -13,6 +13,12 @@ return [
         'spotplayer' => [
             'label' => 'SpotPlayer',
         ],
+        'skyroom' => [
+            'label' => 'Skyroom',
+        ],
+        'niliroom' => [
+            'label' => 'Niliroom',
+        ],
     ],
 
     'fields' => [
@@ -20,6 +26,7 @@ return [
         'base_url'                      => 'Service URL',
         'endpoint'                      => 'Service URL',
         'api_key'                       => 'API Key',
+        'api_token'                     => 'API Token',
         'service_token'                 => 'Service Token',
         'login_token'                   => 'Login Token',
         'default_role_id'               => 'Default Role ID',
