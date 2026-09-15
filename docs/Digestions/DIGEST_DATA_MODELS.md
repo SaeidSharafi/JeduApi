@@ -401,6 +401,7 @@
 - **`settingKey(): SettingKeyEnum`** — the persisted setting key (`SMS_IPPANEL` for `ippanel`, group `sms`).
 - **`settingDataClass(): class-string`** — the data class owning that gateway's `schema()` and validation `rules()`.
 - **`defaultConfig(): array`** — `config/sms.php` defaults used until the gateway is saved; the `label` entry is a translation key resolved at response build time.
+- **`resolvedSettings(mixed $stored): array`** — the shared precedence rule for the admin read path (`BuildSmsGatewaySettingAction`) and the runtime send path (`IpPanelSmsService`): the stored row wins field-by-field over the config defaults, stored keys the config does not declare are dropped, and `label` is returned raw (translation is the caller's decision).
 - **`label(): string`** — localized display label from `sms.gateways.<value>.label`.
 
 #### SmsNotificationOptionEnum (`app/Enums/Sms/SmsNotificationOptionEnum.php`)
@@ -489,9 +490,10 @@
 
 ### SmsLog (`app/Models/SmsLog.php`)
 - **Purpose:** SMS delivery tracking and logging
-- **Key Fields:** `provider`, `status`, `to` (array of recipients), `message`, `data`, `sent_at`
+- **Key Fields:** `status`, `data`, `content`, `type`, `to` (recipients), `from` (sender), `sent_at`
+- **Constants:** `STATUS_SKIPPED` (`0`) — recorded when no provider call was made (gateway switched off, or gateway unconfigured); the `data.reason` field names the cause (`gateway_disabled`, `not_configured`) and `sent_at` holds the attempt time.
 - **Relationships:** Self-contained audit records for outbound SMS
-- **Special Features:** Casts payload and recipient metadata to arrays for structured logging
+- **Special Features:** Casts payload and recipient metadata to arrays for structured logging. `to` holds a list for free-text sends and a single phone string for pattern sends, matching the `IpPanelSmsService` call path.
 
 ### BlogCategory (`app/Models/Blog/BlogCategory.php`)
 - **Purpose:** Hierarchical blog content organization

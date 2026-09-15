@@ -425,10 +425,6 @@ return [
         'no_action_handler'    => "No discount action handler registered for ':name'.",
     ],
 
-    'sms' => [
-        'ippanel_not_configured' => 'IPPanel API key or sender number is not configured.',
-    ],
-
     'search' => [
         'typesense_error' => 'Typesense multi-search error.',
     ],

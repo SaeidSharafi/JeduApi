@@ -37,12 +37,6 @@ return [
         ],
     ],
 
-    'ippanel' => [
-        'api_key'  => env('IPPANEL_API_KEY'),
-        'from'     => env('IPPANEL_FROM', '1000'),
-        'sand_box' => env('IPPANEL_SANDBOX', false),
-    ],
-
     'email' => [
         'use_fake_email' => env('EMAIL_USE_FAKE_EMAIL', false),
     ],

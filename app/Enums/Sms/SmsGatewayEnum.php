@@ -50,6 +50,27 @@ enum SmsGatewayEnum: string
     }
 
     /**
+     * Merge one stored gateway row over the configuration defaults.
+     *
+     * The single precedence rule for both the admin read path and the runtime
+     * send path: the stored row wins where it declares a field, so a key saved
+     * in the panel takes effect without a deployment, while a never-saved
+     * gateway still resolves a complete settings array. Stored keys the
+     * configuration does not declare are dropped, so only the documented
+     * fields are part of the contract. `label` is returned exactly as stored or
+     * configured — the caller decides whether to translate it.
+     *
+     * @return array<string, mixed>
+     */
+    public function resolvedSettings(mixed $stored): array
+    {
+        $defaults = $this->defaultConfig();
+        $stored   = is_array($stored) ? array_intersect_key($stored, $defaults) : [];
+
+        return array_merge($defaults, $stored);
+    }
+
+    /**
      * Translated display label for the admin panel.
      */
     public function label(): string

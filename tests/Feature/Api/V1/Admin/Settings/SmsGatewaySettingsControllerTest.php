@@ -40,7 +40,7 @@ function smsGatewayUrl(string $name, array $parameters = []): string
 | - `SmsGatewaySettingData::bodyParameters()` items: documentation-only scribe
 |   metadata (marked `@codeCoverageIgnore`, like every sibling Data class); it
 |   never runs while serving a request.
-| - `BuildSmsGatewaySettingAction` line 40 `(string)` cast and `?? ''`: the
+| - `BuildSmsGatewaySettingAction` `__((string) ($settings['label'] ?? ''))`: the
 |   config always declares a string `label`, so both fallbacks are unreachable.
 | - `UpdateSmsGatewaySettingAction` line 40 `?? null`: removing the coalesce
 |   only raises an undefined-array-key warning when no row is stored, which is

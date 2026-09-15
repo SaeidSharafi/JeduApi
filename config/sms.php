@@ -14,8 +14,9 @@ return [
     | a complete form. `label` holds a translation key rather than a translated
     | string, so `config:cache` cannot freeze a locale into the response.
     |
-    | The environment names are unchanged from the runtime `services.ippanel`
-    | block, so existing deployments keep working.
+    | This block is also the send path's fallback: `IpPanelSmsService` merges the
+    | stored setting over it, so a value saved in the admin panel overrides
+    | these defaults on the next send without a deployment.
     |
     */
 

@@ -1017,10 +1017,14 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `setLength(int $length): self`: Sets OTP code length
 
 ### IpPanelSmsService (`app/Services/IpPanelSmsService.php`)
-- **Purpose:** SMS delivery service integration
+- **Purpose:** SMS delivery service integration; the send path obeys the admin gateway setting
+- **Config resolution:** `resolveGatewaySettings()` reads the stored `SettingKeyEnum::SMS_IPPANEL` row through `SettingsService` (secret decrypted on read) and resolves it with `SmsGatewayEnum::resolvedSettings()`, the one precedence rule shared with the admin read path: the stored row wins field-by-field over `config('sms.gateways.ippanel')`, and stored keys the config does not declare are dropped. A key saved through the settings API therefore takes effect on the next send without a deployment; a never-saved gateway keeps its config-derived values. `setApiKey()`/`setFrom()` remain explicit per-instance overrides.
+- **Kill switch:** `sendConfig()` blocks the send before any HTTP call when the resolved `enabled` is false, and also when the resolved `api_key` is null/empty or `from` is empty. In both cases the attempt is recorded in `sms_logs` with `SmsLog::STATUS_SKIPPED` (`0`) and a `data.reason` of `gateway_disabled` or `not_configured`, and the method returns instead of throwing — so a switched-off or misconfigured gateway never fails a queued notification job (login codes included).
+- **Sandbox:** reads the single `sandbox` key from the same resolved gateway settings (no `services.ippanel.sand_box`), recording a `Sandbox_*` `sms_logs` row and skipping the HTTP call.
 - **Public Methods:**
-  - `sendSms(string $phone, string $message): bool`: Sends SMS messages via IP Panel service
-  - `sendOtpSms(string $phone, string $otp): bool`: Specialized OTP SMS delivery
+  - `send(array $to, string $message, string $type = 'custom'): void`: Free-text send; logs the provider response under its HTTP status and rethrows failed responses.
+  - `sendPattern(string $pattern, array $parameters, string $to, string $message = '', string $type = 'pattern'): void`: Pattern send; same gating, logging and error behaviour.
+  - `setApiKey(string $apiKey): void`, `setFrom(int|string $from): void`: Per-instance credential overrides.
 
 ### ResponseService (`app/Services/ResponseService.php`)
 - **Purpose:** Centralized API response builder (`apiResponse()->success()`, etc.)

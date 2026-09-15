@@ -418,10 +418,6 @@ return [
         'no_action_handler'    => 'هیچ پردازشگری برای اکشن تخفیف «:name» ثبت نشده است.',
     ],
 
-    'sms' => [
-        'ippanel_not_configured' => 'کلید دسترسی API یا شماره فرستنده سامانه پیامکی (IPPanel) تنظیم نشده است.',
-    ],
-
     'search' => [
         'typesense_error' => 'بروز خطا در موتور جستجوی Typesense.',
     ],

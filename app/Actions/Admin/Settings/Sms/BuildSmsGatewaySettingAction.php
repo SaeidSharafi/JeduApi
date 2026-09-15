@@ -28,15 +28,12 @@ final class BuildSmsGatewaySettingAction
     public function handle(SmsGatewayEnum $gateway): array
     {
         $settingKey = $gateway->settingKey();
-        $defaults   = $gateway->defaultConfig();
         $stored     = $this->settingsService->get($settingKey);
-        $stored     = is_array($stored) ? $stored : [];
-
-        $settings = array_merge($defaults, array_intersect_key($stored, $defaults));
+        $settings   = $gateway->resolvedSettings($stored);
 
         // The config default for `label` is a translation key; resolve it only
         // when no label was saved, so a stored label is returned verbatim.
-        if (! array_key_exists('label', $stored)) {
+        if (! is_array($stored) || ! array_key_exists('label', $stored)) {
             $settings['label'] = __((string) ($settings['label'] ?? ''));
         }
 
