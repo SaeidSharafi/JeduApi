@@ -1,111 +1,200 @@
 {
-    "success": true,
-    "message": "Enrollments retrieved successfully",
-    "data": [
-        {
-            "uuid": "550e8400-e29b-41d4-a716-446655440000",
-            "enrollment_status": {
-                "value": "active",
-                "label": "enums.EnrollmentStatusEnum.active"
-            },
-            "access_start_date": "2025-09-01",
-            "access_end_date": "2025-12-31",
-            "created_at": "2025-08-15T10:30:00Z",
-            "order": {
-                "id": 123,
-                "increment_id": "100000001",
-                "customer_first_name": "John",
-                "customer_last_name": "Doe",
-                "customer_email": "john@example.com",
-                "customer_phone": "09123456789",
-                "subtotal": 1000000,
-                "discount_amount": 100000,
-                "tax_amount": 0,
-                "grand_total": 900000,
-                "total_paid": 900000,
-                "balance_due": 0,
-                "admin_notes": null,
-                "status": {
-                    "value": "completed",
-                    "label": "enums.OrderStatusEnum.completed"
-                },
-                "payment_status": {
-                    "value": "paid",
-                    "label": "enums.OrderPaymentStatusEnum.paid"
-                },
-                "created_at": "2025-08-15T10:30:00Z",
-                "updated_at": "2025-08-15T10:35:00Z",
-                "payments": [],
-                "items": []
-            },
-            "customer": {
-                "id": 1,
-                "phone": "09123456789",
-                "first_name": "John",
-                "last_name": "Doe",
-                "email": "john@example.com",
-                "phone2": null,
-                "civil_id": null,
-                "civil_id_type": {
-                    "value": "none",
-                    "label": "enums.CivilIdTypeEnum.none"
-                },
-                "date_of_birth": null,
-                "father_name": null,
-                "gender": null,
-                "education_level": null,
-                "field_of_study": null,
-                "education_status": null
-            },
-            "product_delivery_option": {
-                "id": 5,
-                "name": "Advanced Python Course",
-                "sku": "PY-ADV-001",
-                "fulfillment_type": {
-                    "value": "automatic",
-                    "label": "enums.FulfillmentTypeEnum.automatic"
-                },
-                "delivery_method": {
-                    "value": "online",
-                    "label": "enums.DeliveryMethodEnum.online"
-                },
-                "price": 500000,
-                "capacity": null,
-                "status": {
-                    "value": "published",
-                    "label": "enums.PublicationStatusEnum.published"
-                },
-                "is_prepayment_available": false,
-                "prepayment_amount": null,
-                "details": {},
-                "is_featured": false,
-                "featured_price": null,
-                "featured_price_start_date": null,
-                "featured_price_end_date": null,
-                "registration_start_date": null,
-                "registration_end_date": null,
-                "available_from": null,
-                "available_to": null,
-                "access_days": null,
-                "teachers": [],
-                "product": null,
-                "created_at": null,
-                "updated_at": null
-            }
-        }
-    ],
-    "meta": {
+    "message": "Operation successful.",
+    "data": {
         "current_page": 1,
+        "data": [
+            {
+                "id": 1,
+                "uuid": "01a07b30-3c69-719c-8c81-cda76a3b2575",
+                "enrollment_status": {
+                    "value": "active",
+                    "label": "Active"
+                },
+                "revocation_status": null,
+                "access_start_date": "1403-01-02",
+                "access_end_date": "1403-12-30",
+                "created_at": "1405-06-16 12:55:53",
+                "provisioning_summary": {
+                    "status": {
+                        "value": "manual_action_required",
+                        "label": "Manual Action Required"
+                    },
+                    "plan": {
+                        "version": 1,
+                        "providers": [
+                            {
+                                "provider": {
+                                    "value": "moodle",
+                                    "label": "Moodle"
+                                },
+                                "applicable": true,
+                                "readiness": {
+                                    "value": "disabled",
+                                    "label": "Disabled"
+                                },
+                                "configuration_issue": "provider_disabled"
+                            }
+                        ],
+                        "status": {
+                            "value": "manual_action_required",
+                            "label": "Manual Action Required"
+                        },
+                        "resolved_at": "1405-06-16 12:55:53"
+                    },
+                    "reconciliation_status": null
+                },
+                "order": {
+                    "id": 1,
+                    "increment_id": "574455",
+                    "customer_first_name": "Jackie",
+                    "customer_last_name": "Mayert",
+                    "customer_email": "shana51@example.com",
+                    "customer_phone": "09117926662",
+                    "subtotal": 0,
+                    "discount_amount": 0,
+                    "tax_amount": 0,
+                    "grand_total": 0,
+                    "total_paid": 0,
+                    "balance_due": 0,
+                    "admin_notes": "velit",
+                    "status": {
+                        "value": "cancelled",
+                        "label": "Cancelled"
+                    },
+                    "payment_status": {
+                        "value": "paid",
+                        "label": "Paid"
+                    },
+                    "created_at": "1405-06-16 12:55:53",
+                    "updated_at": "1405-06-16 12:55:53",
+                    "payments": [],
+                    "items": [
+                        {
+                            "id": 1,
+                            "product_delivery_option_id": 3,
+                            "discount_amount": 0,
+                            "qty_ordered": 1,
+                            "tax_amount": 0,
+                            "name": "Maddison Roberts",
+                            "sku": "online_service616860318",
+                            "price": 0,
+                            "total": 0,
+                            "payment_type": {
+                                "value": "full_payment",
+                                "label": "Full Payment"
+                            },
+                            "prepayment_amount": 0,
+                            "qty_refunded": 0,
+                            "total_refunded": 0
+                        }
+                    ]
+                },
+                "customer": {
+                    "id": 1,
+                    "phone": "09117926662",
+                    "first_name": "Jackie",
+                    "last_name": "Mayert",
+                    "email": "shana51@example.com",
+                    "phone2": "09105312340",
+                    "civil_id": "1743254868",
+                    "civil_id_type": {
+                        "value": "national_code",
+                        "label": "National Code"
+                    },
+                    "date_of_birth": "1365-09-05",
+                    "father_name": "Kacie Mann",
+                    "gender": {
+                        "value": "male",
+                        "label": "Male"
+                    },
+                    "education_level": {
+                        "value": "bachelor",
+                        "label": "Bachelor"
+                    },
+                    "field_of_study": "برق",
+                    "education_status": {
+                        "value": "university",
+                        "label": "University"
+                    },
+                    "is_banned": false,
+                    "banned_at": null,
+                    "media": []
+                },
+                "productDeliveryOption": {
+                    "id": 3,
+                    "name": "Maddison Roberts",
+                    "sku": "online_service616860318",
+                    "fulfillment_type": {
+                        "value": "online_service",
+                        "label": "Online Service"
+                    },
+                    "delivery_method": {
+                        "value": "lms_moodle",
+                        "label": "LMS Moodle"
+                    },
+                    "price": 800000,
+                    "capacity": 33,
+                    "status": {
+                        "value": "published",
+                        "label": "Published"
+                    },
+                    "is_prepayment_available": false,
+                    "prepayment_amount": 0,
+                    "details": {
+                        "lms_course_code": null,
+                        "start_date": null,
+                        "schedule_days": null,
+                        "duration": null
+                    },
+                    "is_featured": false,
+                    "featured_price": 0,
+                    "featured_price_start_date": null,
+                    "featured_price_end_date": null,
+                    "registration_start_date": null,
+                    "registration_end_date": null,
+                    "available_from": null,
+                    "available_to": null,
+                    "access_days": null,
+                    "teachers": null,
+                    "product": null,
+                    "created_at": "1405-06-16 12:55:53",
+                    "updated_at": "1405-06-16 12:55:53",
+                    "composition_version": 1,
+                    "bundle_review_required_at": null,
+                    "bundle_review_reasons": null
+                }
+            }
+        ],
+        "first_page_url": "http://jedu.test/api/v1/admin/enrollments?page=1",
         "from": 1,
         "last_page": 1,
+        "last_page_url": "http://jedu.test/api/v1/admin/enrollments?page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Previous",
+                "page": null,
+                "active": false
+            },
+            {
+                "url": "http://jedu.test/api/v1/admin/enrollments?page=1",
+                "label": "1",
+                "page": 1,
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "Next &raquo;",
+                "page": null,
+                "active": false
+            }
+        ],
+        "next_page_url": null,
+        "path": "http://jedu.test/api/v1/admin/enrollments",
         "per_page": 15,
+        "prev_page_url": null,
         "to": 1,
         "total": 1
     },
-    "links": {
-        "first": "http://localhost/api/v1/admin/enrollments?page=1",
-        "last": "http://localhost/api/v1/admin/enrollments?page=1",
-        "prev": null,
-        "next": null
-    }
+    "metadata": []
 }

@@ -41,6 +41,9 @@
           "price": 500000,
           "current_price": 500000,
           "total": 450000,
+          "original_price": 500000,
+          "product_discount_amount": 0,
+          "total_discount_amount": 50000,
           "payment_type": {
             "value": "full_payment",
             "label": "enums.OrderItemPaymentTypeEnum.full_payment"
@@ -52,7 +55,8 @@
           "status": {
             "value": "pending",
             "label": "enums.OrderItemStatusEnum.pending"
-          }
+          },
+          "type": "product"
         },
         {
           "id": 2,
@@ -65,6 +69,9 @@
           "price": 500000,
           "current_price": 500000,
           "total": 450000,
+          "original_price": 500000,
+          "product_discount_amount": 0,
+          "total_discount_amount": 50000,
           "payment_type": {
             "value": "full_payment",
             "label": "enums.OrderItemPaymentTypeEnum.full_payment"
@@ -76,7 +83,8 @@
           "status": {
             "value": "pending",
             "label": "enums.OrderItemStatusEnum.pending"
-          }
+          },
+          "type": "product"
         }
       ]
     },

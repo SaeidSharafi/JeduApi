@@ -1,0 +1,17 @@
+# Black-box E2E uses simulated provider clients and a real gateway simulator
+
+The same application image used in production is exercised in an isolated `e2e` environment. Provisioning keeps the real plans, adapters, queue jobs, attempts, and Enrollment state machine, but provider-client contracts select deterministic, idempotent in-process clients for Moodle, Moodle Quiz, IMS, SpotPlayer, BBB, and Skyroom; these clients require no external credentials and make no outbound provider calls. Payment redirect behavior is different: a separate browser-facing gateway-simulator container presents explicit Success and Failure actions and returns through the normal payment callback, because SHOP-04 must test the browser redirect rather than merely arrange payment state.
+
+E2E capabilities fail closed. They require `APP_ENV=e2e` and a per-run control secret, production refuses to boot with E2E controls enabled, and the E2E network denies undeclared provider egress. Before every serialized scenario, a locked E2E reset coordinates real queue workers and clears PostgreSQL, dedicated Redis state, queues, caches, rate limits, and uploaded test media, then creates one bootstrap administrator and one bootstrap customer and returns their tokens with a reset identifier. The caller owns all scenario data: prerequisites are created through ordinary APIs, while behavior named by a scenario is performed through the browser. Mailpit and gateway state are reset directly by the caller.
+
+The E2E stack uses the PostgreSQL Scout driver with a pinned PGroonga image. It intentionally does not test the production Typesense semantic-search path because an offline Forgejo runner cannot obtain the production embedding model; using a different model would not establish production equivalence.
+
+The backend exposes a distinct `simulator` payment processor only in E2E and never advertises or accepts it elsewhere. Its separate container signs callbacks with a per-run secret, validates the Order, Payment, and amount, makes each attempt terminal exactly once, and offers explicit Success and Failure actions plus a bounded per-attempt delay for UI retry/loading tests. Repeated actions return the original result.
+
+The control route is `POST /api/v1/e2e/reset`, registered only in E2E and authenticated independently with `X-E2E-Key`. Its successful response contains a `reset_id`, readiness state, and the bootstrap administrator and customer credentials and tokens. Failures expose a stable code and correlation identifier while details remain in server logs. The images ship with a versioned black-box E2E runbook describing services, health checks, environment variables, reset and simulator contracts, and supported arrangement APIs.
+
+Automated verification must prove more than happy-path provisioning: production rejects E2E controls, every provisioning provider resolves to a simulated client in E2E, undeclared real HTTP cannot escape, reset rejects invalid control secrets, simulated provisioning is deterministic, and repeated gateway callbacks are idempotent.
+
+## Considered Options
+
+Replacing whole provisioning adapters would skip provider translation and validation. Shipping provider website simulators would test behavior outside the stated scenarios. Scenario-specific seed data would hide setup behind the backend, while a general database-mutation API would create an unsafe test backdoor. Typesense without the production model would provide misleading search coverage.

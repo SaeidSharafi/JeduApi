@@ -116,16 +116,16 @@
 - `show(Bundle $bundle)`: **Route:** `GET /api/v1/admin/bundles/{bundle}` - Returns Bundle metadata.
 - `update(BundleUpdateData $data, Bundle $bundle)`: **Route:** `PUT /api/v1/admin/bundles/{bundle}` - Updates Bundle metadata.
 - `destroy(Bundle $bundle)`: **Route:** `DELETE /api/v1/admin/bundles/{bundle}` - Deletes or archives the Bundle according to order/enrollment usage.
-- Bundle Product PDO creation/update remains under `POST|PUT /api/v1/admin/product/{product}/delivery-option`; Bundle requests provide `components` and the server derives `fulfillment_type=composite`, `delivery_method=bundle`, and empty details.
+- Bundle Product PDO creation/update remains under `POST|PUT /api/v1/admin/product/{product}/delivery-option`; Bundle requests provide `components` entries containing `product_delivery_option_id` and `allocation`, omit `teachers`, `fulfillment_type`, `delivery_method`, and the featured-price quartet (`is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`) — all prohibited for Bundle PDOs — and the server derives `fulfillment_type=composite`, `delivery_method=bundle`, and empty details. Prepayment is disabled for Bundle/composite PDOs.
 
 ### ArchiveProductController (`app/Http/Controllers/Api/Admin/Product/ArchiveProductController.php`)
 - `__invoke(Product $product)`: **Route:** `POST /api/v1/admin/product/{product}/archive` - **Delegates to:** Product archival - **Response DTO:** ProductData
 
 ### ProductDeliveryOptionController (`app/Http/Controllers/Api/Admin/Product/ProductDeliveryOptionController.php`)
 - `index(Product $product)`: **Route:** `GET /api/v1/admin/product/{product}/delivery-option` - **Response DTO:** ProductDeliveryOptionData collection
-- `store(ProductDeliveryOptionCreateData $request, Product $product)`: **Route:** `POST /api/v1/admin/product/{product}/delivery-option` - **Request DTO:** ProductDeliveryOptionCreateData - **Response DTO:** ProductDeliveryOptionData
+- `store(ProductDeliveryOptionCreateData $request, Product $product)`: **Route:** `POST /api/v1/admin/product/{product}/delivery-option` - **Request DTO:** ProductDeliveryOptionCreateData - **Response DTO:** ProductDeliveryOptionData. Bundle Product requests are server-normalized to `composite + bundle` with prepayment disabled and no prepayment amount.
 - `show(Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `GET /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Response DTO:** ProductDeliveryOptionData
-- `update(ProductDeliveryOptionUpdateData $request, Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `PUT /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Response DTO:** ProductDeliveryOptionData
+- `update(ProductDeliveryOptionUpdateData $request, Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `PUT /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Response DTO:** ProductDeliveryOptionData. Bundle Product updates reassert the structural classification and clear any submitted prepayment configuration.
 - `destroy(Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `DELETE /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Delegates to:** Delivery option deletion
 
 ### RelatedProductController (`app/Http/Controllers/Api/Admin/Product/RelatedProductController.php`)
@@ -151,23 +151,23 @@
 ### OrderController (`app/Http/Controllers/Api/Admin/Order/OrderController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/orders` - **Delegates to:** Order listing with filtering - **Response DTO:** OrderListItemData collection
 - `store(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/orders` - **Request DTO:** OrderCreateData - **Delegates to:** CreateOrderAction::handle() — validates registration window and availability window on each item - **Response DTO:** OrderData
-- `show(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}` - **Delegates to:** Order retrieval with relationships - **Response DTO:** OrderData
+- `show(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}` - **Delegates to:** Order retrieval with relationships - **Response DTO:** OrderData (detail returns one ordered `items` list of purchased lines: standalone lines with `type: product`, plus one Bundle entry per Bundle Purchase with `type: bundle` carrying the aggregate `status` and its component lines nested with immutable price snapshot and `enrollment` (`id`, `uuid`, `enrollment_status`, `provisioning_status`, nullable `revocation_status`))
 - `update(OrderUpdateData $request, Order $order)`: **Route:** `PUT /api/v1/admin/orders/{order}` - **Request DTO:** OrderUpdateData - **Response DTO:** OrderData
 - `destroy(Order $order)`: **Route:** `DELETE /api/v1/admin/orders/{order}` - **Delegates to:** Order deletion
 
 ### OrderData DTO (`app/Data/Admin/Order/OrderData.php`)
-- **Fields:** `id`, `increment_id`, `status`, `customer_id`, `customer_email`, `customer_phone`, `customer_first_name`, `customer_last_name`, `total_qty_ordered`, `total_item_count`, `subtotal`, `discount_amount`, `tax_amount`, `grand_total`, `total_paid`, `balance_due`, `full_value_grand_total`, `total_product_discount`, `total_cart_discount`, `total_discount`, `currency_code`, `customer`, `payment_status`, `applied_coupon_code`, `admin_notes`, `created_at`, `updated_at`, `customer_snapshot`, `items` (collection of `OrderItemData`)
+- **Fields:** `id`, `increment_id`, `status`, `customer_id`, `customer_email`, `customer_phone`, `customer_first_name`, `customer_last_name`, `total_qty_ordered`, `total_item_count`, `subtotal`, `discount_amount`, `tax_amount`, `grand_total`, `total_paid`, `balance_due`, `full_value_grand_total`, `total_product_discount`, `total_cart_discount`, `total_discount`, `currency_code`, `customer`, `payment_status`, `applied_coupon_code`, `admin_notes`, `created_at`, `updated_at`, `customer_snapshot`, `items` (ordered list of purchased lines: `OrderItemData` product lines and `BundlePurchaseData` bundle entries, discriminated by `type`)
 - **Discount Layering:** `full_value_grand_total` represents the sum of all items at their base prices (no discounts applied) and is the reference for `balance_due`. `total_product_discount` aggregates product-level discounts from all items (sourced from `Order::totalProductDiscount()` accessor which sums `product_discount_amount` across items). `total_cart_discount` reflects cart-level coupon discounts (alias for `discount_amount`). `total_discount` is the combined sum of product-level and cart-level discounts.
 
 ### OrderItemData DTO (`app/Data/Admin/Order/OrderItemData.php`)
-- **Fields:** `id`, `Order_id`, `product_delivery_option_id`, `discount_amount`, `qty_ordered`, `tax_amount`, `name`, `sku`, `price`, `original_price`, `product_discount_amount`, `total_discount_amount`, `total`, `payment_type`, `prepayment_amount`, `qty_refunded`, `total_refunded`, `status`, `vendor`, `product_snapshot`
+- **Fields:** `id`, `Order_id`, `product_delivery_option_id`, `discount_amount`, `qty_ordered`, `tax_amount`, `name`, `sku`, `price`, `original_price`, `product_discount_amount`, `total_discount_amount`, `total`, `payment_type`, `prepayment_amount`, `qty_refunded`, `total_refunded`, `status`, `vendor`, `product_snapshot`, `bundle_purchase_id`, `type` (`product`)
 - **Price Layering:** `price` is the base price (never includes discounts). `original_price` is read from `pricing_metadata['original_price']` (sourced from `OrderItem::originalPrice()` accessor). `product_discount_amount` is the product-level discount from `pricing_metadata['discount_amount']` multiplied by `qty_ordered` (sourced from `OrderItem::productDiscountAmount()` accessor). `total_discount_amount` combines product-level + cart-level discounts.
 
 ### OrderListItemData DTO (`app/Data/Admin/Order/OrderListItemData.php`)
 - **Fields:** `id`, `increment_id`, `customer_first_name`, `customer_last_name`, `customer_email`, `customer_phone`, `subtotal`, `discount_amount`, `tax_amount`, `grand_total`, `total_paid`, `balance_due`, `admin_notes`, `status`, `payment_status`, `created_at`, `updated_at`, `payments` (collection of `PaymentData`), `items` (collection of `OrderItemListItemData`)
 
 ### OrderItemListItemData DTO (`app/Data/Admin/Order/OrderItemListItemData.php`)
-- **Fields:** `id`, `product_delivery_option_id`, `discount_amount`, `qty_ordered`, `tax_amount`, `name`, `sku`, `price`, `total`, `payment_type`, `prepayment_amount`, `qty_refunded`, `total_refunded`
+- **Fields:** `id`, `product_delivery_option_id`, `discount_amount`, `qty_ordered`, `tax_amount`, `name`, `sku`, `price`, `total`, `payment_type`, `prepayment_amount`, `qty_refunded`, `total_refunded`, `bundle_purchase_id`
 
 ### ApproveOrderController (`app/Http/Controllers/Api/Admin/Order/ApproveOrderController.php`)
 - `__invoke(Order $order, ApproveOrderAction $action)`: **Route:** `POST /api/v1/admin/orders/{order}/approve` - **Authorization:** `Gate::authorize('approve', $order)` via `PermissionEnum::ORDER_APPROVE` - **Delegates to:** ApproveOrderAction::handle() - **Response DTO:** OrderData - **Response File:** `resources/responses/admin/order/approve.json`
@@ -324,9 +324,18 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
   - `update(RefundUpdateData $request, Refund $refund)`: **Route:** `PUT /api/v1/admin/refunds/{refund}` - **Response DTO:** RefundData
   - `destroy(Refund $refund)`: **Route:** `DELETE /api/v1/admin/refunds/{refund}` - **Delegates to:** Refund deletion
 - **OrderRefundController** (`app/Http/Controllers/Api/Admin/Order/OrderRefundController.php`):
-  - `store(RefundCreateData $request, Order $order)`: **Route:** `POST /api/v1/admin/orders/{order}/refund` - **Request DTO:** RefundCreateData - **Response DTO:** RefundData - Initiates full or partial refund at order level.
+  - `store(RefundOrderData $request, Order $order)`: **Route:** `POST /api/v1/admin/orders/{order}/refund` - **Request DTO:** RefundOrderData - **Response DTO:** RefundData collection - Refunds the whole order atomically, treating standalone Order Items and Bundle Purchases as commercial units with one combined gateway refund.
 - **RefundUpdateStatusController** (`app/Http/Controllers/Api/Admin/Order/RefundUpdateStatusController.php`):
   - `__invoke(RefundStatusUpdateData $request, Refund $refund)`: **Route:** `PUT /api/v1/admin/refunds/{refund}/status` - **Request DTO:** RefundStatusUpdateData - **Response DTO:** RefundData
+- **BundlePurchaseRefundController** (`app/Http/Controllers/Api/Admin/Order/BundlePurchaseRefundController.php`):
+  - `store(RefundBundlePurchaseData $request, BundlePurchase $bundlePurchase)`: **Route:** `POST /api/v1/admin/bundle-purchases/{bundlePurchase}/refund` - **Request DTO:** RefundBundlePurchaseData - **Response DTO:** BundleRefundData - Refunds one whole Bundle Purchase as an indivisible operation. The response exposes the Bundle financial summary plus every component's policy share, effective deduction, redistribution, refund amount, and revocation status. Requires `refunds.create`, plus `refunds.skip_gateway` when `skip_gateway` is set.
+- **RetryBundlePurchaseRevocationController** (`app/Http/Controllers/Api/Admin/Order/RetryBundlePurchaseRevocationController.php`):
+  - `__invoke(BundlePurchase $bundlePurchase)`: **Route:** `POST /api/v1/admin/bundle-purchases/{bundlePurchase}/retry-revocation` - **Response DTO:** EnrollmentRevocationData collection - Retries every outstanding component revocation; providers that already succeeded are never contacted again. Requires `refunds.create`.
+- **RetryEnrollmentRevocationController** (`app/Http/Controllers/Api/Admin/Enrollment/RetryEnrollmentRevocationController.php`):
+  - `__invoke(Enrollment $enrollment)`: **Route:** `POST /api/v1/admin/enrollments/{enrollment}/retry-revocation` - **Response DTO:** EnrollmentRevocationData - Requires `enrollments.retry_provision`.
+- **ConfirmEnrollmentRevocationController** (`app/Http/Controllers/Api/Admin/Enrollment/ConfirmEnrollmentRevocationController.php`):
+  - `__invoke(ConfirmEnrollmentRevocationData $request, Enrollment $enrollment)`: **Route:** `POST /api/v1/admin/enrollments/{enrollment}/confirm-revocation` - **Request DTO:** ConfirmEnrollmentRevocationData - **Response DTO:** EnrollmentRevocationData - Records staff confirmation that an externally unsupported revocation was performed; releases Purchase Eligibility. Requires `enrollments.waive_provision`.
+- Ordinary item refunds still reject internal Bundle components: `POST /api/v1/admin/refunds` returns a validation error for a component Order Item. `POST /api/v1/admin/orders/{order}/refund` now refunds mixed orders atomically: standalone Order Items individually and each Bundle Purchase as one indivisible unit, with exactly one combined gateway refund. Every refund that completes — a single-item refund, a status-driven completion, a full-order refund, or a Bundle Purchase refund — puts the refunded Enrollment into the external revocation flow, dispatched after financial success.
 
 ### Digipay Admin Endpoints
 - **DigipayAdminController** (`app/Http/Controllers/Api/Admin/Payment/DigipayAdminController.php`):
@@ -342,8 +351,8 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 
 ### Enrollment Management Endpoints
 - **EnrollmentController** (`app/Http/Controllers/Api/Admin/Enrollment/EnrollmentController.php`):
-  - `index()`: **Route:** `GET /api/v1/admin/enrollments` - **Query Filters:** `filter[customer_id]`, `filter[enrollment_status]`, `filter[order_id]`, `filter[product_delivery_option_id]`, `filter[productable_type]` - **Response DTO:** `EnrollmentListItemData` paginated collection
-  - `show(Enrollment $enrollment)`: **Route:** `GET /api/v1/admin/enrollments/{enrollment}` - **Response DTO:** `EnrollmentData` with nested order, customer, delivery option, and typed `provisioning_summary` (aggregate status, versioned provider plan/readiness, and separate access reconciliation status)
+  - `index()`: **Route:** `GET /api/v1/admin/enrollments` - **Query Filters:** `filter[customer_id]`, `filter[enrollment_status]`, `filter[revocation_status]` (pending/failed/manual_action_required/revoked — lets the panel build a revocation work queue), `filter[order_id]`, `filter[product_delivery_option_id]`, `filter[productable_type]` - **Response DTO:** `EnrollmentListItemData` paginated collection
+  - `show(Enrollment $enrollment)`: **Route:** `GET /api/v1/admin/enrollments/{enrollment}` - **Response DTO:** `EnrollmentData` with nested order, customer, delivery option, and typed `provisioning_summary` (aggregate status, versioned provider plan/readiness, and separate access reconciliation status). Both list and detail expose the nullable `revocation_status` (`EnrollmentRevocationStatusEnum` as a `{value, label}` object, null when the enrollment was never refunded), and the order-detail nesting on a Bundle line's `items[type=bundle].components[].enrollment` (`BundleEnrollmentStatusData`) exposes it too.
   - `update(EnrollmentUpdateData $request, Enrollment $enrollment)`: **Route:** `PUT /api/v1/admin/enrollments/{enrollment}` - **Request DTO:** EnrollmentUpdateData (access_start_date, access_end_date, notes, reason) - **Response DTO:** EnrollmentData
   - `destroy(Enrollment $enrollment)`: **Route:** `DELETE /api/v1/admin/enrollments/{enrollment}` - **Authorization:** `Gate::authorize('delete', $enrollment)` via `PermissionEnum::ENROLLMENT_DELETE` - **Delegates to:** DeleteEnrollmentAction
 - `index()` also includes the same typed `provisioning_summary` on each `EnrollmentListItemData` item. The summary is safe operational data; raw provider payloads are never part of this typed summary. Provisioning diagnostics likewise expose `reconciliation_status` separately from initial provisioning `status`.
@@ -512,8 +521,9 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 - `__invoke(Enrollment $enrollment, DigitalAsset $digitalAsset)`: **Route:** `GET /api/v1/shop/student/digital-assets/{enrollment:uuid}/download/{digitalAsset}` - Generates signed download URL for digital asset file.
 
 ##### OrderController (`app/Http/Controllers/Api/Shop/Student/OrderController.php`)
-- `index()`: **Route:** `GET /api/v1/shop/student/orders` - Lists authenticated user orders (with items + payments). **Response DTO:** `OrderData` paginator.
-- `show(string $incrementId)`: **Route:** `GET /api/v1/shop/student/orders/{order:increment_id}` - Returns single order with nested items/payments. **Response DTO:** `OrderData`.
+- `index()`: **Route:** `GET /api/v1/shop/student/orders` - Lists authenticated user orders as one ordered `items` list of purchased lines (standalone `type: product` lines and `type: bundle` Bundle entries nesting their physical components and Enrollment/status data), plus payments. **Response DTO:** `OrderData` paginator.
+- `show(string $incrementId)`: **Route:** `GET /api/v1/shop/student/orders/{order:increment_id}` - Returns the same unified list. Internal component Order Items never appear as top-level lines; they are nested inside their Bundle entry. **Response DTO:** `OrderData`.
+- A Bundle entry's `status` uses `BundlePurchaseStatusEnum`: `pending_payment | provisioning | active | partially_failed | failed | revocation_pending | refunded | cancelled`. Its component nodes expose `paid_amount`, `bundle_discount_amount`, `status`, `enrollment_id`, `enrollment_uuid`, `enrollment_status`, and `provisioning_status`.
 
 ##### CancelOrderController (`app/Http/Controllers/Api/Shop/Student/CancelOrderController.php`)
 - `__invoke(Order $order)`: **Route:** `POST /api/v1/shop/student/orders/{order:increment_id}/cancel` - **Delegates to:** CancelOrderByCustomerAction::execute(). **Response DTO:** OrderData.
@@ -552,14 +562,14 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 
 #### CartController (`app/Http/Controllers/Api/Shop/Sale/CartController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/cart` - **Guards:** Supports authenticated users or guests (via `X-Guest-Token`) - **Response DTO:** `CartData`; each item includes effective `current_price`, `original_price`, product/cart/total discount amounts, `line_total`, `prepayment_amount`, `is_prepayment_available`, and discount metadata.
-- `store(AddCartItemData $request)`: **Route:** `POST /api/v1/shop/cart/items` - Adds a delivery option to the cart after validating capacity/payment type - **Response DTO:** `CartData` with the same calculated item pricing fields.
-- `update(UpdateCartItemData $request, CartItem $cartItem)`: **Route:** `PUT /api/v1/shop/cart/items/{cartItem}` - Updates quantity for an existing cart item - **Response DTO:** `CartData` with the same calculated item pricing fields.
+- `store(AddCartItemData $request)`: **Route:** `POST /api/v1/shop/cart/items` - Adds a delivery option after validating capacity/payment type and Productable-level Purchase Eligibility. Accepts an available reviewed Bundle PDO as one ordinary SKU line (quantity exactly 1; no client-side components/substitution surface); snapshots its `composition_version`. Returns `422` with an `items` validation error for known ownership or Bundle/standalone/Bundle cart overlap. **Response DTO:** `CartData` with the same calculated item pricing fields. Bundle lines price at the reviewed selling price and never receive featured/product-promotion/coupon markdowns.
+- `update(UpdateCartItemData $request, CartItem $cartItem)`: **Route:** `PUT /api/v1/shop/cart/items/{cartItem}` - Updates quantity after revalidating Productable-level Purchase Eligibility for the cart. Bundle quantity above one is rejected (single-quantity guard); recomposition changes surface as stale selections rejected at checkout (`bundle_changed`) until the customer removes and re-adds the Bundle. **Response DTO:** `CartData` with the same calculated item pricing fields.
 - `destroy(CartItem $cartItem)`: **Route:** `DELETE /api/v1/shop/cart/items/{cartItem}` - Removes an item - **Response:** `204 No Content`
 - `applyCoupon(ApplyCouponData $request)`: **Route:** `POST /api/v1/shop/cart/coupon` - Applies a coupon via `PromotionService::findPromotionByCoupon()` + condition checks - **Response DTO:** `CartData`
 - `removeCoupon()`: **Route:** `DELETE /api/v1/shop/cart/coupon` - Clears any applied coupon - **Response DTO:** `CartData`
 
 #### CheckoutController (`app/Http/Controllers/Api/Shop/Sale/CheckoutController.php`)
-- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Validates registration window and availability window on each cart item at checkout. Checkout order items expose both base `price` and captured effective `current_price`, plus `prepayment_amount` and `is_prepayment_available`. **Request DTO:** CheckoutData includes optional `payment_data` array for gateway-specific parameters.
+- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Bundle selections are represented as `bundle_purchases`, never as parent Order Items or Enrollments; their components expose immutable base price, paid allocation, Bundle discount, Enrollment, and status data. **Request DTO:** CheckoutData includes optional `payment_data` array for gateway-specific parameters.
 
 ### Shop Public Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access
@@ -593,6 +603,10 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 #### DigitalAssetController (`app/Http/Controllers/Api/Shop/Product/DigitalAssetController.php`)
 - `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/digital-assets` - **Request DTO:** ProductListRequestData - **Delegates to:** `ProductQueryService::getDigitalAssetList()` with price hydration - **Response DTO:** Paginated `ProductCardData`
 - `show(Product $product)`: **Route:** `GET /api/v1/shop/digital-asset/{product:slug}` - **Delegates to:** `ProductQueryService` detail pipeline + `ProductPriceService` - **Response DTO:** `DigitalAssetDetailData`
+
+#### BundleController (`app/Http/Controllers/Api/Shop/Product/BundleController.php`)
+- `index(PaginationRequestData $request)`: **Route:** `GET /api/v1/shop/bundles` - Accepts only bounded `page` and `per_page` pagination and uses the default catalog ordering. Returns published, visible, reviewed, currently saleable Bundle Products with at least one available composite option as paginated `ProductCardData`.
+- `show(Product $product)`: **Route:** `GET /api/v1/shop/bundles/{product:slug}` - Resolves the Product slug and returns only eligible Bundle Products. `BundleDetailData` exposes every available composite option, component Productable/Product/PDO identity, sanitized fulfillment presentation, allocations, availability, and server-calculated Bundle pricing. Bundles are intentionally absent from global search and category result contracts.
 
 #### GoodForStartCoursesController (`app/Http/Controllers/Api/Shop/Product/GoodForStartCoursesController.php`)
 - `__invoke(Category $category, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/good-for-start/category/{category:slug}/courses` - **Query Param:** `limit` (default 10) - **Delegates to:** Cached `ProductQueryService::goodForStart()` lookup within SmartCache using `CacheKeysEnum::GoodForStart` - **Response DTO:** `ProductCardData` collection
@@ -726,3 +740,7 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - **Rate-Limited Shop Routes:** `/api/v1/shop/rate-limited.php` - Public form submissions (contact us, collaboration) protected by `throttle:10,1`
 - **Auth Routes:** `/api/v1/auth.php` - Dual authentication system for both interfaces
 - **Select Options:** `/api/v1/admin/select_option.php` - Dropdown/select data endpoints for admin interface
+### Bundle review
+- `POST /api/v1/admin/products/{product}/delivery-options/{delivery_option}/review` — explicit staff review/revalidation for a Bundle PDO (rejects non-Bundle PDOs with `bundle_review_only_for_bundles`); clears review state only after all components and allocations are valid and eligible, then restores the Bundle PDO to `PUBLISHED`. Response: `ProductDeliveryOptionShowData`.
+- Bundle PDO responses expose `composition_version`, `bundle_review_required_at`, and `bundle_review_reasons`.
+- Admin Product listing/show responses expose `review_required_count` and `review_required`, allowing the Product/PDO workflow to show a review badge without opening every PDO.

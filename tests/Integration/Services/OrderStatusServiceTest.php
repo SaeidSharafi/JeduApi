@@ -9,14 +9,19 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
+use App\Models\Bundle;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Services\OrderStatusService;
 use Illuminate\Support\Facades\Event;
@@ -358,4 +363,36 @@ describe('OrderStatusService', function (): void {
 
             config()->set('order.provisioning.trigger', 'any_payment');
         });
+
+    it('rejects a structural Bundle line reaching payment completion with a domain invariant error', function (): void {
+        $bundle  = Bundle::factory()->create();
+        $product = Product::factory()->create([
+            'productable_type' => ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+        ]);
+        $bundleOption = ProductDeliveryOption::factory()->create([
+            'product_id'       => $product->id,
+            'fulfillment_type' => FulfillmentTypeEnum::COMPOSITE,
+            'delivery_method'  => DeliveryMethodEnum::BUNDLE,
+            'details_json'     => [],
+        ]);
+
+        $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+        $item  = OrderItem::factory()->for($order)->create([
+            'product_delivery_option_id' => $bundleOption->id,
+            'status'                     => OrderItemStatusEnum::PENDING,
+        ]);
+
+        // A parent Bundle PDO never becomes a standalone Order Item (checkout
+        // expands it into component items only). If one ever reaches payment
+        // completion the invariant guard must fail loudly instead of silently
+        // skipping or materializing a structural Enrollment.
+        expect(fn () => app(OrderStatusService::class)->handlePaymentCompletion($order->fresh()))
+            ->toThrow(\App\Exceptions\BundleStructuralInvariantException::class);
+
+        $this->assertDatabaseMissing('enrollments', [
+            'order_item_id'              => $item->id,
+            'product_delivery_option_id' => $bundleOption->id,
+        ]);
+    });
 });

@@ -96,9 +96,8 @@ final class OrderController extends Controller
     {
         Gate::authorize('create', Order::class);
         $order = $action->handle($data);
-        $order->load('items.vendor', 'payments');
 
-        return apiResponse()->created(OrderData::from($order));
+        return apiResponse()->created(OrderData::fromModel($order));
     }
 
     /**
@@ -119,9 +118,8 @@ final class OrderController extends Controller
     public function show(Order $order): ApiResponseInterface
     {
         Gate::authorize('view', $order);
-        $order->load('items.vendor', 'payments');
 
-        return apiResponse()->success(OrderData::from($order));
+        return apiResponse()->success(OrderData::fromModel($order));
     }
 
     /**
@@ -144,9 +142,8 @@ final class OrderController extends Controller
     {
         Gate::authorize('update', $order);
         $order = $action->handle($data, $order);
-        $order->load('items.vendor', 'payments');
 
-        return apiResponse()->success(OrderData::from($order));
+        return apiResponse()->success(OrderData::fromModel($order));
     }
 
     /**

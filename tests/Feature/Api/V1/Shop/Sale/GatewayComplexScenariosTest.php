@@ -228,21 +228,12 @@ describe('Gateway Payment Complex Scenarios', function (): void {
             'status'     => PublicationStatusEnum::PUBLISHED,
         ]);
 
-        // Try to purchase second option (different delivery, same underlying course)
-        postJson(route('api.v1.shop.cart.items.store'), [
+        // Cart-time Purchase Eligibility now rejects the alternate PDO before checkout.
+        $response = postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $option2->uuid,
             'quantity'                     => 1,
-        ])->assertOk();
-
-        $response = postJson(route('api.v1.shop.checkout'), [
-            'payment_method' => 'bank_transfer', 'payment_data' => [
-                'transaction_id'   => '123456',
-                'transaction_date' => verta()->formatDate(),
-                'sender_name'      => 'John Doe',
-            ],
         ]);
 
-        // Should fail duplicate ownership check (same productable_id + productable_type)
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['items']);
     });

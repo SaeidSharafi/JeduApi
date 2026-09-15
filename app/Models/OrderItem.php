@@ -22,6 +22,7 @@ final class OrderItem extends Model
     protected $fillable
         = [
             'order_id',
+            'bundle_purchase_id',
             'product_delivery_option_id',
             'vendor_id',
             'name',
@@ -47,6 +48,12 @@ final class OrderItem extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /** @return BelongsTo<BundlePurchase, $this> */
+    public function bundlePurchase(): BelongsTo
+    {
+        return $this->belongsTo(BundlePurchase::class);
     }
 
     /**

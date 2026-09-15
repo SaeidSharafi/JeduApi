@@ -24,5 +24,6 @@ it('create CategoryListItemData from Category', function (): void {
             'created_by'               => $category->created_by,
             'created_at'               => $this->toJalalitString($category->created_at),
             'updated_at'               => $this->toJalalitString($category->updated_at),
+            'parent'                   => null,
         ]);
 });

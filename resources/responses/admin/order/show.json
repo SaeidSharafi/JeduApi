@@ -12,18 +12,18 @@
     "customer_phone": "09123606622",
     "customer_first_name": "Orval",
     "customer_last_name": "Bartoletti",
-    "total_qty_ordered": 1,
-    "total_item_count": 1,
-    "subtotal": 5768710,
+    "total_qty_ordered": 3,
+    "total_item_count": 3,
+    "subtotal": 8168710,
     "discount_amount": 0,
     "tax_amount": 0,
-    "grand_total": 5768710,
-    "full_value_grand_total": 5768710,
-    "total_product_discount": 0,
+    "grand_total": 7568710,
+    "full_value_grand_total": 8168710,
+    "total_product_discount": 600000,
     "total_cart_discount": 0,
-    "total_discount": 0,
+    "total_discount": 600000,
     "total_paid": 0,
-    "balance_due": 5768710,
+    "balance_due": 7568710,
     "currency_code": "IRR",
     "customer": null,
     "payment_status": {
@@ -186,7 +186,155 @@
           "featured_price_end_date": "1404-04-15 14:13:16",
           "is_prepayment_available": true,
           "featured_price_start_date": "1404-04-14 14:13:16"
-        }
+        },
+        "bundle_purchase_id": null,
+        "type": "product"
+      },
+      {
+        "id": 1,
+        "product_delivery_option_id": 42,
+        "bundle_name": "بسته جامع مهارت‌های برنامه‌نویسی",
+        "product_name": "بسته جامع مهارت‌های برنامه‌نویسی",
+        "name": "بسته جامع مهارت‌های برنامه‌نویسی - استاندارد",
+        "sku": "BUNDLE-PDO-42",
+        "base_value": 2400000,
+        "selling_price": 1800000,
+        "composition_version": 3,
+        "status": {
+          "value": "active",
+          "label": "فعال"
+        },
+        "components": [
+          {
+            "id": 2,
+            "product_delivery_option_id": 12,
+            "name": "دوره جامع پایتون - دسترسی ویدیویی آنلاین",
+            "sku": "spotplayer-pdo-1",
+            "price": 1500000,
+            "total": 1125000,
+            "paid_amount": 1125000,
+            "total_discount_amount": 375000,
+            "status": {
+              "value": "completed",
+              "label": "تکمیل شده"
+            },
+            "enrollment": {
+              "id": 55,
+              "uuid": "b2000001-0000-4000-a000-000000000055",
+              "enrollment_status": {
+                "value": "active",
+                "label": "فعال"
+              },
+              "provisioning_status": {
+                "value": "healthy",
+                "label": "بدون مشکل / سالم"
+              },
+              "revocation_status": null
+            },
+            "vendor": {
+              "id": 5,
+              "name": "Anderson-O'Hara",
+              "email": "jerel.hagenes@example.net",
+              "phone": "02952939309",
+              "phone2": "02686720867",
+              "address": "7371 Mitchel Manor Apt. 909\nNorth Melodyview, MT 82030-1243",
+              "map_location": "http://www.ohara.com/rerum-necessitatibus-rerum-repudiandae-vero-magni-ut-velit",
+              "logo_url": "https://via.placeholder.com/640x480.png/0077cc?text=voluptatem",
+              "favicon_url": "https://via.placeholder.com/640x480.png/00aa55?text=inventore",
+              "social_links": {
+                "facebook": "http://howe.com/",
+                "twitter": "http://franecki.org/quod-qui-magnam-consequatur-perferendis-debitis.html",
+                "instagram": "http://www.fay.org/eos-earum-fugiat-sint-sit-sint-et",
+                "linkedin": "http://mckenzie.com/molestiae-quia-animi-voluptas-blanditiis"
+              },
+              "theme_options": {
+                "primary_color": "#21f7e5",
+                "secondary_color": "#004c36",
+                "font_family": "est",
+                "layout": "full-width"
+              },
+              "media": null,
+              "created_at": "1404-04-14 14:13:16",
+              "updated_at": "1404-04-14 14:13:16"
+            },
+            "product_snapshot": {
+              "id": 12,
+              "sku": "spotplayer-pdo-1",
+              "name": "دوره جامع پایتون - دسترسی ویدیویی آنلاین",
+              "price": 1500000,
+              "status": {
+                "value": "published",
+                "label": "منتشر شده"
+              },
+              "details": []
+            }
+          },
+          {
+            "id": 3,
+            "product_delivery_option_id": 9,
+            "name": "وبینار عکاسی دیجیتال - دسترسی آنلاین (Skyroom)",
+            "sku": "skyroom-pdo-9",
+            "price": 900000,
+            "total": 675000,
+            "paid_amount": 675000,
+            "total_discount_amount": 225000,
+            "status": {
+              "value": "completed",
+              "label": "تکمیل شده"
+            },
+            "enrollment": {
+              "id": 56,
+              "uuid": "b2000001-0000-4000-a000-000000000056",
+              "enrollment_status": {
+                "value": "active",
+                "label": "فعال"
+              },
+              "provisioning_status": {
+                "value": "healthy",
+                "label": "بدون مشکل / سالم"
+              },
+              "revocation_status": null
+            },
+            "vendor": {
+              "id": 5,
+              "name": "Anderson-O'Hara",
+              "email": "jerel.hagenes@example.net",
+              "phone": "02952939309",
+              "phone2": "02686720867",
+              "address": "7371 Mitchel Manor Apt. 909\nNorth Melodyview, MT 82030-1243",
+              "map_location": "http://www.ohara.com/rerum-necessitatibus-rerum-repudiandae-vero-magni-ut-velit",
+              "logo_url": "https://via.placeholder.com/640x480.png/0077cc?text=voluptatem",
+              "favicon_url": "https://via.placeholder.com/640x480.png/00aa55?text=inventore",
+              "social_links": {
+                "facebook": "http://howe.com/",
+                "twitter": "http://franecki.org/quod-qui-magnam-consequatur-perferendis-debitis.html",
+                "instagram": "http://www.fay.org/eos-earum-fugiat-sint-sit-sint-et",
+                "linkedin": "http://mckenzie.com/molestiae-quia-animi-voluptas-blanditiis"
+              },
+              "theme_options": {
+                "primary_color": "#21f7e5",
+                "secondary_color": "#004c36",
+                "font_family": "est",
+                "layout": "full-width"
+              },
+              "media": null,
+              "created_at": "1404-04-14 14:13:16",
+              "updated_at": "1404-04-14 14:13:16"
+            },
+            "product_snapshot": {
+              "id": 9,
+              "sku": "skyroom-pdo-9",
+              "name": "وبینار عکاسی دیجیتال - دسترسی آنلاین (Skyroom)",
+              "price": 900000,
+              "status": {
+                "value": "published",
+                "label": "منتشر شده"
+              },
+              "details": []
+            }
+          }
+        ],
+        "type": "bundle"
       }
     ]
   },

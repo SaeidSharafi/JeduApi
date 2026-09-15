@@ -11,7 +11,8 @@ enum ProvisioningTriggerEnum: string
     /** @use AdvanceEnum<value-of<self>> */
     use AdvanceEnum;
 
-    case PAYMENT = 'payment';
-    case RETRY   = 'retry';
-    case MANUAL  = 'manual';
+    case PAYMENT    = 'payment';
+    case RETRY      = 'retry';
+    case MANUAL     = 'manual';
+    case REVOCATION = 'revocation';
 }

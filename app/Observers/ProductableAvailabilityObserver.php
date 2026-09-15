@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Contracts\ProductableContract;
+use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\BundleReviewReasonEnum;
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
+use App\Services\BundleAvailabilityPropagationService;
 use Illuminate\Database\Eloquent\Model;
 
 final class ProductableAvailabilityObserver
@@ -18,6 +21,8 @@ final class ProductableAvailabilityObserver
         'difficulty_level',
         'slug',
     ];
+
+    public function __construct(private BundleAvailabilityPropagationService $bundlePropagation) {}
 
     /**
      * @param  Model&ProductableContract<Model>  $productable
@@ -34,6 +39,15 @@ final class ProductableAvailabilityObserver
 
             if ($productIds !== []) {
                 ProductAvailabilityCacheInvalidated::dispatch($productIds);
+
+                if ($productable->status->value === PublicationStatusEnum::ARCHIVED->value) {
+                    $this->bundlePropagation->requireReviewForComponentProducts(
+                        $productIds,
+                        [BundleReviewReasonEnum::COMPONENT_ARCHIVED->value],
+                    );
+                } else {
+                    $this->bundlePropagation->invalidateForComponentProducts($productIds);
+                }
             }
         }
 

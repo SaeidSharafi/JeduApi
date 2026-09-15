@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\Enrollment\AdvancedProvisioningDiagnosticsController;
 use App\Http\Controllers\Api\Admin\Enrollment\ChangeEnrollmentStatusController;
+use App\Http\Controllers\Api\Admin\Enrollment\ConfirmEnrollmentRevocationController;
 use App\Http\Controllers\Api\Admin\Enrollment\EnrollmentController;
 use App\Http\Controllers\Api\Admin\Enrollment\ProvisioningDiagnosticsController;
 use App\Http\Controllers\Api\Admin\Enrollment\ProvisioningPlanController;
 use App\Http\Controllers\Api\Admin\Enrollment\ResolveProvisioningController;
+use App\Http\Controllers\Api\Admin\Enrollment\RetryEnrollmentRevocationController;
 use App\Http\Controllers\Api\Admin\Enrollment\RetryProvisioningController;
 use App\Http\Controllers\Api\Admin\Enrollment\WaiveProvisioningController;
 use App\Http\Controllers\Api\Admin\Order\ApproveOrderController;
+use App\Http\Controllers\Api\Admin\Order\BundlePurchaseRefundController;
 use App\Http\Controllers\Api\Admin\Order\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\Order\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\Order\OrderController;
@@ -19,6 +22,7 @@ use App\Http\Controllers\Api\Admin\Order\OrderRefundController;
 use App\Http\Controllers\Api\Admin\Order\PaymentController;
 use App\Http\Controllers\Api\Admin\Order\RefundController;
 use App\Http\Controllers\Api\Admin\Order\RefundUpdateStatusController;
+use App\Http\Controllers\Api\Admin\Order\RetryBundlePurchaseRevocationController;
 use App\Http\Controllers\Api\Admin\Payment\DigipayAdminController;
 use App\Http\Controllers\Api\Admin\Promotion\DiscountInfoController;
 use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionController;
@@ -51,6 +55,12 @@ Route::apiResource('refunds', RefundController::class);
 
 Route::post('orders/{order}/refund', [OrderRefundController::class, 'store'])
     ->name('orders.refund');
+Route::post('bundle-purchases/{bundlePurchase}/refund', [BundlePurchaseRefundController::class, 'store'])
+    ->name('bundle-purchases.refund')
+    ->whereNumber('bundlePurchase');
+Route::post('bundle-purchases/{bundlePurchase}/retry-revocation', RetryBundlePurchaseRevocationController::class)
+    ->name('bundle-purchases.retry-revocation')
+    ->whereNumber('bundlePurchase');
 Route::put('refunds/{refund}/status', RefundUpdateStatusController::class)
     ->name('refunds.status');
 
@@ -83,6 +93,12 @@ Route::post('enrollments/{enrollment}/retry-provisioning', RetryProvisioningCont
 Route::post('enrollments/{enrollment}/retry-provisioning/{provider}', RetryProvisioningController::class)
     ->name('enrollments.retry-provisioning.provider')
     ->whereIn('provider', ['ims', 'moodle', 'spotplayer', 'bbb', 'skyroom', 'moodle_quiz']);
+Route::post('enrollments/{enrollment}/retry-revocation', RetryEnrollmentRevocationController::class)
+    ->name('enrollments.retry-revocation')
+    ->whereNumber('enrollment');
+Route::post('enrollments/{enrollment}/confirm-revocation', ConfirmEnrollmentRevocationController::class)
+    ->name('enrollments.confirm-revocation')
+    ->whereNumber('enrollment');
 Route::post('enrollments/{enrollment}/provisioning/resolve', ResolveProvisioningController::class)
     ->name('enrollments.provisioning.resolve');
 Route::post('enrollments/{enrollment}/provisioning/waive', WaiveProvisioningController::class)

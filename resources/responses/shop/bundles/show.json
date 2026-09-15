@@ -1,0 +1,64 @@
+{
+    "message": "Operation successful.",
+    "data": {
+        "slug": "qui-qui-quia-aut-distinctio-odio-exercitationem",
+        "full_name": "Rubye Cremin",
+        "short_name": "Estella Armstrong",
+        "description": "Recusandae nemo autem expedita provident numquam. Unde qui qui ducimus veniam dolor. Quo et ducimus recusandae repellat quaerat ipsam.",
+        "faq": null,
+        "additional_info": null,
+        "properties": null,
+        "status": "published",
+        "productable_type": "bundle",
+        "product_id": 1,
+        "product_name": "Rubye Cremin",
+        "options": [
+            {
+                "uuid": "01a07b30-390e-715e-8b4b-c5d184a22e3f",
+                "sku": "online_service8",
+                "name": "Keven Beier Jr.",
+                "delivery_method": "bundle",
+                "fulfillment_type": "composite",
+                "base_value": 100000,
+                "selling_price": 75000,
+                "discount_amount": 25000,
+                "discount_percentage": 25,
+                "current_standalone_total": 100000,
+                "is_available": true,
+                "remaining_capacity": 3,
+                "components": [
+                    {
+                        "productable_type": "course",
+                        "productable_id": 1,
+                        "productable_slug": "illo-ut-reiciendis-quos-quia-quia-dolor-alias",
+                        "productable_name": "کاغذ آسمان سریال",
+                        "product_id": 2,
+                        "product_slug": "autem-officiis-voluptatibus-quos-non-commodi-omnis-ipsam-voluptatibus",
+                        "product_name": "Miss Vivian Bergnaum PhD",
+                        "uuid": "01a07b30-3909-724f-867e-cca06dc832a0",
+                        "sku": "offline_service6839",
+                        "name": "Annette Emmerich",
+                        "delivery_method": "lms_moodle",
+                        "fulfillment_type": "online_service",
+                        "base_price": 100000,
+                        "allocation": 75000,
+                        "provider_presentation": "Moodle",
+                        "schedule_days": [
+                            "saturday"
+                        ],
+                        "access_days": null,
+                        "available_from": null,
+                        "available_to": null,
+                        "registration_start_date": null,
+                        "registration_end_date": null,
+                        "format": null,
+                        "is_available": false,
+                        "teachers": []
+                    }
+                ]
+            }
+        ],
+        "media": []
+    },
+    "metadata": []
+}

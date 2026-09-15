@@ -356,6 +356,15 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
                 'status'           => PublicationStatusEnum::PUBLISHED,
                 'is_visible'       => true,
             ]);
+            $giftCourse  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+            $giftProduct = Product::factory()->create([
+                'vendor_id'        => $vendor->id,
+                'term_id'          => $term->id,
+                'productable_id'   => $giftCourse->id,
+                'productable_type' => MorphTypeEnum::COURSE->value,
+                'status'           => PublicationStatusEnum::PUBLISHED,
+                'is_visible'       => true,
+            ]);
 
             $mainOption = ProductDeliveryOption::factory()->create([
                 'product_id' => $product->id,
@@ -366,7 +375,7 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
             ]);
 
             $giftOption = ProductDeliveryOption::factory()->create([
-                'product_id' => $product->id,
+                'product_id' => $giftProduct->id,
                 'price'      => 50000,
                 'capacity'   => 10,
                 'uuid'       => Str::uuid()->toString(),

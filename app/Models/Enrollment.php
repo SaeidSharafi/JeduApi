@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\ProvisioningOutcomeStatusEnum;
 use App\Enums\ProvisioningStatusEnum;
@@ -39,6 +40,7 @@ final class Enrollment extends Model
             'provisioning_data',
             'provisioning_plan',
             'provisioning_status',
+            'revocation_status',
             'notes',
         ];
 
@@ -132,6 +134,23 @@ final class Enrollment extends Model
         return true;
     }
 
+    /**
+     * Whether every required external provider access for this Enrollment has
+     * been revoked. A never-required revocation (null) is not complete.
+     */
+    public function isRevocationComplete(): bool
+    {
+        return $this->revocation_status === EnrollmentRevocationStatusEnum::REVOKED;
+    }
+
+    /**
+     * Whether a revocation was started but has not yet succeeded.
+     */
+    public function hasIncompleteRevocation(): bool
+    {
+        return $this->revocation_status !== null && ! $this->isRevocationComplete();
+    }
+
     protected static function boot(): void
     {
         parent::boot();
@@ -168,6 +187,7 @@ final class Enrollment extends Model
             'provisioning_data'   => 'array',
             'provisioning_plan'   => 'array',
             'provisioning_status' => ProvisioningStatusEnum::class,
+            'revocation_status'   => EnrollmentRevocationStatusEnum::class,
             'created_at'          => 'datetime',
             'updated_at'          => 'datetime',
         ];

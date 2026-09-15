@@ -6,14 +6,21 @@ namespace App\Actions\Admin\Order;
 
 use App\Actions\Admin\Discounts\RecordPromotionUsageAction;
 use App\Actions\Admin\Discounts\ValidatePromotionPerCustomerLimitAction;
+use App\Actions\Admin\ProductDeliveryOption\ValidateBundleCompositionAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
+use App\Enums\Product\BundleUnavailableReasonEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
+use App\Models\BundleComponent;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
+use App\Models\User;
+use App\Services\BundleAvailabilityService;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\ProductPriceService;
 use App\Services\ProductReservationService;
@@ -28,8 +35,11 @@ final readonly class CreateOrderAction
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
         private ProductPriceService $productPriceService,
         private ProductReservationService $productReservationService,
+        private BundleAvailabilityService $bundleAvailability,
         private ValidatePromotionPerCustomerLimitAction $validatePromotionPerCustomerLimit,
         private RecordPromotionUsageAction $recordPromotionUsage,
+        private CreateBundlePurchaseAction $createBundlePurchase,
+        private ValidateBundleCompositionAction $validateBundleComposition,
     ) {}
 
     /**
@@ -39,21 +49,33 @@ final readonly class CreateOrderAction
      */
     public function handle(OrderCreateData $data): Order
     {
-        $context                  = $this->orderCalculationService->calculate($data);
-        $initialDeliveryOptionIds = $context->items->pluck('product_delivery_option.id');
-        $deliveryOptions          = ProductDeliveryOption::query()
-            ->whereIn('id', $initialDeliveryOptionIds)
-            ->with('product')
-            ->get();
-        $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
+        $context = $this->orderCalculationService->calculate($data);
+        $order   = DB::transaction(function () use ($data, $context): Order {
+            User::query()->whereKey($context->customer->id)->lockForUpdate()->firstOrFail();
+            $initialDeliveryOptionIds = $context->items->pluck('product_delivery_option.id');
+            $deliveryOptions          = ProductDeliveryOption::query()
+                ->whereIn('id', $initialDeliveryOptionIds)
+                ->with('product')
+                ->get();
+            $parentIds = $deliveryOptions
+                ->filter(fn (ProductDeliveryOption $option): bool => $option->product->productable_type === ProductableEnum::BUNDLE->value)
+                ->modelKeys();
+            ProductDeliveryOption::query()->whereIn('id', $parentIds)->orderBy('id')->lockForUpdate()->get();
+            $componentIds = BundleComponent::query()->whereIn('bundle_product_delivery_option_id', $parentIds)
+                ->pluck('component_product_delivery_option_id');
+            ProductDeliveryOption::query()->whereIn('id', $initialDeliveryOptionIds->merge($componentIds)->unique())
+                ->orderBy('id')->lockForUpdate()->get();
+            $deliveryOptions->load('product', 'bundleComponents.product');
+            $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
+            $context = $this->orderCalculationService->calculate($data);
 
-        $order = DB::transaction(function () use ($data, $context): Order {
             // Enforce the per-customer promotion limit before anything else is
             // reserved/created in this transaction (locks each applied promotion row).
             $this->validatePromotionPerCustomerLimit->handle($context);
 
             $originalInputItems = collect($data->items)->keyBy('product_delivery_option_id');
             $orderItemsData     = new Collection();
+            $bundles            = new Collection();
 
             foreach ($context->items as $key => $calculatedItem) {
                 // --- PESSIMISTIC LOCK AND RE-FETCH (PRESERVED) ---
@@ -83,6 +105,13 @@ final readonly class CreateOrderAction
                 // Seats are reserved atomically under the row lock so concurrent
                 // orders can never oversell a limited-capacity delivery option.
                 $this->productReservationService->reserve($deliveryOption->id, $calculatedItem->qty);
+
+                if ($deliveryOption->product->productable_type === ProductableEnum::BUNDLE->value) {
+                    $deliveryOption->load('bundleComponents.product.vendor', 'bundleComponents.product.productable', 'bundleComponents.product.term');
+                    $bundles->push($deliveryOption);
+
+                    continue;
+                }
 
                 // --- GET PRICING METADATA ---
                 $priceData = $this->productPriceService->getPriceDataForOption($deliveryOption);
@@ -172,6 +201,9 @@ final readonly class CreateOrderAction
             ]);
 
             $order->items()->createMany($orderItemsData->all());
+            foreach ($bundles as $bundle) {
+                $this->createBundlePurchase->handle($order, $bundle);
+            }
             $order->refresh();
 
             // Record one usage slot per applied Promotion — the pending slot
@@ -201,6 +233,38 @@ final readonly class CreateOrderAction
                 "items.{$key}" => __('messages.order.item_not_available',
                     ['product' => $deliveryOption->name]),
             ]);
+        }
+
+        if ($deliveryOption->product->productable_type === ProductableEnum::BUNDLE->value) {
+            $status = $this->bundleAvailability->bundlePurchaseStatus($deliveryOption, $itemData->composition_version, $itemData->qty_ordered);
+            if (! $status['available']) {
+                if ($status['reason'] === BundleUnavailableReasonEnum::VERSION_CHANGED) {
+                    throw ValidationException::withMessages([
+                        "items.{$key}" => __('messages.product.bundle_changed'),
+                    ]);
+                }
+                if ($status['reason'] === BundleUnavailableReasonEnum::CAPACITY_EXCEEDED) {
+                    throw ValidationException::withMessages([
+                        "items.{$key}" => __('messages.order.insufficient_capacity', [
+                            'product'   => $deliveryOption->name,
+                            'available' => $status['remaining'],
+                        ]),
+                    ]);
+                }
+                throw ValidationException::withMessages([
+                    "items.{$key}" => __('messages.order.item_not_available', ['product' => $deliveryOption->name]),
+                ]);
+            }
+            if ($itemData->qty_ordered !== 1 || $itemData->payment_type !== OrderItemPaymentTypeEnum::FULL_PAYMENT->value) {
+                throw ValidationException::withMessages([
+                    "items.{$key}" => __('messages.order.prepayment_not_available', ['product' => $deliveryOption->name]),
+                ]);
+            }
+            $this->validateBundleComposition->handle($deliveryOption, $deliveryOption->bundleComponents
+                ->map(fn (ProductDeliveryOption $component): array => [
+                    'product_delivery_option_id' => $component->id,
+                    'allocation'                 => $component->getRelation('pivot')->allocation,
+                ])->all());
         }
 
         // Check registration window (Gap #3 fix)
@@ -251,8 +315,10 @@ final readonly class CreateOrderAction
 
         // --- Validate Payment Intent ---
         // If admin chose 'pre_payment', make sure the product allows it.
-        if ($itemData->payment_type === 'pre_payment'
-            && ! $deliveryOption->is_prepayment_available
+        if ($itemData->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT->value
+            && ($deliveryOption->fulfillment_type             === FulfillmentTypeEnum::COMPOSITE
+                || $deliveryOption->product->productable_type === ProductableEnum::BUNDLE->value
+                || ! $deliveryOption->is_prepayment_available)
         ) {
             throw ValidationException::withMessages([
                 "items.{$key}" => __('messages.order.prepayment_not_available', [

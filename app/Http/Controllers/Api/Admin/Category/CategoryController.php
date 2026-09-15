@@ -43,6 +43,7 @@ final class CategoryController extends Controller
             ->allowedFilters(['name', 'slug', 'status'])
             ->allowedSorts(['name', 'slug', 'status'])
             ->allowedIncludes(['createdBy'])
+            ->with('parent')
             ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 

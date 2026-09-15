@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    use App\Traits\HasMetaTagsMigration;
+
     public function up(): void
     {
         Schema::create('bundles', function (Blueprint $table): void {
@@ -21,6 +23,7 @@ return new class extends Migration
             $table->json('additional_info')->nullable();
             $table->json('faq')->nullable();
             $table->string('status')->default('draft')->index();
+            $this->addMetaTagColumns($table);
             $table->foreignId('created_by')->nullable()->constrained('staff')->nullOnDelete();
             $table->timestamps();
         });

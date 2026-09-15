@@ -8,6 +8,7 @@ use App\Data\Shop\Product\Course\ProductFilterData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Data\Shop\Search\SearchData;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Exceptions\CustomValidationException;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
@@ -81,6 +82,7 @@ final class GlobalSearchService
                 $results = Product::search($query)
                     ->where('status', PublicationStatusEnum::PUBLISHED->value)
                     ->where('is_visible', true)
+                    ->whereNotIn('productable_type', [ProductableEnum::BUNDLE->value])
                     ->take($limit * 2)->get();
 
                 return $results
@@ -318,7 +320,11 @@ final class GlobalSearchService
 
     private function buildProductFilters(SearchData $searchData): string
     {
-        $baseFilters = ['status:=published', 'is_visible:=true'];
+        $baseFilters = [
+            'status:=published',
+            'is_visible:=true',
+            'productable_type:!='.ProductableEnum::BUNDLE->value,
+        ];
 
         if (! empty($searchData->productable_type)) {
             $baseFilters[] = "productable_type:={$searchData->productable_type}";

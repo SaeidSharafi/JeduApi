@@ -169,7 +169,12 @@ describe('store', function (): void {
 describe('update', function (): void {
     it('should update cart item quantity for authenticated user', function (): void {
         $user           = User::factory()->create();
-        $deliveryOption = ProductDeliveryOption::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory(
+            [
+                'is_prepayment_available' => true,
+                'prepayment_amount'       => 10,
+            ]
+        )->create();
         $this->customer($user);
 
         $cart     = Cart::factory()->create(['user_id' => $user->id]);
@@ -367,7 +372,12 @@ describe('CartController - Guest Users', function (): void {
 
     describe('update', function (): void {
         it('should update cart item quantity for guest user', function (): void {
-            $deliveryOption = ProductDeliveryOption::factory()->create();
+            $deliveryOption = ProductDeliveryOption::factory()->create(
+                [
+                    'is_prepayment_available' => true,
+                    'prepayment_amount'       => 10,
+                ]
+            );
             $guestToken     = Str::uuid()->toString();
 
             $cart     = Cart::factory()->create(['guest_token' => $guestToken]);

@@ -10,7 +10,9 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderProvisioningTriggerEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Events\OrderStatusUpdatedEvent;
+use App\Exceptions\BundleStructuralInvariantException;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Database\Eloquent\Collection;
@@ -138,6 +140,16 @@ final class OrderStatusService
      */
     private function completeOrderItemAfterPayment(OrderItem $item): bool
     {
+        // A structural Bundle line is not an enrollable entitlement: its component
+        // seats were reserved/consumed at checkout and each component materializes
+        // its own enrollment. Reaching this point for a parent Bundle PDO is a
+        // domain-invariant violation — reject it before any seat is consumed or
+        // the item is completed so the payment completion stays atomic.
+        $item->loadMissing('productDeliveryOption.product');
+        if ($item->productDeliveryOption?->product?->productable_type === ProductableEnum::BUNDLE->value) {
+            throw new BundleStructuralInvariantException();
+        }
+
         $newStatus  = OrderItemStatusEnum::COMPLETED;
         $wasPending = $item->status !== $newStatus;
 

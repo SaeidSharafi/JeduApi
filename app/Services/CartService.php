@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
 use App\Contracts\CartIdentifier;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Order\OrderCreateData;
@@ -15,6 +16,7 @@ use App\Data\Shop\Cart\CartItemData;
 use App\Data\Shop\Cart\UpdateCartItemData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -36,6 +38,7 @@ final readonly class CartService
         private OrderCalculationService $orderCalculationService,
         private PromotionService $promotionService,
         private ProductPriceService $productPriceService,
+        private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
     ) {}
 
     public function findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart
@@ -86,11 +89,13 @@ final readonly class CartService
             ->first();
         $this->validateQuantity($deliveryOption, $data->quantity, $existingItem);
         $this->validatePaymentType($deliveryOption, $data->payment_type);
+        $this->validatePurchaseEligibility($cart, $deliveryOption);
         // Right now, we do not have any products that allow multiple quantities in cart
         // @codeCoverageIgnoreStart
         if ($existingItem) {
             $existingItem->update([
-                'quantity' => $existingItem->quantity + $data->quantity,
+                'quantity'            => $existingItem->quantity + $data->quantity,
+                'composition_version' => $this->compositionVersionFor($deliveryOption),
             ]);
         } // @codeCoverageIgnoreEnd
         else {
@@ -98,6 +103,7 @@ final readonly class CartService
                 'product_delivery_option_id' => $deliveryOption->id,
                 'payment_type'               => $data->payment_type->value,
                 'quantity'                   => $data->quantity,
+                'composition_version'        => $this->compositionVersionFor($deliveryOption),
             ]);
 
         }
@@ -121,9 +127,12 @@ final readonly class CartService
             ->firstOrFail();
         $deliveryOption = $cartItem->productDeliveryOption()->with('product')->firstOrFail();
         $this->validateQuantity($deliveryOption, $data->quantity, $cartItem);
+        $this->validatePaymentType($deliveryOption, $data->payment_type);
+        $this->validatePurchaseEligibility($cart, $deliveryOption);
         $cartItem->update([
-            'quantity'     => $data->quantity,
-            'payment_type' => $data->payment_type,
+            'quantity'            => $data->quantity,
+            'payment_type'        => $data->payment_type,
+            'composition_version' => $this->compositionVersionFor($deliveryOption),
         ]);
 
         // Reload cart with relationships
@@ -247,7 +256,15 @@ final readonly class CartService
             ->first();
 
         if (! $userCart) {
-            // No user cart exists, convert guest cart to user cart
+            // No user cart exists, convert guest cart to user cart.
+            // Refresh each item snapshot against the current PDO state before
+            // the guest cart is re-bound to the authenticated user.
+            foreach ($guestCart->items as $guestItem) {
+                $guestItem->update([
+                    'composition_version' => $this->compositionVersionFor($guestItem->productDeliveryOption),
+                ]);
+            }
+
             $guestCart->update([
                 'user_id'     => $userId,
                 'guest_token' => null,
@@ -264,9 +281,11 @@ final readonly class CartService
                 ->first();
 
             if (! $existingItem) {
-                // Move item to user cart
+                // Move item to user cart, refreshing the composition version
+                // snapshot against the current PDO state.
                 $guestItem->update([
-                    'cart_id' => $userCart->id,
+                    'cart_id'             => $userCart->id,
+                    'composition_version' => $this->compositionVersionFor($guestItem->productDeliveryOption),
                 ]);
 
                 continue;
@@ -282,7 +301,8 @@ final readonly class CartService
             // and drop the guest duplicate together with the guest cart.
             if ($allowsMultipleQuantity && $existingItem->payment_type === $guestItem->payment_type) {
                 $existingItem->update([
-                    'quantity' => $existingItem->quantity + $guestItem->quantity,
+                    'quantity'            => $existingItem->quantity + $guestItem->quantity,
+                    'composition_version' => $this->compositionVersionFor($deliveryOption),
                 ]);
             }
         }
@@ -417,6 +437,31 @@ final readonly class CartService
         );
     }
 
+    /**
+     * Return the PDO composition_version to snapshot onto a cart item,
+     * or null when the option is not backed by a bundle product.
+     */
+    private function compositionVersionFor(ProductDeliveryOption $deliveryOption): ?int
+    {
+        return $deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value
+            ? $deliveryOption->composition_version
+            : null;
+    }
+
+    private function validatePurchaseEligibility(Cart $cart, ProductDeliveryOption $deliveryOption): void
+    {
+        $deliveryOptionIds = $cart->items()
+            ->pluck('product_delivery_option_id')
+            ->push($deliveryOption->id)
+            ->unique();
+        $deliveryOptions = ProductDeliveryOption::query()
+            ->whereIn('id', $deliveryOptionIds)
+            ->with('product')
+            ->get();
+
+        $this->validateNoDuplicatePurchases->handle($cart->user()->first(), $deliveryOptions);
+    }
+
     private function validateQuantity(
         ProductDeliveryOption $deliveryOption,
         int $quantity = 1,
@@ -450,7 +495,9 @@ final readonly class CartService
         ProductDeliveryOption $deliveryOption,
         OrderItemPaymentTypeEnum $paymentType
     ): void {
-        $allowPrePayment = $deliveryOption->is_prepayment_available ?? false;
+        $allowPrePayment = $deliveryOption->fulfillment_type !== FulfillmentTypeEnum::COMPOSITE
+            && $deliveryOption->product->productable_type    !== ProductableEnum::BUNDLE->value
+            && ($deliveryOption->is_prepayment_available ?? false);
 
         if (! $allowPrePayment && $paymentType === OrderItemPaymentTypeEnum::PRE_PAYMENT) {
             throw ValidationException::withMessages([

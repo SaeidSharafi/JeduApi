@@ -29,13 +29,19 @@ describe('RefundUpdateStatusController', function (): void {
             'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
             'method'      => App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER,
         ]);
-        $orderItem->enrollment()
+        $enrollment = $orderItem->enrollment()
             ->create([
                 'customer_id'                => $order->customer_id,
                 'order_id'                   => $order->id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
                 'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
+        // No external provider access, so revocation completes immediately.
+        $enrollment->update([
+            'provisioning_plan' => [
+                'version' => 1, 'providers' => [], 'status' => 'healthy', 'resolved_at' => now()->toISOString(),
+            ],
+        ]);
         $refund = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
@@ -82,13 +88,19 @@ describe('RefundUpdateStatusController', function (): void {
             'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
             'method'      => App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER,
         ]);
-        $orderItem->enrollment()
+        $enrollment = $orderItem->enrollment()
             ->create([
                 'customer_id'                => $order->customer_id,
                 'order_id'                   => $order->id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
                 'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
+        // No external provider access, so revocation completes immediately.
+        $enrollment->update([
+            'provisioning_plan' => [
+                'version' => 1, 'providers' => [], 'status' => 'healthy', 'resolved_at' => now()->toISOString(),
+            ],
+        ]);
         $refund = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::COMPLETED, // Not pending
@@ -118,13 +130,19 @@ describe('RefundUpdateStatusController', function (): void {
             'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
             'method'      => App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER,
         ]);
-        $orderItem->enrollment()
+        $enrollment = $orderItem->enrollment()
             ->create([
                 'customer_id'                => $order->customer_id,
                 'order_id'                   => $order->id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
                 'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
+        // No external provider access, so revocation completes immediately.
+        $enrollment->update([
+            'provisioning_plan' => [
+                'version' => 1, 'providers' => [], 'status' => 'healthy', 'resolved_at' => now()->toISOString(),
+            ],
+        ]);
         $refund = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,

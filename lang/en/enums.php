@@ -99,6 +99,12 @@ return [
         'expired'          => 'Expired',
         'cancelled'        => 'Cancelled',
     ],
+    'EnrollmentRevocationStatusEnum' => [
+        'pending'                => 'Revocation Pending',
+        'failed'                 => 'Revocation Failed',
+        'manual_action_required' => 'Manual Revocation Required',
+        'revoked'                => 'Access Revoked',
+    ],
     'ProvisioningStatusEnum' => [
         'ready'                  => 'Ready',
         'in_progress'            => 'In Progress',
@@ -243,6 +249,16 @@ return [
         'failed'             => 'Failed',
         'refunded'           => 'Refunded',
         'partially_refunded' => 'Partially Refunded',
+    ],
+    'BundlePurchaseStatusEnum' => [
+        'pending_payment'    => 'Pending Payment',
+        'provisioning'       => 'Provisioning',
+        'active'             => 'Active',
+        'partially_failed'   => 'Partially Failed',
+        'failed'             => 'Failed',
+        'revocation_pending' => 'Revocation Pending',
+        'refunded'           => 'Refunded',
+        'cancelled'          => 'Cancelled',
     ],
     'PaymentMethodEnum' => [
         'bank_transfer'  => 'Bank Transfer',

@@ -17,6 +17,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 /**
@@ -153,6 +154,73 @@ final class ProductQueryService
     public function availableProducts(): self
     {
         $this->applyAvailabilityFilters();
+
+        return $this;
+    }
+
+    /**
+     * Filter Bundles to those with at least one saleable option and only
+     * saleable components.
+     */
+    public function availableBundles(): self
+    {
+        $now = now();
+
+        $this->query
+            ->publishedAndVisible()
+            ->publishedProductable()
+            ->activeTerm()
+            ->whereHas('productDeliveryOptions', function (Builder $optionQuery) use ($now): void {
+                $optionQuery
+                    ->where('status', PublicationStatusEnum::PUBLISHED)
+                    ->whereNull('bundle_review_required_at')
+                    ->where(function (Builder $query) use ($now): void {
+                        $query->whereNull('registration_start_date')
+                            ->orWhere('registration_start_date', '<=', $now);
+                    })
+                    ->where(function (Builder $query) use ($now): void {
+                        $query->whereNull('registration_end_date')
+                            ->orWhere('registration_end_date', '>=', $now);
+                    })
+                    ->where(function (Builder $query) use ($now): void {
+                        $query->whereNull('available_from')
+                            ->orWhere('available_from', '<=', $now);
+                    })
+                    ->where(function (Builder $query) use ($now): void {
+                        $query->whereNull('available_to')
+                            ->orWhere('available_to', '>=', $now);
+                    })
+                    ->whereHas('bundleComponents')
+                    ->whereDoesntHave('bundleComponents', function (Builder $componentQuery) use ($now): void {
+                        $componentQuery
+                            ->where(function (Builder $query) use ($now): void {
+                                $query->where('status', '!=', PublicationStatusEnum::PUBLISHED)
+                                    ->orWhere(function (Builder $dateQuery) use ($now): void {
+                                        $dateQuery->whereNotNull('registration_start_date')
+                                            ->where('registration_start_date', '>', $now);
+                                    })
+                                    ->orWhere(function (Builder $dateQuery) use ($now): void {
+                                        $dateQuery->whereNotNull('registration_end_date')
+                                            ->where('registration_end_date', '<', $now);
+                                    })
+                                    ->orWhere(function (Builder $dateQuery) use ($now): void {
+                                        $dateQuery->whereNotNull('available_from')
+                                            ->where('available_from', '>', $now);
+                                    })
+                                    ->orWhere(function (Builder $dateQuery) use ($now): void {
+                                        $dateQuery->whereNotNull('available_to')
+                                            ->where('available_to', '<', $now);
+                                    })
+                                    ->orWhere(function (Builder $capacityQuery): void {
+                                        $capacityQuery->whereNotNull('capacity')
+                                            ->whereColumn('capacity', '<=', DB::raw('(enrolled_count + reserved_count)'));
+                                    });
+                            })
+                            ->orWhereDoesntHave('product', function (Builder $productQuery): void {
+                                $productQuery->publishedAndVisible()->publishedProductable()->activeTerm();
+                            });
+                    });
+            });
 
         return $this;
     }

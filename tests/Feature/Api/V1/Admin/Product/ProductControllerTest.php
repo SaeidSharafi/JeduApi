@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Bundle;
 use App\Models\Category;
 use App\Models\Product;
 
@@ -155,6 +156,31 @@ describe('Controller Tests', function (): void {
         expect($response->json('data.category_ids'))->toContain($this->category->id);
     });
 
+    it('should create a Bundle product through the shared product endpoint', function (): void {
+        $bundle = Bundle::factory()->create();
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
+
+        $response = $this->postJson(route('api.v1.admin.products.store'), [
+            ...Product::factory()->make()->toArray(),
+            'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+            'name'             => 'Bundle Product',
+            'force_create'     => true,
+            'categories'       => [$this->category->id],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.product_type.value', App\Enums\System\MorphTypeEnum::BUNDLE->value)
+            ->assertJsonPath('data.product_data.id', $bundle->id);
+
+        $this->assertDatabaseHas('products', [
+            'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+            'slug'             => $bundle->slug,
+            'name'             => 'Bundle Product',
+        ]);
+    });
+
     it('should show a product', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW]);
         $product   = Product::factory()->create()->fresh();
@@ -190,6 +216,29 @@ describe('Controller Tests', function (): void {
         $response->assertOk()
             ->assertJsonFragment(['name' => 'Updated Product']);
         expect($response->json('data.category_ids'))->toContain($this->category->id);
+    });
+
+    it('should update a Bundle product through the shared product endpoint', function (): void {
+        $bundle  = Bundle::factory()->create();
+        $product = Product::factory()->create([
+            'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+        ]);
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
+
+        $response = $this->putJson(route('api.v1.admin.products.update', ['product' => $product->id]), [
+            ...$product->toArray(),
+            'name'       => 'Updated Bundle Product',
+            'categories' => [$this->category->id],
+        ]);
+
+        $response->assertOk()->assertJsonFragment(['name' => 'Updated Bundle Product']);
+        $this->assertDatabaseHas('products', [
+            'id'               => $product->id,
+            'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+            'name'             => 'Updated Bundle Product',
+        ]);
     });
 
     it('should delete a product', function (): void {

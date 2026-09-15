@@ -14,6 +14,7 @@ use App\Data\Admin\Product\ProductListItemData;
 use App\Data\Admin\Product\ProductUpdateData;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -55,8 +56,14 @@ final class ProductController extends Controller
             ])
             ->allowedSorts(['created_at', 'updated_at', 'name', 'short_name', 'status', 'is_visible', 'is_featured'])
             ->defaultSort('-created_at')
+            ->withCount($this->reviewRequiredCountClosure())
             ->with(['term', 'productable', 'vendor'])
             ->paginate(request()->integer('per_page', config('app.page_size')))
+            ->through(function (Product $product): Product {
+                $product->setAttribute('review_required', $product->review_required_count > 0);
+
+                return $product;
+            })
             ->withQueryString();
 
         return apiResponse()->success(ProductListItemData::collect($products));
@@ -87,6 +94,7 @@ final class ProductController extends Controller
     public function show(Product $product): ApiResponseInterface
     {
         Gate::authorize('view', $product);
+        $this->markBundleReviewState($product);
         $product->load(['productableWithAllRelations', 'term', 'categories:id']);
 
         return apiResponse()->success(
@@ -127,5 +135,23 @@ final class ProductController extends Controller
         $action->handle($product);
 
         return apiResponse()->noContentJson();
+    }
+
+    /**
+     * @return array<string, Closure>
+     */
+    private function reviewRequiredCountClosure(): array
+    {
+        return [
+            'productDeliveryOptions as review_required_count' => fn ($query) => $query->whereNotNull('bundle_review_required_at'),
+        ];
+    }
+
+    private function markBundleReviewState(Product $product): Product
+    {
+        $product->loadCount($this->reviewRequiredCountClosure());
+        $product->setAttribute('review_required', $product->review_required_count > 0);
+
+        return $product;
     }
 }

@@ -1,291 +1,75 @@
 {
-  "message": "عملیات با موفقیت انجام شد.",
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
-        "uuid": "019803f5-0dbc-7325-aa7e-852eed356839",
-        "enrollment_status": {
-          "value": "expired",
-          "label": "enums.EnrollmentStatusEnum.expired"
-        },
-        "access_start_date": null,
-        "access_end_date": null,
-        "notes": "maiores",
-        "provisioning_data": {
-          "providers": {
-            "spotplayer": {
-              "status": "success",
-              "attempt_sequence": 1,
-              "data": {
-                "spot_id": "SPOT-123",
-                "license_key": "0001a4c3e2f1b8d7c6e5a4b3f2e1d0c9b8",
-                "player_url": "https://app.spotplayer.ir/player/SPOT-123/",
-                "provisioned_at": "2025-09-01T08:00:00Z"
-              }
+    "message": "Operation successful.",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "uuid": "01a07b30-3c69-719c-8c81-cda76a3b2575",
+                "enrollment_status": {
+                    "value": "active",
+                    "label": "Active"
+                },
+                "access_start_date": "1403-01-02 12:55:54",
+                "access_end_date": "1403-12-30 12:55:54",
+                "notes": "incidunt",
+                "provisioning_data": [],
+                "is_virtual": true,
+                "product": {
+                    "uuid": "01a07b30-3c40-70a1-bbfa-c77d71b4f718",
+                    "slug": "architecto-libero-optio-fugiat-mollitia-velit-rerum-adipisci-optio",
+                    "name": "Mr. Ervin Dicki",
+                    "short_name": "Verdie Tremblay",
+                    "short_description": "Sint nisi cupiditate assumenda eos. Dolorem earum corrupti non dolorum iste nobis. Rem cumque autem dicta aliquid. Eligendi dolorem dolores aspernatur nostrum deserunt. Cupiditate fuga porro at quod.",
+                    "vendor": "Friesen-Cummings",
+                    "term": "Spring 2007",
+                    "price": 800000,
+                    "prepayment_amount": null,
+                    "is_prepayment_available": false,
+                    "price_data": null,
+                    "fulfillment_type": {
+                        "value": "online_service",
+                        "label": "Online Service"
+                    },
+                    "delivery_method": {
+                        "value": "lms_moodle",
+                        "label": "LMS Moodle"
+                    },
+                    "status": "published",
+                    "productable_type": "seminar",
+                    "cover": null
+                }
             }
-          }
-        },
-        "is_virtual": true,
-        "product": {
-          "id": 107,
-          "productable_id": 102,
-          "name": "Kaylah Oberbrunner PhD",
-          "short_name": "Myron O'Hara",
-          "short_description": "Eum enim fugit numquam qui aspernatur. Quo aut a reprehenderit dolores perspiciatis repellat. Id aliquid perspiciatis qui aut vero. Accusamus et voluptas illo. Est nobis et laboriosam.",
-          "vendor": {
-            "id": 11,
-            "name": "Hettinger, Carroll and Davis"
-          },
-          "term": {
-            "id": 17,
-            "name": "Fall 1988"
-          },
-          "price": 8060485,
-          "fullfilment_type": {
-            "value": "offline_service",
-            "label": "سرویس آفلاین"
-          },
-          "delivery_method": {
-            "value": "video_platform_spotplayer",
-            "label": "پلتفرم ویدیویی SpotPlayer"
-          },
-          "status": "archived",
-          "productable_type": "digital_asset",
-          "cover": null
-        }
-      },
-      {
-        "uuid": "019803f5-0dc3-7346-a108-cd51e023d3c7",
-        "enrollment_status": {
-          "value": "active",
-          "label": "enums.EnrollmentStatusEnum.active"
-        },
-        "access_start_date": "1398-05-12 15:26:51",
-        "access_end_date": "1399-01-07 15:26:51",
-        "notes": "iste",
-        "provisioning_data": [],
-        "is_virtual": false,
-        "product": {
-          "id": 49,
-          "productable_id": 90,
-          "name": "Kailyn Nienow DVM",
-          "short_name": "Elisa Von",
-          "short_description": "Sapiente quaerat dolores totam et. Consequatur est aut aut eveniet perferendis.",
-          "vendor": {
-            "id": 3,
-            "name": "Moore and Sons"
-          },
-          "term": {
-            "id": 4,
-            "name": "Spring 2006"
-          },
-          "price": 6668,
-          "fullfilment_type": {
-            "value": "digital",
-            "label": "دیجیتال"
-          },
-          "delivery_method": {
-            "value": "direct_download",
-            "label": "دانلود مستقیم"
-          },
-          "status": "draft",
-          "productable_type": "course",
-          "cover": {
-            "url": "http://jedu.test/storage/fake-media/fake-cover.svg",
-            "thumbnail": null,
-            "alt": ""
-          }
-        }
-      },
-      {
-        "uuid": "019803f5-0dca-7167-a654-dbfe3f58da42",
-        "enrollment_status": {
-          "value": "expired",
-          "label": "enums.EnrollmentStatusEnum.expired"
-        },
-        "access_start_date": "1392-08-07 14:26:51",
-        "access_end_date": "1393-05-28 15:26:51",
-        "notes": "non",
-        "provisioning_data": [],
-        "is_virtual": false,
-        "product": {
-          "id": 15,
-          "productable_id": 84,
-          "name": "Benedict Feeney II",
-          "short_name": "Dayne Spinka",
-          "short_description": "Et dicta velit laudantium eos odit. Dolores doloremque dolorem occaecati harum eveniet. Quia et aut incidunt esse blanditiis necessitatibus.",
-          "vendor": {
-            "id": 2,
-            "name": "Padberg and Sons"
-          },
-          "term": {
-            "id": 9,
-            "name": "Spring 1970"
-          },
-          "price": 415370,
-          "fullfilment_type": {
-            "value": "digital",
-            "label": "دیجیتال"
-          },
-          "delivery_method": {
-            "value": "direct_download",
-            "label": "دانلود مستقیم"
-          },
-          "status": "archived",
-          "productable_type": "digital_asset",
-          "cover": null
-        }
-      },
-      {
-        "uuid": "019803f5-2fbb-7273-bffc-16f6441a8d5b",
-        "enrollment_status": {
-          "value": "active",
-          "label": "enums.EnrollmentStatusEnum.active"
-        },
-        "access_start_date": null,
-        "access_end_date": null,
-        "notes": "in",
-        "provisioning_data": [],
-        "is_virtual": false,
-        "product": {
-          "id": 278,
-          "productable_id": 172,
-          "name": "Prof. Elmo Hand",
-          "short_name": "Jamar Ratke PhD",
-          "short_description": "Esse fugit deserunt ratione suscipit natus cumque. Et est natus impedit. Reprehenderit suscipit doloribus culpa sint ut cumque quis. Atque rerum enim ut ullam.",
-          "vendor": {
-            "id": 182,
-            "name": "Gaylord LLC"
-          },
-          "term": {
-            "id": 188,
-            "name": "Fall 2016"
-          },
-          "price": 47875,
-          "fullfilment_type": {
-            "value": "in_person_service",
-            "label": "سرویس حضوری"
-          },
-          "delivery_method": {
-            "value": "in_person",
-            "label": "حضوری"
-          },
-          "status": "archived",
-          "productable_type": "digital_asset",
-          "cover": null
-        }
-      },
-      {
-        "uuid": "019803f5-2fc0-724e-8703-4cd6f08111b7",
-        "enrollment_status": {
-          "value": "active",
-          "label": "enums.EnrollmentStatusEnum.active"
-        },
-        "access_start_date": null,
-        "access_end_date": null,
-        "notes": "ea",
-        "provisioning_data": [],
-        "is_virtual": false,
-        "product": {
-          "id": 15,
-          "productable_id": 84,
-          "name": "Benedict Feeney II",
-          "short_name": "Dayne Spinka",
-          "short_description": "Et dicta velit laudantium eos odit. Dolores doloremque dolorem occaecati harum eveniet. Quia et aut incidunt esse blanditiis necessitatibus.",
-          "vendor": {
-            "id": 2,
-            "name": "Padberg and Sons"
-          },
-          "term": {
-            "id": 9,
-            "name": "Spring 1970"
-          },
-          "price": 59,
-          "fullfilment_type": {
-            "value": "in_person_service",
-            "label": "سرویس حضوری"
-          },
-          "delivery_method": {
-            "value": "in_person",
-            "label": "حضوری"
-          },
-          "status": "archived",
-          "productable_type": "digital_asset",
-          "cover": null
-        }
-      },
-      {
-        "uuid": "019803f5-2fc6-717d-9b09-c3b4ffa1d793",
-        "enrollment_status": {
-          "value": "active",
-          "label": "enums.EnrollmentStatusEnum.active"
-        },
-        "access_start_date": "1383-04-06 15:26:51",
-        "access_end_date": "1384-01-14 15:26:51",
-        "notes": "voluptas",
-        "provisioning_data": [],
-        "is_virtual": true,
-        "product": {
-          "id": 42,
-          "productable_id": 68,
-          "name": "Neha Gorczany III",
-          "short_name": "Bernie Willms IV",
-          "short_description": "Impedit et quia accusantium provident. Saepe iste quas praesentium. Cumque velit illum fuga officiis aut odio. Numquam voluptatem illum tempora ipsa distinctio dolorum et. Eos voluptates ipsam sed.",
-          "vendor": {
-            "id": 1,
-            "name": "Mosciski, Homenick and Kemmer"
-          },
-          "term": {
-            "id": 6,
-            "name": "Spring 2024"
-          },
-          "price": 34,
-          "fullfilment_type": {
-            "value": "online_service",
-            "label": "سرویس آنلاین"
-          },
-          "delivery_method": {
-            "value": "live_session_bbb",
-            "label": "جلسه زنده با BBB"
-          },
-          "status": "archived",
-          "productable_type": "course",
-          "cover": {
-            "url": "http://jedu.test/storage/fake-media/fake-cover.svg",
-            "thumbnail": null,
-            "alt": ""
-          }
-        }
-      }
-    ],
-    "first_page_url": "http://jedu.test/api/v1/my-courses?page=1",
-    "from": 1,
-    "last_page": 1,
-    "last_page_url": "http://jedu.test/api/v1/my-courses?page=1",
-    "links": [
-      {
-        "url": null,
-        "label": "&laquo; قبلی",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/my-courses?page=1",
-        "label": "1",
-        "active": true
-      },
-      {
-        "url": null,
-        "label": "بعدی &raquo;",
-        "active": false
-      }
-    ],
-    "next_page_url": null,
-    "path": "http://jedu.test/api/v1/my-courses",
-    "per_page": 15,
-    "prev_page_url": null,
-    "to": 6,
-    "total": 6
-  },
-  "metadata": []
+        ],
+        "first_page_url": "http://jedu.test/api/v1/shop/student/courses?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://jedu.test/api/v1/shop/student/courses?page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Previous",
+                "page": null,
+                "active": false
+            },
+            {
+                "url": "http://jedu.test/api/v1/shop/student/courses?page=1",
+                "label": "1",
+                "page": 1,
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "Next &raquo;",
+                "page": null,
+                "active": false
+            }
+        ],
+        "next_page_url": null,
+        "path": "http://jedu.test/api/v1/shop/student/courses",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 1,
+        "total": 1
+    },
+    "metadata": []
 }

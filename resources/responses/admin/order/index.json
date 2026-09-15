@@ -62,7 +62,8 @@
             },
             "prepayment_amount": 9675,
             "qty_refunded": 0,
-            "total_refunded": 0
+            "total_refunded": 0,
+            "bundle_purchase_id": null
           }
         ]
       }

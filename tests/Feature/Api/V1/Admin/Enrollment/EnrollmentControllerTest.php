@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Models\Enrollment;
@@ -100,6 +101,64 @@ describe('EnrollmentController', function (): void {
         $response->assertOk()
             ->assertJsonPath('data.data.0.id', $enrollment2->id)
             ->assertJsonPath('data.data.1.id', $enrollment1->id);
+    });
+
+    it('can filter enrollments by revocation status and exposes it with a translated label', function (): void {
+        $this->authorized_user([
+            PermissionEnum::ENROLLMENT_VIEW_ANY->value,
+            PermissionEnum::ENROLLMENT_VIEW->value,
+        ]);
+
+        $plain = Enrollment::factory()->create([
+            'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
+        ]);
+        $revoking = Enrollment::factory()->create([
+            'enrollment_status' => EnrollmentStatusEnum::SUSPENDED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::PENDING,
+        ]);
+        Enrollment::factory()->create([
+            'enrollment_status' => EnrollmentStatusEnum::SUSPENDED,
+            'revocation_status' => EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED,
+        ]);
+
+        // The list carries the nullable status, so a revocation work queue can be built.
+        $this->getJson(route('api.v1.admin.enrollments.index', [
+            'filter[revocation_status]' => EnrollmentRevocationStatusEnum::PENDING->value,
+        ]))
+            ->assertOk()
+            ->assertJsonCount(1, 'data.data')
+            ->assertJsonPath('data.data.0.id', $revoking->id)
+            ->assertJsonPath('data.data.0.revocation_status.value', EnrollmentRevocationStatusEnum::PENDING->value)
+            ->assertJsonPath('data.data.0.revocation_status.label', 'Revocation Pending');
+
+        $this->getJson(route('api.v1.admin.enrollments.index', [
+            'filter[enrollment_status]' => EnrollmentStatusEnum::ACTIVE->value,
+        ]))
+            ->assertOk()
+            ->assertJsonCount(1, 'data.data')
+            ->assertJsonPath('data.data.0.id', $plain->id)
+            ->assertJsonPath('data.data.0.revocation_status', null);
+
+        // Detail exposes the same field, and revocation states map to real labels.
+        $this->getJson(route('api.v1.admin.enrollments.show', ['enrollment' => $revoking->id]))
+            ->assertOk()
+            ->assertJsonPath('data.revocation_status.value', EnrollmentRevocationStatusEnum::PENDING->value)
+            ->assertJsonPath('data.revocation_status.label', 'Revocation Pending');
+
+        expect(__('enums.EnrollmentRevocationStatusEnum.manual_action_required'))->toBe('Manual Revocation Required')
+            ->and(__('enums.EnrollmentRevocationStatusEnum.revoked'))->toBe('Access Revoked');
+
+        // The work-queue form: several outstanding revocation states in one request.
+        $this->getJson(route('api.v1.admin.enrollments.index', [
+            'filter' => [
+                'revocation_status' => [
+                    EnrollmentRevocationStatusEnum::PENDING->value,
+                    EnrollmentRevocationStatusEnum::MANUAL_ACTION_REQUIRED->value,
+                ],
+            ],
+        ]))
+            ->assertOk()
+            ->assertJsonCount(2, 'data.data');
     });
 
     it('can show single enrollment with permissions', function (): void {

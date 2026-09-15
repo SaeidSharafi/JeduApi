@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\Product\DigitalAssetController;
 use App\Http\Controllers\Api\Admin\Product\ProductController;
 use App\Http\Controllers\Api\Admin\Product\ProductDeliveryOptionController;
 use App\Http\Controllers\Api\Admin\Product\RelatedProductController;
+use App\Http\Controllers\Api\Admin\Product\ReviewBundleController;
 use App\Http\Controllers\Api\Admin\Product\SeminarController;
 
 // Product Management and Categories
@@ -32,6 +33,8 @@ Route::apiResource('seminars', SeminarController::class);
 Route::apiResource('products', ProductController::class);
 Route::post('products/{product}/archive', ArchiveProductController::class)->name('products.archive');
 Route::apiResource('products/{product}/delivery-options', ProductDeliveryOptionController::class);
+Route::post('products/{product}/delivery-options/{delivery_option}/review', ReviewBundleController::class)
+    ->name('products.delivery-options.review');
 
 // Related Products Management
 Route::prefix('products/{product}/related-products')->name('products.related-products.')->group(function (): void {

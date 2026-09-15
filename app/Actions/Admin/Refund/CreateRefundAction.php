@@ -17,6 +17,7 @@ use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
+use App\Services\Provisioning\EnrollmentRevocationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -29,6 +30,7 @@ final class CreateRefundAction
         private readonly OrderStatusService $orderStatusService,
         private readonly RefundProcessorFactory $processorFactory,
         private readonly UpdateOrderRefundedAmountAction $updateOrderRefundedAmount,
+        private readonly EnrollmentRevocationService $revocations,
     ) {}
 
     public function handle(RefundCreateData $data): Refund
@@ -87,14 +89,14 @@ final class CreateRefundAction
             }
 
             try {
-                return DB::transaction(function () use (
+                $result = DB::transaction(function () use (
                     $refund, $orderItem, $order, $refundAmount, $paymentMethod,
                     $processor, $gatewayTrackingCode, $isImmediateCompletion, $data
                 ) {
                     $lockedRefund = Refund::query()->whereKey($refund->id)->lockForUpdate()->firstOrFail();
 
                     if ($lockedRefund->status === RefundStatusEnum::COMPLETED) {
-                        return $lockedRefund->fresh();
+                        return (object) ['refund' => $lockedRefund->fresh(), 'attemptIds' => []];
                     }
 
                     if ($lockedRefund->status === RefundStatusEnum::FAILED || $lockedRefund->status === RefundStatusEnum::CANCELLED) {
@@ -124,6 +126,7 @@ final class CreateRefundAction
                         'admin_notes'         => $adminNotes,
                     ]);
 
+                    $attemptIds = [];
                     if ($isImmediateCompletion) {
                         // Process Wallet/Offline methods
                         if (! $data->skip_gateway && $paymentMethod === PaymentMethodEnum::WALLET->value) {
@@ -139,15 +142,22 @@ final class CreateRefundAction
                         $orderItem->status         = OrderItemStatusEnum::REFUNDED;
                         $orderItem->saveQuietly();
 
+                        // Every refunded unit loses access: the Enrollment keeps
+                        // its seat and locally blocks access until every required
+                        // provider revocation has succeeded.
+                        $enrollment = $orderItem->enrollment;
+                        if ($enrollment) {
+                            $attemptIds = $this->revocations->begin($enrollment);
+                        }
+
                         // Update parent statuses
-                        $this->orderStatusService->updateEnrollmentStatus($orderItem);
                         $this->orderStatusService->updateParentOrderStatus($order->fresh());
                         $this->updateOrderRefundedAmount->handle($order->fresh());
 
                         RefundCompletedEvent::dispatch($lockedRefund);
                     }
 
-                    return $lockedRefund->fresh();
+                    return (object) ['refund' => $lockedRefund->fresh(), 'attemptIds' => $attemptIds];
                 });
 
             } catch (Throwable $e) {
@@ -161,6 +171,10 @@ final class CreateRefundAction
                 // Optionally dispatch a retry job here, or just let your Reconciliation command handle it.
                 throw $e;
             }
+
+            $this->revocations->dispatchAttempts($result->attemptIds);
+
+            return $result->refund;
         });
     }
 
@@ -236,6 +250,12 @@ final class CreateRefundAction
     private function validateOrderItemIsRefundable(OrderItem $orderItem, RefundCreateData $data): void
     {
         $order = $orderItem->order;
+
+        if ($orderItem->bundle_purchase_id !== null) {
+            throw ValidationException::withMessages([
+                'order_item_id' => __('messages.order.refund.bundle_component_requires_bundle_refund'),
+            ]);
+        }
 
         if ($order->total_paid <= 0) {
             throw ValidationException::withMessages([

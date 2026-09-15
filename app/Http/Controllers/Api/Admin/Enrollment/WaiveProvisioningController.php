@@ -12,8 +12,30 @@ use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @group Admin - Enrollment
+ *
+ * @subgroup Enrollment Provisioning
+ *
+ * APIs for waiving failed enrollment provisioning.
+ *
+ * @authenticated
+ */
 final class WaiveProvisioningController extends Controller
 {
+    /**
+     * Waive a failed provisioning provider.
+     *
+     * Allows authorized staff to permanently waive a provisioning provider for an enrollment, skipping it entirely.
+     *
+     * @bodyParam provider string required The provisioning provider to waive. Available values: `ims`, `moodle`, `spotplayer`, `bbb`, `skyroom`, `moodle_quiz`. Example: moodle
+     * @bodyParam reason string required The reason for waiving the provider. Example: Vendor does not have a record for this user.
+     *
+     * @responseFile 200 resources/responses/admin/enrollment/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/422.json
+     */
     public function __invoke(ManualProvisioningWaiverData $data, Enrollment $enrollment, ManualProvisioningRecoveryAction $action): ApiResponseInterface
     {
         Gate::authorize('waiveProvisioning', $enrollment);

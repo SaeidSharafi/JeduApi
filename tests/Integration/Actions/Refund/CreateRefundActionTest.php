@@ -9,13 +9,20 @@ use App\Contracts\Payment\RefundProcessorInterface;
 use App\Data\Admin\Refund\RefundCreateData;
 use App\Data\Admin\Refund\RefundTransactionData;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\EnrollmentRevocationStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\ProvisioningAttemptStatusEnum;
+use App\Enums\ProvisioningProviderEnum;
+use App\Enums\ProvisioningStatusEnum;
+use App\Enums\ProvisioningTriggerEnum;
 use App\Events\RefundCompletedEvent;
 use App\Exceptions\Gateway\DigipayException;
 use App\Exceptions\RefundValidationException;
+use App\Jobs\Provisioning\RevokeEnrollmentProviderJob;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -24,6 +31,7 @@ use App\Models\Staff;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 use Mockery;
 use Mockery\MockInterface;
@@ -647,5 +655,69 @@ describe('CreateRefundAction', function (): void {
         expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData))
             ->toThrow(RefundValidationException::class, __('messages.order.refund.digipay_partial_refund_not_supported'));
 
+    });
+
+    it('revokes the enrollment when a single-item refund completes', function (): void {
+        Queue::fake([RevokeEnrollmentProviderJob::class]);
+
+        $product = ProductDeliveryOption::factory()->create(['price' => 50000, 'status' => PublicationStatusEnum::PUBLISHED]);
+        $order   = Order::factory()->withCalculatedTotals([
+            ['product_delivery_option_id' => $product->id, 'price' => 50000, 'total' => 50000],
+        ])->create();
+        $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::BANK_TRANSFER,
+            'amount'      => 50000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+        $orderItem = $order->items->first();
+        $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        $enrollment = $orderItem->enrollment()->create([
+            'order_id'                   => $order->id,
+            'order_item_id'              => $orderItem->id,
+            'customer_id'                => $order->customer_id,
+            'product_delivery_option_id' => $orderItem->product_delivery_option_id,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        ]);
+        $enrollment->update([
+            'provisioning_plan' => [
+                'version'   => 1, 'status' => 'healthy', 'resolved_at' => now()->toISOString(),
+                'providers' => [[
+                    'provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready', 'configuration_issue' => null,
+                ]],
+            ],
+            'provisioning_data' => ['providers' => ['moodle' => ['status' => 'success', 'data' => [
+                'moodle_user_id' => 1, 'moodle_course_id' => 2,
+            ]]]],
+            'provisioning_status' => ProvisioningStatusEnum::HEALTHY,
+        ]);
+
+        $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
+            deduction_amount: 0,
+            deduction_percent: null,
+            transaction_details: new RefundTransactionData(
+                receiver_name: 'John Doe',
+                card_number: '1234567812345678',
+                iban_number: 'DE89370400440532013000',
+                tracking_code: null
+            ),
+            status: RefundStatusEnum::COMPLETED->value,
+            admin_notes: 'Full refund processed.'
+        );
+
+        (resolve(CreateRefundAction::class))->handle($refundData);
+
+        $fresh = $enrollment->fresh();
+        expect($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED)
+            ->and($fresh->revocation_status)->toBe(EnrollmentRevocationStatusEnum::PENDING);
+        $this->assertDatabaseHas('provisioning_attempts', [
+            'enrollment_id' => $enrollment->id,
+            'provider'      => ProvisioningProviderEnum::MOODLE->value,
+            'trigger'       => ProvisioningTriggerEnum::REVOCATION->value,
+            'status'        => ProvisioningAttemptStatusEnum::QUEUED->value,
+        ]);
+        Queue::assertPushed(RevokeEnrollmentProviderJob::class, 1);
     });
 });

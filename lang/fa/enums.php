@@ -99,6 +99,12 @@ return [
         'expired'          => 'منقضی شده',
         'cancelled'        => 'لغو شده',
     ],
+    'EnrollmentRevocationStatusEnum' => [
+        'pending'                => 'در انتظار لغو دسترسی',
+        'failed'                 => 'لغو دسترسی ناموفق',
+        'manual_action_required' => 'نیازمند لغو دسترسی دستی',
+        'revoked'                => 'لغو دسترسی انجام‌شده',
+    ],
     'ProvisioningStatusEnum' => [
         'ready'                  => 'آماده',
         'in_progress'            => 'در حال آماده‌سازی',
@@ -243,6 +249,16 @@ return [
         'failed'             => 'ناموفق',
         'refunded'           => 'بازپرداخت شده',
         'partially_refunded' => 'بازپرداخت جزئی',
+    ],
+    'BundlePurchaseStatusEnum' => [
+        'pending_payment'    => 'در انتظار پرداخت',
+        'provisioning'       => 'در حال فعال‌سازی',
+        'active'             => 'فعال',
+        'partially_failed'   => 'خطای جزئی در فعال‌سازی',
+        'failed'             => 'ناموفق در فعال‌سازی',
+        'revocation_pending' => 'در انتظار لغو دسترسی',
+        'refunded'           => 'بازپرداخت شده',
+        'cancelled'          => 'لغو شده',
     ],
     'PaymentMethodEnum' => [
         'bank_transfer'  => 'انتقال بانکی',

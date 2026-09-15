@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Shop\HomePage\HomePageContentController;
 use App\Http\Controllers\Api\Shop\HomePage\PartnerController;
 use App\Http\Controllers\Api\Shop\HomePage\SliderController;
 use App\Http\Controllers\Api\Shop\HomePage\StudentStoryController;
+use App\Http\Controllers\Api\Shop\Product\BundleController;
 use App\Http\Controllers\Api\Shop\Product\CategoryController;
 use App\Http\Controllers\Api\Shop\Product\CategoryCourseController;
 use App\Http\Controllers\Api\Shop\Product\CategoryDigitalAssetController;
@@ -61,6 +62,8 @@ Route::get('seminars/{product:slug}', [SeminarController::class, 'show'])
 Route::get('digital-assets', [DigitalAssetController::class, 'index'])->name('digital-assets.index');
 Route::get('digital-assets/{product:slug}', [DigitalAssetController::class, 'show'])
     ->name('digital-assets.show');
+Route::get('bundles', [BundleController::class, 'index'])->name('bundles.index');
+Route::get('bundles/{product:slug}', [BundleController::class, 'show'])->name('bundles.show');
 
 Route::get('search', SearchController::class)->name('search');
 Route::get('search/suggest', SuggestSearchController::class)->name('search.suggest');

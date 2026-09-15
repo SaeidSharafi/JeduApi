@@ -27,6 +27,7 @@ final class EnrollmentController extends Controller
      *
      * @queryParam filter[fulfillment_type] string Filter by fulfillment type. Example: digital
      * @queryParam filter[name] string Filter by product name. Example: Course Name
+     * @queryParam page integer Page number for pagination. Example: 1
      * @queryParam per_page integer Number of results per page. Example: 15
      *
      * @responseFile 200 resources/responses/shop/enrollments/index.json
@@ -58,6 +59,9 @@ final class EnrollmentController extends Controller
 
     /**
      * Show a specific enrollment.
+     *
+     * Retrieve detailed information, including the enrolled product, teachers and related Moodle progress, for a
+     * single enrollment owned by the authenticated user.
      *
      * @responseFile 200 resources/responses/shop/enrollments/show.json
      *

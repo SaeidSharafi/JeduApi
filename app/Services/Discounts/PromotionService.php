@@ -10,6 +10,7 @@ use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
@@ -155,6 +156,7 @@ final class PromotionService
                 payment_type: OrderItemPaymentTypeEnum::tryFrom($itemData->payment_type),
                 price: $startingPriceForCalc,
                 total: $initialLineItemTotal,
+                is_bundle: $option->product?->productable_type === ProductableEnum::BUNDLE->value,
             );
             $calculatedItems->push($calculatedItem);
 

@@ -52,8 +52,17 @@ beforeEach(function (): void {
         'capacity'   => 5, 'status' => PublicationStatusEnum::PUBLISHED,
     ]);
 
+    $unlimitedCourse  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+    $unlimitedProduct = Product::factory()->create([
+        'vendor_id'        => $vendor->id,
+        'term_id'          => $term->id,
+        'productable_id'   => $unlimitedCourse->id,
+        'productable_type' => MorphTypeEnum::COURSE->value,
+        'status'           => PublicationStatusEnum::PUBLISHED,
+        'is_visible'       => true,
+    ]);
     $this->deliveryOptionNoCapacity = ProductDeliveryOption::factory()->create([
-        'product_id' => $product->id,
+        'product_id' => $unlimitedProduct->id,
         'price'      => 300000,
         'uuid'       => Str::uuid()->toString(),
         'capacity'   => null, 'status' => PublicationStatusEnum::PUBLISHED,
@@ -832,7 +841,7 @@ test('checkout returns multi-step payment data for external processors', functio
         ->and($data['redirect_data'])->toBeArray();
 });
 describe('Duplicate Purchase Prevention', function (): void {
-    test('checkout fails when user already has active enrollment for product', function (): void {
+    test('cart rejects a product when user already has an active Enrollment', function (): void {
         $user = User::factory()->create();
         $this->customer($user);
 
@@ -843,14 +852,9 @@ describe('Duplicate Purchase Prevention', function (): void {
             'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
         ]);
 
-        // Try to add the same product to cart and checkout
-        postJson(route('api.v1.shop.cart.items.store'), [
+        $response = postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $this->deliveryOption->uuid,
             'quantity'                     => 1,
-        ])->assertOk();
-
-        $response = postJson(route('api.v1.shop.checkout'), [
-            'payment_method' => 'bank_transfer',
         ]);
 
         $response->assertStatus(422)
@@ -914,7 +918,7 @@ describe('Duplicate Purchase Prevention', function (): void {
         $response->assertCreated();
     });
 
-    test('checkout fails with multiple duplicate products in cart', function (): void {
+    test('cart rejects each of multiple Productables the Customer already owns', function (): void {
         $user   = User::factory()->create();
         $vendor = Vendor::factory()->create();
         $term   = Term::factory()->create();
@@ -967,32 +971,17 @@ describe('Duplicate Purchase Prevention', function (): void {
             'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
         ]);
 
-        // Add both to cart
-        postJson(route('api.v1.shop.cart.items.store'), [
+        $firstResponse = postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $deliveryOption1->uuid,
             'quantity'                     => 1,
-        ])->assertOk();
+        ])->assertUnprocessable()->assertJsonValidationErrors(['items']);
 
-        postJson(route('api.v1.shop.cart.items.store'), [
+        $secondResponse = postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $deliveryOption2->uuid,
             'quantity'                     => 1,
-        ])->assertOk();
+        ])->assertUnprocessable()->assertJsonValidationErrors(['items']);
 
-        $response = postJson(route('api.v1.shop.checkout'), [
-            'payment_method' => 'bank_transfer',
-            'payment_data'   => [
-                'transaction_id'   => '123456',
-                'transaction_date' => verta()->formatDate(),
-                'sender_name'      => 'John Doe',
-            ],
-        ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['items']);
-
-        // Error message should mention both products
-        $errorMessage = $response->json('errors.items.0');
-        expect($errorMessage)->toContain('Course A');
-        expect($errorMessage)->toContain('Course B');
+        expect($firstResponse->json('errors.items.0'))->toContain('Course A')
+            ->and($secondResponse->json('errors.items.0'))->toContain('Course B');
     });
 });

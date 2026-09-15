@@ -213,6 +213,8 @@
   - available_to (DATE nullable)
   - access_days (INT unsigned nullable, default null) — Number of days user has access to content from enrollment date; null means unlimited
   - composition_version (INT unsigned default 1) — Monotonic Bundle composition revision
+  - bundle_review_required_at (TIMESTAMP nullable)
+  - bundle_review_reasons (JSON nullable) — Stable material-change reason values
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: UNIQUE(sku), INDEX(status), INDEX(delivery_method, fulfillment_type)
 
@@ -230,6 +232,9 @@
   - product_delivery_option_id (BIGINT) FK -> product_delivery_options(id) CASCADE
   - teacher_id (BIGINT) FK -> teachers(id) RESTRICT
 - Keys: PRIMARY(product_delivery_option_id, teacher_id)
+
+### Table: `cart_items`
+- Columns include `composition_version` (INT unsigned nullable), capturing the Bundle PDO composition revision added to the cart. Checkout rejects a stale revision.
 
 ### Table: `related_products`
 - Purpose: Product merchandising relationships (related, cross-sell, upsell)
@@ -300,7 +305,7 @@
   - INDEX(customer_id, created_at) as idx_customer_created
 
 ### Table: `order_items`
-- Purpose: Order line items.
+- Purpose: Order line items. A nullable `bundle_purchase_id` makes a line an internal Bundle component rather than a standalone commercial item; the `(bundle_purchase_id, product_delivery_option_id)` uniqueness constraint prevents duplicate component lines.
 - Columns:
   - id (BIGINT, PK)
   - order_id (BIGINT) FK -> orders(id) CASCADE
@@ -376,6 +381,7 @@
   - provisioning_data (JSONB nullable) — per-provider execution payload with canonical references
   - provisioning_plan (JSONB not null, default version 1 empty provider plan) — canonical versioned applicability/readiness snapshot
   - provisioning_status (VARCHAR, default `healthy`, indexed) — aggregate provisioning health (`ready`, `in_progress`, `healthy`, `degraded`, `manual_action_required`)
+  - revocation_status (VARCHAR nullable, indexed) — external access revocation lifecycle (`pending`, `failed`, `manual_action_required`, `revoked`); null when no revocation was ever required
   - notes (TEXT nullable)
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: UNIQUE(uuid), INDEX(uuid)
@@ -666,3 +672,8 @@
 - telescope_entries: sequence (PRIMARY), uuid (UNIQUE), batch_id (INDEXED), family_hash (INDEXED), should_display_on_index, type (20), content (LONGTEXT), created_at (INDEXED), plus INDEX(type, should_display_on_index)
 - telescope_entries_tags: PRIMARY(entry_uuid, tag), INDEX(tag), FK(entry_uuid) -> telescope_entries(uuid)
 - telescope_monitoring: tag (PRIMARY)
+
+### Table: `bundle_purchases`
+- Purpose: Immutable Customer-facing grouping record for a purchased Bundle PDO.
+- Columns: `id`, `order_id` (FK, cascade), `product_delivery_option_id` (FK, restrict), `bundle_name`, `product_name`, `name`, `sku`, `base_value`, `selling_price`, `composition_version`, `checkout_status`, `product_data_snapshot_json` (JSONB), timestamps.
+- Constraints: UNIQUE(`order_id`, `product_delivery_option_id`). Component `order_items.bundle_purchase_id` references this table with restricted deletion.

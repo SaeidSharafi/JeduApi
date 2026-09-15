@@ -44,6 +44,8 @@ final class ProductData extends Data
         public ?Verta $event_start_at = null,
         public ?Verta $event_ended_at = null,
         public ?array $categories = [],
+        public int $review_required_count = 0,
+        public bool $review_required = false,
     ) {
         $this->category_ids = $this->categories ? array_column($this->categories, 'id') : [];
     }

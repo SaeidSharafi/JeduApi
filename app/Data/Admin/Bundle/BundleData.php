@@ -18,14 +18,21 @@ final class BundleData extends Data implements ProductableDataContract
         public string $short_name,
         public ?string $description,
         public ?string $thumbnail_url,
+        public ?string $meta_title,
+        public ?string $meta_description,
+        public ?string $meta_keywords,
         public PublicationStatusEnum $status,
         public ?array $properties,
         public ?array $additional_info,
         public ?array $faq,
+        public array $media = [],
     ) {}
 
     public static function fromModel(Bundle $bundle): self
     {
-        return self::factory()->withoutMagicalCreation()->from($bundle->toArray());
+        return self::factory()->withoutMagicalCreation()->from([
+            ...$bundle->toArray(),
+            'media' => $bundle->getAllMedia(),
+        ]);
     }
 }

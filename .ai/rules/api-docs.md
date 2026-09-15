@@ -30,4 +30,7 @@ Response examples are hand-written files, not factory/demo-data generated — th
 
 ## Docblocks
 - Class: `@group <name>`. Add `@authenticated` if the endpoint requires auth.
-- Method: short action description only. No `@bodyParam`/`@queryParam` — the Data class's `bodyParameters()`/`queryParameters()` (or automatic inference) is the single source of truth.
+- Method: short action description, plus `@bodyParam`/`@queryParam` **only when no Data class carries the request**:
+  - **The request is a Data class** (`public function __invoke(SomeData $data, ...)` / `public function store(BundleCreateData $data, ...)`) → no `@bodyParam`/`@queryParam` in the controller docblock. The Data class is the single source of truth: its `bodyParameters()`/`queryParameters()`, or automatic inference from `rules()`, documents the fields. When that inference is insufficient, add the manual method **on the Data class** (see above), never on the controller.
+  - **There is no Data class** — typically an `index()` that reads `request()` directly, or a route/query-param-only endpoint → `@queryParam` (GET) / `@bodyParam` (write) on the method is required, because nothing else documents those parameters.
+

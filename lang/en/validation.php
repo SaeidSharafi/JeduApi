@@ -63,8 +63,9 @@ return [
 
         // ── Checkout ────────────────────────────────────────────────────
         'checkout' => [
-            'payment_method_required' => 'A payment method is required for this order.',
-            'invalid_payment_method'  => 'The selected payment method is invalid.',
+            'payment_method_required'          => 'A payment method is required for this order.',
+            'invalid_payment_method'           => 'The selected payment method is invalid.',
+            'product_delivery_option_sold_out' => "Registration capacity for ':product_name' is exhausted.",
         ],
 
         // ── Footer ──────────────────────────────────────────────────────

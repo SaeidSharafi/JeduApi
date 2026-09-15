@@ -14,6 +14,10 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
+/**
+ * One real Order Item line. `type` discriminates it from a Bundle grouping entry
+ * in the unified order `items` list.
+ */
 final class OrderItemData extends Data
 {
     public function __construct(
@@ -40,5 +44,7 @@ final class OrderItemData extends Data
         public ShowVendorData $vendor,
         #[MapOutputName('product_snapshot')]
         public array $product_data_snapshot_json,
+        public ?int $bundle_purchase_id = null,
+        public string $type = 'product',
     ) {}
 }

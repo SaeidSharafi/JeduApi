@@ -54,6 +54,10 @@ final class ProductSearch
     {
         $query = Product::query();
 
+        // Bundles have a deliberately dedicated storefront contract and never
+        // participate in the global product search surface.
+        $query->where('products.productable_type', '!=', ProductableEnum::BUNDLE->value);
+
         if ($requestData->type !== null) {
             $query->ofType(ProductableEnum::from($requestData->type));
         }
@@ -164,6 +168,7 @@ final class ProductSearch
 
         $query->where('status', PublicationStatusEnum::PUBLISHED->value)
             ->where('is_visible', true)
+            ->whereNotIn('productable_type', [ProductableEnum::BUNDLE->value])
             ->where('productable_status', PublicationStatusEnum::PUBLISHED->value)
             ->where('has_published_delivery_option', true)
             ->where('is_term_active', true);

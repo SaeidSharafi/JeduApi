@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Discounts;
 
 use App\Enums\Order\DiscountTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Events\ProductCacheInvalidated;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
@@ -155,6 +156,12 @@ final class ProductDiscountIndexer
         $recordsToUpsert = [];
 
         foreach ($productDeliveryOptions as $productDeliveryOption) {
+            // Bundle PDOs never receive an indexed product-level promotion
+            // price; their reviewed selling price is the authoritative price.
+            if ($productDeliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value) {
+                continue;
+            }
+
             // Calculate the final layered discount price for this product
             $finalDiscountedPrice = $this->priceCalculator->calculateFinalDiscountedPrice(
                 $productDeliveryOption,

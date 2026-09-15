@@ -20,6 +20,7 @@ final class CartItem extends Model
         'product_delivery_option_id',
         'payment_type',
         'quantity',
+        'composition_version',
     ];
 
     /**
@@ -45,8 +46,9 @@ final class CartItem extends Model
     protected function casts(): array
     {
         return [
-            'quantity'     => 'integer',
-            'payment_type' => OrderItemPaymentTypeEnum::class,
+            'quantity'            => 'integer',
+            'composition_version' => 'integer',
+            'payment_type'        => OrderItemPaymentTypeEnum::class,
         ];
     }
 }

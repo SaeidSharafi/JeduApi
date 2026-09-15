@@ -6,11 +6,13 @@ namespace App\Services\Provisioning\Providers;
 
 use App\Contracts\Integrations\MoodleClientContract;
 use App\Contracts\Provisioning\ProvisioningProvider;
+use App\Contracts\Provisioning\RevocationProvider;
 use App\Enums\ProvisioningProviderEnum;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
+use Illuminate\Support\Carbon;
 
-final readonly class MoodleQuizProvisioningProvider implements ProvisioningProvider
+final readonly class MoodleQuizProvisioningProvider implements ProvisioningProvider, RevocationProvider
 {
     public function __construct(private MoodleClientContract $moodle) {}
 
@@ -48,6 +50,29 @@ final readonly class MoodleQuizProvisioningProvider implements ProvisioningProvi
             'moodle_user_id'   => $moodleUserId,
             'moodle_username'  => $moodleUsername,
             'moodle_course_id' => $courseId,
+        ];
+    }
+
+    public function revoke(Enrollment $enrollment): array
+    {
+        if (! $this->moodle->isEnabled()) {
+            throw new UnrecoverableProvisioningException('Moodle provider is disabled.');
+        }
+
+        $this->moodle->assertConfigured();
+        $references = data_get($enrollment->provisioning_data, 'providers.moodle_quiz.data', []);
+        $userId     = data_get($references, 'moodle_user_id');
+        $courseId   = data_get($references, 'moodle_course_id');
+        if (! is_numeric($userId) || ! is_numeric($courseId)) {
+            throw new UnrecoverableProvisioningException('Moodle enrollment references are missing.');
+        }
+
+        $this->moodle->unenrollUser((int) $userId, (int) $courseId);
+
+        return [
+            'moodle_user_id'   => (int) $userId,
+            'moodle_course_id' => (int) $courseId,
+            'revoked_at'       => Carbon::now()->toISOString(),
         ];
     }
 
