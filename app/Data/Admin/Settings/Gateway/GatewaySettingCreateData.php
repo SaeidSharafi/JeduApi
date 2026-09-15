@@ -135,4 +135,43 @@ final class GatewaySettingCreateData extends Data
 
         return $rules;
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'enabled' => [
+                'description' => 'Whether the gateway is active and available for use.',
+                'example'     => true,
+            ],
+            'shop_enabled' => [
+                'description' => 'Whether the gateway is offered to customers at checkout.',
+                'example'     => true,
+            ],
+            'label' => [
+                'description' => 'Display name shown to customers.',
+                'example'     => 'Mellat Bank',
+            ],
+            'description' => [
+                'description' => 'Description shown at checkout.',
+                'example'     => 'Pay securely with Mellat Bank.',
+            ],
+            'icon' => [
+                'description' => 'Media ID of the gateway icon image.',
+                'example'     => 1,
+            ],
+            'ims_bank_account_number' => [
+                'description' => 'IMS settlement account number. Encrypted at rest.',
+                'example'     => '1234567890',
+            ],
+            'config' => [
+                'description' => 'Provider-specific settings, keyed by the route gateway. For example `mellat` accepts `terminal_id`, `username`, `password` and `test_mode`; `digipay` accepts `client_id`, `client_secret`, `username`, `password` and `sandbox_mode`.',
+                'example'     => ['terminal_id' => '123456', 'username' => 'merchant', 'password' => null, 'test_mode' => false],
+            ],
+        ];
+    }
 }

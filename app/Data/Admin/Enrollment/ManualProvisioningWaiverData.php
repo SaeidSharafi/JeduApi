@@ -17,4 +17,23 @@ final class ManualProvisioningWaiverData extends Data
     {
         return ['provider' => ['required', Rule::enum(ProvisioningProviderEnum::class)], 'reason' => ['required', 'string', 'max:500']];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'provider' => [
+                'description' => 'The provisioning provider to waive. Available values: `ims`, `moodle`, `spotplayer`, `bbb`, `skyroom`, `moodle_quiz`.',
+                'example'     => ProvisioningProviderEnum::MOODLE->value,
+            ],
+            'reason' => [
+                'description' => 'The reason for waiving the provider.',
+                'example'     => 'Vendor does not have a record for this user.',
+            ],
+        ];
+    }
 }

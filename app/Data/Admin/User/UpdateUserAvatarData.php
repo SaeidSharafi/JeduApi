@@ -22,4 +22,19 @@ final class UpdateUserAvatarData extends Data
             'file' => ['required', 'file', 'max:'.$maxFileSize],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'file' => [
+                'description' => 'The avatar image to upload.',
+                'example'     => null,
+            ],
+        ];
+    }
 }

@@ -25,6 +25,8 @@ final class AvatarController extends Controller
     /**
      * Update the users avatar.
      *
+     * @bodyParam file file required The avatar image to upload.
+     *
      * @response 200 {
      *     "message": "Updated successfully.",
      *     "data": {

@@ -24,6 +24,9 @@ final class OrderController extends Controller
      * This endpoint returns a paginated list of all orders belonging to the authenticated user.
      * Orders are sorted by creation date (newest first).
      *
+     * @queryParam page integer Page number for pagination. Example: 1
+     * @queryParam per_page integer Number of results per page. Example: 15
+     *
      * @responseFile resources/responses/shop/order/index.json
      */
     public function index(): ApiResponseInterface

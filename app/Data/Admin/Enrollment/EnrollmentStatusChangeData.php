@@ -37,7 +37,7 @@ final class EnrollmentStatusChangeData extends Data
                 'example'     => EnrollmentStatusEnum::ACTIVE->value,
             ],
             'reason' => [
-                'description' => 'Reason for the status change.',
+                'description' => 'Reason for the status change. Required when the new status is `suspended`, `expired` or `cancelled`.',
                 'example'     => 'Payment confirmed, activating enrollment.',
             ],
         ];

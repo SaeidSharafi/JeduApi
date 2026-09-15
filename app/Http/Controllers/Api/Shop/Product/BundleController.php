@@ -32,9 +32,6 @@ final class BundleController extends Controller
     /**
      * List currently saleable Bundles using pagination only.
      *
-     * @queryParam page integer Page number for pagination. Example: 1
-     * @queryParam per_page integer Number of results per page. Example: 15
-     *
      * @responseFile 200 resources/responses/shop/bundles/index.json
      */
     public function index(ProductListRequestData $requestData): ApiResponseInterface

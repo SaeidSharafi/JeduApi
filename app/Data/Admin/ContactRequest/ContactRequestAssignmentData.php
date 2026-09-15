@@ -16,4 +16,19 @@ final class ContactRequestAssignmentData extends Data
     {
         return ['staff_id' => ['present', 'nullable', 'integer', Rule::exists((new Staff)->getTable(), 'id')->where('is_banned', 'false')]];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'staff_id' => [
+                'description' => 'The ID of the staff member to assign the request to. Send null to unassign.',
+                'example'     => 1,
+            ],
+        ];
+    }
 }

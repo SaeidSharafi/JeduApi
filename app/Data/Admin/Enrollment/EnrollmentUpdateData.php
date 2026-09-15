@@ -38,4 +38,31 @@ final class EnrollmentUpdateData extends Data
             'reason' => ['nullable', 'string', 'max:500'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'access_start_date' => [
+                'description' => 'The date access starts (Jalali date format).',
+                'example'     => '1403-01-01',
+            ],
+            'access_end_date' => [
+                'description' => 'The date access ends (Jalali date format). Must be on or after the start date.',
+                'example'     => '1403-06-31',
+            ],
+            'notes' => [
+                'description' => 'Internal notes about the enrollment.',
+                'example'     => 'Extended at the customer request.',
+            ],
+            'reason' => [
+                'description' => 'The reason for the enrollment update.',
+                'example'     => 'Customer requested an extension.',
+            ],
+        ];
+    }
 }

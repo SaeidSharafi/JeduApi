@@ -14,4 +14,19 @@ final class ProvisioningPlanApplyData extends Data
     {
         return ['confirm' => ['accepted']];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'confirm' => [
+                'description' => 'Set to true to confirm and apply the plan.',
+                'example'     => true,
+            ],
+        ];
+    }
 }

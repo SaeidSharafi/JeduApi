@@ -58,16 +58,6 @@ final class BundleController extends Controller
      *
      * @responseFile 201 resources/responses/admin/bundle/show.json
      * @responseFile 422 resources/responses/422.json
-     *
-     * @bodyParam name string required The bundle name. Example: Full Stack Package
-     * @bodyParam slug string required A unique URL-safe slug for the bundle. Example: full-stack-package
-     * @bodyParam description string required The bundle description. Example: A bundle of full stack courses.
-     * @bodyParam status string required Publication status. Available values: `draft`, `published`, `archived`. Example: published
-     * @bodyParam short_name string nullable A short display name. Example: FULLSTACK
-     * @bodyParam thumbnail_url string nullable The URL of the bundle thumbnail. Example: https://example.com/thumb.png
-     * @bodyParam properties array nullable Additional custom properties. Example: [{"key":"duration","value":"3 months"}]
-     * @bodyParam additional_info array nullable Additional information. Example: [{"title":"Includes","value":"12 courses"}]
-     * @bodyParam faq array nullable List of FAQ items. Example: [{"question":"Refunds?","answer":"Within 7 days"}]
      */
     public function store(BundleCreateData $data, CreateBundleAction $action): ApiResponseInterface
     {
@@ -75,7 +65,6 @@ final class BundleController extends Controller
         $bundle = $action->handle($data);
         $bundle->loadMediaWithVariantsMatchAll();
         $media = $bundle->getAllMedia();
-
 
         return apiResponse()->created(BundleData::from([
             ...$bundle->toArray(),
@@ -109,13 +98,6 @@ final class BundleController extends Controller
      * @responseFile 404 resources/responses/404.json
      * @responseFile 422 resources/responses/422.json
      * @responseFile 403 resources/responses/403.json
-     *
-     * @bodyParam name string optional The bundle name. Example: Full Stack Package
-     * @bodyParam slug string optional A unique URL-safe slug for the bundle. Example: full-stack-package
-     * @bodyParam description string optional The bundle description. Example: A bundle of full stack courses.
-     * @bodyParam status string optional Publication status. Available values: `draft`, `published`, `archived`. Example: published
-     * @bodyParam short_name string nullable A short display name. Example: FULLSTACK
-     * @bodyParam thumbnail_url string nullable The URL of the bundle thumbnail. Example: https://example.com/thumb.png
      */
     public function update(BundleUpdateData $data, Bundle $bundle, UpdateBundleAction $action): ApiResponseInterface
     {

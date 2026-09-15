@@ -44,8 +44,6 @@ final class ProvisioningPlanController extends Controller
      *
      * Rebuilds the provisioning plan for an enrollment after explicit confirmation.
      *
-     * @bodyParam confirm boolean required Set to true to confirm and apply the plan. Example: true
-     *
      * @responseFile 200 resources/responses/admin/enrollment/show.json
      * @responseFile 404 resources/responses/404.json
      * @responseFile 403 resources/responses/403.json

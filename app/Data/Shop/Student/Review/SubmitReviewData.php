@@ -26,4 +26,27 @@ final class SubmitReviewData extends Data
             'comment' => ['required', 'string', 'max:2000'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'rating' => [
+                'description' => 'The rating given to the productable, from 1 to 5.',
+                'example'     => 5,
+            ],
+            'title' => [
+                'description' => 'A short title for the review.',
+                'example'     => 'Excellent course',
+            ],
+            'comment' => [
+                'description' => 'The review body.',
+                'example'     => 'The content was well structured and the teacher answered every question.',
+            ],
+        ];
+    }
 }

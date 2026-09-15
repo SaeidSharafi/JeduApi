@@ -28,10 +28,6 @@ final class ResolveProvisioningController extends Controller
      *
      * Allows authorized staff to provide the external references needed to resolve a failed provisioning provider.
      *
-     * @bodyParam provider string required The provisioning provider. Available values: `ims`, `moodle`, `spotplayer`, `bbb`, `skyroom`, `moodle_quiz`. Example: moodle
-     * @bodyParam references array required The external references for the provider. Example: {"moodle_user_id":42}
-     * @bodyParam reason string required The reason for the manual resolution. Example: Credentials confirmed with vendor.
-     *
      * @responseFile 200 resources/responses/admin/enrollment/show.json
      * @responseFile 404 resources/responses/404.json
      * @responseFile 403 resources/responses/403.json
