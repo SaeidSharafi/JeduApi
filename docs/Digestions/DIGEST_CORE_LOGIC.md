@@ -629,7 +629,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `isEnabled(): bool` — checks `config['enabled']`
   - `assertConfigured(): void` — throws `UnrecoverableProvisioningException` if config invalid
   - `isReady(): bool` — combines `isEnabled()` + `validateConfig()`
-  - `resolveConfig(): void` — merges stored settings with config fallback
+  - `resolveConfig(): void` — resolves the stored settings row for `getSettingKey()`, falling back to the `getConfigFallbackPath()` config array when no row exists
   - `handleHttpErrors(Response $response, string $endpoint): void` — standardized error handler for JSON REST integrations (throws `RecoverableProvisioningException` for 5xx, `UnrecoverableProvisioningException` for 4xx)
 - **Subclasses:** ImsService, MoodleService, SpotPlayerService, BbbService, SkyroomService all extend this base
 
@@ -664,15 +664,15 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### MoodleService (`app/Services/Integrations/MoodleService.php`)
 - **Purpose:** Real Moodle Web Services API client implementing `MoodleClientContract` for user management, enrollment, grades, and SSO
+- **Configuration:** Resolved in the constructor through `AbstractIntegrationService` (stored `moodle` setting first, `config('services.moodle')` as fallback). Two independent credentials are mandatory: the service token (`token`) for administrative calls and the login token (`auth_userkey_token`), which may only call `auth_userkey_request_login_url`. `validateConfig()` requires `base_url`, `token` and `auth_userkey_token`, so a Moodle provider without the login token reports itself as unconfigured.
 - **Methods:**
-  - `setConfig(array $config): void`: Injects runtime configuration
   - `findOrCreateUser(User $user): array`: Finds or creates Moodle user → returns `[moodleUserId, moodleUsername]`
   - `isCourseCompleted(int $moodleCourseId, int $moodleUserId): bool`: Checks course completion status
   - `getActivityCompletionStatus(int $moodleCourseId, int $moodleUserId): array`: Returns per-activity completion states
   - `getGrades(int $moodleCourseId, int $moodleUserId): array`: Returns course grade + activity-level grades
   - `getCourse(int $moodleCourseId): LmsMoodleBlockData`: Fetches course content structure
   - `enrollUser(int $moodleUserId, int $moodleCourseId, ?int $startTime, ?int $endTime, int $roleId = 5): void`: Manual enrollment
-  - `createUserKey(string $username, ?string $token = null): string`: Generates SSO login URL key
+  - `createUserKey(string $username, ?string $token = null): string`: Generates SSO login URL key; `auth_userkey_request_login_url` always carries the login token, never the service token
 
 #### FakeMoodleService (`app/Services/Fakes/FakeMoodleService.php`)
 - **Purpose:** Deterministic, credential-free Moodle client used only when `APP_ENV=e2e`; returns stable user/course/login references and implements the same `MoodleClientContract` without outbound requests.
@@ -687,9 +687,10 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### BbbService (`app/Services/Integrations/BbbService.php`)
 - **Purpose:** Real BigBlueButton API client implementing `BbbClientContract` for meeting management and join URL generation (SHA1 checksum auth)
+- **Configuration:** Stored `big_blue_button` setting with `config('services.bbb')` fallback; reads `base_url`, `secret`, `api_path`, `default_attendee_password` and `default_moderator_password`
 - **Methods:**
-  - `createMeeting(string $meetingId, string $name, ?string $attendeePw, ?string $moderatorPw): void`: Creates BBB meeting
-  - `buildJoinUrl(string $meetingId, string $fullName, ?string $password): string`: Generates attendee/moderator join URL
+  - `createMeeting(string $meetingId, string $name, ?string $attendeePw, ?string $moderatorPw): void`: Creates BBB meeting, falling back to the configured attendee/moderator passwords when none are passed
+  - `buildJoinUrl(string $meetingId, string $fullName, ?string $password): string`: Generates attendee join URL, falling back to the configured attendee password when none is passed
 
 #### BbbClientContract (`app/Contracts/Integrations/BbbClientContract.php`)
 - **Purpose:** Shared boundary for BBB provisioning, join URL generation, and readiness checks. The real client is used in normal environments; `FakeBbbService` implements the same contract in E2E with stable, credential-free meeting URLs and no outbound requests.

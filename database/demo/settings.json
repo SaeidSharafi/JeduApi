@@ -196,7 +196,8 @@
     "id": 12,
     "key": "spot_player",
     "value": {
-      "endpoint": null,
+      "enabled": false,
+      "endpoint": "https://panel.spotplayer.ir/license/edit/",
       "api_key": null,
       "sandbox": false
     },

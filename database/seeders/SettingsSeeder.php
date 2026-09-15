@@ -141,17 +141,11 @@ final class SettingsSeeder extends Seeder
             'default_moderator_password' => config('services.bbb.default_moderator_password'),
         ], 'json', 'integrations');
 
-        // 'spotplayer' => [
-        //        'endpoint' => env('SPOTPLAYER_ENDPOINT', 'https://panel.spotplayer.ir/license/edit/'),
-        //        'api_key'  => env('SPOTPLAYER_API_KEY'),
-        //        'sandbox'  => (bool) env('SPOTPLAYER_SANDBOX', false),
-        //        'timeout'  => (int) env('SPOTPLAYER_TIMEOUT', 15),
-        //    ],
-
         Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
-            'endpoint' => config('services.spotplayer.base_url'),
+            'enabled'  => false,
+            'endpoint' => config('services.spotplayer.endpoint'),
             'api_key'  => config('services.spotplayer.api_key'),
             'sandbox'  => config('services.spotplayer.sandbox'),
-        ]);
+        ], 'json', 'integrations');
     }
 }
