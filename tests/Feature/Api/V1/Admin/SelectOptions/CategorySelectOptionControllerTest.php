@@ -2,7 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Data\Admin\SelectOptions\CategorySelectOptionData;
+use App\Http\Controllers\Api\Admin\SelectOptions\CategorySelectOptionController;
+
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+covers(CategorySelectOptionController::class);
+covers(CategorySelectOptionData::class);
+
 describe('Admin Category Select Option API', function (): void {
     it('returns filtered category select options', function (): void {
         $this->authorized_user();
@@ -19,12 +26,17 @@ describe('Admin Category Select Option API', function (): void {
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'image_url',
+                'current_page',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'image_url',
+                    ],
                 ],
+                'per_page',
+                'total',
             ],
         ]);
         $response->assertJsonFragment([
@@ -40,6 +52,22 @@ describe('Admin Category Select Option API', function (): void {
             route('api.v1.admin.select-option.categories', ['q' => 'NoSuchCategory'])
         );
         $response->assertOk();
-        $response->assertJson(['data' => []]);
+        $response->assertJsonCount(0, 'data.data');
+    });
+
+    it('matches categories by a partial name or slug', function (): void {
+        $this->authorized_user();
+        App\Models\Category::factory()->create(['name' => 'TestCategory Extra', 'slug' => 'test-extra']);
+        App\Models\Category::factory()->create(['name' => 'Something Else', 'slug' => 'my-category-slug']);
+        App\Models\Category::factory()->create(['name' => 'Unrelated', 'slug' => 'unrelated']);
+
+        $response = $this->getJson(
+            route('api.v1.admin.select-option.categories', ['q' => 'Category'])
+        );
+
+        $response->assertOk();
+        $response->assertJsonCount(2, 'data.data');
+        $response->assertJsonFragment(['title' => 'TestCategory Extra']);
+        $response->assertJsonFragment(['subtitle' => 'my-category-slug']);
     });
 });

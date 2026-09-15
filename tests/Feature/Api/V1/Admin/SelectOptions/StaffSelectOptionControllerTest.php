@@ -1,7 +1,15 @@
 <?php
 
 declare(strict_types=1);
+
+use App\Data\Admin\SelectOptions\StaffSelectOptionData;
+use App\Http\Controllers\Api\Admin\SelectOptions\StaffSelectOptionController;
+
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+covers(StaffSelectOptionController::class);
+covers(StaffSelectOptionData::class);
+
 describe('Admin Staff Select Option API', function (): void {
 
     it('returns filtered staff select options', function (): void {
@@ -16,12 +24,17 @@ describe('Admin Staff Select Option API', function (): void {
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'image_url',
+                'current_page',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'image_url',
+                    ],
                 ],
+                'per_page',
+                'total',
             ],
         ]);
         $response->assertJsonFragment([
@@ -36,7 +49,7 @@ describe('Admin Staff Select Option API', function (): void {
             '/api/v1/admin/select-option/staff?q=NoSuchStaff'
         );
         $response->assertOk();
-        $response->assertJson(['data' => []]);
+        $response->assertJsonCount(0, 'data.data');
     });
 
     it('filters by email and phone', function (): void {
@@ -63,9 +76,9 @@ describe('Admin Staff Select Option API', function (): void {
     it('limits the number of results', function (): void {
         $this->authorized_user();
         App\Models\Staff::factory()->count(5)->create();
-        $response = $this->getJson('/api/v1/admin/select-option/staff?limit=3');
+        $response = $this->getJson('/api/v1/admin/select-option/staff?per_page=3');
         $response->assertOk();
-        $response->assertJsonCount(3, 'data');
+        $response->assertJsonCount(3, 'data.data');
     });
 
     it('excludes banned staff', function (): void {
@@ -74,6 +87,6 @@ describe('Admin Staff Select Option API', function (): void {
 
         $response = $this->getJson('/api/v1/admin/select-option/staff?q=Banned Staff');
 
-        $response->assertOk()->assertJson(['data' => []]);
+        $response->assertOk()->assertJsonCount(0, 'data.data');
     });
 });

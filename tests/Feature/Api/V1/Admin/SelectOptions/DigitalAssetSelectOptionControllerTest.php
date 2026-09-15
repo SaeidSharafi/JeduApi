@@ -20,7 +20,7 @@ covers(DigitalAssetSelectOptionData::class);
 |
 | Survivor left after `pest --mutate --parallel` for this file, and why:
 |
-| - `DigitalAssetSelectOptionController` line 56 `RemoveArrayItem`:
+| - `DigitalAssetSelectOptionController` `RemoveArrayItem` on
 |   `withMediaAndVariants([MediaTagEnum::MAIN->value])` → `withMediaAndVariants([])`.
 |   Equivalent mutant: the DTO reads the file through
 |   `DigitalAsset::getMedia('main')`, which filters the loaded media by pivot tag,
@@ -45,12 +45,18 @@ describe('Admin Digital Asset Select Option API', function (): void {
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'image_url',
+                'current_page',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'image_url',
+                    ],
                 ],
+                'last_page',
+                'per_page',
+                'total',
             ],
         ]);
         $response->assertJsonFragment([
@@ -93,13 +99,13 @@ describe('Admin Digital Asset Select Option API', function (): void {
 
         $byFullName = $this->getJson(route('api.v1.admin.select-option.digital-assets', ['q' => 'patterns']));
         $byFullName->assertOk();
-        $byFullName->assertJsonCount(1, 'data');
-        $byFullName->assertJsonPath('data.0.title', 'Design Patterns in PHP');
+        $byFullName->assertJsonCount(1, 'data.data');
+        $byFullName->assertJsonPath('data.data.0.title', 'Design Patterns in PHP');
 
         $byShortName = $this->getJson(route('api.v1.admin.select-option.digital-assets', ['q' => 'laravel']));
         $byShortName->assertOk();
-        $byShortName->assertJsonCount(1, 'data');
-        $byShortName->assertJsonPath('data.0.title', 'Laravel Fundamentals');
+        $byShortName->assertJsonCount(1, 'data.data');
+        $byShortName->assertJsonPath('data.data.0.title', 'Laravel Fundamentals');
     });
 
     it('treats percent signs in the search query as literal characters', function (): void {
@@ -108,7 +114,7 @@ describe('Admin Digital Asset Select Option API', function (): void {
         $response = $this->getJson(route('api.v1.admin.select-option.digital-assets', ['q' => '%']));
 
         $response->assertOk();
-        $response->assertJsonCount(0, 'data');
+        $response->assertJsonCount(0, 'data.data');
     });
 
     it('excludes digital assets that are not published', function (): void {
@@ -124,8 +130,8 @@ describe('Admin Digital Asset Select Option API', function (): void {
         $response = $this->getJson(route('api.v1.admin.select-option.digital-assets'));
 
         $response->assertOk();
-        $response->assertJsonCount(1, 'data');
-        $response->assertJsonPath('data.0.title', 'Published Asset');
+        $response->assertJsonCount(1, 'data.data');
+        $response->assertJsonPath('data.data.0.title', 'Published Asset');
     });
 
     it('filters digital assets by attachability only when requested', function (): void {
@@ -136,41 +142,48 @@ describe('Admin Digital Asset Select Option API', function (): void {
             route('api.v1.admin.select-option.digital-assets', ['is_attachable_to_course' => true])
         );
         $attachableResponse->assertOk();
-        $attachableResponse->assertJsonCount(1, 'data');
-        $attachableResponse->assertJsonPath('data.0.id', $attachable->id);
+        $attachableResponse->assertJsonCount(1, 'data.data');
+        $attachableResponse->assertJsonPath('data.data.0.id', $attachable->id);
 
         $nonAttachableResponse = $this->getJson(
             route('api.v1.admin.select-option.digital-assets', ['is_attachable_to_course' => false])
         );
         $nonAttachableResponse->assertOk();
-        $nonAttachableResponse->assertJsonCount(1, 'data');
-        $nonAttachableResponse->assertJsonPath('data.0.id', $nonAttachable->id);
+        $nonAttachableResponse->assertJsonCount(1, 'data.data');
+        $nonAttachableResponse->assertJsonPath('data.data.0.id', $nonAttachable->id);
 
         $unfilteredResponse = $this->getJson(route('api.v1.admin.select-option.digital-assets'));
         $unfilteredResponse->assertOk();
-        $unfilteredResponse->assertJsonCount(2, 'data');
+        $unfilteredResponse->assertJsonCount(2, 'data.data');
 
         $emptyResponse = $this->getJson(
             route('api.v1.admin.select-option.digital-assets', ['is_attachable_to_course' => ''])
         );
         $emptyResponse->assertOk();
-        $emptyResponse->assertJsonCount(2, 'data');
+        $emptyResponse->assertJsonCount(2, 'data.data');
     });
 
-    it('limits the number of digital assets returned', function (): void {
-        DigitalAsset::factory()->count(12)->create();
+    it('paginates the digital assets returned', function (): void {
+        DigitalAsset::factory()->count(20)->create();
 
         $defaultResponse = $this->getJson(route('api.v1.admin.select-option.digital-assets'));
         $defaultResponse->assertOk();
-        $defaultResponse->assertJsonCount(10, 'data');
+        $defaultResponse->assertJsonCount(15, 'data.data');
+        $defaultResponse->assertJsonPath('data.per_page', 15);
+        $defaultResponse->assertJsonPath('data.total', 20);
 
-        $singleResponse = $this->getJson(route('api.v1.admin.select-option.digital-assets', ['limit' => 1]));
-        $singleResponse->assertOk();
-        $singleResponse->assertJsonCount(1, 'data');
-
-        $limitedResponse = $this->getJson(route('api.v1.admin.select-option.digital-assets', ['limit' => 5]));
+        $limitedResponse = $this->getJson(
+            route('api.v1.admin.select-option.digital-assets', ['per_page' => 5])
+        );
         $limitedResponse->assertOk();
-        $limitedResponse->assertJsonCount(5, 'data');
+        $limitedResponse->assertJsonCount(5, 'data.data');
+
+        $secondPage = $this->getJson(
+            route('api.v1.admin.select-option.digital-assets', ['per_page' => 15, 'page' => 2])
+        );
+        $secondPage->assertOk();
+        $secondPage->assertJsonCount(5, 'data.data');
+        $secondPage->assertJsonPath('data.current_page', 2);
     });
 
     it('returns empty data when no digital asset matches the search query', function (): void {
@@ -179,6 +192,6 @@ describe('Admin Digital Asset Select Option API', function (): void {
         $response = $this->getJson(route('api.v1.admin.select-option.digital-assets', ['q' => 'nonexistentitem']));
 
         $response->assertOk();
-        $response->assertJsonCount(0, 'data');
+        $response->assertJsonCount(0, 'data.data');
     });
 });

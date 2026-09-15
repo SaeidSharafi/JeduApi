@@ -53,8 +53,8 @@
 - **Review System:** Customer review management with approval workflow and featured selection
 - **Wallet System:** User credit management with campaigns, bulk allocations, and transaction tracking
 - **File Management:** Public media and private file handling with secure access controls
-- **Product Select Options:** Dedicated endpoint for product dropdowns with id, title (short_name), subtitle (slug), and type; supports search across product names, filtering by productable type (course, seminar, digital_asset), and configurable result limits
-- **Digital Asset Select Options:** Dedicated endpoint for digital asset dropdowns with id, title (full_name), subtitle (main file type and size), and image_url (thumbnail); returns only published assets and supports search by full/short name, an attachability filter, and configurable result limits
+- **Product Select Options:** Dedicated endpoint for product dropdowns with id, title (short_name), subtitle (slug), and type; supports search across product names, filtering by productable type (course, seminar, digital_asset), and `page`/`per_page` pagination for infinite-scroll dropdowns
+- **Digital Asset Select Options:** Dedicated endpoint for digital asset dropdowns with id, title (full_name), subtitle (main file type and size), and image_url (thumbnail); returns only published assets and supports search by full/short name, an attachability filter, and `page`/`per_page` pagination
 
 ### Customer Features
 - **Authentication:** OTP and password-based login with secure token management
@@ -140,7 +140,7 @@
 - **Teacher API:** Teacher profile display and product-specific teacher listings
 - **Authentication:** Dual system for both admin and customer interfaces
 - **File Management:** Secure media and private file handling
-- **Select Options:** Dropdown data for admin interface including dedicated product select-options endpoint with search, type filtering, and configurable limits
+- **Select Options:** Dropdown data for admin interface; the DB-backed select-option endpoints are paginated with Laravel `paginate()` (`page`/`per_page`, default `config('app.page_size')`) so the frontend can infinite-scroll, while the enum-only wallet-campaign-types and delivery-options endpoints stay flat
 - **Blog Management:** Full CRUD operations for blog categories and posts with publication workflow, `sortBy=popularity` (by `average_rating`) on public listing, related products in post detail, and thumbnail scoped to `cover` media tag
 - **Moodle SSO:** `POST /api/v1/shop/student/courses/{enrollment:uuid}/moodle/sso` generates auto-login URL for enrolled users
 - **Category API:** Categories expose `children` hierarchy in `CategoryCardData` for recursive navigation

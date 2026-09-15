@@ -440,35 +440,43 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 
 ### Select Option Controllers
 
+Every DB-backed select-option endpoint is paginated with Laravel's `paginate()`: it accepts `page` and `per_page` (default `config('app.page_size')`, 15) and returns the standard paginator envelope inside `data` (`data.data` holds the items, plus `current_page`, `last_page`, `per_page`, `total`, `next_page_url`, ...). `WalletCampaignTypeSelectOptionController` and `FulfillmentDeliveryOptionsSelectOptionController` are the exception — they serve a fixed set of enum cases with no query, so they stay unpaginated with a flat `data` array.
+
 #### CategorySelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/CategorySelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/categories` - **Response DTO:** CategorySelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/categories` - **Query Params:** `q` (name/slug), `page`, `per_page` - **Response DTO:** Paginated CategorySelectOptionData collection
 
 #### BlogCategorySelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/BlogCategorySelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/blog-categories` - **Response DTO:** BlogCategorySelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/blog-categories` - **Query Params:** `q` (name/slug), `page`, `per_page` - **Response DTO:** Paginated BlogCategorySelectOptionData collection (id, title=name, subtitle=slug, icon_url)
 
 #### TermSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/TermSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/terms` - **Response DTO:** TermSelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/terms` - **Query Params:** `q` (name/academic_year), `page`, `per_page` - **Response DTO:** Paginated TermSelectOptionData collection
 
 #### VendorSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/VendorSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/vendors` - **Response DTO:** VendorSelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/vendors` - **Query Params:** `q` (name), `page`, `per_page` - **Response DTO:** Paginated VendorSelectOptionData collection
 
 #### TeacherSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/TeacherSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/teachers` - **Response DTO:** TeacherSelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/teachers` - **Query Params:** `q` (name/email/phone), `page`, `per_page` - **Response DTO:** Paginated TeacherSelectOptionData collection (media eager-loaded for the avatar)
 
 #### ProductableSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/ProductableSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/productables` - **Response DTO:** ProductableSelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/productables` - **Query Params:** `q` (full/short name), `types[]` (course, seminar, digital_asset), `page`, `per_page` - **Response DTO:** Paginated ProductableSelectOptionData collection - **Special Features:** The three per-type queries are combined with `UNION ALL` and paginated as a `fromSub()` derived table so the paginator count spans every branch; when no type matches, an empty `LengthAwarePaginator` keeps the envelope shape
 
 #### DigitalAssetSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/DigitalAssetSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/digital-assets` - **Query Params:** `q` (search term matching full_name and short_name), `limit` (default: 10), `is_attachable_to_course` (optional boolean exact filter) - **Response DTO:** DigitalAssetSelectOptionData collection (id, title=full_name, subtitle="<FILE TYPE> · <FILE SIZE>" from the main media, image_url=thumbnail_url) - **Special Features:** Only PUBLISHED assets are returned; the file summary is derived from the single `main` media (ADR 0006)
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/digital-assets` - **Query Params:** `q` (search term matching full_name and short_name), `page`, `per_page`, `is_attachable_to_course` (optional boolean exact filter) - **Response DTO:** Paginated DigitalAssetSelectOptionData collection (id, title=full_name, subtitle="<FILE TYPE> · <FILE SIZE>" from the main media, image_url=thumbnail_url) - **Special Features:** Only PUBLISHED assets are returned; the file summary is derived from the single `main` media (ADR 0006)
 
 #### StaffSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/StaffSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/staff` - **Response DTO:** StaffSelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/staff` - **Query Params:** `q` (name/email/phone), `page`, `per_page` - **Response DTO:** Paginated StaffSelectOptionData collection (banned staff excluded)
 
 #### CustomerSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/CustomerSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/customers` - **Response DTO:** CustomerSelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/customers` - **Query Params:** `q` (name/civil_id/email/phone), `page`, `per_page` - **Response DTO:** Paginated UserSelectOptionData collection (id, title="first_name last_name", subtitle="email (phone)", avatar_url)
 
 #### ProductSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/ProductSelectOptionController.php`)
-- `__invoke(ProductQueryService $service, ?ProductableEnum $productableType = null)`: **Route:** `GET /api/v1/admin/select-option/products/{productableType?}` - **Path Param:** `productableType` (optional: course, seminar, digital_asset) - **Query Params:** `q` (search term for name/SKU matching), `limit` (default: 15) - **Response DTO:** ProductSelectOptionData collection (id, title=short_name, subtitle=slug, type=productable_type) - **Delegates to:** ProductQueryService for filtering and search with `whereLike()` matching - **Special Features:** Supports type filtering, search across product names, and configurable result limits; sorted by short_name ascending
+- `__invoke(?ProductableEnum $productableType = null)`: **Route:** `GET /api/v1/admin/select-option/products/{productableType?}` - **Path Param:** `productableType` (optional: course, seminar, digital_asset) - **Query Params:** `q` (search term for name/SKU matching), `page`, `per_page` - **Response DTO:** Paginated ProductSelectOptionData collection (id, title=short_name, subtitle=slug, type=productable_type) - **Delegates to:** ProductQueryService for filtering and search with `whereLike()` matching - **Special Features:** Supports type filtering, search across product names, and pagination; sorted by short_name ascending
+
+#### WalletCampaignTypeSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/WalletCampaignTypeSelectOptionController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/wallet-campaign-types` - **Response DTO:** WalletCampaignTypeSelectOptionData collection (flat, unpaginated — built from `CampaignTypeEnum` cases)
+
+#### FulfillmentDeliveryOptionsSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/FulfillmentDeliveryOptionsSelectOptionController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/delivery-options` - **Response DTO:** FulfillmentDeliveryOptionsSelectOptionData collection (flat, unpaginated — built from `FulfillmentTypeEnum` cases)
 
 ## Customer API Interface (`/api/v1/*`)
 **Authentication:** `auth:user` guard for protected endpoints  

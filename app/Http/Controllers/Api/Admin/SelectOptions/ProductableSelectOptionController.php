@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\SelectOptions\ProductableSelectOptionData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -26,15 +28,16 @@ final class ProductableSelectOptionController extends Controller
      * @queryParam  q string The search query for filtering productable items (match name). Example: "advanced"
      * @queryParam  types array The types of productable items to include. Possible values: course, seminar,
      *     digital_asset. Example: ["course", "seminar"]
-     * @queryParam  limit integer The maximum number of results to return. Default is 15. Example: 10
+     * @queryParam  page integer The page number for pagination. Example: 2
+     * @queryParam  per_page integer The number of results per page. Default is 15. Example: 10
      *
      * @responseFile 200 resources/responses/admin/select-options/productable.json
      */
-    public function __invoke(): \App\Contracts\ApiResponseInterface
+    public function __invoke(): ApiResponseInterface
     {
-        $query = request()->string('q', '');
-        $limit = request()->integer('limit', 15);
-        $types = request()->array('types')
+        $query   = request()->string('q', '');
+        $perPage = request()->integer('per_page', config('app.page_size')) ?: (int) config('app.page_size');
+        $types   = request()->array('types')
             ?: [
                 ProductableEnum::COURSE->value,
                 ProductableEnum::SEMINAR->value,
@@ -93,9 +96,16 @@ final class ProductableSelectOptionController extends Controller
             $queries[] = $digitalAssetsQuery;
         }
 
-        // If no types were selected, return an empty collection
-        if (empty($queries)) {
-            return apiResponse()->success(ProductableSelectOptionData::collect([]));
+        // If no types were selected, return an empty page
+        if ($queries === []) {
+            return apiResponse()->success(
+                ProductableSelectOptionData::collect(new LengthAwarePaginator(
+                    [],
+                    0,
+                    $perPage,
+                    options: ['path' => request()->url(), 'query' => request()->query()],
+                ))
+            );
         }
 
         // 4. Combine the queries using UNION ALL
@@ -105,10 +115,15 @@ final class ProductableSelectOptionController extends Controller
             $firstQuery->unionAll($unionQuery); // Union the rest
         }
 
-        // 5. Apply the final limit and get the results
-        $results = $firstQuery->limit($limit)->get();
+        // 5. Paginate the union as a derived table so the count spans every branch
+        $productables = DB::query()
+            ->fromSub($firstQuery->toBase(), 'productables')
+            ->orderBy('name')
+            ->orderBy('type')
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString();
 
-        return apiResponse()->success(ProductableSelectOptionData::collect($results));
-
+        return apiResponse()->success(ProductableSelectOptionData::collect($productables));
     }
 }

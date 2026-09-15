@@ -2,7 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Data\Admin\SelectOptions\TermSelectOptionData;
+use App\Http\Controllers\Api\Admin\SelectOptions\TermSelectOptionController;
+
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+covers(TermSelectOptionController::class);
+covers(TermSelectOptionData::class);
+
 describe('Admin Term Select Option API', function (): void {
     it('returns filtered term select options', function (): void {
         $this->authorized_user();
@@ -18,12 +25,17 @@ describe('Admin Term Select Option API', function (): void {
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'image_url',
+                'current_page',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'image_url',
+                    ],
                 ],
+                'per_page',
+                'total',
             ],
         ]);
         $response->assertJsonFragment([
@@ -39,6 +51,6 @@ describe('Admin Term Select Option API', function (): void {
             route('api.v1.admin.select-option.terms', ['q' => 'NoSuchTerm'])
         );
         $response->assertOk();
-        $response->assertJson(['data' => []]);
+        $response->assertJsonCount(0, 'data.data');
     });
 });

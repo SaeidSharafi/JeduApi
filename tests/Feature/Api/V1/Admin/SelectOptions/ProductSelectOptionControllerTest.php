@@ -2,10 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Data\Admin\SelectOptions\ProductSelectOptionData;
 use App\Enums\Product\ProductableEnum;
+use App\Http\Controllers\Api\Admin\SelectOptions\ProductSelectOptionController;
 use App\Models\Product;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+covers(ProductSelectOptionController::class);
+covers(ProductSelectOptionData::class);
+
 describe('Admin Product Select Option API', function (): void {
     beforeEach(function (): void {
         $this->authorized_user();
@@ -29,12 +35,18 @@ describe('Admin Product Select Option API', function (): void {
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'type',
+                'current_page',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'type',
+                    ],
                 ],
+                'last_page',
+                'per_page',
+                'total',
             ],
         ]);
         $response->assertJsonFragment([
@@ -68,25 +80,40 @@ describe('Admin Product Select Option API', function (): void {
         $response = $this->getJson(route('api.v1.admin.select-option.products', ['q' => 'advanced']));
 
         $response->assertStatus(200);
-        $response->assertJsonCount(3, 'data');
+        $response->assertJsonCount(3, 'data.data');
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'type',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'type',
+                    ],
                 ],
             ],
         ]);
     });
 
-    it('limits the number of productable items returned', function (): void {
-        Product::factory()->withDeliveryOptions(1)->count(10)->create();
-        $response = $this->getJson(route('api.v1.admin.select-option.products', ['limit' => 5]));
+    it('paginates the products returned', function (): void {
+        Product::factory()->withDeliveryOptions(1)->count(20)->create();
 
-        $response->assertStatus(200);
-        $this->assertCount(5, $response->json('data'));
+        $defaultResponse = $this->getJson(route('api.v1.admin.select-option.products'));
+        $defaultResponse->assertStatus(200);
+        $defaultResponse->assertJsonCount(15, 'data.data');
+        $defaultResponse->assertJsonPath('data.per_page', 15);
+        $defaultResponse->assertJsonPath('data.total', 20);
+
+        $limitedResponse = $this->getJson(route('api.v1.admin.select-option.products', ['per_page' => 5]));
+        $limitedResponse->assertStatus(200);
+        $limitedResponse->assertJsonCount(5, 'data.data');
+
+        $secondPage = $this->getJson(
+            route('api.v1.admin.select-option.products', ['per_page' => 15, 'page' => 2])
+        );
+        $secondPage->assertStatus(200);
+        $secondPage->assertJsonCount(5, 'data.data');
+        $secondPage->assertJsonPath('data.current_page', 2);
     });
 
     it('filters productable items by types', function (): void {
@@ -109,15 +136,17 @@ describe('Admin Product Select Option API', function (): void {
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'type',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'type',
+                    ],
                 ],
             ],
         ]);
-        foreach ($response->json('data') as $item) {
+        foreach ($response->json('data.data') as $item) {
             expect($item['type']['value'])->toBe(ProductableEnum::COURSE->value);
         }
 
@@ -125,15 +154,17 @@ describe('Admin Product Select Option API', function (): void {
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'type',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'type',
+                    ],
                 ],
             ],
         ]);
-        foreach ($response->json('data') as $item) {
+        foreach ($response->json('data.data') as $item) {
             expect($item['type']['value'])->toBe(ProductableEnum::SEMINAR->value);
         }
 
@@ -141,15 +172,17 @@ describe('Admin Product Select Option API', function (): void {
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'type',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'type',
+                    ],
                 ],
             ],
         ]);
-        foreach ($response->json('data') as $item) {
+        foreach ($response->json('data.data') as $item) {
             expect($item['type']['value'])->toBe(ProductableEnum::DIGITAL_ASSET->value);
         }
     });
@@ -160,6 +193,6 @@ describe('Admin Product Select Option API', function (): void {
         $response = $this->getJson(route('api.v1.admin.select-option.products', ['q' => 'nonexistentitem']));
 
         $response->assertStatus(200);
-        $response->assertJsonCount(0, 'data');
+        $response->assertJsonCount(0, 'data.data');
     });
 });

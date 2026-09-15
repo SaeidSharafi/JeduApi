@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\Admin\SelectOptions;
 use App\Data\Admin\SelectOptions\UserSelectOptionData;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,13 +21,15 @@ final class CustomerSelectOptionController extends Controller
      *
      * @queryParam  q string The search query for filtering customers (match combined [first_name and last_name],
      *              email and phone and civil id. Example: "John Doe"
+     * @queryParam  page integer The page number for pagination. Example: 2
+     * @queryParam  per_page integer The number of results per page. Default is 15. Example: 10
      *
      * @responseFile 200 resources/responses/admin/select-options/customer.json
      */
     public function __invoke(): \App\Contracts\ApiResponseInterface
     {
         $queryString = request()->string('q', '');
-        $limit       = request()->integer('limit', 10);
+        $perPage     = request()->integer('per_page', config('app.page_size')) ?: (int) config('app.page_size');
 
         $customers = User::query()
             ->when($queryString, function ($query) use ($queryString): void {
@@ -40,8 +41,8 @@ final class CustomerSelectOptionController extends Controller
                 });
             })
             ->orderBy('last_name')
-            ->when($limit, fn (Builder $q): Builder => $q->limit($limit))
-            ->get(['id', 'first_name', 'last_name', 'email', 'phone', 'avatar_url']);
+            ->paginate($perPage, ['id', 'first_name', 'last_name', 'email', 'phone', 'avatar_url'])
+            ->withQueryString();
 
         return apiResponse()->success(
             UserSelectOptionData::collect($customers)

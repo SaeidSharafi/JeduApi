@@ -1,66 +1,99 @@
 {
-  "message": "عملیات با موفقیت انجام شد.",
-  "data": [
-    {
-      "id": 1,
-      "title": "Admin",
-      "subtitle": "staff@example.com",
-      "image_url": null
+    "message": "عملیات با موفقیت انجام شد.",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": 1,
+                "title": "Admin",
+                "subtitle": "staff@example.com",
+                "image_url": null
+            },
+            {
+                "id": 36,
+                "title": "Alexys Franecki",
+                "subtitle": "asha72@example.net",
+                "image_url": null
+            },
+            {
+                "id": 76,
+                "title": "Alf Abbott",
+                "subtitle": "linnie93@example.org",
+                "image_url": null
+            },
+            {
+                "id": 142,
+                "title": "Alf Nikolaus",
+                "subtitle": "nmckenzie@example.com",
+                "image_url": null
+            },
+            {
+                "id": 147,
+                "title": "Alvis Waelchi",
+                "subtitle": "cbashirian@example.com",
+                "image_url": null
+            },
+            {
+                "id": 93,
+                "title": "Amani Heaney",
+                "subtitle": "sophie.satterfield@example.org",
+                "image_url": null
+            },
+            {
+                "id": 8,
+                "title": "Amelie Rau III",
+                "subtitle": "ransom.roberts@example.com",
+                "image_url": null
+            },
+            {
+                "id": 146,
+                "title": "Ana White",
+                "subtitle": "corkery.jerrold@example.net",
+                "image_url": null
+            },
+            {
+                "id": 92,
+                "title": "Anibal Hermiston II",
+                "subtitle": "cmaggio@example.org",
+                "image_url": null
+            },
+            {
+                "id": 86,
+                "title": "Arden Murray",
+                "subtitle": "ogoyette@example.com",
+                "image_url": null
+            }
+        ],
+        "first_page_url": "http://jedu.test/api/v1/admin/select-option/staff?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://jedu.test/api/v1/admin/select-option/staff?page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; قبلی",
+                "active": false,
+                "page": null
+            },
+            {
+                "url": "http://jedu.test/api/v1/admin/select-option/staff?page=1",
+                "label": "1",
+                "active": true,
+                "page": 1
+            },
+            {
+                "url": null,
+                "label": "بعدی &raquo;",
+                "active": false,
+                "page": null
+            }
+        ],
+        "next_page_url": null,
+        "path": "http://jedu.test/api/v1/admin/select-option/staff",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 10,
+        "total": 10
     },
-    {
-      "id": 36,
-      "title": "Alexys Franecki",
-      "subtitle": "asha72@example.net",
-      "image_url": null
-    },
-    {
-      "id": 76,
-      "title": "Alf Abbott",
-      "subtitle": "linnie93@example.org",
-      "image_url": null
-    },
-    {
-      "id": 142,
-      "title": "Alf Nikolaus",
-      "subtitle": "nmckenzie@example.com",
-      "image_url": null
-    },
-    {
-      "id": 147,
-      "title": "Alvis Waelchi",
-      "subtitle": "cbashirian@example.com",
-      "image_url": null
-    },
-    {
-      "id": 93,
-      "title": "Amani Heaney",
-      "subtitle": "sophie.satterfield@example.org",
-      "image_url": null
-    },
-    {
-      "id": 8,
-      "title": "Amelie Rau III",
-      "subtitle": "ransom.roberts@example.com",
-      "image_url": null
-    },
-    {
-      "id": 146,
-      "title": "Ana White",
-      "subtitle": "corkery.jerrold@example.net",
-      "image_url": null
-    },
-    {
-      "id": 92,
-      "title": "Anibal Hermiston II",
-      "subtitle": "cmaggio@example.org",
-      "image_url": null
-    },
-    {
-      "id": 86,
-      "title": "Arden Murray",
-      "subtitle": "ogoyette@example.com",
-      "image_url": null
-    }
-  ],
-  "metadata": []
+    "metadata": []
 }

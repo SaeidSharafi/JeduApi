@@ -2,9 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Data\Admin\SelectOptions\VendorSelectOptionData;
+use App\Http\Controllers\Api\Admin\SelectOptions\VendorSelectOptionController;
 use App\Models\Vendor;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+covers(VendorSelectOptionController::class);
+covers(VendorSelectOptionData::class);
+
 describe('Admin Vendor Select Option API', function (): void {
     it('returns filtered vendor select options', function (): void {
         $this->authorized_user();
@@ -36,12 +42,17 @@ describe('Admin Vendor Select Option API', function (): void {
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
-                    'id',
-                    'title',
-                    'subtitle',
-                    'image_url',
+                'current_page',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'subtitle',
+                        'image_url',
+                    ],
                 ],
+                'per_page',
+                'total',
             ],
         ]);
         $response->assertJsonFragment([
@@ -57,6 +68,6 @@ describe('Admin Vendor Select Option API', function (): void {
             route('api.v1.admin.select-option.vendors', ['q' => 'NoSuchVendor'])
         );
         $response->assertOk();
-        $response->assertJson(['data' => []]);
+        $response->assertJsonCount(0, 'data.data');
     });
 });

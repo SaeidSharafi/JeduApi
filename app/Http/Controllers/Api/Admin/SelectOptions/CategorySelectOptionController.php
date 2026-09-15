@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
 use App\Data\Admin\SelectOptions\CategorySelectOptionData;
 use App\Http\Controllers\Controller;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @group Admin - Select Options
@@ -21,13 +20,15 @@ final class CategorySelectOptionController extends Controller
      * Categories list
      *
      * @queryParam  q string The search query for filtering categories (match name and slug). Example: "electronics"
+     * @queryParam  page integer The page number for pagination. Example: 2
+     * @queryParam  per_page integer The number of results per page. Default is 15. Example: 10
      *
      * @responseFile 200 resources/responses/admin/select-options/category.json
      */
     public function __invoke(): \App\Contracts\ApiResponseInterface
     {
-        $query = request()->string('q', '');
-        $limit = request()->integer('limit', 10);
+        $query   = request()->string('q', '');
+        $perPage = request()->integer('per_page', config('app.page_size')) ?: (int) config('app.page_size');
 
         $categories = \App\Models\Category::query()
             ->withMediaAndVariants(['icon'])
@@ -39,8 +40,8 @@ final class CategorySelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
-            ->when($limit, fn (Builder $q): Builder => $q->limit($limit))
-            ->get(['id', 'name', 'slug', 'icon_url']);
+            ->paginate($perPage, ['id', 'name', 'slug', 'icon_url'])
+            ->withQueryString();
 
         return apiResponse()->success(
             CategorySelectOptionData::collect($categories)

@@ -27,15 +27,16 @@ final class DigitalAssetSelectOptionController extends Controller
      * Only published assets are returned.
      *
      * @queryParam  q string The search query for filtering digital assets (match full name and short name). Example: "advanced"
-     * @queryParam  limit integer The maximum number of results to return. Default is 10. Example: 10
+     * @queryParam  page integer The page number for pagination. Example: 2
+     * @queryParam  per_page integer The number of results per page. Default is 15. Example: 10
      * @queryParam  is_attachable_to_course boolean When present, only assets matching this attachability are returned. Example: true
      *
      * @responseFile 200 resources/responses/admin/select-options/digital-asset.json
      */
     public function __invoke(): ApiResponseInterface
     {
-        $query = request()->string('q', '');
-        $limit = request()->integer('limit', 10);
+        $query   = request()->string('q', '');
+        $perPage = request()->integer('per_page', config('app.page_size')) ?: (int) config('app.page_size');
 
         $digitalAssets = DigitalAsset::query()
             ->where('status', PublicationStatusEnum::PUBLISHED)
@@ -55,8 +56,8 @@ final class DigitalAssetSelectOptionController extends Controller
             )
             ->withMediaAndVariants([MediaTagEnum::MAIN->value])
             ->orderBy('full_name')
-            ->limit($limit)
-            ->get(['id', 'full_name', 'thumbnail_url']);
+            ->paginate($perPage, ['id', 'full_name', 'thumbnail_url'])
+            ->withQueryString();
 
         return apiResponse()->success(
             DigitalAssetSelectOptionData::collect($digitalAssets)
