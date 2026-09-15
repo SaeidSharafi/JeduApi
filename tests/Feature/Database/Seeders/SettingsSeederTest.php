@@ -17,7 +17,7 @@ use Database\Seeders\SettingsSeeder;
 */
 
 it('seeds the spot player row from the spotplayer endpoint config with the enable flag and integrations group', function (): void {
-    config()->set('services.spotplayer.endpoint', 'https://spotplayer.seeded.test/license/edit/');
+    config()->set('provisioning.providers.spotplayer.endpoint', 'https://spotplayer.seeded.test/license/edit/');
 
     $this->seed(SettingsSeeder::class);
 

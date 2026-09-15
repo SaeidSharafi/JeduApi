@@ -417,7 +417,7 @@
 - **`settingKey(): SettingKeyEnum`** — the persisted setting key (`IMS`, `MOODLE`, `SPOT_PLAYER`, `SKYROOM`, `NILIROOM`, group `integrations`).
 - **`settingDataClass(): class-string<ProvisioningProviderSettingData>`** — the data class owning that provider's `schema()` and request `rules()`.
 - **`serviceClass(): class-string<AbstractIntegrationService>|null`** — the integration service that consumes the configuration; the seam the adapter-agreement test iterates, and null for Niliroom, which is settings-only until its adapter lands.
-- **`defaultConfig(): array`** — `config/provisioning.php` `providers.<value>` defaults used until the provider is saved; the environment names match the runtime `services.*` blocks wherever an adapter reads them (Niliroom's are new, since it is settings-only until its adapter lands).
+- **`defaultConfig(): array`** — `config/provisioning.php` `providers.<value>` defaults used until the provider is saved; each adapter resolves this same block as its configuration fallback (with `BbbService` still on `services.bbb`), so it is the single source of a provider's defaults (Niliroom's are new, since it is settings-only until its adapter lands).
 - **`label(): string`** — localized display label from `provisioning.providers.<value>.label`.
 
 #### ProvisioningProviderSettingData (`app/Data/Admin/Settings/Provisioning/ProvisioningProviderSettingData.php`)

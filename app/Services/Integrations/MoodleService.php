@@ -298,7 +298,7 @@ final class MoodleService extends AbstractIntegrationService implements MoodleCl
 
     protected function getConfigFallbackPath(): string
     {
-        return 'services.moodle';
+        return 'provisioning.providers.moodle';
     }
 
     protected function validateConfig(): bool

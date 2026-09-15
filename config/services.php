@@ -47,31 +47,6 @@ return [
         'use_fake_email' => env('EMAIL_USE_FAKE_EMAIL', false),
     ],
 
-    'ims' => [
-        'enabled'  => env('IMS_ENABLED', false),
-        'base_url' => env('IMS_BASE_URL'),
-        'api_key'  => env('IMS_API_KEY'),
-        'timeout'  => (int) env('IMS_TIMEOUT', 15),
-    ],
-
-    'moodle' => [
-        'enabled'                       => env('MOODLE_ENABLED', false),
-        'base_url'                      => env('MOODLE_BASE_URL'),
-        'token'                         => env('MOODLE_TOKEN'),
-        'auth_userkey_token'            => env('MOODLE_AUTH_USERKEY_TOKEN'),
-        'default_role_id'               => (int) env('MOODLE_DEFAULT_ROLE_ID', 5),
-        'default_login_redirect_script' => env('MOODLE_LOGIN_REDIRECT_SCRIPT', '/my/'),
-        'timeout'                       => (int) env('MOODLE_TIMEOUT', 15),
-    ],
-
-    'spotplayer' => [
-        'enabled'  => env('SPOTPLAYER_ENABLED', false),
-        'endpoint' => env('SPOTPLAYER_ENDPOINT', 'https://panel.spotplayer.ir/license/edit/'),
-        'api_key'  => env('SPOTPLAYER_API_KEY'),
-        'sandbox'  => (bool) env('SPOTPLAYER_SANDBOX', false),
-        'timeout'  => (int) env('SPOTPLAYER_TIMEOUT', 15),
-    ],
-
     'bbb' => [
         'enabled'                    => env('BBB_ENABLED', false),
         'base_url'                   => env('BBB_BASE_URL'),
@@ -80,12 +55,6 @@ return [
         'default_attendee_password'  => env('BBB_DEFAULT_ATTENDEE_PASSWORD', 'ap'),
         'default_moderator_password' => env('BBB_DEFAULT_MODERATOR_PASSWORD', 'mp'),
         'timeout'                    => (int) env('BBB_TIMEOUT', 15),
-    ],
-
-    'skyroom' => [
-        'enabled'  => env('SKYROOM_ENABLED', false),
-        'base_url' => env('SKYROOM_BASE_URL', 'https://www.skyroom.online/skyroom/api'),
-        'api_key'  => env('SKYROOM_API_KEY'),
     ],
 
 ];

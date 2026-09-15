@@ -79,15 +79,56 @@ function providerAgreementValues(ProvisioningProviderSettingsEnum $provider, str
 |--------------------------------------------------------------------------
 |
 | The badge the panel shows is computed from the provider schema, while the
-| adapters decide for themselves whether they can deliver. This test is the
+| adapters decide for themselves whether they can deliver. These tests are the
 | contract between the two: for every provider that has an adapter, the
 | schema-derived `enabled`/`configured`/`ready` must equal what the adapter
-| reports for a complete, an incomplete and a disabled-but-complete provider.
+| reports — both for a stored row and for a provider that only has
+| `config/provisioning.php` defaults.
 |
 | `assertConfigured()` is the adapter's public configuration check; it throws
 | when the configuration is broken and returns silently when it is usable, so
 | it isolates `validateConfig()` from the `enabled` switch.
 */
+
+/**
+ * Assert the schema-derived state equals what the provider's adapter reports.
+ *
+ * A settings-only provider has no adapter to compare with, so only the
+ * composition of its state is asserted.
+ *
+ * @param  array{enabled: bool, configured: bool, ready: bool}  $state
+ */
+function expectProviderStateToMatchAdapter(ProvisioningProviderSettingsEnum $provider, array $state): void
+{
+    $serviceClass = $provider->serviceClass();
+
+    if ($serviceClass === null) {
+        expect($state['ready'])->toBe($state['enabled'] && $state['configured']);
+
+        return;
+    }
+
+    /** @var AbstractIntegrationService $service */
+    $service = app($serviceClass);
+
+    $adapterConfigured = true;
+
+    try {
+        $service->assertConfigured();
+    } catch (UnrecoverableProvisioningException) {
+        $adapterConfigured = false;
+    }
+
+    expect([
+        'enabled'    => $state['enabled'],
+        'configured' => $state['configured'],
+        'ready'      => $state['ready'],
+    ])->toBe([
+        'enabled'    => $service->isEnabled(),
+        'configured' => $adapterConfigured,
+        'ready'      => $service->isReady(),
+    ]);
+}
 
 it('agrees with each provider adapter', function (string $kind): void {
     foreach (ProvisioningProviderSettingsEnum::cases() as $provider) {
@@ -97,40 +138,30 @@ it('agrees with each provider adapter', function (string $kind): void {
         );
         app(SettingsService::class)->forget();
 
-        $state = app(BuildProvisioningProviderSettingAction::class)->handle($provider)['state'];
-
-        $serviceClass = $provider->serviceClass();
-
-        if ($serviceClass === null) {
-            // Settings-only provider (Niliroom): no adapter exists yet, so there
-            // is nothing to agree with beyond `ready = enabled && configured`.
-            expect($state['ready'])->toBe($state['enabled'] && $state['configured']);
-
-            continue;
-        }
-
-        /** @var AbstractIntegrationService $service */
-        $service = app($serviceClass);
-
-        $adapterConfigured = true;
-
-        try {
-            $service->assertConfigured();
-        } catch (UnrecoverableProvisioningException) {
-            $adapterConfigured = false;
-        }
-
-        expect([
-            'enabled'    => $state['enabled'],
-            'configured' => $state['configured'],
-            'ready'      => $state['ready'],
-        ])->toBe([
-            'enabled'    => $service->isEnabled(),
-            'configured' => $adapterConfigured,
-            'ready'      => $service->isReady(),
-        ]);
+        expectProviderStateToMatchAdapter(
+            $provider,
+            app(BuildProvisioningProviderSettingAction::class)->handle($provider)['state'],
+        );
     }
 })->with('provider configurations');
+
+it('agrees on configuration-only defaults when no provider row is stored', function (): void {
+    foreach (ProvisioningProviderSettingsEnum::cases() as $provider) {
+        // No stored row: the panel and the adapter must both resolve the same
+        // config/provisioning.php block, which is what repointing the adapter
+        // fallback path unified.
+        config()->set('provisioning.providers.'.$provider->value, array_merge(
+            config('provisioning.providers.'.$provider->value, []),
+            providerAgreementValues($provider, 'disabled but complete'),
+        ));
+        app(SettingsService::class)->forget();
+
+        expectProviderStateToMatchAdapter(
+            $provider,
+            app(BuildProvisioningProviderSettingAction::class)->handle($provider)['state'],
+        );
+    }
+});
 
 /*
 |--------------------------------------------------------------------------

@@ -29,7 +29,7 @@ beforeEach(function (): void {
     Storage::fake('public');
     Storage::fake('local');
     Storage::disk('local')->makeDirectory('forms');
-    config()->set('services.moodle.base_url', 'https://lms.example.com');
+    config()->set('provisioning.providers.moodle.base_url', 'https://lms.example.com');
     $this->pdf = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()
         ->create('attachment.pdf', 100, 'application/pdf'))
         ->toDisk('local')

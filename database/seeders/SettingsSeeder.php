@@ -110,8 +110,8 @@ final class SettingsSeeder extends Seeder
         ], 'json', 'homepage');
 
         Setting::setValue(SettingKeyEnum::IMS, [
-            'base_url'           => config('services.ims.base_url'),
-            'api_key'            => config('services.ims.api_key'),
+            'base_url'           => config('provisioning.providers.ims.base_url'),
+            'api_key'            => config('provisioning.providers.ims.api_key'),
             'enabled'            => false,
             'create_studets'     => true,
             'update_studets'     => true,
@@ -120,11 +120,11 @@ final class SettingsSeeder extends Seeder
         ], 'json', 'integrations');
 
         Setting::setValue(SettingKeyEnum::MOODLE, [
-            'base_url'                      => config('services.moodle.base_url'),
-            'token'                         => config('services.moodle.token'),
-            'auth_userkey_token'            => config('services.moodle.auth_userkey_token'),
-            'default_role_id'               => config('services.moodle.default_role_id'),
-            'default_login_redirect_script' => config('services.moodle.default_login_redirect_script'),
+            'base_url'                      => config('provisioning.providers.moodle.base_url'),
+            'token'                         => config('provisioning.providers.moodle.token'),
+            'auth_userkey_token'            => config('provisioning.providers.moodle.auth_userkey_token'),
+            'default_role_id'               => config('provisioning.providers.moodle.default_role_id'),
+            'default_login_redirect_script' => config('provisioning.providers.moodle.default_login_redirect_script'),
             'enabled'                       => false,
             'create_studets'                => true,
             'update_studets'                => true,
@@ -143,9 +143,9 @@ final class SettingsSeeder extends Seeder
 
         Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
             'enabled'  => false,
-            'endpoint' => config('services.spotplayer.endpoint'),
-            'api_key'  => config('services.spotplayer.api_key'),
-            'sandbox'  => config('services.spotplayer.sandbox'),
+            'endpoint' => config('provisioning.providers.spotplayer.endpoint'),
+            'api_key'  => config('provisioning.providers.spotplayer.api_key'),
+            'sandbox'  => config('provisioning.providers.spotplayer.sandbox'),
         ], 'json', 'integrations');
     }
 }

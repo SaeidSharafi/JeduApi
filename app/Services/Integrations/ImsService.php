@@ -243,7 +243,7 @@ final class ImsService extends AbstractIntegrationService implements ImsClientCo
 
     protected function getConfigFallbackPath(): string
     {
-        return 'services.ims';
+        return 'provisioning.providers.ims';
     }
 
     protected function validateConfig(): bool
