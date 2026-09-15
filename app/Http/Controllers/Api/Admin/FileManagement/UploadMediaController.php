@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\FileManagement;
 
+use App\Actions\Media\DispatchImageVariantsAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\MediaData;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Plank\Mediable\Facades\MediaUploader;
-use Plank\Mediable\Jobs\CreateImageVariants;
-use Plank\Mediable\Media;
 
 final class UploadMediaController extends Controller
 {
@@ -29,7 +28,7 @@ final class UploadMediaController extends Controller
      *
      * @responseFile 201 resources/responses/admin/media/upload.json
      */
-    public function __invoke(Request $request): ApiResponseInterface
+    public function __invoke(Request $request, DispatchImageVariantsAction $dispatchImageVariants): ApiResponseInterface
     {
         $request->validate([
             'file' => 'required|file|max:10240',
@@ -46,11 +45,7 @@ final class UploadMediaController extends Controller
             ->onDuplicateIncrement()
             ->upload();
 
-        $resizableExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-
-        if ($media->aggregate_type === Media::TYPE_IMAGE && in_array($media->extension, $resizableExtensions, true)) {
-            CreateImageVariants::dispatch($media, 'thumb');
-        }
+        $dispatchImageVariants->handle($media, 'thumb');
 
         return apiResponse()->created(MediaData::fromModel($media), message: __('messages.success'));
     }

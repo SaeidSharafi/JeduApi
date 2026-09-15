@@ -12,7 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * @group Admin - Users
+ * @group Admin - User Management
  *
  * @authenticated
  */

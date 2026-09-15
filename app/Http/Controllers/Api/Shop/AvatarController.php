@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop;
 
+use App\Actions\User\UpdateUserAvatarAction;
 use App\Contracts\ApiResponseInterface;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Plank\Mediable\Facades\MediaUploader;
-use Plank\Mediable\Jobs\CreateImageVariants;
-use Plank\Mediable\Media;
 
 /**
  * @group Shop - Profile
@@ -34,32 +33,23 @@ final class AvatarController extends Controller
      *     "metadata": []
      * }
      */
-    public function update(Request $request): ApiResponseInterface
+    public function update(Request $request, UpdateUserAvatarAction $updateUserAvatar): ApiResponseInterface
     {
         $request->validate([
             'file' => 'required|file|max:10240',
         ]);
 
-        $media = null;
-        DB::transaction(function () use ($request, &$media): void {
-            /** @var UploadedFile $file */
-            $file = $request->file('file');
+        /** @var UploadedFile $file */
+        $file = $request->file('file');
 
-            $media = MediaUploader::fromSource($file)
-                ->toDisk(config('mediable.default_disk', 'public'))
-                ->onDuplicateIncrement()
-                ->upload();
+        /** @var User $user */
+        $user = auth('user')->user();
 
-            if ($media->aggregate_type === Media::TYPE_IMAGE) {
-                CreateImageVariants::dispatch($media, 'thumb');
-            }
-            $user = auth('user')->user();
-            $user->syncMedia($media, 'avatar');
-        });
+        $media = $updateUserAvatar->handle($user, $file);
 
         return apiResponse()->updated(
             [
-                'avatar_url' => $media?->getUrl(),
+                'avatar_url' => $media->getUrl(),
             ]
         );
     }

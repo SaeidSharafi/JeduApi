@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\Admin\User\StaffController;
 use App\Http\Controllers\Api\Admin\User\TeacherController;
 use App\Http\Controllers\Api\Admin\User\UnbanStaffController;
 use App\Http\Controllers\Api\Admin\User\UnbanUserController;
+use App\Http\Controllers\Api\Admin\User\UpdateUserAvatarController;
 use App\Http\Controllers\Api\Admin\User\UserController;
 use App\Http\Controllers\Api\Admin\VendorController;
 use App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController;
@@ -60,6 +61,7 @@ Route::prefix('users/{user}')->name('users.')->group(function (): void {
     });
     Route::post('ban', BanUserController::class)->name('ban');
     Route::post('unban', UnbanUserController::class)->name('unban');
+    Route::post('avatar', UpdateUserAvatarController::class)->name('avatar');
 });
 Route::apiResource('reviews', ReviewController::class)
     ->except(['store', 'update']);
