@@ -458,6 +458,9 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 #### ProductableSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/ProductableSelectOptionController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/admin/select-option/productables` - **Response DTO:** ProductableSelectOptionData collection
 
+#### DigitalAssetSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/DigitalAssetSelectOptionController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/digital-assets` - **Query Params:** `q` (search term matching full_name and short_name), `limit` (default: 10), `is_attachable_to_course` (optional boolean exact filter) - **Response DTO:** DigitalAssetSelectOptionData collection (id, title=full_name, subtitle="<FILE TYPE> · <FILE SIZE>" from the main media, image_url=thumbnail_url) - **Special Features:** Only PUBLISHED assets are returned; the file summary is derived from the single `main` media (ADR 0006)
+
 #### StaffSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/StaffSelectOptionController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/admin/select-option/staff` - **Response DTO:** StaffSelectOptionData collection
 

@@ -54,6 +54,7 @@
 - **Wallet System:** User credit management with campaigns, bulk allocations, and transaction tracking
 - **File Management:** Public media and private file handling with secure access controls
 - **Product Select Options:** Dedicated endpoint for product dropdowns with id, title (short_name), subtitle (slug), and type; supports search across product names, filtering by productable type (course, seminar, digital_asset), and configurable result limits
+- **Digital Asset Select Options:** Dedicated endpoint for digital asset dropdowns with id, title (full_name), subtitle (main file type and size), and image_url (thumbnail); returns only published assets and supports search by full/short name, an attachability filter, and configurable result limits
 
 ### Customer Features
 - **Authentication:** OTP and password-based login with secure token management

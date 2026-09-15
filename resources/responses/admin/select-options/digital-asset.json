@@ -1,0 +1,18 @@
+{
+    "message": "عملیات با موفقیت انجام شد.",
+    "data": [
+        {
+            "id": 1,
+            "title": "کتاب جامع الکترونیکی الگوهای طراحی در PHP",
+            "subtitle": "PDF · 2.4 MB",
+            "image_url": "https://placehold.co/300x200.png?text=book"
+        },
+        {
+            "id": 2,
+            "title": "ویدیوی آموزشی مقدمات لاراول",
+            "subtitle": "MP4 · 512 MB",
+            "image_url": "https://placehold.co/300x200.png?text=video"
+        }
+    ],
+    "metadata": []
+}
