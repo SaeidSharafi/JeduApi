@@ -20,7 +20,6 @@ final class OrderCreateData extends Data
         public array $items,
         public ?string $applied_coupon_code = null,
         public ?string $admin_notes = null,
-        public ?int $promotion_id = null,
     ) {}
 
     public static function rules(?ValidationContext $context = null): array

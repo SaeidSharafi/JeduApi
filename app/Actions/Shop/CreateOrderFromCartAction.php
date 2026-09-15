@@ -369,7 +369,6 @@ final readonly class CreateOrderFromCartAction
             items: $orderItems,
             applied_coupon_code: $cart->applied_coupon_code,
             admin_notes: null,
-            promotion_id: null
         );
     }
 }
