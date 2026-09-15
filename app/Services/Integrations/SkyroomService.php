@@ -77,7 +77,7 @@ final class SkyroomService extends AbstractIntegrationService implements Skyroom
 
     protected function getConfigFallbackPath(): string
     {
-        return 'services.skyroom';
+        return 'provisioning.providers.skyroom';
     }
 
     protected function validateConfig(): bool

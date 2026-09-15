@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 use App\Events\OtpPrepared;
 use App\Notifications\Auth\OtpSmsNotification;
+use App\Notifications\SmsChannel;
 use App\Notifications\SmsMessage;
+
+covers(OtpSmsNotification::class);
 
 beforeEach(function (): void {
     Notification::fake();
-    config()->set('services.ippanel.from', 1000);
-    config()->set('services.ippanel.api_key', 'test_key');
-    config()->set('services.ippanel.sand_box', false);
+    config()->set('sms.gateways.ippanel.from', 1000);
+    config()->set('sms.gateways.ippanel.api_key', 'test_key');
+    config()->set('sms.gateways.ippanel.sandbox', false);
     Http::fake(
         [
             'https://api2.ippanel.com/api/v1/sms/pattern/normal/send' => Http::response(
@@ -25,6 +28,19 @@ beforeEach(function (): void {
     );
 });
 describe('OTP SMS Notification', function (): void {
+    it('delivers the login code through the sms channel only', function (): void {
+        $otpEvent = new OtpPrepared(
+            identifier: '09321456987',
+            guard: 'user',
+            code: '123456',
+            type: App\Enums\System\OtpType::SIGNIN,
+            trackingCode: 'test-tracking',
+            params: []
+        );
+
+        expect((new OtpSmsNotification($otpEvent))->via(new App\Models\User()))->toBe(SmsChannel::class);
+    });
+
     it('creates the correct sms message payload for customer', function (): void {
         $user     = new App\Models\User();
         $otpEvent = new OtpPrepared(
@@ -40,7 +56,6 @@ describe('OTP SMS Notification', function (): void {
         $smsMessage = $notification->toSms($user);
 
         expect($smsMessage)->toBeInstanceOf(SmsMessage::class)
-            ->and($smsMessage->pattern)->toBe('mdoe1j1587')
             ->and($smsMessage->parameters)->toBe(['code' => '123456'])
             ->and($smsMessage->type)->toBe('OTP');
     });
@@ -60,7 +75,6 @@ describe('OTP SMS Notification', function (): void {
         $smsMessage = $notification->toSms($user);
 
         expect($smsMessage)->toBeInstanceOf(SmsMessage::class)
-            ->and($smsMessage->pattern)->toBe('mdoe1j1587')
             ->and($smsMessage->parameters)->toBe(['code' => '123456'])
             ->and($smsMessage->type)->toBe('OTP');
     });

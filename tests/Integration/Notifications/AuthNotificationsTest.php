@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Notification;
 
 beforeEach(function (): void {
     Notification::fake();
-    config()->set('services.ippanel.from', 1000);
-    config()->set('services.ippanel.api_key', 'test_key');
-    config()->set('services.ippanel.sand_box', false);
+    config()->set('sms.gateways.ippanel.from', 1000);
+    config()->set('sms.gateways.ippanel.api_key', 'test_key');
+    config()->set('sms.gateways.ippanel.sandbox', false);
     Http::fake(
         [
             'https://api2.ippanel.com/api/v1/sms/pattern/normal/send' => Http::response(

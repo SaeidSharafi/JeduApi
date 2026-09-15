@@ -28,6 +28,22 @@
 - **GetThumbnailUrlAction** (`app/Actions/Admin/GetThumbnailUrlAction.php`)
   - `handle(array $media): ?string`: Extracts the first cover-tagged media ID and resolves its CDN URL through Mediable. Centralized helper for admin### Jobs (`app/Jobs/`)
 
+#### SMS Settings Actions (`app/Actions/Admin/Settings/Sms/`)
+- **BuildSmsGatewaySettingAction** (`app/Actions/Admin/Settings/Sms/BuildSmsGatewaySettingAction.php`)
+  - `handle(SmsGatewayEnum $gateway): array`: Resolves one SMS gateway into the admin payload `{key, label, schema, settings}`. Settings are the stored `SettingKeyEnum::SMS_IPPANEL` row merged over `config/sms.php` defaults, filtered to the keys the config declares (unknown stored keys are dropped), with the config `label` translation key resolved to the active locale only while it is still the effective value. The secret is always masked through `SettingSecretRedactor`.
+- **UpdateSmsGatewaySettingAction** (`app/Actions/Admin/Settings/Sms/UpdateSmsGatewaySettingAction.php`)
+  - `handle(SmsGatewayEnum $gateway, SmsGatewaySettingData $data): array`: Persists the flat gateway settings through `SettingsService::set()` (group `sms`). A `null`/omitted/`***REDACTED***` `api_key` reuses the stored (decrypted) secret, a real string overwrites it, and `""` clears it; `SettingsService` re-encrypts non-empty secrets at rest. Enabling a gateway with no sender number or no stored key throws a `ValidationException` naming `api_key`. Returns the fresh read payload from `BuildSmsGatewaySettingAction`.
+- **BuildSmsNotificationsAction** (`app/Actions/Admin/Settings/Sms/BuildSmsNotificationsAction.php`)
+  - `handle(): array`: Returns `{schema, options}` for the SMS notification area. Every `SmsNotificationOptionEnum` case is resolved through the enum's `resolve()` (the stored `SettingKeyEnum::SMS_NOTIFICATIONS` entry merged field-by-field over its `config/sms.php` default, with stored keys the config does not declare dropped), so a never-saved option still returns both fields. `state` is computed from the effective values, never from an adapter: `configured` when the pattern the option requires is present, `ready` when the option is also enabled.
+- **UpdateSmsNotificationsAction** (`app/Actions/Admin/Settings/Sms/UpdateSmsNotificationsAction.php`)
+  - `handle(UpdateSmsNotificationsData $data): array`: Merges the submitted `options` map into the stored row per option and persists the whole merged map through `SettingsService::set()` (group `sms`, type `json`), so an omitted option is untouched and a later partial save cannot fall back to stale configuration. The map is rebuilt from the declared fields only, so keys an older stored row carries are dropped rather than written back. Disabling an option with an empty `pattern_code` keeps the previously effective code (stored value, else config default); enabling one with an empty code saves and simply leaves it not ready. Returns the fresh read payload from `BuildSmsNotificationsAction`.
+
+#### Provisioning Provider Settings Actions (`app/Actions/Admin/Settings/Provisioning/`)
+- **BuildProvisioningProviderSettingAction** (`app/Actions/Admin/Settings/Provisioning/BuildProvisioningProviderSettingAction.php`)
+  - `handle(ProvisioningProviderSettingsEnum $provider): array`: Resolves one provider into the admin payload `{key, label, state, schema, settings}`. Settings are the stored setting row merged over `config/provisioning.php` defaults, filtered to the keys the config declares (unknown stored keys such as the retired `create_studets` flags are dropped), and the secret is always masked through `SettingSecretRedactor`. `state.configured` comes from `ProvisioningProviderSettingData::isConfigured()` — the provider's schema, not its adapter — and `state.ready` is `enabled && configured`.
+- **UpdateProvisioningProviderSettingAction** (`app/Actions/Admin/Settings/Provisioning/UpdateProvisioningProviderSettingAction.php`)
+  - `handle(ProvisioningProviderSettingsEnum $provider, ProvisioningProviderSettingData $data): array`: Persists the provider's flat settings through `SettingsService::set()` (group `integrations`). Non-sensitive fields follow full-replace semantics — a field the request omits or clears falls back to its config default — while a secret that is omitted, `null` or `***REDACTED***` keeps the stored value, a real string overwrites it, and `""` clears it (the save writes the declared keys of `defaultConfig()` plus any registered secret field the panel does not expose, such as Skyroom's legacy `secret`, so a save cannot drop a credential it never showed). Enabling a provider whose schema still reports unconfigured throws a `ValidationException` naming every empty required field with its translated label. Returns the fresh read payload from `BuildProvisioningProviderSettingAction`.
+
 #### UpdateProductPricingJob (`app/Jobs/UpdateProductPricingJob.php`)
 - **Purpose:** Asynchronous batch pricing index update for products
 - **Signature:** `handle(ProductPriceService $priceService): void`
@@ -388,6 +404,9 @@ Administrative status and access-date changes reconcile deliberately with applic
 #### Student Dashboard Actions (`app/Actions/Shop/Student/`)
 - **GetEnrollmentDetailAction** (`app/Actions/Shop/Student/GetEnrollmentDetailAction.php`)
   - `handle(User $user, Enrollment $enrollment): EnrollmentDetailData`: Returns enriched enrollment detail with typed block DTOs per delivery method, SSO URLs (Moodle via `MoodleService`, Skyroom via `SkyroomService`), certificate info, review info, and survey block status. Block types: `DigitalAssetBlockData`, `InPersonBlockData`, `LiveSessionBbbBlockData`, `LiveSessionSkyroomBlockData`, `LmsMoodleBlockData`, `VideoPlatformSpotplayerBlockData`. Each block type carries delivery-specific data (join URLs, file downloads, etc.).
+  - `review_info` (`EnrollmentReviewInfoData`): the authenticated student's own review for the enrollment's productable, matched by morph alias (`$productable->getMorphClass()`) — never the FQCN — and limited to live statuses (`pending`/`approved`), so `review` carries a `ReviewData` (rating, title, comment, translated status, created_at) and `has_reviewed` is true while moderation is in flight. A `rejected` review clears both, re-offering the form.
+- **SubmitReviewAction** (`app/Actions/Shop/Student/SubmitReviewAction.php`)
+  - `handle(SubmitReviewData $data, Enrollment $enrollment, User $user): Review`: Creates the student's review for the productable behind an enrollment (Course/Seminar/DigitalAsset; Bundle productables are rejected as `not_reviewable`). Requires `enrollment_status === ACTIVE` and rejects a second submission while a `pending`/`approved` review exists (`already_reviewed`); a `rejected` review does not block resubmission. The new review is always `PENDING` with `is_featured = false`, so it stays invisible to the public catalog until staff approve it. Public aggregates are **not** touched here — they only count approved reviews and are recomputed by the admin approve/reject actions.
 - **GetJoinUrlAction** (`app/Actions/Shop/Student/GetJoinUrlAction.php`)
   - `handle(Enrollment $enrollment): string`: Lazy-generates join URL for enrollment based on delivery method (BBB, Skyroom, SpotPlayer, Moodle). URLs generated on demand rather than pre-computed.
 - **CancelOrderByCustomerAction** (`app/Actions/Shop/Student/CancelOrderByCustomerAction.php`)
@@ -610,12 +629,12 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Mechanism:** Resolves each `PaymentMethodEnum` with a `settingKey()` against `SettingsService`, falling back to `PaymentMethodEnum::defaultConfig()` (reads from `config/payments.php`) when no stored settings exist.
 
 ### SettingSecretRedactor (`app/Services/SettingSecretRedactor.php`)
-- **Purpose:** Redacts secret field values from integration setting arrays before API responses and audit logging
+- **Purpose:** Redacts secret field values from setting arrays before API responses and audit logging. The field list is built once per process from `SettingKeyEnum::secretFields()` — the single registry of secret-bearing keys — so a key cannot be registered without also being redacted.
 - **Methods:**
-  - `redact(string $settingKey, mixed $value): mixed`: Replaces known secret field values with `***REDACTED***`
-  - `hasSecrets(string $settingKey): bool`: Whether a setting key has any secret fields
-- **Secret fields per key:** IMS (`api_key`), Moodle (`token`, `auth_userkey_token`), BBB (`secret`, `default_attendee_password`, `default_moderator_password`), SpotPlayer (`api_key`)
-- **Usage:** Applied in `SettingData::fromModel()`, `SettingsService::auditIntegrationWrite()`, and during `set()` for placeholder detection
+  - `redact(string $settingKey, mixed $value): mixed`: Replaces known secret field values with `***REDACTED***`. Top-level fields only: a secret nested inside another object is not reached.
+  - `hasSecrets(string $settingKey): bool`: Whether a setting key has any registered secret fields
+- **Registered secret fields:** IMS (`api_key`), Moodle (`token`, `auth_userkey_token`), BBB (`secret`, `default_attendee_password`, `default_moderator_password`), SpotPlayer (`api_key`), Skyroom (`api_key`, `secret`), Niliroom (`api_token`), SMS IPPanel (`api_key`), plus the pre-existing Mellat (`password`) and Digipay (`client_secret`, `password`) declarations.
+- **Usage:** Applied in `SettingData::fromModel()` (the admin settings read path), in `SettingsService::auditIntegrationWrite()`, and during `set()` for placeholder detection. Runtime consumers that need the real credential call `SettingsService::get()` directly and must never let the value reach a response.
 
 ### Integration Services (`app/Services/Integrations/`)
 
@@ -629,7 +648,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `isEnabled(): bool` — checks `config['enabled']`
   - `assertConfigured(): void` — throws `UnrecoverableProvisioningException` if config invalid
   - `isReady(): bool` — combines `isEnabled()` + `validateConfig()`
-  - `resolveConfig(): void` — merges stored settings with config fallback
+  - `resolveConfig(): void` — resolves the stored settings row for `getSettingKey()`, falling back to the `getConfigFallbackPath()` config array when no row exists
   - `handleHttpErrors(Response $response, string $endpoint): void` — standardized error handler for JSON REST integrations (throws `RecoverableProvisioningException` for 5xx, `UnrecoverableProvisioningException` for 4xx)
 - **Subclasses:** ImsService, MoodleService, SpotPlayerService, BbbService, SkyroomService all extend this base
 
@@ -664,15 +683,15 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### MoodleService (`app/Services/Integrations/MoodleService.php`)
 - **Purpose:** Real Moodle Web Services API client implementing `MoodleClientContract` for user management, enrollment, grades, and SSO
+- **Configuration:** Resolved in the constructor through `AbstractIntegrationService` (stored `moodle` setting first, `config('services.moodle')` as fallback). Two independent credentials are mandatory: the service token (`token`) for administrative calls and the login token (`auth_userkey_token`), which may only call `auth_userkey_request_login_url`. `validateConfig()` requires `base_url`, `token` and `auth_userkey_token`, so a Moodle provider without the login token reports itself as unconfigured.
 - **Methods:**
-  - `setConfig(array $config): void`: Injects runtime configuration
   - `findOrCreateUser(User $user): array`: Finds or creates Moodle user → returns `[moodleUserId, moodleUsername]`
   - `isCourseCompleted(int $moodleCourseId, int $moodleUserId): bool`: Checks course completion status
   - `getActivityCompletionStatus(int $moodleCourseId, int $moodleUserId): array`: Returns per-activity completion states
   - `getGrades(int $moodleCourseId, int $moodleUserId): array`: Returns course grade + activity-level grades
   - `getCourse(int $moodleCourseId): LmsMoodleBlockData`: Fetches course content structure
   - `enrollUser(int $moodleUserId, int $moodleCourseId, ?int $startTime, ?int $endTime, int $roleId = 5): void`: Manual enrollment
-  - `createUserKey(string $username, ?string $token = null): string`: Generates SSO login URL key
+  - `createUserKey(string $username, ?string $token = null): string`: Generates SSO login URL key; `auth_userkey_request_login_url` always carries the login token, never the service token
 
 #### FakeMoodleService (`app/Services/Fakes/FakeMoodleService.php`)
 - **Purpose:** Deterministic, credential-free Moodle client used only when `APP_ENV=e2e`; returns stable user/course/login references and implements the same `MoodleClientContract` without outbound requests.
@@ -687,9 +706,10 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### BbbService (`app/Services/Integrations/BbbService.php`)
 - **Purpose:** Real BigBlueButton API client implementing `BbbClientContract` for meeting management and join URL generation (SHA1 checksum auth)
+- **Configuration:** Stored `big_blue_button` setting with `config('services.bbb')` fallback; reads `base_url`, `secret`, `api_path`, `default_attendee_password` and `default_moderator_password`
 - **Methods:**
-  - `createMeeting(string $meetingId, string $name, ?string $attendeePw, ?string $moderatorPw): void`: Creates BBB meeting
-  - `buildJoinUrl(string $meetingId, string $fullName, ?string $password): string`: Generates attendee/moderator join URL
+  - `createMeeting(string $meetingId, string $name, ?string $attendeePw, ?string $moderatorPw): void`: Creates BBB meeting, falling back to the configured attendee/moderator passwords when none are passed
+  - `buildJoinUrl(string $meetingId, string $fullName, ?string $password): string`: Generates attendee join URL, falling back to the configured attendee password when none is passed
 
 #### BbbClientContract (`app/Contracts/Integrations/BbbClientContract.php`)
 - **Purpose:** Shared boundary for BBB provisioning, join URL generation, and readiness checks. The real client is used in normal environments; `FakeBbbService` implements the same contract in E2E with stable, credential-free meeting URLs and no outbound requests.
@@ -899,13 +919,14 @@ Administrative status and access-date changes reconcile deliberately with applic
 ### SettingsService (`app/Services/SettingsService.php`)
 - **Purpose:** SmartCache-backed facade over `Setting` models powering CMS content payloads and integration credentials
 - **Public Methods:**
-  - `get(SettingKeyEnum $key, mixed $default = null): mixed`: Reads a single setting from cached collection. Skips `witImages()` for integration keys (SKIP_MEDIA optimization — IMS, Moodle, BBB, SpotPlayer) to avoid unnecessary media queries. Automatically tries decryption of registered secret fields via `Crypt::decryptString()` on read.
-  - `set(SettingKeyEnum $key, mixed $value): bool`: Persists value. Encrypts registered secret fields via `Crypt::encryptString()` before write. Preserves existing secrets when `***REDACTED***` placeholder is sent. Creates audit log entries for integration key writes via `SettingSecretRedactor`.
+  - `get(SettingKeyEnum $key, mixed $default = null): mixed`: Reads a single setting from cached collection. Skips `witImages()` for the integration keys (listed in `INTEGRATION_KEYS`) to avoid unnecessary media queries — payment gateways are excluded so their `icon` still hydrates into `MediaData`. Automatically tries decryption of registered secret fields via `Crypt::decryptString()` on read.
+  - `set(SettingKeyEnum $key, mixed $value, string $type = 'json', ?string $group = null): Setting`: Persists value. Encrypts registered secret fields via `Crypt::encryptString()` before write. Preserves existing secrets when `***REDACTED***` placeholder is sent. Creates audit log entries for secret-bearing key writes via `SettingSecretRedactor`.
   - `forget(): void`: Exposes cache invalidation hook used by observers/actions to refresh settings payloads
-- **SKIP_MEDIA Optimization:** Four integration keys (IMS, Moodle, BBB, SpotPlayer) skip `witImages()` media hydration since they store credentials, not content with media references
+- **INTEGRATION_KEYS:** IMS, Moodle, BBB, SpotPlayer, Skyroom, Niliroom and the SMS IPPanel gateway skip `witImages()` media hydration, because they store credentials rather than content with media references. The list is explicit: deriving it from the secret registry would also skip media for Mellat/Digipay, whose top-level `icon` the payment-gateway endpoints still hydrate.
 - **Encryption on Write:** Secret fields defined by `SettingKeyEnum::secretFields()` are encrypted at rest using Laravel's `Crypt::encryptString()`
 - **Decryption on Read:** Encrypted values are transparently decrypted when retrieved via `get()`, with graceful fallback for legacy plaintext
-- **Audit Logging:** Integration setting writes are logged via `AdminActionLog` with secrets redacted, risk level "high"
+- **Audit Logging:** Writes to any secret-bearing key are logged via `AdminActionLog` with secrets redacted, risk level "high" (staff-guard only — unauthenticated writes are not logged)
+- **Known gap:** Mellat/Digipay declare flat secret fields, but the gateway writes them nested under a `config` object and neither `set()`'s encryption nor `SettingSecretRedactor` reaches inside it. Aligning the payment-gateway settings surface with the integration conventions is a separate cleanup.
 - **Implementation Notes:** Caches the full settings collection forever using `SmartCache` keyed by `CacheKeysEnum::Settings`, ensuring single query hydration per deploy cycle
 
 ## Observers, Events & Async Processing
@@ -941,6 +962,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Event:** `ReviewableAggregatesChanged` (`app/Events/ReviewableAggregatesChanged.php`) carries the reviewable ID/type whenever reviews change.
 - **Listener:** `RecalculateReviewableAggregates` (`app/Listeners/RecalculateReviewableAggregates.php`) runs on the queue, filters to models using the `HasReview` trait, and recomputes `review_count` & `average_rating` from approved reviews.
 - **Impact:** Keeps course/seminar/digital asset review snapshots synchronized for storefront queries without heavy joins.
+- **Student submissions do not move aggregates:** `SubmitReviewAction` creates `PENDING` reviews and dispatches nothing; only the admin `ApproveReviewAction`/`RejectReviewAction`/`UpdateReviewStatusAction` change approved-review counts, and each of those dispatches the event. On a model without the `HasReview` trait the listener is a no-op.
 
 ### Product Price Cache Refresh
 - **Event:** `ProductCacheInvalidated` (`app/Events/ProductCacheInvalidated.php`) is dispatched when pricing-sensitive data mutates.
@@ -995,10 +1017,22 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `setLength(int $length): self`: Sets OTP code length
 
 ### IpPanelSmsService (`app/Services/IpPanelSmsService.php`)
-- **Purpose:** SMS delivery service integration
+- **Purpose:** SMS delivery service integration; the send path obeys the admin gateway setting
+- **Config resolution:** `resolveGatewaySettings()` reads the stored `SettingKeyEnum::SMS_IPPANEL` row through `SettingsService` (secret decrypted on read) and resolves it with `SmsGatewayEnum::resolvedSettings()`, the one precedence rule shared with the admin read path: the stored row wins field-by-field over `config('sms.gateways.ippanel')`, and stored keys the config does not declare are dropped. A key saved through the settings API therefore takes effect on the next send without a deployment; a never-saved gateway keeps its config-derived values. `setApiKey()`/`setFrom()` remain explicit per-instance overrides.
+- **Kill switch:** `sendConfig()` blocks the send before any HTTP call when the resolved `enabled` is false, and also when the resolved `api_key` is null/empty or `from` is empty. In both cases the attempt is recorded in `sms_logs` with `SmsLog::STATUS_SKIPPED` (`0`) and a `data.reason` of `SmsSkipReasonEnum::GATEWAY_DISABLED` / `NOT_CONFIGURED`, and the method returns instead of throwing — so a switched-off or misconfigured gateway never fails a queued notification job (login codes included).
+- **Sandbox:** reads the single `sandbox` key from the same resolved gateway settings (no `services.ippanel.sand_box`), recording a `Sandbox_*` `sms_logs` row and skipping the HTTP call.
 - **Public Methods:**
-  - `sendSms(string $phone, string $message): bool`: Sends SMS messages via IP Panel service
-  - `sendOtpSms(string $phone, string $otp): bool`: Specialized OTP SMS delivery
+  - `send(array $to, string $message, string $type = 'custom'): void`: Free-text send; logs the provider response under its HTTP status and rethrows failed responses.
+  - `sendPattern(string $pattern, array $parameters, string $to, string $message = '', string $type = 'pattern'): void`: Pattern send; same gating, logging and error behaviour.
+  - `recordSkipped(array|string $to, string $content, string $type, SmsSkipReasonEnum $reason): void`: Records an attempt the notification-option gate blocked before the gateway was consulted, reusing the gateway's resolved sender so both gates write the same `sms_logs` shape.
+  - `setApiKey(string $apiKey): void`, `setFrom(int|string $from): void`: Per-instance credential overrides.
+
+### SmsChannel (`app/Notifications/SmsChannel.php`)
+- **Purpose:** The send seam for every SMS notification; the send path obeys the admin notification-option settings.
+- **Option gate:** maps the outgoing `SmsMessage::$type` to an `SmsNotificationOptionEnum` through `fromLogType()`. A disabled option records a skip (`SmsSkipReasonEnum::OPTION_DISABLED`) and returns; a non-empty resolved `pattern_code` sends through `IpPanelSmsService::sendPattern()` with the message's `parameters`; an option that is not `isConfigured()` (it requires a pattern but has none) records `PATTERN_MISSING` and returns rather than falling back to custom text (the provider filters it); otherwise an option that is enabled but carries neither a pattern nor free text records `EMPTY_MESSAGE`. A type with no option stays ungated.
+- **Refund free text:** `refund_completed` does not require a pattern, so with no `pattern_code` the channel falls back to the free-text `send()` while still honouring a configured pattern when one is present.
+- **Settings source:** the raw stored `SettingKeyEnum::SMS_NOTIFICATIONS` map is read through `SettingsService` and each option is resolved with `SmsNotificationOptionEnum::resolve()`, the same precedence the admin read path uses.
+- **SmsMessage (`app/Notifications/SmsMessage.php`):** carries `content`, `parameters` (the variables a configured pattern may reference) and `type`. It no longer carries a pattern code: pattern codes live only in the notification-option settings, so `OtpSmsNotification` and `RefundCompletedNotification` declare their variables and type and leave the code to the channel.
 
 ### ResponseService (`app/Services/ResponseService.php`)
 - **Purpose:** Centralized API response builder (`apiResponse()->success()`, etc.)

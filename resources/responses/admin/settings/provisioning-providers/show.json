@@ -1,0 +1,52 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "key": "ims",
+    "label": "IMS",
+    "state": {
+      "enabled": false,
+      "configured": true,
+      "ready": false
+    },
+    "schema": {
+      "general": [
+        {
+          "key": "enabled",
+          "type": "boolean",
+          "label": "فعال",
+          "required": true,
+          "default": false
+        },
+        {
+          "key": "timeout",
+          "type": "number",
+          "label": "مهلت (ثانیه)",
+          "required": false,
+          "default": 15
+        }
+      ],
+      "connection": [
+        {
+          "key": "base_url",
+          "type": "url",
+          "label": "آدرس سرویس",
+          "required": true
+        },
+        {
+          "key": "api_key",
+          "type": "password",
+          "label": "کلید API",
+          "required": true,
+          "sensitive": true
+        }
+      ]
+    },
+    "settings": {
+      "enabled": false,
+      "base_url": "https://ims.example.ir",
+      "api_key": "***REDACTED***",
+      "timeout": 15
+    }
+  },
+  "metadata": []
+}

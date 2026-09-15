@@ -1,0 +1,7 @@
+# Niliroom replaces BBB as the admin-configurable live-session provider
+
+The admin settings area for provisioning providers lists a provider only when its credentials belong in that form. BBB's configuration (`base_url`, `secret`, `api_path`, attendee/moderator passwords) is dropped from that surface and Niliroom (`enabled`, `base_url`, `api_token`) takes its place, because Niliroom is the panel the platform is moving to and the settings screen should describe where we are going, not the legacy fallback. An empty Niliroom record is harmless while the Niliroom adapter does not exist yet: it is a stored configuration row the panel can fill in before the service lands.
+
+This retires the admin surface only. `BbbService`, `config/services.bbb`, `SettingKeyEnum::BIG_BLUE_BUTTON` and `ProvisioningProviderEnum::BBB` stay alive, so the student join path and ADR 0007's fallback keep working — configured by deployment environment instead of by an admin form. Retiring the BBB delivery path itself is a separate decision that cannot be taken before the Niliroom adapter ships, because a `live_session_bbb` seminar would otherwise have no join URL at all.
+
+Consequences: ADR 0007's Niliroom-primary decision is unchanged, but its BBB fallback is now environment-configured rather than admin-editable. `BbbService`'s read of `default_attendee_pw` / `default_moderator_pw` (while config, seeder and redactor say `*_password`) must still be corrected, since the student join path depends on those passwords and the admin form no longer reveals the mismatch.

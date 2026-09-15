@@ -80,6 +80,7 @@ return [
         App\Exceptions\Gateway\MellatException::class,
         App\Exceptions\RefundValidationException::class,
         App\Exceptions\Payment\OrderFullyPaidException::class,
+        App\Exceptions\RegistrationVelocityExceededException::class,
     ],
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#ignore_transactions

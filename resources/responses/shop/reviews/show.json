@@ -1,0 +1,15 @@
+{
+  "message": "Review submitted successfully and is awaiting approval.",
+  "data": {
+    "id": 12,
+    "rating": 5,
+    "title": "Excellent course",
+    "comment": "The content was well structured and the teacher answered every question.",
+    "status": {
+      "value": "pending",
+      "label": "Pending Review"
+    },
+    "created_at": "1404-07-01 12:30:00"
+  },
+  "metadata": []
+}

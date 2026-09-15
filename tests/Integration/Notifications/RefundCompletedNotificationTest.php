@@ -6,10 +6,14 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Models\SmsLog;
 use App\Models\User;
 use App\Notifications\Order\RefundCompletedNotification;
 use App\Notifications\SmsChannel;
 use App\Notifications\SmsMessage;
+use Illuminate\Support\Facades\Http;
+
+covers(RefundCompletedNotification::class);
 
 /**
  * Build a complete refund graph: Order → OrderItem → Refund,
@@ -117,13 +121,33 @@ describe('RefundCompletedNotification', function (): void {
             ->and(end($mail->introLines))->toBe('دسترسی شما به این دوره لغو شده است.');
     });
 
-    it('builds the sms message with refund type and order details', function (): void {
+    it('builds the sms message with refund type, order details and pattern variables', function (): void {
         $refund = createRefundGraph('digipay');
         $sms    = (new RefundCompletedNotification($refund))->toSms(new User());
 
         expect($sms)->toBeInstanceOf(SmsMessage::class)
             ->and($sms->type)->toBe('REFUND')
             ->and($sms->content)->toContain("استرداد وجه سفارش #{$refund->orderItem->order_id}")
-            ->and($sms->content)->toContain(number_format(250_000).' ریال');
+            ->and($sms->content)->toContain(number_format(250_000).' ریال')
+            ->and($sms->parameters)->toBe([
+                'order_id' => $refund->orderItem->order_id,
+                'amount'   => 250_000,
+            ]);
+    });
+
+    it('routes its sms through the refund notification option gate', function (): void {
+        config(['sms.notifications.refund_completed.enabled' => false]);
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+        $user = User::factory()->create(['phone' => '09123456789']);
+
+        $user->notify(new RefundCompletedNotification(createRefundGraph('digipay')));
+
+        Http::assertNothingSent();
+
+        $smsLog = SmsLog::latest()->first();
+        expect($smsLog)->not->toBeNull()
+            ->and($smsLog->status)->toBe(SmsLog::STATUS_SKIPPED)
+            ->and($smsLog->data)->toBe(['reason' => 'option_disabled'])
+            ->and($smsLog->type)->toBe('REFUND');
     });
 });

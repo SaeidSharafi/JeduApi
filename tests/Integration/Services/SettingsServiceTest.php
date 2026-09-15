@@ -131,6 +131,35 @@ test('integration keys skip witImages media lookup', function (): void {
         ->and($value['course_id'])->toBe(42);
 });
 
+test('skyroom credentials are not passed through the media resolver', function (): void {
+    // A numeric "image" key would be hydrated into a MediaData DTO by witImages.
+    Setting::factory()->create([
+        'key'   => SettingKeyEnum::SKYROOM->value,
+        'value' => ['enabled' => true, 'base_url' => 'https://www.skyroom.online/skyroom/api', 'api_key' => 'skyroom-key', 'image' => 7],
+    ]);
+    $service = new SettingsService();
+
+    $value = $service->get(SettingKeyEnum::SKYROOM);
+
+    expect($value['image'])->toBe(7)
+        ->and($value['api_key'])->toBe('skyroom-key')
+        ->and($value['base_url'])->toBe('https://www.skyroom.online/skyroom/api');
+});
+
+test('payment gateway settings still resolve their icon through the media resolver', function (string $key, array $value): void {
+    Setting::factory()->create(['key' => $key, 'value' => $value]);
+    $service = new SettingsService();
+
+    // getValue() resolves media unconditionally — the stored setting must hydrate the
+    // icon for the payment-gateway endpoints, which wrap it as a MediaData DTO.
+    $expected = Setting::getValue(SettingKeyEnum::from($key));
+
+    expect($service->get(SettingKeyEnum::from($key)))->toBe($expected);
+})->with([
+    'mellat'  => ['payment.mellat', ['enabled' => true, 'password' => 'mellat-pass', 'icon' => 7]],
+    'digipay' => ['payment.digipay', ['enabled' => true, 'client_secret' => 'digipay-secret', 'password' => 'digipay-pass', 'icon' => 9]],
+]);
+
 test('it calls the Setting::witImages method for array values', function (): void {
     Storage::fake('public');
     $logo = MediaUploader::fromSource(UploadedFile::fake()->image('cover.jpg'))

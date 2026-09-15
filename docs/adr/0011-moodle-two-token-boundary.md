@@ -1,0 +1,5 @@
+# Moodle tokens are separated by privilege: login vs administration
+
+Moodle is configured with two independent web-service tokens. The login token may only call `auth_userkey_request_login_url`, so it can mint a customer login URL and nothing else; the service token performs administrative calls (users, courses, enrolments) and carries far wider access. We require both before a Moodle provider counts as ready, because an enabled Moodle without the login token can provision courses but cannot log the student in, and reusing the service token for logins would put a full-access credential into the login flow.
+
+Consequences: `MoodleService` reads the login token from the resolved configuration and passes it to every `auth_userkey_request_login_url` call, and `validateConfig()` requires it, so a Moodle provider without the login token reports itself as unconfigured instead of silently falling back to the service token. A future reader who sees two tokens will be tempted to collapse them into one; the separation exists because Moodle scopes the permissions provider-side, and it is not ours to merge.

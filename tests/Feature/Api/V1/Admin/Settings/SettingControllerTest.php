@@ -85,6 +85,31 @@ it('redacts spot_player api_key in index response', function (): void {
         ->and($spotSettings['value']['api_key'])->toBe(SettingSecretRedactor::REDACTED);
 });
 
+it('redacts skyroom api_key and secret in index response', function (): void {
+    $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
+    Setting::factory()->create([
+        'key'   => 'skyroom',
+        'value' => [
+            'enabled'  => false,
+            'base_url' => 'https://www.skyroom.online/skyroom/api',
+            'api_key'  => 'skyroom-plain-key',
+            'secret'   => 'skyroom-plain-secret',
+        ],
+        'type'  => 'json',
+        'group' => 'integrations',
+    ]);
+
+    $response = $this->getJson(route('api.v1.admin.settings.index'));
+
+    $response->assertStatus(200);
+
+    $skyroomSettings = collect($response->json('data'))->flatten(1)->firstWhere('key', 'skyroom');
+    expect($skyroomSettings)->not->toBeNull()
+        ->and($skyroomSettings['value']['api_key'])->toBe(SettingSecretRedactor::REDACTED)
+        ->and($skyroomSettings['value']['secret'])->toBe(SettingSecretRedactor::REDACTED)
+        ->and($skyroomSettings['value']['base_url'])->toBe('https://www.skyroom.online/skyroom/api');
+});
+
 it('does not redact non-secret fields for integration settings', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
     Setting::factory()->bigBlueButton()->create();

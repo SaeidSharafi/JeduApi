@@ -19,8 +19,8 @@ final class BbbService extends AbstractIntegrationService implements BbbClientCo
         $queryParams = [
             'meetingID'   => $meetingId,
             'name'        => $name,
-            'attendeePW'  => $attendeePw ?: ($this->config['default_attendee_pw'] ?? ''),
-            'moderatorPW' => $moderatorPw ?: ($this->config['default_moderator_pw'] ?? ''),
+            'attendeePW'  => $attendeePw ?: ($this->config['default_attendee_password'] ?? ''),
+            'moderatorPW' => $moderatorPw ?: ($this->config['default_moderator_password'] ?? ''),
         ];
 
         $queryString = http_build_query($queryParams);
@@ -39,13 +39,12 @@ final class BbbService extends AbstractIntegrationService implements BbbClientCo
         }
     }
 
-    /** @codeCoverageIgnore */
     public function buildJoinUrl(string $meetingId, string $fullName, ?string $password = null): string
     {
         $queryParams = [
             'meetingID' => $meetingId,
             'fullName'  => $fullName,
-            'password'  => $password ?: ($this->config['default_attendee_pw'] ?? ''),
+            'password'  => $password ?: ($this->config['default_attendee_password'] ?? ''),
         ];
 
         $queryString = http_build_query($queryParams);

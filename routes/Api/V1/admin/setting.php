@@ -13,7 +13,10 @@ use App\Http\Controllers\Api\Admin\Content\Slider\SliderController;
 use App\Http\Controllers\Api\Admin\Content\Slider\UpdateSliderStatusController;
 use App\Http\Controllers\Api\Admin\Content\StudentStoryController;
 use App\Http\Controllers\Api\Admin\Settings\PaymentGatewaySettingsController;
+use App\Http\Controllers\Api\Admin\Settings\ProvisioningProviderSettingsController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
+use App\Http\Controllers\Api\Admin\Settings\SmsGatewaySettingsController;
+use App\Http\Controllers\Api\Admin\Settings\SmsNotificationSettingsController;
 
 Route::prefix('settings')->name('settings.')->group(function (): void {
     Route::get('/', [SettingController::class, 'index'])
@@ -50,4 +53,23 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
     Route::get('payment-gateways', [PaymentGatewaySettingsController::class, 'index']);
     Route::get('payment-gateways/{gateway}', [PaymentGatewaySettingsController::class, 'show']);
     Route::put('payment-gateways/{gateway}', [PaymentGatewaySettingsController::class, 'update']);
+
+    Route::get('sms-gateways', [SmsGatewaySettingsController::class, 'index'])
+        ->name('sms-gateways.index');
+    Route::get('sms-gateways/{gateway}', [SmsGatewaySettingsController::class, 'show'])
+        ->name('sms-gateways.show');
+    Route::put('sms-gateways/{gateway}', [SmsGatewaySettingsController::class, 'update'])
+        ->name('sms-gateways.update');
+
+    Route::get('sms-notifications', [SmsNotificationSettingsController::class, 'index'])
+        ->name('sms-notifications.index');
+    Route::put('sms-notifications', [SmsNotificationSettingsController::class, 'update'])
+        ->name('sms-notifications.update');
+
+    Route::get('provisioning-providers', [ProvisioningProviderSettingsController::class, 'index'])
+        ->name('provisioning-providers.index');
+    Route::get('provisioning-providers/{provider}', [ProvisioningProviderSettingsController::class, 'show'])
+        ->name('provisioning-providers.show');
+    Route::put('provisioning-providers/{provider}', [ProvisioningProviderSettingsController::class, 'update'])
+        ->name('provisioning-providers.update');
 });

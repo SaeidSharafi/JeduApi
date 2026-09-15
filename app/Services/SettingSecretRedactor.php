@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\System\SettingKeyEnum;
+
 /**
- * Redacts sensitive/secret fields from integration setting values.
+ * Redacts sensitive/secret fields from setting values before API responses and
+ * audit logging.
  *
- * Only fields explicitly listed per setting key are redacted.
- * All other fields pass through unchanged.
+ * The secret field list is derived from {@see SettingKeyEnum::secretFields()},
+ * the single registry of encrypted fields, so a field cannot be encrypted at
+ * rest without also being redacted on read. All other fields pass through
+ * unchanged.
  */
 final class SettingSecretRedactor
 {
     public const string REDACTED = '***REDACTED***';
 
     /**
-     * Secret field names per setting key.
+     * Secret field names per setting key, derived from the enum registry.
      *
-     * @var array<string, list<string>>
+     * @var array<string, list<string>>|null
      */
-    private const array SECRET_FIELDS = [
-        'ims'             => ['api_key'],
-        'moodle'          => ['token', 'auth_userkey_token'],
-        'big_blue_button' => ['secret', 'default_attendee_password', 'default_moderator_password'],
-        'spot_player'     => ['api_key'],
-    ];
+    private static ?array $secretFields = null;
 
     /**
      * Redact secret fields from a setting value array.
@@ -39,11 +39,7 @@ final class SettingSecretRedactor
             return $value;
         }
 
-        $secretFields = self::SECRET_FIELDS[$settingKey] ?? [];
-
-        if ($secretFields === []) {
-            return $value;
-        }
+        $secretFields = self::registry()[$settingKey] ?? [];
 
         foreach ($secretFields as $field) {
             if (array_key_exists($field, $value)) {
@@ -59,6 +55,30 @@ final class SettingSecretRedactor
      */
     public function hasSecrets(string $settingKey): bool
     {
-        return isset(self::SECRET_FIELDS[$settingKey]);
+        return isset(self::registry()[$settingKey]);
+    }
+
+    /**
+     * Builds the setting key to secret field map once per process.
+     *
+     * @return array<string, list<string>>
+     */
+    private static function registry(): array
+    {
+        if (self::$secretFields === null) {
+            $secretFields = [];
+
+            foreach (SettingKeyEnum::cases() as $key) {
+                $fields = $key->secretFields();
+
+                if ($fields !== []) {
+                    $secretFields[$key->value] = $fields;
+                }
+            }
+
+            self::$secretFields = $secretFields;
+        }
+
+        return self::$secretFields;
     }
 }

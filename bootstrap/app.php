@@ -112,6 +112,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '/webhooks/github-deployer',
         ]);
+        // The settings saves that own a secret clear it with an explicit empty
+        // string; converting it to null would make "clear" indistinguishable
+        // from "keep the stored secret". Only those save requests need the raw
+        // value; the provider data classes normalize every other empty input.
+        $middleware->convertEmptyStringsToNull(except: [
+            fn (Request $request): bool => $request->isMethod('put')
+                && $request->is([
+                    'api/v1/admin/settings/sms-gateways/*',
+                    'api/v1/admin/settings/provisioning-providers/*',
+                ]),
+        ]);
         $middleware->redirectGuestsTo(function (Request $request): null {
             if ($request->is('api/*') || $request->is('admin/*') || $request->expectsJson()) {
                 return null;

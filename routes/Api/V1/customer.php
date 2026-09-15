@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Shop\Student\OrderController;
 use App\Http\Controllers\Api\Shop\Student\QuizController;
 use App\Http\Controllers\Api\Shop\Student\RetryPaymentController;
 use App\Http\Controllers\Api\Shop\Student\ShowPaymentController;
+use App\Http\Controllers\Api\Shop\Student\SubmitReviewController;
 use App\Http\Controllers\Api\Shop\Teacher\AttendanceController;
 use App\Http\Controllers\Api\Shop\Teacher\CourseController;
 use App\Http\Controllers\Api\Shop\Teacher\GradeController;
@@ -47,6 +48,9 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
 
                 Route::get('/{enrollment:uuid}', [EnrollmentController::class, 'show'])
                     ->name('show');
+
+                Route::post('/{enrollment:uuid}/review', SubmitReviewController::class)
+                    ->name('review');
 
                 Route::post('/{enrollment:uuid}/moodle/sso', MoodleSsoController::class)
                     ->name('moodle.sso');

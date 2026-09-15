@@ -31,28 +31,24 @@ final class EncryptSettingSecretsCommand extends Command
             $this->warn('DRY RUN — no changes will be written.');
         }
 
-        $integrationKeys = [
-            SettingKeyEnum::IMS,
-            SettingKeyEnum::MOODLE,
-            SettingKeyEnum::BIG_BLUE_BUTTON,
-            SettingKeyEnum::SPOT_PLAYER,
-        ];
-
         $totalEncrypted = 0;
         $totalSkipped   = 0;
 
-        foreach ($integrationKeys as $key) {
+        foreach (SettingKeyEnum::cases() as $key) {
+            $secretFields = $key->secretFields();
+
+            // Payment gateway secrets live under a nested config object and are out of
+            // this command's scope — encrypting them here would not be reversible by
+            // the gateway's own read path.
+            if ($secretFields === [] || str_starts_with($key->value, 'payment.')) {
+                continue;
+            }
+
             $setting = Setting::where('key', $key->value)->first();
 
             if (! $setting) {
                 $this->line("  <fg=gray>SKIP</> {$key->value} — no record in DB.");
 
-                continue;
-            }
-
-            $secretFields = $key->secretFields();
-
-            if ($secretFields === []) {
                 continue;
             }
 

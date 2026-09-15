@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actions\Shop\Student\GetEnrollmentDetailAction;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Course;
@@ -9,6 +10,21 @@ use App\Models\DigitalAsset;
 use App\Models\Enrollment;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+covers(GetEnrollmentDetailAction::class);
+
+/*
+ * Mutation notes
+ * --------------
+ * The review-info behavior introduced here (`buildReviewInfo()`) has no surviving
+ * mutants. The remaining untested/timeout mutants reported for
+ * `GetEnrollmentDetailAction` sit in pre-existing methods this change does not
+ * touch — `handle()`'s relation-loading list, `buildTeachers()`,
+ * `buildCertificateInfo()`, `buildQuizzes()` and `buildDeliveryAccess()` — where
+ * fallbacks/coalesces/defaults are never exercised by the current assertions.
+ * They are outside this change's contract and are left for the owners of those
+ * methods rather than padded with assertions that cannot fail meaningfully.
+ */
 
 beforeEach(function (): void {
     $this->customer();
@@ -320,6 +336,68 @@ it('show does not dispatch SyncMoodleProgressJob twice within decay window', fun
     $this->getJson($url)->assertOk();
 
     Illuminate\Support\Facades\Queue::assertPushed(SyncMoodleProgressJob::class, 1);
+});
+
+// ─── Review info ─────────────────────────────────────────────────────────────
+
+it('reports the review in review_info for a live review', function (App\Enums\Content\ReviewStatusEnum $status): void {
+    $course     = Course::factory()->create();
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+
+    App\Models\Review::factory()->create([
+        'user_id'         => $this->user->id,
+        'reviewable_type' => $course->getMorphClass(),
+        'reviewable_id'   => $course->id,
+        'rating'          => 4,
+        'title'           => 'Good course',
+        'comment'         => 'Learned a lot.',
+        'status'          => $status,
+    ]);
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.review_info.has_reviewed', true)
+        ->assertJsonPath('data.review_info.review.rating', 4)
+        ->assertJsonPath('data.review_info.review.title', 'Good course')
+        ->assertJsonPath('data.review_info.review.comment', 'Learned a lot.')
+        ->assertJsonPath('data.review_info.review.status.value', $status->value);
+})->with([
+    App\Enums\Content\ReviewStatusEnum::PENDING,
+    App\Enums\Content\ReviewStatusEnum::APPROVED,
+]);
+
+it('reports no review in review_info after the review was rejected', function (): void {
+    $course     = Course::factory()->create();
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+
+    App\Models\Review::factory()->create([
+        'user_id'         => $this->user->id,
+        'reviewable_type' => $course->getMorphClass(),
+        'reviewable_id'   => $course->id,
+        'status'          => App\Enums\Content\ReviewStatusEnum::REJECTED,
+    ]);
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.review_info.has_reviewed', false)
+        ->assertJsonPath('data.review_info.review', null);
+});
+
+it('does not report another customer review in review_info', function (): void {
+    $course     = Course::factory()->create();
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+
+    App\Models\Review::factory()->create([
+        'user_id'         => App\Models\User::factory()->create()->id,
+        'reviewable_type' => $course->getMorphClass(),
+        'reviewable_id'   => $course->id,
+        'status'          => App\Enums\Content\ReviewStatusEnum::APPROVED,
+    ]);
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.review_info.has_reviewed', false)
+        ->assertJsonPath('data.review_info.review', null);
 });
 
 // ─── Removed route ───────────────────────────────────────────────────────────

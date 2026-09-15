@@ -30,8 +30,8 @@ final class OtpSmsNotification extends Notification implements ShouldQueue
     public function toSms(object $notifiable): SmsMessage
     {
         return (new SmsMessage)
-            ->pattern('mdoe1j1587', ['code' => $this->otpCode->code])
             ->content(__('messages.auth.otp.sms_content'))
+            ->parameters(['code' => $this->otpCode->code])
             ->type('OTP');
     }
 }

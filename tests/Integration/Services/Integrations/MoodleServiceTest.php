@@ -125,6 +125,25 @@ it('creates moodle user key', function (): void {
     });
 });
 
+it('uses the stored auth_userkey_token when no token is given', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([
+            'loginurl' => 'https://moodle.test?key=testkey',
+        ], 200),
+    ]);
+
+    $url = $this->moodleService->createUserKey('1122334');
+
+    expect($url)->toBe('https://moodle.test?key=testkey');
+
+    Http::assertSent(function (Request $request): bool {
+        return $request->data()['wstoken'] === 'AUTH_USER_KEY'
+            && $request->data()['wstoken'] !== 'moodle-token'
+            && $request->data()['wsfunction']       === 'auth_userkey_request_login_url'
+            && $request->data()['user']['username'] === '1122334';
+    });
+});
+
 it('throws when user key missing from moodle response', function (): void {
     Http::fake([
         'https://moodle.test/*' => Http::response([], 200),
@@ -160,6 +179,18 @@ it('throws when service used before configuration', function (): void {
     $settings->shouldReceive('get')
         ->with(SettingKeyEnum::MOODLE, Mockery::any())
         ->andReturn(['base_url' => '', 'token' => '']);
+
+    $service = app(MoodleService::class);
+
+    expect(fn () => $service->enrollUser(1, 2))
+        ->toThrow(UnrecoverableProvisioningException::class);
+});
+
+it('reports unconfigured when base url and token are set but auth_userkey_token is missing', function (): void {
+    $settings = $this->mock(SettingsService::class);
+    $settings->shouldReceive('get')
+        ->with(SettingKeyEnum::MOODLE, Mockery::any())
+        ->andReturn(['base_url' => 'https://moodle.test', 'token' => 'moodle-token']);
 
     $service = app(MoodleService::class);
 

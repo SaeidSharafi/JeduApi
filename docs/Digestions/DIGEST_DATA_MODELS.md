@@ -327,8 +327,8 @@
 - **Purpose:** Application configuration registry powering CMS, storefront content, and integration credentials
 - **Key Fields:** `key`, `value` (JSON payload — includes encrypted secrets for integration configs), `type`, `group`
 - **Relationships:** Self-contained configuration system with media attachments via Mediable
-- **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation; supports encrypted secret fields via `SettingKeyEnum::secretFields()`; secrets redacted from API responses via `SettingSecretRedactor`; SKIP_MEDIA optimization skips `witImages()` for integration keys (IMS, Moodle, BBB, SpotPlayer, Skyroom) to avoid unnecessary media queries
-- **Setting Key Values:** Payment gateway configs under `SettingKeyEnum`: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`), `SKYROOM` (`skyroom`). Each gateway has its own `secretFields()` for encrypted credential storage at rest.
+- **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation; `SettingKeyEnum::secretFields()` is the single registry of secret-bearing keys, driving encryption on write, decryption on read, redaction in API responses/audit logs via `SettingSecretRedactor`, and the `INTEGRATION_KEYS` media-skip (IMS, Moodle, BBB, SpotPlayer, Skyroom, Niliroom, SMS IPPanel, SMS notifications). Payment gateways (Mellat, Digipay) are registered for redaction but keep media hydration and store their credentials nested under `config`.
+- **Setting Key Values:** Integration and provider keys: `IMS` (`ims`, secret `api_key`, group `integrations`, defaults from `config/provisioning.php`), `MOODLE`, `BIG_BLUE_BUTTON`, `SPOT_PLAYER`, `SKYROOM` (`skyroom`, secrets `api_key`/`secret`), `NILIROOM` (`niliroom`, secret `api_token`), `SMS_IPPANEL` (`sms.ippanel`, secret `api_key`, group `sms`, defaults from `config/sms.php`), `SMS_NOTIFICATIONS` (`sms_notifications`, group `sms`, no secret fields, per-option defaults from `config/sms.php`). Payment keys: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`). Each key declaring secret fields exposes them through `secretFields()`.
 
 ### HomePageBlock (`app/Models/HomePageBlock.php`)
 - **Purpose:** Dynamic homepage block definitions rendered on the shop front
@@ -395,6 +395,47 @@
 - **`defaultConfig(): array`** — returns the default configuration array from `config/payments.php` for each gateway, used as fallback when no stored settings exist in the database.
 - **`settingKey(): ?SettingKeyEnum`** — maps each gateway to its `SettingKeyEnum` for persisted configuration.
 
+#### SmsGatewayEnum (`app/Enums/Sms/SmsGatewayEnum.php`)
+- **Values:** `IPPANEL` (`ippanel`)
+- **Purpose:** Drives the admin SMS gateway settings area (`GET/PUT /api/v1/admin/settings/sms-gateways`). Adding a gateway is a backend-only change: a new case plus its `settingDataClass()` (schema + request rules), `settingKey()` and `config/sms.php` block.
+- **`settingKey(): SettingKeyEnum`** — the persisted setting key (`SMS_IPPANEL` for `ippanel`, group `sms`).
+- **`settingDataClass(): class-string`** — the data class owning that gateway's `schema()` and validation `rules()`.
+- **`defaultConfig(): array`** — `config/sms.php` defaults used until the gateway is saved; the `label` entry is a translation key resolved at response build time.
+- **`resolvedSettings(mixed $stored): array`** — the shared precedence rule for the admin read path (`BuildSmsGatewaySettingAction`) and the runtime send path (`IpPanelSmsService`): the stored row wins field-by-field over the config defaults, stored keys the config does not declare are dropped, and `label` is returned raw (translation is the caller's decision).
+- **`label(): string`** — localized display label from `sms.gateways.<value>.label`.
+
+#### SmsNotificationOptionEnum (`app/Enums/Sms/SmsNotificationOptionEnum.php`)
+- **Values:** `OTP` (`otp`), `REFUND_COMPLETED` (`refund_completed`), `ORDER_PAID` (`order_paid`), `ENROLLMENT_READY` (`enrollment_ready`), `WALLET_CAMPAIGN_CREDITED` (`wallet_campaign_credited`)
+- **Purpose:** Drives the admin SMS notification option area (`GET/PUT /api/v1/admin/settings/sms-notifications`). The read endpoint returns the cases in declaration order, so adding an option is a backend-only change: a new case plus its `config/sms.php` block and its `sms.notifications.<value>.label` translation.
+- **`defaultConfig(): array`** — `config/sms.php` `notifications.<value>` defaults (`enabled`, `pattern_code`) used until the option is saved.
+- **`resolve(mixed $storedOption): array{enabled: bool, pattern_code: string}`** — merges one stored option over its config defaults field-by-field, dropping stored keys the config does not declare and normalizing `pattern_code` to a string.
+- **`label(): string`** — localized display label from `sms.notifications.<value>.label`.
+- **`logType(): string`** — the outgoing `SmsMessage` type this option governs (`OTP`, `REFUND`, `ORDER`, `ENROLLMENT`, `WALLET`), matching the contract's `log_type` column.
+- **`fromLogType(string $logType): ?self`** — finds the option for an outgoing message type, or `null` when the type is not configurable (an ad-hoc send stays ungated).
+- **`isConfigured(array{enabled: bool, pattern_code: string} $settings): bool`** — `false` only when the option requires a pattern and none is set; shared by the admin `state.configured` badge and the runtime option gate so the two cannot disagree.
+- **`requiresPattern(): bool`** — false for `refund_completed` (free-text send), true for every pattern-only option; drives `isConfigured()` and the runtime `pattern_missing` skip.
+
+#### SmsSkipReasonEnum (`app/Enums/Sms/SmsSkipReasonEnum.php`)
+- **Values:** `GATEWAY_DISABLED` (`gateway_disabled`), `NOT_CONFIGURED` (`not_configured`), `OPTION_DISABLED` (`option_disabled`), `PATTERN_MISSING` (`pattern_missing`), `EMPTY_MESSAGE` (`empty_message`)
+- **Purpose:** The `data.reason` vocabulary for `SmsLog::STATUS_SKIPPED` rows, shared by the gateway gate (`IpPanelSmsService`) and the notification-option gate (`SmsChannel`) so the two are distinguishable in the delivery log.
+
+#### ProvisioningProviderSettingsEnum (`app/Enums/Provisioning/ProvisioningProviderSettingsEnum.php`)
+- **Values:** `IMS` (`ims`), `MOODLE` (`moodle`), `SPOTPLAYER` (`spotplayer`), `SKYROOM` (`skyroom`), `NILIROOM` (`niliroom`)
+- **Purpose:** Drives the admin provisioning provider area (`GET/PUT /api/v1/admin/settings/provisioning-providers`). This is the settings-facing list, separate from the persisted `App\Enums\ProvisioningProviderEnum`: `bbb` is absent because ADR 0012 keeps it environment-configured while Niliroom replaces it on this surface, and `moodle_quiz` because it has no credentials of its own, so their detail routes are `404` through route binding. Adding a provider is a backend-only change: a new case with its setting key, data class, config block and translated label.
+- **`settingKey(): SettingKeyEnum`** — the persisted setting key (`IMS`, `MOODLE`, `SPOT_PLAYER`, `SKYROOM`, `NILIROOM`, group `integrations`).
+- **`settingDataClass(): class-string<ProvisioningProviderSettingData>`** — the data class owning that provider's `schema()` and request `rules()`.
+- **`serviceClass(): class-string<AbstractIntegrationService>|null`** — the integration service that consumes the configuration; the seam the adapter-agreement test iterates, and null for Niliroom, which is settings-only until its adapter lands.
+- **`defaultConfig(): array`** — `config/provisioning.php` `providers.<value>` defaults used until the provider is saved; each adapter resolves this same block as its configuration fallback (with `BbbService` still on `services.bbb`), so it is the single source of a provider's defaults (Niliroom's are new, since it is settings-only until its adapter lands).
+- **`label(): string`** — localized display label from `provisioning.providers.<value>.label`.
+
+#### ProvisioningProviderSettingData (`app/Data/Admin/Settings/Provisioning/ProvisioningProviderSettingData.php`)
+- **Purpose:** Abstract base for the per-provider flat setting DTOs (`ImsProviderSettingData`, `MoodleProviderSettingData`, `SpotPlayerProviderSettingData`, `SkyroomProviderSettingData`, `NiliroomProviderSettingData` extend it). Owns the schema-derived readiness rules and the empty-string normalization the flat save needs. Moodle's schema marks both its service token and its login token required and sensitive (ADR 0011); SpotPlayer's connection key is `endpoint`, not `base_url`; Skyroom's `base_url` is optional because only its key decides readiness; Niliroom's credential field is `api_token` and both it and the URL are required.
+- **`schema(): array`** — abstract; each provider declares its grouped field list.
+- **`fields(): list<array<string, mixed>>`** — the declared fields flattened out of their groups; the single walk the other helpers share.
+- **`requiredFields(): array<string, string>`** — required fields that carry a connection value (boolean switches such as `enabled` are excluded), keyed to their translated label.
+- **`isConfigured(array $settings): bool`** — true when every required connection field is filled; the panel's computed `state.configured`.
+- **`normalizePayload(array $payload): array`** — maps the empty string a form sends for a cleared non-sensitive input to `null`, while leaving a sensitive field's empty string intact so it can clear the stored secret.
+
 #### DeliveryMethodEnum (`app/Enums/Product/DeliveryMethodEnum.php`)
 - **Values:** `LMS_MOODLE`, `VIDEO_PLATFORM_SPOTPLAYER`, `LIVE_SESSION_BBB`, `LIVE_SESSION_SKYROOM`, `DIRECT_DOWNLOAD`, `IN_PERSON`
 - **Purpose:** Maps product delivery methods to external integration providers for provisioning routing
@@ -456,9 +497,10 @@
 
 ### SmsLog (`app/Models/SmsLog.php`)
 - **Purpose:** SMS delivery tracking and logging
-- **Key Fields:** `provider`, `status`, `to` (array of recipients), `message`, `data`, `sent_at`
+- **Key Fields:** `status`, `data`, `content`, `type`, `to` (recipients), `from` (sender), `sent_at`
+- **Constants:** `STATUS_SKIPPED` (`0`) — recorded when no provider call was made (gateway switched off or unconfigured, notification option disabled, a required pattern missing, or an enabled option with nothing to send); the `data.reason` field names the cause with an `SmsSkipReasonEnum` value and `sent_at` holds the attempt time.
 - **Relationships:** Self-contained audit records for outbound SMS
-- **Special Features:** Casts payload and recipient metadata to arrays for structured logging
+- **Special Features:** Casts payload and recipient metadata to arrays for structured logging. `to` holds a list for free-text sends and a single phone string for pattern sends, matching the `IpPanelSmsService` call path.
 
 ### BlogCategory (`app/Models/Blog/BlogCategory.php`)
 - **Purpose:** Hierarchical blog content organization

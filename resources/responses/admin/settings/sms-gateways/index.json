@@ -1,0 +1,57 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "key": "ippanel",
+      "label": "آی‌پی‌پنل",
+      "schema": {
+        "general": [
+          {
+            "key": "enabled",
+            "type": "boolean",
+            "label": "فعال",
+            "required": true
+          },
+          {
+            "key": "label",
+            "type": "text",
+            "label": "عنوان",
+            "required": true
+          },
+          {
+            "key": "from",
+            "type": "text",
+            "label": "شماره فرستنده",
+            "required": true
+          }
+        ],
+        "credentials": [
+          {
+            "key": "api_key",
+            "type": "password",
+            "label": "کلید API",
+            "required": true,
+            "sensitive": true
+          }
+        ],
+        "testing": [
+          {
+            "key": "sandbox",
+            "type": "boolean",
+            "label": "حالت آزمایشی",
+            "required": false,
+            "default": false
+          }
+        ]
+      },
+      "settings": {
+        "enabled": true,
+        "label": "آی‌پی‌پنل",
+        "from": "1000",
+        "api_key": "***REDACTED***",
+        "sandbox": false
+      }
+    }
+  ],
+  "metadata": []
+}

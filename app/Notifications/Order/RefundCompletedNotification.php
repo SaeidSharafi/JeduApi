@@ -56,10 +56,11 @@ final class RefundCompletedNotification extends Notification implements ShouldQu
     public function toSms(object $notifiable): SmsMessage
     {
         $orderId = $this->refund->orderItem->order_id;
-        $amount  = number_format($this->refund->amount);
+        $amount  = $this->refund->amount;
 
         return (new SmsMessage)
-            ->content("استرداد وجه سفارش #{$orderId} به مبلغ {$amount} ریال تأیید شد.")
+            ->content("استرداد وجه سفارش #{$orderId} به مبلغ ".number_format($amount).' ریال تأیید شد.')
+            ->parameters(['order_id' => $orderId, 'amount' => $amount])
             ->type('REFUND');
     }
 }

@@ -20,7 +20,7 @@ final class SpotPlayerService extends AbstractIntegrationService implements Spot
         $this->assertConfigured();
 
         $response = Http::baseUrl($this->config['endpoint'])
-            ->timeout((int) config('services.spotplayer.timeout', 15))
+            ->timeout((int) ($this->config['timeout'] ?? 15))
             ->acceptJson()
             ->withHeaders(['x-api-key' => $this->config['api_key']])
             ->post('', [
@@ -59,7 +59,7 @@ final class SpotPlayerService extends AbstractIntegrationService implements Spot
 
     protected function getConfigFallbackPath(): string
     {
-        return 'services.spotplayer';
+        return 'provisioning.providers.spotplayer';
     }
 
     protected function validateConfig(): bool

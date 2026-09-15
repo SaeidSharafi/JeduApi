@@ -320,8 +320,12 @@ return [
     ],
 
     'review' => [
-        'approved' => 'Review approved successfully.',
-        'rejected' => 'Review rejected successfully.',
+        'approved'              => 'Review approved successfully.',
+        'rejected'              => 'Review rejected successfully.',
+        'submitted'             => 'Review submitted successfully and is awaiting approval.',
+        'already_reviewed'      => 'You have already reviewed this course.',
+        'enrollment_not_active' => 'You can only review an active enrollment.',
+        'not_reviewable'        => 'This enrollment cannot be reviewed.',
     ],
     'user' => [
         'banned'   => 'Customer account banned successfully.',
@@ -419,10 +423,6 @@ return [
         'no_condition_handler' => "No discount condition handler registered for ':name'.",
         'no_config_dto'        => "No config DTO mapped for handler ':class'.",
         'no_action_handler'    => "No discount action handler registered for ':name'.",
-    ],
-
-    'sms' => [
-        'ippanel_not_configured' => 'IPPanel API key or sender number is not configured.',
     ],
 
     'search' => [

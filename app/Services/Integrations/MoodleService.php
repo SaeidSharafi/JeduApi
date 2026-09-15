@@ -22,8 +22,6 @@ final class MoodleService extends AbstractIntegrationService implements MoodleCl
 {
     private string $baseUrl = '';
 
-    private string $auth_userkey_token = '';
-
     private int $timeout = 30;
 
     /**
@@ -241,7 +239,7 @@ final class MoodleService extends AbstractIntegrationService implements MoodleCl
             'user' => [
                 'username' => $username,
             ],
-        ], $token ?? $this->auth_userkey_token);
+        ], $token ?? ($this->config['auth_userkey_token'] ?? ''));
 
         $loginUrl = data_get($result, 'loginurl');
         if (! is_string($loginUrl) || $loginUrl === '') {
@@ -300,12 +298,14 @@ final class MoodleService extends AbstractIntegrationService implements MoodleCl
 
     protected function getConfigFallbackPath(): string
     {
-        return 'services.moodle';
+        return 'provisioning.providers.moodle';
     }
 
     protected function validateConfig(): bool
     {
-        return ! empty($this->config['base_url']) && ! empty($this->config['token']);
+        return ! empty($this->config['base_url'])
+            && ! empty($this->config['token'])
+            && ! empty($this->config['auth_userkey_token']);
     }
 
     /**

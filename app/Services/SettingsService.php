@@ -16,14 +16,19 @@ use SmartCache\Facades\SmartCache;
 final class SettingsService
 {
     /**
-     * Integration keys store credentials/config — no media fields.
-     * Skipping witImages avoids unnecessary DB queries for these keys.
+     * Keys on the admin integration settings surface — credentials only, never media.
+     *
+     * These keys skip `witImages()`: their payloads cannot contain media references,
+     * and the payment gateways (whose icon is hydrated) must keep resolving media.
      */
-    private const array SKIP_MEDIA = [
+    private const array INTEGRATION_KEYS = [
         SettingKeyEnum::IMS,
         SettingKeyEnum::MOODLE,
         SettingKeyEnum::BIG_BLUE_BUTTON,
         SettingKeyEnum::SPOT_PLAYER,
+        SettingKeyEnum::SKYROOM,
+        SettingKeyEnum::NILIROOM,
+        SettingKeyEnum::SMS_IPPANEL,
     ];
 
     public function get(SettingKeyEnum $key, mixed $default = null): mixed
@@ -40,10 +45,10 @@ final class SettingsService
 
         $value = $setting->value;
 
-        // Decrypt secret fields for integration keys (backward-compatible: plaintext passes through).
+        // Decrypt secret fields for secret-bearing keys (backward-compatible: plaintext passes through).
         $secretFields = $key->secretFields();
 
-        if (is_array($value) && $secretFields !== []) {
+        if (is_array($value) && $key->hasSecrets()) {
             foreach ($secretFields as $field) {
                 if (isset($value[$field]) && is_string($value[$field])) {
                     $value[$field] = $this->tryDecrypt($value[$field]);
@@ -52,7 +57,7 @@ final class SettingsService
         }
 
         // Integration keys store credentials — skip media resolution.
-        if (is_array($value) && ! empty($value) && ! in_array($key, self::SKIP_MEDIA, true)) {
+        if (is_array($value) && ! empty($value) && ! in_array($key, self::INTEGRATION_KEYS, true)) {
             return Setting::witImages($value);
         }
 
@@ -64,7 +69,7 @@ final class SettingsService
      */
     public function set(SettingKeyEnum $key, mixed $value, string $type = 'json', ?string $group = null): Setting
     {
-        // Encrypt secret fields for integration keys before persisting.
+        // Encrypt secret fields for secret-bearing keys before persisting.
         $secretFields = $key->secretFields();
 
         if (is_array($value) && $secretFields !== []) {
@@ -114,12 +119,12 @@ final class SettingsService
     }
 
     /**
-     * Creates an audit log entry when an integration setting is written.
+     * Creates an audit log entry when a secret-bearing setting is written.
      * Secret fields are redacted — never stored in the log.
      */
     private function auditIntegrationWrite(SettingKeyEnum $key, mixed $value): void
     {
-        if (! in_array($key, self::SKIP_MEDIA, true)) {
+        if ($key->secretFields() === []) {
             return;
         }
 
