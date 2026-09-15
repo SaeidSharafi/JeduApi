@@ -31,6 +31,8 @@ For every newly written or materially changed feature test, run the normal focus
 
 Always pass `--parallel` for mutation runs, including single-file scopes. Pest reports mutations as tested, untested, or uncovered.
 
+mutation runs takes a long time, so it's better to run them in background and check the results later. unless it is the last step and there is no other work to do, in which case it is better to run it in foreground and wait for the results.
+
 The goal is **meaningful coverage, not a 100% score**. Strengthen the behavior tests until every mutation that reflects a real decision is killed — especially mutations that remove a branch, alter a comparison, change a returned value, or skip a side effect. Do not add tests whose only purpose is to move the number, and do not chase survivors that cannot change observable behavior.
 
 A surviving mutant may be left only when it is demonstrably equivalent or intentionally outside the contract, and the reason must be recorded beside the test (see the `Mutation notes` blocks in `tests/Unit/Services/WeightedApportionmentTest.php` and `tests/Integration/Services/BundleAvailabilityPropagationServiceTest.php`) or in the ticket. Do not hide survivors by excluding broad classes of code.
