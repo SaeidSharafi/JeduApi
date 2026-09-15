@@ -40,32 +40,6 @@ final class MoodleProviderSettingData extends ProvisioningProviderSettingData
                     'required' => true,
                     'default'  => false,
                 ],
-            ],
-            'connection' => [
-                [
-                    'key'      => 'base_url',
-                    'type'     => 'url',
-                    'label'    => __('provisioning.fields.base_url'),
-                    'required' => true,
-                ],
-            ],
-            'credentials' => [
-                [
-                    'key'       => 'token',
-                    'type'      => 'password',
-                    'label'     => __('provisioning.fields.service_token'),
-                    'required'  => true,
-                    'sensitive' => true,
-                ],
-                [
-                    'key'       => 'auth_userkey_token',
-                    'type'      => 'password',
-                    'label'     => __('provisioning.fields.login_token'),
-                    'required'  => true,
-                    'sensitive' => true,
-                ],
-            ],
-            'advanced' => [
                 [
                     'key'      => 'default_role_id',
                     'type'     => 'number',
@@ -86,6 +60,28 @@ final class MoodleProviderSettingData extends ProvisioningProviderSettingData
                     'label'    => __('provisioning.fields.timeout'),
                     'required' => false,
                     'default'  => 15,
+                ],
+            ],
+            'connection' => [
+                [
+                    'key'      => 'base_url',
+                    'type'     => 'url',
+                    'label'    => __('provisioning.fields.base_url'),
+                    'required' => true,
+                ],
+                [
+                    'key'       => 'token',
+                    'type'      => 'password',
+                    'label'     => __('provisioning.fields.service_token'),
+                    'required'  => true,
+                    'sensitive' => true,
+                ],
+                [
+                    'key'       => 'auth_userkey_token',
+                    'type'      => 'password',
+                    'label'     => __('provisioning.fields.login_token'),
+                    'required'  => true,
+                    'sensitive' => true,
                 ],
             ],
         ];

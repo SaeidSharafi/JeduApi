@@ -38,7 +38,7 @@ final class ProvisioningProviderSettingsController extends Controller
      * - `key` (string): Provider identifier. One of: `ims`, `moodle`, `spotplayer`.
      * - `label` (string): Localized display label.
      * - `state` (object): `enabled`, `configured` (every required field is filled) and `ready` (`enabled && configured`).
-     * - `schema` (object): Grouped field definitions. Groups: `general`, `connection`, `credentials`, `testing` (SpotPlayer only), `advanced`.
+     * - `schema` (object): Grouped field definitions. Groups: `general` (the switch and the behaviour defaults) and `connection` (service URL and credentials).
      * - `settings` (object): Effective values. Sensitive fields are always masked.
      *
      * @responseFile 200 resources/responses/admin/settings/provisioning-providers/index.json

@@ -17,6 +17,13 @@
             "label": "فعال",
             "required": true,
             "default": false
+          },
+          {
+            "key": "timeout",
+            "type": "number",
+            "label": "مهلت (ثانیه)",
+            "required": false,
+            "default": 15
           }
         ],
         "connection": [
@@ -25,24 +32,13 @@
             "type": "url",
             "label": "آدرس سرویس",
             "required": true
-          }
-        ],
-        "credentials": [
+          },
           {
             "key": "api_key",
             "type": "password",
             "label": "کلید API",
             "required": true,
             "sensitive": true
-          }
-        ],
-        "advanced": [
-          {
-            "key": "timeout",
-            "type": "number",
-            "label": "مهلت (ثانیه)",
-            "required": false,
-            "default": 15
           }
         ]
       },
@@ -69,33 +65,7 @@
             "label": "فعال",
             "required": true,
             "default": false
-          }
-        ],
-        "connection": [
-          {
-            "key": "base_url",
-            "type": "url",
-            "label": "آدرس سرویس",
-            "required": true
-          }
-        ],
-        "credentials": [
-          {
-            "key": "token",
-            "type": "password",
-            "label": "توکن سرویس",
-            "required": true,
-            "sensitive": true
           },
-          {
-            "key": "auth_userkey_token",
-            "type": "password",
-            "label": "توکن ورود",
-            "required": true,
-            "sensitive": true
-          }
-        ],
-        "advanced": [
           {
             "key": "default_role_id",
             "type": "number",
@@ -116,6 +86,28 @@
             "label": "مهلت (ثانیه)",
             "required": false,
             "default": 15
+          }
+        ],
+        "connection": [
+          {
+            "key": "base_url",
+            "type": "url",
+            "label": "آدرس سرویس",
+            "required": true
+          },
+          {
+            "key": "token",
+            "type": "password",
+            "label": "توکن سرویس",
+            "required": true,
+            "sensitive": true
+          },
+          {
+            "key": "auth_userkey_token",
+            "type": "password",
+            "label": "توکن ورود",
+            "required": true,
+            "sensitive": true
           }
         ]
       },
@@ -145,6 +137,20 @@
             "label": "فعال",
             "required": true,
             "default": false
+          },
+          {
+            "key": "sandbox",
+            "type": "boolean",
+            "label": "حالت آزمایشی",
+            "required": false,
+            "default": false
+          },
+          {
+            "key": "timeout",
+            "type": "number",
+            "label": "مهلت (ثانیه)",
+            "required": false,
+            "default": 15
           }
         ],
         "connection": [
@@ -153,33 +159,13 @@
             "type": "url",
             "label": "آدرس سرویس",
             "required": true
-          }
-        ],
-        "credentials": [
+          },
           {
             "key": "api_key",
             "type": "password",
             "label": "کلید API",
             "required": true,
             "sensitive": true
-          }
-        ],
-        "testing": [
-          {
-            "key": "sandbox",
-            "type": "boolean",
-            "label": "حالت آزمایشی",
-            "required": false,
-            "default": false
-          }
-        ],
-        "advanced": [
-          {
-            "key": "timeout",
-            "type": "number",
-            "label": "مهلت (ثانیه)",
-            "required": false,
-            "default": 15
           }
         ]
       },

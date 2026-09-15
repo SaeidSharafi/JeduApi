@@ -85,6 +85,11 @@ function provisioningProviderPayload(string $provider, array $overrides = []): a
 |   endpoint URL, and `sandbox` false, which the emptiness check counts as
 |   present), so the computed state cannot change; and every label is already a
 |   string, so dropping the `(string)` cast is a no-op.
+| - Dropping a whole rule entry from a provider's `rules()` (e.g. `api_key`):
+|   spatie/laravel-data then applies the rule it derives from the typed property
+|   (`?string` → `nullable|string`, `bool` → `required|boolean`), so the `422`
+|   contract is unchanged — verified by removing the entry and re-running the
+|   non-string dataset.
 | - Pest also reports a varying number of mutants as timeouts (4 to 24 across runs
 |   of identical production code; this file grew from 50 to 70 HTTP tests). The
 |   changed code has no unbounded loop or recursion, so those are the shared
@@ -120,15 +125,11 @@ describe('index', function (): void {
         expect($response->json('data.0.schema'))->toBe([
             'general' => [
                 ['key' => 'enabled', 'type' => 'boolean', 'label' => 'فعال', 'required' => true, 'default' => false],
+                ['key' => 'timeout', 'type' => 'number', 'label' => 'مهلت (ثانیه)', 'required' => false, 'default' => 15],
             ],
             'connection' => [
                 ['key' => 'base_url', 'type' => 'url', 'label' => 'آدرس سرویس', 'required' => true],
-            ],
-            'credentials' => [
                 ['key' => 'api_key', 'type' => 'password', 'label' => 'کلید API', 'required' => true, 'sensitive' => true],
-            ],
-            'advanced' => [
-                ['key' => 'timeout', 'type' => 'number', 'label' => 'مهلت (ثانیه)', 'required' => false, 'default' => 15],
             ],
         ]);
     });
@@ -221,18 +222,14 @@ describe('index', function (): void {
         expect($response->json('data.1.schema'))->toBe([
             'general' => [
                 ['key' => 'enabled', 'type' => 'boolean', 'label' => 'فعال', 'required' => true, 'default' => false],
-            ],
-            'connection' => [
-                ['key' => 'base_url', 'type' => 'url', 'label' => 'آدرس سرویس', 'required' => true],
-            ],
-            'credentials' => [
-                ['key' => 'token', 'type' => 'password', 'label' => 'توکن سرویس', 'required' => true, 'sensitive' => true],
-                ['key' => 'auth_userkey_token', 'type' => 'password', 'label' => 'توکن ورود', 'required' => true, 'sensitive' => true],
-            ],
-            'advanced' => [
                 ['key' => 'default_role_id', 'type' => 'number', 'label' => 'شناسه نقش پیش‌فرض', 'required' => false, 'default' => 5],
                 ['key' => 'default_login_redirect_script', 'type' => 'text', 'label' => 'مسیر بازگشت پس از ورود', 'required' => false, 'default' => '/my/'],
                 ['key' => 'timeout', 'type' => 'number', 'label' => 'مهلت (ثانیه)', 'required' => false, 'default' => 15],
+            ],
+            'connection' => [
+                ['key' => 'base_url', 'type' => 'url', 'label' => 'آدرس سرویس', 'required' => true],
+                ['key' => 'token', 'type' => 'password', 'label' => 'توکن سرویس', 'required' => true, 'sensitive' => true],
+                ['key' => 'auth_userkey_token', 'type' => 'password', 'label' => 'توکن ورود', 'required' => true, 'sensitive' => true],
             ],
         ]);
     });
@@ -258,18 +255,12 @@ describe('index', function (): void {
         expect($response->json('data.2.schema'))->toBe([
             'general' => [
                 ['key' => 'enabled', 'type' => 'boolean', 'label' => 'فعال', 'required' => true, 'default' => false],
+                ['key' => 'sandbox', 'type' => 'boolean', 'label' => 'حالت آزمایشی', 'required' => false, 'default' => false],
+                ['key' => 'timeout', 'type' => 'number', 'label' => 'مهلت (ثانیه)', 'required' => false, 'default' => 15],
             ],
             'connection' => [
                 ['key' => 'endpoint', 'type' => 'url', 'label' => 'آدرس سرویس', 'required' => true],
-            ],
-            'credentials' => [
                 ['key' => 'api_key', 'type' => 'password', 'label' => 'کلید API', 'required' => true, 'sensitive' => true],
-            ],
-            'testing' => [
-                ['key' => 'sandbox', 'type' => 'boolean', 'label' => 'حالت آزمایشی', 'required' => false, 'default' => false],
-            ],
-            'advanced' => [
-                ['key' => 'timeout', 'type' => 'number', 'label' => 'مهلت (ثانیه)', 'required' => false, 'default' => 15],
             ],
         ]);
 

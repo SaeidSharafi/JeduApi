@@ -35,6 +35,20 @@ final class SpotPlayerProviderSettingData extends ProvisioningProviderSettingDat
                     'required' => true,
                     'default'  => false,
                 ],
+                [
+                    'key'      => 'sandbox',
+                    'type'     => 'boolean',
+                    'label'    => __('provisioning.fields.sandbox'),
+                    'required' => false,
+                    'default'  => false,
+                ],
+                [
+                    'key'      => 'timeout',
+                    'type'     => 'number',
+                    'label'    => __('provisioning.fields.timeout'),
+                    'required' => false,
+                    'default'  => 15,
+                ],
             ],
             'connection' => [
                 [
@@ -43,32 +57,12 @@ final class SpotPlayerProviderSettingData extends ProvisioningProviderSettingDat
                     'label'    => __('provisioning.fields.endpoint'),
                     'required' => true,
                 ],
-            ],
-            'credentials' => [
                 [
                     'key'       => 'api_key',
                     'type'      => 'password',
                     'label'     => __('provisioning.fields.api_key'),
                     'required'  => true,
                     'sensitive' => true,
-                ],
-            ],
-            'testing' => [
-                [
-                    'key'      => 'sandbox',
-                    'type'     => 'boolean',
-                    'label'    => __('provisioning.fields.sandbox'),
-                    'required' => false,
-                    'default'  => false,
-                ],
-            ],
-            'advanced' => [
-                [
-                    'key'      => 'timeout',
-                    'type'     => 'number',
-                    'label'    => __('provisioning.fields.timeout'),
-                    'required' => false,
-                    'default'  => 15,
                 ],
             ],
         ];

@@ -16,6 +16,13 @@
           "label": "فعال",
           "required": true,
           "default": false
+        },
+        {
+          "key": "timeout",
+          "type": "number",
+          "label": "مهلت (ثانیه)",
+          "required": false,
+          "default": 15
         }
       ],
       "connection": [
@@ -24,24 +31,13 @@
           "type": "url",
           "label": "آدرس سرویس",
           "required": true
-        }
-      ],
-      "credentials": [
+        },
         {
           "key": "api_key",
           "type": "password",
           "label": "کلید API",
           "required": true,
           "sensitive": true
-        }
-      ],
-      "advanced": [
-        {
-          "key": "timeout",
-          "type": "number",
-          "label": "مهلت (ثانیه)",
-          "required": false,
-          "default": 15
         }
       ]
     },
