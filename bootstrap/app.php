@@ -112,6 +112,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '/webhooks/github-deployer',
         ]);
+        // The SMS gateway save clears a stored API key with an explicit empty
+        // string; converting it to null would make "clear" indistinguishable
+        // from "keep the stored key". Only the save request needs the raw value.
+        $middleware->convertEmptyStringsToNull(except: [
+            fn (Request $request): bool => $request->isMethod('put')
+                && $request->is('api/v1/admin/settings/sms-gateways/*'),
+        ]);
         $middleware->redirectGuestsTo(function (Request $request): null {
             if ($request->is('api/*') || $request->is('admin/*') || $request->expectsJson()) {
                 return null;

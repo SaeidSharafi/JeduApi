@@ -28,6 +28,12 @@
 - **GetThumbnailUrlAction** (`app/Actions/Admin/GetThumbnailUrlAction.php`)
   - `handle(array $media): ?string`: Extracts the first cover-tagged media ID and resolves its CDN URL through Mediable. Centralized helper for admin### Jobs (`app/Jobs/`)
 
+#### SMS Settings Actions (`app/Actions/Admin/Settings/Sms/`)
+- **BuildSmsGatewaySettingAction** (`app/Actions/Admin/Settings/Sms/BuildSmsGatewaySettingAction.php`)
+  - `handle(SmsGatewayEnum $gateway): array`: Resolves one SMS gateway into the admin payload `{key, label, schema, settings}`. Settings are the stored `SettingKeyEnum::SMS_IPPANEL` row merged over `config/sms.php` defaults, filtered to the keys the config declares (unknown stored keys are dropped), with the config `label` translation key resolved to the active locale only while it is still the effective value. The secret is always masked through `SettingSecretRedactor`.
+- **UpdateSmsGatewaySettingAction** (`app/Actions/Admin/Settings/Sms/UpdateSmsGatewaySettingAction.php`)
+  - `handle(SmsGatewayEnum $gateway, SmsGatewaySettingData $data): array`: Persists the flat gateway settings through `SettingsService::set()` (group `sms`). A `null`/omitted/`***REDACTED***` `api_key` reuses the stored (decrypted) secret, a real string overwrites it, and `""` clears it; `SettingsService` re-encrypts non-empty secrets at rest. Enabling a gateway with no sender number or no stored key throws a `ValidationException` naming `api_key`. Returns the fresh read payload from `BuildSmsGatewaySettingAction`.
+
 #### UpdateProductPricingJob (`app/Jobs/UpdateProductPricingJob.php`)
 - **Purpose:** Asynchronous batch pricing index update for products
 - **Signature:** `handle(ProductPriceService $priceService): void`

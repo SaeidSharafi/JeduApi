@@ -349,6 +349,12 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
   - `index()`: **Route:** `GET /api/v1/admin/settings/payment-gateways` - Returns gateway config (with secrets redacted)
   - `update(PaymentGatewaySettingsUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/payment-gateways` - Updates gateway credentials and settings
 
+### SMS Gateway Settings Controller
+- **SmsGatewaySettingsController** (`app/Http/Controllers/Api/Admin/Settings/SmsGatewaySettingsController.php`):
+  - `index()`: **Route:** `GET /api/v1/admin/settings/sms-gateways` - Lists every configurable SMS gateway from `SmsGatewayEnum` (currently `ippanel`) as `{key, label, schema, settings}`: translated item label, grouped `SmsGatewaySettingData::schema()` (`general`/`credentials`/`testing`) and effective settings — stored `SettingKeyEnum::SMS_IPPANEL` row first, `config/sms.php` defaults otherwise, so a never-saved gateway is never an empty object. `api_key` is always masked (`***REDACTED***`).
+  - `show(SmsGatewayEnum $gateway)`: **Route:** `GET /api/v1/admin/settings/sms-gateways/{gateway}` - Returns one item shaped exactly like a list element (schema included) for deep links; an unknown key is `404` via enum route binding.
+  - `update(SmsGatewaySettingData $request, SmsGatewayEnum $gateway)`: **Route:** `PUT /api/v1/admin/settings/sms-gateways/{gateway}` - Flat body using the same keys as `schema`; **Delegates to:** `UpdateSmsGatewaySettingAction`, which keeps the stored key when `api_key` is omitted/`null`/`***REDACTED***`, clears it on `""`, and rejects enabling without a sender number or stored key with a `422` on the offending field. Every handler authorises with `Gate::authorize('viewAny'|'update', Setting::class)`.
+
 ### Enrollment Management Endpoints
 - **EnrollmentController** (`app/Http/Controllers/Api/Admin/Enrollment/EnrollmentController.php`):
   - `index()`: **Route:** `GET /api/v1/admin/enrollments` - **Query Filters:** `filter[customer_id]`, `filter[enrollment_status]`, `filter[revocation_status]` (pending/failed/manual_action_required/revoked — lets the panel build a revocation work queue), `filter[order_id]`, `filter[product_delivery_option_id]`, `filter[productable_type]` - **Response DTO:** `EnrollmentListItemData` paginated collection

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Crypt;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Setting>
@@ -95,6 +96,48 @@ final class SettingFactory extends Factory
             ],
             'type'  => 'json',
             'group' => 'integrations',
+        ]);
+    }
+
+    /**
+     * Create an SMS IPPanel gateway setting with an encrypted api_key.
+     */
+    public function smsIppanel(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'sms.ippanel',
+            'value' => [
+                'enabled' => true,
+                'label'   => 'IPPanel',
+                'from'    => '1000',
+                'api_key' => Crypt::encryptString('sms-ippanel-api-key'),
+                'sandbox' => false,
+            ],
+            'type'  => 'json',
+            'group' => 'sms',
+        ]);
+    }
+
+    /**
+     * Create an SMS IPPanel setting that differs from the config defaults.
+     *
+     * Carries the runtime `sand_box` key as well, so the read path can be
+     * asserted to drop stored keys the contract does not declare.
+     */
+    public function smsIppanelSecondary(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'sms.ippanel',
+            'value' => [
+                'enabled'  => false,
+                'label'    => 'IPPanel secondary',
+                'from'     => '2000',
+                'api_key'  => Crypt::encryptString('sms-ippanel-api-key'),
+                'sandbox'  => true,
+                'sand_box' => true,
+            ],
+            'type'  => 'json',
+            'group' => 'sms',
         ]);
     }
 

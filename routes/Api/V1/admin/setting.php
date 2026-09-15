@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\Content\Slider\UpdateSliderStatusController;
 use App\Http\Controllers\Api\Admin\Content\StudentStoryController;
 use App\Http\Controllers\Api\Admin\Settings\PaymentGatewaySettingsController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
+use App\Http\Controllers\Api\Admin\Settings\SmsGatewaySettingsController;
 
 Route::prefix('settings')->name('settings.')->group(function (): void {
     Route::get('/', [SettingController::class, 'index'])
@@ -50,4 +51,11 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
     Route::get('payment-gateways', [PaymentGatewaySettingsController::class, 'index']);
     Route::get('payment-gateways/{gateway}', [PaymentGatewaySettingsController::class, 'show']);
     Route::put('payment-gateways/{gateway}', [PaymentGatewaySettingsController::class, 'update']);
+
+    Route::get('sms-gateways', [SmsGatewaySettingsController::class, 'index'])
+        ->name('sms-gateways.index');
+    Route::get('sms-gateways/{gateway}', [SmsGatewaySettingsController::class, 'show'])
+        ->name('sms-gateways.show');
+    Route::put('sms-gateways/{gateway}', [SmsGatewaySettingsController::class, 'update'])
+        ->name('sms-gateways.update');
 });

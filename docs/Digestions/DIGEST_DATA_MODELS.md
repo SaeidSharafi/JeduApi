@@ -328,7 +328,7 @@
 - **Key Fields:** `key`, `value` (JSON payload — includes encrypted secrets for integration configs), `type`, `group`
 - **Relationships:** Self-contained configuration system with media attachments via Mediable
 - **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation; `SettingKeyEnum::secretFields()` is the single registry of secret-bearing keys, driving encryption on write, decryption on read, redaction in API responses/audit logs via `SettingSecretRedactor`, and the `INTEGRATION_KEYS` media-skip (IMS, Moodle, BBB, SpotPlayer, Skyroom, Niliroom, SMS IPPanel). Payment gateways (Mellat, Digipay) are registered for redaction but keep media hydration and store their credentials nested under `config`.
-- **Setting Key Values:** Integration and provider keys: `IMS`, `MOODLE`, `BIG_BLUE_BUTTON`, `SPOT_PLAYER`, `SKYROOM` (`skyroom`, secrets `api_key`/`secret`), `NILIROOM` (`niliroom`, secret `api_token`), `SMS_IPPANEL` (`sms.ippanel`, secret `api_key`). Payment keys: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`). Each key declaring secret fields exposes them through `secretFields()`.
+- **Setting Key Values:** Integration and provider keys: `IMS`, `MOODLE`, `BIG_BLUE_BUTTON`, `SPOT_PLAYER`, `SKYROOM` (`skyroom`, secrets `api_key`/`secret`), `NILIROOM` (`niliroom`, secret `api_token`), `SMS_IPPANEL` (`sms.ippanel`, secret `api_key`, group `sms`, defaults from `config/sms.php`). Payment keys: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`). Each key declaring secret fields exposes them through `secretFields()`.
 
 ### HomePageBlock (`app/Models/HomePageBlock.php`)
 - **Purpose:** Dynamic homepage block definitions rendered on the shop front
@@ -394,6 +394,14 @@
 #### PaymentMethodEnum (`app/Enums/Payment/PaymentMethodEnum.php`)
 - **`defaultConfig(): array`** — returns the default configuration array from `config/payments.php` for each gateway, used as fallback when no stored settings exist in the database.
 - **`settingKey(): ?SettingKeyEnum`** — maps each gateway to its `SettingKeyEnum` for persisted configuration.
+
+#### SmsGatewayEnum (`app/Enums/Sms/SmsGatewayEnum.php`)
+- **Values:** `IPPANEL` (`ippanel`)
+- **Purpose:** Drives the admin SMS gateway settings area (`GET/PUT /api/v1/admin/settings/sms-gateways`). Adding a gateway is a backend-only change: a new case plus its `settingDataClass()` (schema + request rules), `settingKey()` and `config/sms.php` block.
+- **`settingKey(): SettingKeyEnum`** — the persisted setting key (`SMS_IPPANEL` for `ippanel`, group `sms`).
+- **`settingDataClass(): class-string`** — the data class owning that gateway's `schema()` and validation `rules()`.
+- **`defaultConfig(): array`** — `config/sms.php` defaults used until the gateway is saved; the `label` entry is a translation key resolved at response build time.
+- **`label(): string`** — localized display label from `sms.gateways.<value>.label`.
 
 #### DeliveryMethodEnum (`app/Enums/Product/DeliveryMethodEnum.php`)
 - **Values:** `LMS_MOODLE`, `VIDEO_PLATFORM_SPOTPLAYER`, `LIVE_SESSION_BBB`, `LIVE_SESSION_SKYROOM`, `DIRECT_DOWNLOAD`, `IN_PERSON`
