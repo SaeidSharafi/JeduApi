@@ -52,6 +52,144 @@
         "api_key": "***REDACTED***",
         "timeout": 15
       }
+    },
+    {
+      "key": "moodle",
+      "label": "مودل",
+      "state": {
+        "enabled": false,
+        "configured": true,
+        "ready": false
+      },
+      "schema": {
+        "general": [
+          {
+            "key": "enabled",
+            "type": "boolean",
+            "label": "فعال",
+            "required": true,
+            "default": false
+          }
+        ],
+        "connection": [
+          {
+            "key": "base_url",
+            "type": "url",
+            "label": "آدرس سرویس",
+            "required": true
+          }
+        ],
+        "credentials": [
+          {
+            "key": "token",
+            "type": "password",
+            "label": "توکن سرویس",
+            "required": true,
+            "sensitive": true
+          },
+          {
+            "key": "auth_userkey_token",
+            "type": "password",
+            "label": "توکن ورود",
+            "required": true,
+            "sensitive": true
+          }
+        ],
+        "advanced": [
+          {
+            "key": "default_role_id",
+            "type": "number",
+            "label": "شناسه نقش پیش‌فرض",
+            "required": false,
+            "default": 5
+          },
+          {
+            "key": "default_login_redirect_script",
+            "type": "text",
+            "label": "مسیر بازگشت پس از ورود",
+            "required": false,
+            "default": "/my/"
+          },
+          {
+            "key": "timeout",
+            "type": "number",
+            "label": "مهلت (ثانیه)",
+            "required": false,
+            "default": 15
+          }
+        ]
+      },
+      "settings": {
+        "enabled": false,
+        "base_url": "https://moodle.example.ir",
+        "token": "***REDACTED***",
+        "auth_userkey_token": "***REDACTED***",
+        "default_role_id": 5,
+        "default_login_redirect_script": "/my/",
+        "timeout": 15
+      }
+    },
+    {
+      "key": "spotplayer",
+      "label": "اسپات‌پلیر",
+      "state": {
+        "enabled": false,
+        "configured": true,
+        "ready": false
+      },
+      "schema": {
+        "general": [
+          {
+            "key": "enabled",
+            "type": "boolean",
+            "label": "فعال",
+            "required": true,
+            "default": false
+          }
+        ],
+        "connection": [
+          {
+            "key": "endpoint",
+            "type": "url",
+            "label": "آدرس سرویس",
+            "required": true
+          }
+        ],
+        "credentials": [
+          {
+            "key": "api_key",
+            "type": "password",
+            "label": "کلید API",
+            "required": true,
+            "sensitive": true
+          }
+        ],
+        "testing": [
+          {
+            "key": "sandbox",
+            "type": "boolean",
+            "label": "حالت آزمایشی",
+            "required": false,
+            "default": false
+          }
+        ],
+        "advanced": [
+          {
+            "key": "timeout",
+            "type": "number",
+            "label": "مهلت (ثانیه)",
+            "required": false,
+            "default": 15
+          }
+        ]
+      },
+      "settings": {
+        "enabled": false,
+        "endpoint": "https://panel.spotplayer.ir/license/edit/",
+        "api_key": "***REDACTED***",
+        "sandbox": false,
+        "timeout": 15
+      }
     }
   ],
   "metadata": []

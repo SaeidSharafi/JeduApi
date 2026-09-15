@@ -35,11 +35,11 @@ final class ProvisioningProviderSettingsController extends Controller
      * returns a complete settings object.
      *
      * Each item contains:
-     * - `key` (string): Provider identifier. Currently `ims`.
+     * - `key` (string): Provider identifier. One of: `ims`, `moodle`, `spotplayer`.
      * - `label` (string): Localized display label.
      * - `state` (object): `enabled`, `configured` (every required field is filled) and `ready` (`enabled && configured`).
-     * - `schema` (object): Grouped field definitions. Groups: `general`, `connection`, `credentials`, `advanced`.
-     * - `settings` (object): Effective values. `api_key` is always masked.
+     * - `schema` (object): Grouped field definitions. Groups: `general`, `connection`, `credentials`, `testing` (SpotPlayer only), `advanced`.
+     * - `settings` (object): Effective values. Sensitive fields are always masked.
      *
      * @responseFile 200 resources/responses/admin/settings/provisioning-providers/index.json
      * @responseFile 403 resources/responses/403.json
@@ -63,7 +63,7 @@ final class ProvisioningProviderSettingsController extends Controller
      * the list. BBB and Moodle Quiz are not offered at all, so their keys and
      * any unknown key are `404`.
      *
-     * @urlParam provider string required The provider key. Enum: `ims`. Example: ims
+     * @urlParam provider string required The provider key. Enum: `ims`, `moodle`, `spotplayer`. Example: ims
      *
      * @responseFile 200 resources/responses/admin/settings/provisioning-providers/show.json
      * @responseFile 403 resources/responses/403.json
@@ -81,23 +81,31 @@ final class ProvisioningProviderSettingsController extends Controller
      *
      * The body is flat and uses the same keys as the item's `schema`. Because it
      * is resolved from the route's provider at runtime, no single Data class
-     * owns the request, so its parameters are documented here for Scribe. Non-secret
-     * fields follow full-replace semantics: send the whole object from the form,
-     * and any field that is omitted or cleared falls back to its configured
-     * default. To keep the stored API key, omit `api_key` or send `null`
-     * (sending the masked placeholder back also keeps it); an explicit empty
-     * string clears it.
+     * owns the request, so its parameters are documented here for Scribe. Every
+     * provider accepts `enabled` and `timeout`; the other fields depend on the
+     * provider. Non-secret fields follow full-replace semantics: send the whole
+     * object from the form, and any field that is omitted or cleared falls back
+     * to its configured default. Sensitive fields — `api_key`, `token` and
+     * `auth_userkey_token` — keep their stored value when omitted or `null`
+     * (sending the masked placeholder back also keeps it), and are cleared by an
+     * explicit empty string.
      *
      * `enabled` is always required. A provider may be saved disabled with empty
      * connection fields so it can be staged, but turning it on without every
      * required field is rejected with a `422` naming the offending fields.
      *
-     * @urlParam provider string required The provider key. Enum: `ims`. Example: ims
+     * @urlParam provider string required The provider key. Enum: `ims`, `moodle`, `spotplayer`. Example: ims
      *
      * @bodyParam enabled boolean required Whether the provider may be used for provisioning. Example: true
-     * @bodyParam base_url string The IMS base URL. Required while the provider is enabled. Example: https://ims.example.ir
-     * @bodyParam api_key string Provider API key. Omit or send `null` (or the masked placeholder) to keep the stored key; send an empty string to clear it. Required while the provider is enabled. Example: my-api-key
-     * @bodyParam timeout integer Optional request timeout in seconds. Example: 15
+     * @bodyParam timeout integer nullable Request timeout in seconds. Example: 15
+     * @bodyParam base_url string nullable Service URL. Required while the provider is enabled. Used by `ims` and `moodle`. Example: https://ims.example.ir
+     * @bodyParam endpoint string nullable Service URL, named `endpoint` rather than `base_url`. Required while the provider is enabled. Used by `spotplayer`. Example: https://panel.spotplayer.ir/license/edit/
+     * @bodyParam api_key string nullable API key. Required while the provider is enabled. Used by `ims` and `spotplayer`. Example: my-api-key
+     * @bodyParam token string nullable Moodle service token, used for the administrative calls (users, courses, enrolments). Required while the provider is enabled. Used by `moodle`. Example: my-service-token
+     * @bodyParam auth_userkey_token string nullable Moodle login token, used by `auth_userkey_request_login_url` to mint a customer login URL. Required while the provider is enabled. Used by `moodle`. Example: my-login-token
+     * @bodyParam default_role_id integer nullable Moodle role id assigned to provisioned users. Used by `moodle`. Example: 5
+     * @bodyParam default_login_redirect_script string nullable Moodle redirect path after a shop-initiated login. Used by `moodle`. Example: /my/
+     * @bodyParam sandbox boolean nullable Whether SpotPlayer licenses are issued in sandbox mode. Used by `spotplayer`. Example: false
      *
      * @responseFile 200 resources/responses/admin/settings/provisioning-providers/show.json
      * @responseFile 403 resources/responses/403.json

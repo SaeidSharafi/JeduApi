@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Actions\Admin\Settings\Provisioning\BuildProvisioningProviderSettingAction;
 use App\Data\Admin\Settings\Provisioning\ImsProviderSettingData;
+use App\Data\Admin\Settings\Provisioning\MoodleProviderSettingData;
 use App\Data\Admin\Settings\Provisioning\ProvisioningProviderSettingData;
+use App\Data\Admin\Settings\Provisioning\SpotPlayerProviderSettingData;
 use App\Enums\Provisioning\ProvisioningProviderSettingsEnum;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Setting;
@@ -16,27 +18,44 @@ covers(
     ProvisioningProviderSettingsEnum::class,
     ProvisioningProviderSettingData::class,
     ImsProviderSettingData::class,
+    MoodleProviderSettingData::class,
+    SpotPlayerProviderSettingData::class,
 );
 
-dataset('provider configurations', [
-    'complete' => [[
-        'enabled'  => true,
-        'base_url' => 'https://ims.test',
-        'api_key'  => 'ims-key',
-        'timeout'  => 15,
-    ]],
-    'incomplete' => [[
-        'enabled'  => true,
-        'base_url' => '',
-        'api_key'  => '',
-    ]],
-    'disabled but complete' => [[
-        'enabled'  => false,
-        'base_url' => 'https://ims.test',
-        'api_key'  => 'ims-key',
-        'timeout'  => 15,
-    ]],
-]);
+dataset('provider configurations', ['complete', 'incomplete', 'disabled but complete']);
+
+/**
+ * The values that make a provider complete, incomplete or disabled-but-complete.
+ *
+ * Every provider has its own connection fields, so the required set is declared
+ * per provider and then emptied for the incomplete case.
+ *
+ * @return array<string, mixed>
+ */
+function providerAgreementValues(ProvisioningProviderSettingsEnum $provider, string $kind): array
+{
+    $required = match ($provider) {
+        ProvisioningProviderSettingsEnum::IMS => [
+            'base_url' => 'https://ims.test',
+            'api_key'  => 'ims-key',
+        ],
+        ProvisioningProviderSettingsEnum::MOODLE => [
+            'base_url'           => 'https://moodle.test',
+            'token'              => 'moodle-service-token',
+            'auth_userkey_token' => 'moodle-login-token',
+        ],
+        ProvisioningProviderSettingsEnum::SPOTPLAYER => [
+            'endpoint' => 'https://panel.spotplayer.ir/license/edit/',
+            'api_key'  => 'spotplayer-key',
+        ],
+    };
+
+    return match ($kind) {
+        'complete'   => ['enabled' => true]  + $required + ['timeout' => 15],
+        'incomplete' => ['enabled' => true]  + array_map(static fn (): string => '', $required),
+        default      => ['enabled' => false] + $required + ['timeout' => 15],
+    };
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -54,11 +73,11 @@ dataset('provider configurations', [
 | it isolates `validateConfig()` from the `enabled` switch.
 */
 
-it('agrees with each provider adapter', function (array $values): void {
+it('agrees with each provider adapter', function (string $kind): void {
     foreach (ProvisioningProviderSettingsEnum::cases() as $provider) {
         Setting::updateOrCreate(
             ['key' => $provider->settingKey()->value],
-            ['value' => $values, 'type' => 'json', 'group' => 'integrations'],
+            ['value' => providerAgreementValues($provider, $kind), 'type' => 'json', 'group' => 'integrations'],
         );
         app(SettingsService::class)->forget();
 

@@ -7,13 +7,25 @@ return [
         'ims' => [
             'label' => 'IMS',
         ],
+        'moodle' => [
+            'label' => 'مودل',
+        ],
+        'spotplayer' => [
+            'label' => 'اسپات‌پلیر',
+        ],
     ],
 
     'fields' => [
-        'enabled'  => 'فعال',
-        'base_url' => 'آدرس سرویس',
-        'api_key'  => 'کلید API',
-        'timeout'  => 'مهلت (ثانیه)',
+        'enabled'                       => 'فعال',
+        'base_url'                      => 'آدرس سرویس',
+        'endpoint'                      => 'آدرس سرویس',
+        'api_key'                       => 'کلید API',
+        'service_token'                 => 'توکن سرویس',
+        'login_token'                   => 'توکن ورود',
+        'default_role_id'               => 'شناسه نقش پیش‌فرض',
+        'default_login_redirect_script' => 'مسیر بازگشت پس از ورود',
+        'sandbox'                       => 'حالت آزمایشی',
+        'timeout'                       => 'مهلت (ثانیه)',
     ],
 
     'errors' => [

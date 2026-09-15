@@ -412,16 +412,16 @@
 - **`requiresPattern(): bool`** — false for `refund_completed` (free-text send), true for every pattern-only option; drives the computed `configured`/`ready` state.
 
 #### ProvisioningProviderSettingsEnum (`app/Enums/Provisioning/ProvisioningProviderSettingsEnum.php`)
-- **Values:** `IMS` (`ims`)
-- **Purpose:** Drives the admin provisioning provider area (`GET/PUT /api/v1/admin/settings/provisioning-providers`). This is the settings-facing list, separate from the persisted `App\Enums\ProvisioningProviderEnum`: `bbb` and `moodle_quiz` have no case here because they carry no credentials of their own, so their detail routes are `404` through route binding. Adding a provider is a backend-only change: a new case with its setting key, data class, config block and translated label.
-- **`settingKey(): SettingKeyEnum`** — the persisted setting key (`IMS`, group `integrations`).
+- **Values:** `IMS` (`ims`), `MOODLE` (`moodle`), `SPOTPLAYER` (`spotplayer`)
+- **Purpose:** Drives the admin provisioning provider area (`GET/PUT /api/v1/admin/settings/provisioning-providers`). This is the settings-facing list, separate from the persisted `App\Enums\ProvisioningProviderEnum`: `bbb` is absent because ADR 0012 keeps it environment-configured, and `moodle_quiz` because it has no credentials of its own, so their detail routes are `404` through route binding. Adding a provider is a backend-only change: a new case with its setting key, data class, config block and translated label.
+- **`settingKey(): SettingKeyEnum`** — the persisted setting key (`IMS`, `MOODLE`, `SPOT_PLAYER`, group `integrations`).
 - **`settingDataClass(): class-string<ProvisioningProviderSettingData>`** — the data class owning that provider's `schema()` and request `rules()`.
 - **`serviceClass(): class-string<AbstractIntegrationService>`** — the integration service that consumes the configuration; the seam the adapter-agreement test iterates.
 - **`defaultConfig(): array`** — `config/provisioning.php` `providers.<value>` defaults used until the provider is saved; the environment names match the runtime `services.*` blocks.
 - **`label(): string`** — localized display label from `provisioning.providers.<value>.label`.
 
 #### ProvisioningProviderSettingData (`app/Data/Admin/Settings/Provisioning/ProvisioningProviderSettingData.php`)
-- **Purpose:** Abstract base for the per-provider flat setting DTOs (`ImsProviderSettingData` extends it). Owns the schema-derived readiness rules and the empty-string normalization the flat save needs.
+- **Purpose:** Abstract base for the per-provider flat setting DTOs (`ImsProviderSettingData`, `MoodleProviderSettingData`, `SpotPlayerProviderSettingData` extend it). Owns the schema-derived readiness rules and the empty-string normalization the flat save needs. Moodle's schema marks both its service token and its login token required and sensitive (ADR 0011); SpotPlayer's connection key is `endpoint`, not `base_url`.
 - **`schema(): array`** — abstract; each provider declares its grouped field list.
 - **`fields(): list<array<string, mixed>>`** — the declared fields flattened out of their groups; the single walk the other helpers share.
 - **`requiredFields(): array<string, string>`** — required fields that carry a connection value (boolean switches such as `enabled` are excluded), keyed to their translated label.
