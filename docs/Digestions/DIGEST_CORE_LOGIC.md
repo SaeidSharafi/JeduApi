@@ -394,6 +394,9 @@ Administrative status and access-date changes reconcile deliberately with applic
 #### Student Dashboard Actions (`app/Actions/Shop/Student/`)
 - **GetEnrollmentDetailAction** (`app/Actions/Shop/Student/GetEnrollmentDetailAction.php`)
   - `handle(User $user, Enrollment $enrollment): EnrollmentDetailData`: Returns enriched enrollment detail with typed block DTOs per delivery method, SSO URLs (Moodle via `MoodleService`, Skyroom via `SkyroomService`), certificate info, review info, and survey block status. Block types: `DigitalAssetBlockData`, `InPersonBlockData`, `LiveSessionBbbBlockData`, `LiveSessionSkyroomBlockData`, `LmsMoodleBlockData`, `VideoPlatformSpotplayerBlockData`. Each block type carries delivery-specific data (join URLs, file downloads, etc.).
+  - `review_info` (`EnrollmentReviewInfoData`): the authenticated student's own review for the enrollment's productable, matched by morph alias (`$productable->getMorphClass()`) — never the FQCN — and limited to live statuses (`pending`/`approved`), so `review` carries a `ReviewData` (rating, title, comment, translated status, created_at) and `has_reviewed` is true while moderation is in flight. A `rejected` review clears both, re-offering the form.
+- **SubmitReviewAction** (`app/Actions/Shop/Student/SubmitReviewAction.php`)
+  - `handle(SubmitReviewData $data, Enrollment $enrollment, User $user): Review`: Creates the student's review for the productable behind an enrollment (Course/Seminar/DigitalAsset; Bundle productables are rejected as `not_reviewable`). Requires `enrollment_status === ACTIVE` and rejects a second submission while a `pending`/`approved` review exists (`already_reviewed`); a `rejected` review does not block resubmission. The new review is always `PENDING` with `is_featured = false`, so it stays invisible to the public catalog until staff approve it. Public aggregates are **not** touched here — they only count approved reviews and are recomputed by the admin approve/reject actions.
 - **GetJoinUrlAction** (`app/Actions/Shop/Student/GetJoinUrlAction.php`)
   - `handle(Enrollment $enrollment): string`: Lazy-generates join URL for enrollment based on delivery method (BBB, Skyroom, SpotPlayer, Moodle). URLs generated on demand rather than pre-computed.
 - **CancelOrderByCustomerAction** (`app/Actions/Shop/Student/CancelOrderByCustomerAction.php`)
@@ -949,6 +952,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Event:** `ReviewableAggregatesChanged` (`app/Events/ReviewableAggregatesChanged.php`) carries the reviewable ID/type whenever reviews change.
 - **Listener:** `RecalculateReviewableAggregates` (`app/Listeners/RecalculateReviewableAggregates.php`) runs on the queue, filters to models using the `HasReview` trait, and recomputes `review_count` & `average_rating` from approved reviews.
 - **Impact:** Keeps course/seminar/digital asset review snapshots synchronized for storefront queries without heavy joins.
+- **Student submissions do not move aggregates:** `SubmitReviewAction` creates `PENDING` reviews and dispatches nothing; only the admin `ApproveReviewAction`/`RejectReviewAction`/`UpdateReviewStatusAction` change approved-review counts, and each of those dispatches the event. On a model without the `HasReview` trait the listener is a no-op.
 
 ### Product Price Cache Refresh
 - **Event:** `ProductCacheInvalidated` (`app/Events/ProductCacheInvalidated.php`) is dispatched when pricing-sensitive data mutates.

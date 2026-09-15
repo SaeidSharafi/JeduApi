@@ -12,8 +12,9 @@ use App\Data\Shop\Student\Enrollment\EnrollmentDetailData;
 use App\Data\Shop\Student\Enrollment\EnrollmentQuizData;
 use App\Data\Shop\Student\Enrollment\EnrollmentReviewInfoData;
 use App\Data\Shop\Student\Enrollment\EnrollmentSurveyBlockData;
+use App\Data\Shop\Student\Review\ReviewData;
 use App\Data\Shop\Teacher\TeacherDetailData;
-use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\ReviewStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\ProvisioningOutcomeStatusEnum;
@@ -96,24 +97,19 @@ final readonly class GetEnrollmentDetailAction
     {
         $productable = $enrollment->productDeliveryOption->product->productable;
 
+        // Pending reviews already count as "reviewed": the student must not be offered
+        // the form again while moderation is in flight. A rejected review frees them
+        // to resubmit, matching SubmitReviewAction.
         $review = Review::query()
-            ->where('status', PublicationStatusEnum::PUBLISHED)
             ->where('user_id', $enrollment->customer_id)
-            ->where('reviewable_type', $productable::class)
+            ->where('reviewable_type', $productable->getMorphClass())
             ->where('reviewable_id', $productable->id)
+            ->whereIn('status', [ReviewStatusEnum::PENDING, ReviewStatusEnum::APPROVED])
             ->first();
 
         return new EnrollmentReviewInfoData(
             has_reviewed: $review !== null,
-            review: $review
-                ? [
-                    'id'      => $review->id,
-                    'rating'  => $review->rating,
-                    'title'   => $review->title,
-                    'comment' => $review->comment,
-                    'status'  => $review->status,
-                ]
-                : null,
+            review: $review ? ReviewData::fromModel($review) : null,
         );
     }
 

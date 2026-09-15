@@ -320,8 +320,12 @@ return [
     ],
 
     'review' => [
-        'approved' => 'Review approved successfully.',
-        'rejected' => 'Review rejected successfully.',
+        'approved'              => 'Review approved successfully.',
+        'rejected'              => 'Review rejected successfully.',
+        'submitted'             => 'Review submitted successfully and is awaiting approval.',
+        'already_reviewed'      => 'You have already reviewed this course.',
+        'enrollment_not_active' => 'You can only review an active enrollment.',
+        'not_reviewable'        => 'This enrollment cannot be reviewed.',
     ],
     'user' => [
         'banned'   => 'Customer account banned successfully.',
