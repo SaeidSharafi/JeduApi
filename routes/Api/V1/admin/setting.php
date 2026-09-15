@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Admin\Content\StudentStoryController;
 use App\Http\Controllers\Api\Admin\Settings\PaymentGatewaySettingsController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
 use App\Http\Controllers\Api\Admin\Settings\SmsGatewaySettingsController;
+use App\Http\Controllers\Api\Admin\Settings\SmsNotificationSettingsController;
 
 Route::prefix('settings')->name('settings.')->group(function (): void {
     Route::get('/', [SettingController::class, 'index'])
@@ -58,4 +59,9 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
         ->name('sms-gateways.show');
     Route::put('sms-gateways/{gateway}', [SmsGatewaySettingsController::class, 'update'])
         ->name('sms-gateways.update');
+
+    Route::get('sms-notifications', [SmsNotificationSettingsController::class, 'index'])
+        ->name('sms-notifications.index');
+    Route::put('sms-notifications', [SmsNotificationSettingsController::class, 'update'])
+        ->name('sms-notifications.update');
 });

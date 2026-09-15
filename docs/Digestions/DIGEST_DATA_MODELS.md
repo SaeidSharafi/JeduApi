@@ -327,8 +327,8 @@
 - **Purpose:** Application configuration registry powering CMS, storefront content, and integration credentials
 - **Key Fields:** `key`, `value` (JSON payload — includes encrypted secrets for integration configs), `type`, `group`
 - **Relationships:** Self-contained configuration system with media attachments via Mediable
-- **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation; `SettingKeyEnum::secretFields()` is the single registry of secret-bearing keys, driving encryption on write, decryption on read, redaction in API responses/audit logs via `SettingSecretRedactor`, and the `INTEGRATION_KEYS` media-skip (IMS, Moodle, BBB, SpotPlayer, Skyroom, Niliroom, SMS IPPanel). Payment gateways (Mellat, Digipay) are registered for redaction but keep media hydration and store their credentials nested under `config`.
-- **Setting Key Values:** Integration and provider keys: `IMS`, `MOODLE`, `BIG_BLUE_BUTTON`, `SPOT_PLAYER`, `SKYROOM` (`skyroom`, secrets `api_key`/`secret`), `NILIROOM` (`niliroom`, secret `api_token`), `SMS_IPPANEL` (`sms.ippanel`, secret `api_key`, group `sms`, defaults from `config/sms.php`). Payment keys: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`). Each key declaring secret fields exposes them through `secretFields()`.
+- **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation; `SettingKeyEnum::secretFields()` is the single registry of secret-bearing keys, driving encryption on write, decryption on read, redaction in API responses/audit logs via `SettingSecretRedactor`, and the `INTEGRATION_KEYS` media-skip (IMS, Moodle, BBB, SpotPlayer, Skyroom, Niliroom, SMS IPPanel, SMS notifications). Payment gateways (Mellat, Digipay) are registered for redaction but keep media hydration and store their credentials nested under `config`.
+- **Setting Key Values:** Integration and provider keys: `IMS`, `MOODLE`, `BIG_BLUE_BUTTON`, `SPOT_PLAYER`, `SKYROOM` (`skyroom`, secrets `api_key`/`secret`), `NILIROOM` (`niliroom`, secret `api_token`), `SMS_IPPANEL` (`sms.ippanel`, secret `api_key`, group `sms`, defaults from `config/sms.php`), `SMS_NOTIFICATIONS` (`sms_notifications`, group `sms`, no secret fields, per-option defaults from `config/sms.php`). Payment keys: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`). Each key declaring secret fields exposes them through `secretFields()`.
 
 ### HomePageBlock (`app/Models/HomePageBlock.php`)
 - **Purpose:** Dynamic homepage block definitions rendered on the shop front
@@ -402,6 +402,14 @@
 - **`settingDataClass(): class-string`** — the data class owning that gateway's `schema()` and validation `rules()`.
 - **`defaultConfig(): array`** — `config/sms.php` defaults used until the gateway is saved; the `label` entry is a translation key resolved at response build time.
 - **`label(): string`** — localized display label from `sms.gateways.<value>.label`.
+
+#### SmsNotificationOptionEnum (`app/Enums/Sms/SmsNotificationOptionEnum.php`)
+- **Values:** `OTP` (`otp`), `REFUND_COMPLETED` (`refund_completed`), `ORDER_PAID` (`order_paid`), `ENROLLMENT_READY` (`enrollment_ready`), `WALLET_CAMPAIGN_CREDITED` (`wallet_campaign_credited`)
+- **Purpose:** Drives the admin SMS notification option area (`GET/PUT /api/v1/admin/settings/sms-notifications`). The read endpoint returns the cases in declaration order, so adding an option is a backend-only change: a new case plus its `config/sms.php` block and its `sms.notifications.<value>.label` translation.
+- **`defaultConfig(): array`** — `config/sms.php` `notifications.<value>` defaults (`enabled`, `pattern_code`) used until the option is saved.
+- **`resolve(mixed $storedOption): array{enabled: bool, pattern_code: string}`** — merges one stored option over its config defaults field-by-field, dropping stored keys the config does not declare and normalizing `pattern_code` to a string.
+- **`label(): string`** — localized display label from `sms.notifications.<value>.label`.
+- **`requiresPattern(): bool`** — false for `refund_completed` (free-text send), true for every pattern-only option; drives the computed `configured`/`ready` state.
 
 #### DeliveryMethodEnum (`app/Enums/Product/DeliveryMethodEnum.php`)
 - **Values:** `LMS_MOODLE`, `VIDEO_PLATFORM_SPOTPLAYER`, `LIVE_SESSION_BBB`, `LIVE_SESSION_SKYROOM`, `DIRECT_DOWNLOAD`, `IN_PERSON`

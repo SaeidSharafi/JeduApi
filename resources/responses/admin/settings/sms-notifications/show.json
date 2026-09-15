@@ -1,0 +1,89 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "schema": {
+      "general": [
+        {
+          "key": "enabled",
+          "type": "boolean",
+          "label": "فعال",
+          "required": true
+        },
+        {
+          "key": "pattern_code",
+          "type": "text",
+          "label": "کد الگو",
+          "required": false
+        }
+      ]
+    },
+    "options": [
+      {
+        "key": "otp",
+        "label": "کد ورود (OTP)",
+        "state": {
+          "enabled": true,
+          "configured": true,
+          "ready": true
+        },
+        "settings": {
+          "enabled": true,
+          "pattern_code": "mdoe1j1587"
+        }
+      },
+      {
+        "key": "refund_completed",
+        "label": "تأیید استرداد وجه",
+        "state": {
+          "enabled": true,
+          "configured": true,
+          "ready": true
+        },
+        "settings": {
+          "enabled": true,
+          "pattern_code": ""
+        }
+      },
+      {
+        "key": "order_paid",
+        "label": "پرداخت موفق سفارش",
+        "state": {
+          "enabled": false,
+          "configured": false,
+          "ready": false
+        },
+        "settings": {
+          "enabled": false,
+          "pattern_code": ""
+        }
+      },
+      {
+        "key": "enrollment_ready",
+        "label": "آماده‌سازی دسترسی آموزشی",
+        "state": {
+          "enabled": false,
+          "configured": false,
+          "ready": false
+        },
+        "settings": {
+          "enabled": false,
+          "pattern_code": ""
+        }
+      },
+      {
+        "key": "wallet_campaign_credited",
+        "label": "واریز هدیه/کمپین کیف پول",
+        "state": {
+          "enabled": false,
+          "configured": false,
+          "ready": false
+        },
+        "settings": {
+          "enabled": false,
+          "pattern_code": ""
+        }
+      }
+    ]
+  },
+  "metadata": []
+}

@@ -142,6 +142,33 @@ final class SettingFactory extends Factory
     }
 
     /**
+     * Create an SMS notification options setting that differs from the config defaults.
+     *
+     * `otp` is stored disabled with its previous pattern, so the update path can
+     * be asserted to keep the code when the option is disabled with an empty
+     * value. `order_paid` carries a stored key the contract does not declare.
+     */
+    public function smsNotifications(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'sms_notifications',
+            'value' => [
+                'otp' => [
+                    'enabled'      => false,
+                    'pattern_code' => 'stored-otp-pattern',
+                ],
+                'order_paid' => [
+                    'enabled'      => true,
+                    'pattern_code' => '',
+                    'log_type'     => 'ORDER',
+                ],
+            ],
+            'type'  => 'json',
+            'group' => 'sms',
+        ]);
+    }
+
+    /**
      * Create a contact_info setting.
      */
     public function contactInfo(): static
