@@ -13,9 +13,16 @@ use App\Models\ProductDeliveryOption;
 use App\Models\ProductPrice;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 final readonly class ProductPriceService
 {
+    /**
+     * Number of products per bulk UPDATE statement when persisting price_data_cache.
+     * Keeps bound-parameter count and query size well under Postgres/MySQL limits.
+     */
+    private const CACHE_PERSIST_CHUNK_SIZE = 500;
+
     public function __construct(
         private RequestDataCacheService $requestCache
     ) {}
@@ -40,10 +47,6 @@ final readonly class ProductPriceService
     /**
      * Efficiently get price data for a collection of products.
      *
-     * @param  Collection<Product>  $products
-     * @return Collection A collection of ProductPriceData keyed by product ID.
-     */
-    /**
      * @param  Collection<int, Product>  $products
      * @return Collection<int, ProductPriceData>
      */
@@ -173,8 +176,7 @@ final readonly class ProductPriceService
 
     /**
      * Get the price range for a product (if it has multiple delivery options).
-     */
-    /**
+     *
      * @return array{min: int, max: int}
      */
     public function getPriceRangeForProduct(Product $product): array
@@ -236,33 +238,35 @@ final readonly class ProductPriceService
 
     /**
      * Update price index for multiple products efficiently.
-     */
-    /**
+     *
      * @param  Collection<int, Product>  $products
      */
     public function updatePriceIndexForProducts(Collection $products): void
     {
         $priceIndexPayloads    = [];
+        $staleProductIds       = [];
         $productsToUpdateCache = [];
 
         foreach ($products as $product) {
-            // Calculate the price data DTO
             $priceData = $this->calculatePriceDataForProduct($product, useCache: false);
-            // Prepare the payload for the price index table
-            $payload = $this->buildPriceIndexPayload($product, $priceData);
+            $prices    = collect($priceData->prices);
 
-            if ($payload) {
-                $priceIndexPayloads[] = $payload;
+            if ($prices->isEmpty()) {
+                // No priced delivery options left — the index row (if any) is stale.
+                // Collected and deleted in one batched statement below.
+                $staleProductIds[] = $product->id;
+            } else {
+                $priceIndexPayloads[] = $this->buildPriceIndexPayload($product->id, $priceData, $prices);
             }
 
-            // Also update the JSON cache on the product model itself
+            // Update the JSON cache attribute in-memory. Callers (e.g.
+            // UpdateProductPricingJob) diff this attribute before/after to
+            // detect which products actually changed, so it must be set
+            // here even though persistence happens in bulk.
             $product->price_data_cache = $priceData->toArray();
             $productsToUpdateCache[]   = $product;
         }
 
-        // --- Bulk Operations for Performance ---
-
-        // 1. Perform a single bulk UPSERT for the price index table
         if (! empty($priceIndexPayloads)) {
             ProductPrice::upsert(
                 $priceIndexPayloads,
@@ -276,28 +280,66 @@ final readonly class ProductPriceService
             );
         }
 
-        // 2. Update the JSON cache on all products (uses one query per product)
-        // This can't be a single query, but it's still efficient.
-        foreach ($productsToUpdateCache as $product) {
-            $product->saveQuietly();
+        if ($staleProductIds !== []) {
+            ProductPrice::whereIn('product_id', $staleProductIds)->delete();
+        }
+
+        $this->persistPriceDataCaches($productsToUpdateCache);
+    }
+
+    /**
+     * Persist the recalculated JSON cache of a batch of products in bulk.
+     *
+     * A partial `upsert()` does not work: `products` has NOT NULL columns
+     * without defaults, so the implicit insert branch of upsert() is rejected
+     * even when every row already exists. The rows already exist, so the
+     * batch is applied by id via a single CASE-based UPDATE instead, chunked
+     * to stay under Postgres's bound-parameter ceiling / MySQL's packet size.
+     *
+     * @param  array<int, Product>  $products
+     */
+    private function persistPriceDataCaches(array $products): void
+    {
+        if ($products === []) {
+            return;
+        }
+
+        $isPgsql = DB::connection()->getDriverName() === 'pgsql';
+        $now     = Carbon::now();
+
+        foreach (array_chunk($products, self::CACHE_PERSIST_CHUNK_SIZE) as $chunk) {
+            $cases            = [];
+            $cacheBindings    = [];
+            $productIdBinding = [];
+
+            foreach ($chunk as $product) {
+                $jsonPlaceholder = $isPgsql ? 'cast(? as jsonb)' : '?';
+                $cases[]         = 'when ? then '.$jsonPlaceholder;
+                $cacheBindings[] = $product->id;
+                $cacheBindings[] = json_encode($product->price_data_cache, JSON_THROW_ON_ERROR);
+                $productIdBinding[] = (int) $product->id;
+
+                // Keep the in-memory model consistent with what's persisted,
+                // mirroring the timestamp side effect saveQuietly() used to have.
+                $product->setAttribute('updated_at', $now);
+            }
+
+            $placeholders = implode(', ', array_fill(0, count($productIdBinding), '?'));
+
+            DB::update(
+                'update products set price_data_cache = case id '.implode(' ', $cases).' end, updated_at = ? where id in ('.$placeholders.')',
+                [...$cacheBindings, $now, ...$productIdBinding]
+            );
         }
     }
 
     /**
-     * @return array<string, mixed>|null
+     * @return array<string, mixed>
      */
-    private function buildPriceIndexPayload(Product $product, ProductPriceData $priceData): ?array
+    private function buildPriceIndexPayload(int $productId, ProductPriceData $priceData, Collection $prices): array
     {
-        $prices = collect($priceData->prices);
-
-        if ($prices->isEmpty()) {
-            ProductPrice::where('product_id', $product->id)->delete();
-
-            return null;
-        }
-
         return [
-            'product_id'              => $product->id,
+            'product_id'              => $productId,
             'min_price'               => $prices->min('current_price'),
             'min_original_price'      => $prices->min('original_price'),
             'max_price'               => $prices->max('current_price'),
@@ -312,8 +354,7 @@ final readonly class ProductPriceService
 
     /**
      * Get the appropriate delivery option for pricing.
-     */
-    /**
+     *
      * @return Collection<int, ProductDeliveryOption>
      */
     private function findDeliveryOptionsForProduct(
@@ -352,23 +393,4 @@ final readonly class ProductPriceService
 
         return ($isAfterStart && $isBeforeEnd) ? $option->featured_price : null;
     }
-
-    // /**
-    // * Get cached product-specific discount price.
-    // */
-    // private function getDiscountPrice(ProductDeliveryOption $option): ?int
-    // {
-    //    $discountRecord = $option->productDeliveryOptionDiscountPrice;
-    //    if (!$discountRecord){
-    //        return $option->price;
-    //    }
-    //    $now    = now();
-    //    $starts = $discountRecord->starts_at;
-    //    $ends   = $discountRecord->ends_at;
-    //
-    //    $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
-    //    $isBeforeEnd  = is_null($ends)   || $now->lessThanOrEqualTo($ends);
-    //
-    //    return ($isAfterStart && $isBeforeEnd) ? $discountRecord->discounted_price : $option->price;
-    // }
 }
