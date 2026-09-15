@@ -45,6 +45,28 @@ final class SettingFactory extends Factory
     }
 
     /**
+     * Create an IMS setting that differs from the config defaults.
+     *
+     * Carries a legacy `create_studets` flag the contract no longer declares, so
+     * the read path can be asserted to drop stored keys the schema does not own.
+     */
+    public function imsSecondary(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'ims',
+            'value' => [
+                'enabled'        => true,
+                'base_url'       => 'https://stored-ims.example.com',
+                'api_key'        => 'stored-ims-key',
+                'timeout'        => 30,
+                'create_studets' => true,
+            ],
+            'type'  => 'json',
+            'group' => 'integrations',
+        ]);
+    }
+
+    /**
      * Create a Moodle integration setting with plaintext secrets.
      */
     public function moodle(): static

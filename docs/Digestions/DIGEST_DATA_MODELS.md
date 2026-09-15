@@ -328,7 +328,7 @@
 - **Key Fields:** `key`, `value` (JSON payload — includes encrypted secrets for integration configs), `type`, `group`
 - **Relationships:** Self-contained configuration system with media attachments via Mediable
 - **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation; `SettingKeyEnum::secretFields()` is the single registry of secret-bearing keys, driving encryption on write, decryption on read, redaction in API responses/audit logs via `SettingSecretRedactor`, and the `INTEGRATION_KEYS` media-skip (IMS, Moodle, BBB, SpotPlayer, Skyroom, Niliroom, SMS IPPanel, SMS notifications). Payment gateways (Mellat, Digipay) are registered for redaction but keep media hydration and store their credentials nested under `config`.
-- **Setting Key Values:** Integration and provider keys: `IMS`, `MOODLE`, `BIG_BLUE_BUTTON`, `SPOT_PLAYER`, `SKYROOM` (`skyroom`, secrets `api_key`/`secret`), `NILIROOM` (`niliroom`, secret `api_token`), `SMS_IPPANEL` (`sms.ippanel`, secret `api_key`, group `sms`, defaults from `config/sms.php`), `SMS_NOTIFICATIONS` (`sms_notifications`, group `sms`, no secret fields, per-option defaults from `config/sms.php`). Payment keys: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`). Each key declaring secret fields exposes them through `secretFields()`.
+- **Setting Key Values:** Integration and provider keys: `IMS` (`ims`, secret `api_key`, group `integrations`, defaults from `config/provisioning.php`), `MOODLE`, `BIG_BLUE_BUTTON`, `SPOT_PLAYER`, `SKYROOM` (`skyroom`, secrets `api_key`/`secret`), `NILIROOM` (`niliroom`, secret `api_token`), `SMS_IPPANEL` (`sms.ippanel`, secret `api_key`, group `sms`, defaults from `config/sms.php`), `SMS_NOTIFICATIONS` (`sms_notifications`, group `sms`, no secret fields, per-option defaults from `config/sms.php`). Payment keys: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`). Each key declaring secret fields exposes them through `secretFields()`.
 
 ### HomePageBlock (`app/Models/HomePageBlock.php`)
 - **Purpose:** Dynamic homepage block definitions rendered on the shop front
@@ -410,6 +410,23 @@
 - **`resolve(mixed $storedOption): array{enabled: bool, pattern_code: string}`** — merges one stored option over its config defaults field-by-field, dropping stored keys the config does not declare and normalizing `pattern_code` to a string.
 - **`label(): string`** — localized display label from `sms.notifications.<value>.label`.
 - **`requiresPattern(): bool`** — false for `refund_completed` (free-text send), true for every pattern-only option; drives the computed `configured`/`ready` state.
+
+#### ProvisioningProviderSettingsEnum (`app/Enums/Provisioning/ProvisioningProviderSettingsEnum.php`)
+- **Values:** `IMS` (`ims`)
+- **Purpose:** Drives the admin provisioning provider area (`GET/PUT /api/v1/admin/settings/provisioning-providers`). This is the settings-facing list, separate from the persisted `App\Enums\ProvisioningProviderEnum`: `bbb` and `moodle_quiz` have no case here because they carry no credentials of their own, so their detail routes are `404` through route binding. Adding a provider is a backend-only change: a new case with its setting key, data class, config block and translated label.
+- **`settingKey(): SettingKeyEnum`** — the persisted setting key (`IMS`, group `integrations`).
+- **`settingDataClass(): class-string<ProvisioningProviderSettingData>`** — the data class owning that provider's `schema()` and request `rules()`.
+- **`serviceClass(): class-string<AbstractIntegrationService>`** — the integration service that consumes the configuration; the seam the adapter-agreement test iterates.
+- **`defaultConfig(): array`** — `config/provisioning.php` `providers.<value>` defaults used until the provider is saved; the environment names match the runtime `services.*` blocks.
+- **`label(): string`** — localized display label from `provisioning.providers.<value>.label`.
+
+#### ProvisioningProviderSettingData (`app/Data/Admin/Settings/Provisioning/ProvisioningProviderSettingData.php`)
+- **Purpose:** Abstract base for the per-provider flat setting DTOs (`ImsProviderSettingData` extends it). Owns the schema-derived readiness rules and the empty-string normalization the flat save needs.
+- **`schema(): array`** — abstract; each provider declares its grouped field list.
+- **`fields(): list<array<string, mixed>>`** — the declared fields flattened out of their groups; the single walk the other helpers share.
+- **`requiredFields(): array<string, string>`** — required fields that carry a connection value (boolean switches such as `enabled` are excluded), keyed to their translated label.
+- **`isConfigured(array $settings): bool`** — true when every required connection field is filled; the panel's computed `state.configured`.
+- **`normalizePayload(array $payload): array`** — maps the empty string a form sends for a cleared non-sensitive input to `null`, while leaving a sensitive field's empty string intact so it can clear the stored secret.
 
 #### DeliveryMethodEnum (`app/Enums/Product/DeliveryMethodEnum.php`)
 - **Values:** `LMS_MOODLE`, `VIDEO_PLATFORM_SPOTPLAYER`, `LIVE_SESSION_BBB`, `LIVE_SESSION_SKYROOM`, `DIRECT_DOWNLOAD`, `IN_PERSON`

@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Admin\Content\Slider\SliderController;
 use App\Http\Controllers\Api\Admin\Content\Slider\UpdateSliderStatusController;
 use App\Http\Controllers\Api\Admin\Content\StudentStoryController;
 use App\Http\Controllers\Api\Admin\Settings\PaymentGatewaySettingsController;
+use App\Http\Controllers\Api\Admin\Settings\ProvisioningProviderSettingsController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
 use App\Http\Controllers\Api\Admin\Settings\SmsGatewaySettingsController;
 use App\Http\Controllers\Api\Admin\Settings\SmsNotificationSettingsController;
@@ -64,4 +65,11 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
         ->name('sms-notifications.index');
     Route::put('sms-notifications', [SmsNotificationSettingsController::class, 'update'])
         ->name('sms-notifications.update');
+
+    Route::get('provisioning-providers', [ProvisioningProviderSettingsController::class, 'index'])
+        ->name('provisioning-providers.index');
+    Route::get('provisioning-providers/{provider}', [ProvisioningProviderSettingsController::class, 'show'])
+        ->name('provisioning-providers.show');
+    Route::put('provisioning-providers/{provider}', [ProvisioningProviderSettingsController::class, 'update'])
+        ->name('provisioning-providers.update');
 });
