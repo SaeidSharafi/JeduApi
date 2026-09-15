@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\Sms\SmsGatewayEnum;
+use App\Enums\Sms\SmsSkipReasonEnum;
 use App\Models\SmsLog;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 final class IpPanelSmsService
 {
-    private const string REASON_GATEWAY_DISABLED = 'gateway_disabled';
-
-    private const string REASON_NOT_CONFIGURED = 'not_configured';
-
     private string $baseUrl = 'https://api2.ippanel.com/api/v1';
 
     private ?string $apiKey = null;
@@ -31,6 +28,20 @@ final class IpPanelSmsService
     public function setFrom(int|string $from): void
     {
         $this->from = $from;
+    }
+
+    /**
+     * Record an attempt a notification option blocked before the gateway was
+     * consulted.
+     *
+     * Public because `SmsChannel` owns the option gate; both gates write the
+     * same `sms_logs` shape, including the sender the attempt would have used.
+     *
+     * @param  array<int, string>|string  $to
+     */
+    public function recordSkipped(array|string $to, string $content, string $type, SmsSkipReasonEnum $reason): void
+    {
+        $this->writeSkip($to, $content, $type, $this->senderFrom($this->resolveGatewaySettings()), $reason);
     }
 
     /**
@@ -164,16 +175,16 @@ final class IpPanelSmsService
         $gateway = $this->resolveGatewaySettings();
 
         $apiKey = $this->apiKey ?? $gateway['api_key'];
-        $from   = (string) ($this->from ?? $gateway['from']);
+        $from   = $this->senderFrom($gateway);
 
         if (! $gateway['enabled']) {
-            $this->recordSkipped($to, $message, $type, $from, self::REASON_GATEWAY_DISABLED);
+            $this->writeSkip($to, $message, $type, $from, SmsSkipReasonEnum::GATEWAY_DISABLED);
 
             return null;
         }
 
         if ($apiKey === null || $apiKey === '' || $from === '') {
-            $this->recordSkipped($to, $message, $type, $from, self::REASON_NOT_CONFIGURED);
+            $this->writeSkip($to, $message, $type, $from, SmsSkipReasonEnum::NOT_CONFIGURED);
 
             return null;
         }
@@ -211,11 +222,21 @@ final class IpPanelSmsService
     }
 
     /**
+     * The sender a send or skip would use, honouring a runtime override.
+     *
+     * @param  array{enabled: bool, from: string, api_key: string|null, sandbox: bool}  $gateway
+     */
+    private function senderFrom(array $gateway): string
+    {
+        return (string) ($this->from ?? $gateway['from']);
+    }
+
+    /**
      * @param  array<int, string>|string  $to
      */
-    private function recordSkipped(array|string $to, string $message, string $type, string $from, string $reason): void
+    private function writeSkip(array|string $to, string $message, string $type, string $from, SmsSkipReasonEnum $reason): void
     {
-        $this->record(SmsLog::STATUS_SKIPPED, ['reason' => $reason], $message, $type, $to, $from);
+        $this->record(SmsLog::STATUS_SKIPPED, ['reason' => $reason->value], $message, $type, $to, $from);
     }
 
     /**

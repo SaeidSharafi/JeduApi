@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Enums\Sms\SmsNotificationOptionEnum;
 use App\Enums\System\OtpType;
+use App\Enums\System\SettingKeyEnum;
 use App\Events\OtpPrepared;
+use App\Models\Setting;
 use App\Models\SmsLog;
 use App\Models\User;
 use App\Notifications\Auth\OtpSmsNotification;
@@ -14,7 +17,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-covers(SmsChannel::class);
+covers(SmsChannel::class, SmsNotificationOptionEnum::class);
 
 describe('SmsChannel Sending Logic', function (): void {
     beforeEach(function (): void {
@@ -31,13 +34,18 @@ describe('SmsChannel Sending Logic', function (): void {
         $this->notification = new OtpSmsNotification($this->otpEvent);
 
         config([
-            'sms.gateways.ippanel.enabled' => true,
-            'sms.gateways.ippanel.api_key' => 'test-api-key',
-            'sms.gateways.ippanel.from'    => '1000',
-            'sms.gateways.ippanel.sandbox' => false,
+            'sms.gateways.ippanel.enabled'                    => true,
+            'sms.gateways.ippanel.api_key'                    => 'test-api-key',
+            'sms.gateways.ippanel.from'                       => '1000',
+            'sms.gateways.ippanel.sandbox'                    => false,
+            'sms.notifications.otp.enabled'                   => true,
+            'sms.notifications.otp.pattern_code'              => 'otp-pattern',
+            'sms.notifications.refund_completed.enabled'      => true,
+            'sms.notifications.refund_completed.pattern_code' => '',
         ]);
     });
-    it('sends a pattern SMS successfully and creates a log', function (): void {
+
+    it('sends the login code with the configured option pattern and creates a log', function (): void {
         Http::fake([
             'api2.ippanel.com/*' => Http::response([
                 'data' => ['message_id' => 'fake-message-id'],
@@ -46,6 +54,14 @@ describe('SmsChannel Sending Logic', function (): void {
 
         $this->user->notify($this->notification);
 
+        Http::assertSent(function (Request $request): bool {
+            return $request->url()              === 'https://api2.ippanel.com/api/v1/sms/pattern/normal/send'
+                && $request->data()['code']     === 'otp-pattern'
+                && $request->data()['variable'] === ['code' => '123456'];
+        });
+
+        expect(SmsLog::count())->toBe(1);
+
         $smsLog = SmsLog::latest()->first();
         expect($smsLog)->not->toBeNull()
             ->and($smsLog->status)->toBe(200)
@@ -53,6 +69,125 @@ describe('SmsChannel Sending Logic', function (): void {
             ->and($smsLog->from)->toBe('1000')
             ->and($smsLog->type)->toBe('OTP')
             ->and($smsLog->data['data']['message_id'])->toBe('fake-message-id');
+    });
+
+    it('uses the stored notification option over the configuration default', function (): void {
+        Setting::factory()->create([
+            'key'   => SettingKeyEnum::SMS_NOTIFICATIONS->value,
+            'value' => ['otp' => ['enabled' => true, 'pattern_code' => 'stored-otp-pattern']],
+            'type'  => 'json',
+            'group' => 'sms',
+        ]);
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->user->notify($this->notification);
+
+        Http::assertSent(fn (Request $request): bool => $request->data()['code'] === 'stored-otp-pattern');
+    });
+
+    it('does not send and records a skip when the notification option is disabled', function (): void {
+        config(['sms.notifications.otp.enabled' => false]);
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->user->notify($this->notification);
+
+        Http::assertNothingSent();
+
+        expect(SmsLog::count())->toBe(1);
+
+        $smsLog = SmsLog::latest()->first();
+        expect($smsLog)->not->toBeNull()
+            ->and($smsLog->status)->toBe(SmsLog::STATUS_SKIPPED)
+            ->and($smsLog->data)->toBe(['reason' => 'option_disabled'])
+            ->and($smsLog->type)->toBe('OTP')
+            ->and($smsLog->to)->toBe($this->user->phone);
+    });
+
+    it('does not send and records a skip when an option that needs a pattern has none', function (): void {
+        config(['sms.notifications.otp.pattern_code' => '']);
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->user->notify($this->notification);
+
+        Http::assertNothingSent();
+
+        expect(SmsLog::count())->toBe(1);
+
+        $smsLog = SmsLog::latest()->first();
+        expect($smsLog)->not->toBeNull()
+            ->and($smsLog->status)->toBe(SmsLog::STATUS_SKIPPED)
+            ->and($smsLog->data)->toBe(['reason' => 'pattern_missing'])
+            ->and($smsLog->type)->toBe('OTP');
+    });
+
+    it('sends the refund as free text when no pattern is configured', function (): void {
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->user->notify(smsNotificationOfType('REFUND'));
+
+        Http::assertSent(fn (Request $request): bool => $request->url() === 'https://api2.ippanel.com/api/v1/sms/send/webservice/single'
+            && $request->data()['message']                              === 'Refund done');
+
+        expect(SmsLog::count())->toBe(1);
+
+        $smsLog = SmsLog::latest()->first();
+        expect($smsLog->type)->toBe('REFUND')
+            ->and($smsLog->content)->toBe('Refund done');
+    });
+
+    it('sends the refund through its configured pattern', function (): void {
+        config(['sms.notifications.refund_completed.pattern_code' => 'refund-pattern']);
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->user->notify(smsNotificationOfType('REFUND'));
+
+        Http::assertSent(fn (Request $request): bool => $request->url() === 'https://api2.ippanel.com/api/v1/sms/pattern/normal/send'
+            && $request->data()['code']                                 === 'refund-pattern'
+            && $request->data()['variable']                             === ['order_id' => 7, 'amount' => 250000]);
+
+        expect(SmsLog::count())->toBe(1);
+    });
+
+    it('sends the configured pattern for a message that carries no free text', function (): void {
+        config(['sms.notifications.refund_completed.pattern_code' => 'refund-pattern']);
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->user->notify(smsNotificationOfType('REFUND', null));
+
+        Http::assertSent(fn (Request $request): bool => $request->data()['code'] === 'refund-pattern');
+
+        expect(SmsLog::count())->toBe(1);
+
+        $smsLog = SmsLog::latest()->first();
+        expect($smsLog->content)->toBe('')
+            ->and($smsLog->type)->toBe('REFUND');
+    });
+
+    it('records a skip when an enabled option has neither a pattern nor free text', function (): void {
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->user->notify(smsNotificationOfType('REFUND', null));
+
+        Http::assertNothingSent();
+
+        expect(SmsLog::count())->toBe(1);
+
+        $smsLog = SmsLog::latest()->first();
+        expect($smsLog->status)->toBe(SmsLog::STATUS_SKIPPED)
+            ->and($smsLog->data)->toBe(['reason' => 'empty_message'])
+            ->and($smsLog->type)->toBe('REFUND');
+    });
+
+    it('does not send and records a skip when the refund option is disabled', function (): void {
+        config(['sms.notifications.refund_completed.enabled' => false]);
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->user->notify(smsNotificationOfType('REFUND'));
+
+        Http::assertNothingSent();
+
+        expect(SmsLog::count())->toBe(1)
+            ->and(SmsLog::latest()->first()->data)->toBe(['reason' => 'option_disabled']);
     });
 
     it('throws exception and logs on a 401 client error', function (): void {
@@ -152,6 +287,7 @@ describe('SmsChannel Sending Logic', function (): void {
             ->and($smsLog->type)->toBe('OTP')
             ->and($smsLog->to)->toBe($this->user->phone);
     });
+
     it('does not send if notifiable does not have a route for sms', function (): void {
         $userWithoutPhone = User::factory()->create(['phone' => '']);
 
@@ -200,7 +336,7 @@ describe('SmsChannel Sending Logic', function (): void {
         Http::assertNothingSent();
     });
 
-    it('sends a standard content-based SMS correctly', function (): void {
+    it('sends a standard content-based SMS correctly for a type with no option', function (): void {
 
         $standardSmsNotification = new class extends Illuminate\Notifications\Notification
         {
@@ -230,7 +366,8 @@ describe('SmsChannel Sending Logic', function (): void {
         });
 
         $smsLog = SmsLog::latest()->first();
-        expect($smsLog->type)->toBe('GREETING')
+        expect(SmsLog::count())->toBe(1)
+            ->and($smsLog->type)->toBe('GREETING')
             ->and($smsLog->to)->toBe([$this->user->phone]);
     });
 
@@ -248,10 +385,50 @@ describe('SmsChannel Sending Logic', function (): void {
         });
 
         $smsLog = SmsLog::latest()->first();
-        expect($smsLog)->not->toBeNull()
+        expect(SmsLog::count())->toBe(1)
+            ->and($smsLog)->not->toBeNull()
             ->and($smsLog->status)->toBe(200)
             ->and($smsLog->to)->toBe($staff->phone) // Check the Staff phone number
             ->and($smsLog->type)->toBe('OTP')
             ->and($smsLog->data['data']['message_id'])->toBe('staff-message-id');
     });
 });
+
+/**
+ * A minimal notification carrying an arbitrary `SmsMessage`, used to exercise
+ * the channel's option branches without depending on a domain notification.
+ *
+ * @param  array<string, mixed>  $parameters
+ */
+function smsNotificationOfType(string $type, ?string $content = 'Refund done', array $parameters = ['order_id' => 7, 'amount' => 250000]): Illuminate\Notifications\Notification
+{
+    return new class($type, $content, $parameters) extends Illuminate\Notifications\Notification
+    {
+        /**
+         * @param  array<string, mixed>  $parameters
+         */
+        public function __construct(
+            private readonly string $type,
+            private readonly ?string $content,
+            private readonly array $parameters,
+        ) {}
+
+        public function via($notifiable): string
+        {
+            return SmsChannel::class;
+        }
+
+        public function toSms($notifiable): SmsMessage
+        {
+            $message = (new SmsMessage)
+                ->parameters($this->parameters)
+                ->type($this->type);
+
+            if ($this->content !== null) {
+                $message->content($this->content);
+            }
+
+            return $message;
+        }
+    };
+}

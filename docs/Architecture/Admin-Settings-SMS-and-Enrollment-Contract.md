@@ -164,8 +164,8 @@ Purpose: one section per SMS notification type, each with **`enabled`** and **`p
 
 | `key` | Label (fa) | `log_type` | `wired` | Notes |
 | --- | --- | --- | --- | --- |
-| `otp` | کد ورود (OTP) | `OTP` | yes | `OtpSmsNotification` currently hardcodes pattern `mdoe1j1587`; after this change it reads `pattern_code`. |
-| `refund_completed` | تأیید استرداد وجه | `REFUND` | yes (free text) | `RefundCompletedNotification` sends a free-text SMS today; a pattern is optional until one is defined. |
+| `otp` | کد ورود (OTP) | `OTP` | yes | `OtpSmsNotification` reads the option's `pattern_code`; an enabled option with an empty code skips the send and records it. |
+| `refund_completed` | تأیید استرداد وجه | `REFUND` | yes (free text) | `RefundCompletedNotification` honours a configured `pattern_code` when present and sends its free-text message otherwise. |
 | `order_paid` | پرداخت موفق سفارش | `ORDER` | no | Planned. |
 | `enrollment_ready` | آماده‌سازی دسترسی آموزشی | `ENROLLMENT` | no | Planned. |
 | `wallet_campaign_credited` | واریز هدیه/کمپین کیف پول | `WALLET` | no | Planned. |
@@ -233,7 +233,7 @@ Semantics:
 - `options` is required and must be an object keyed by a known option key; unknown keys → `422`.
 - **Omitted option key → unchanged.** This is a merge, not a replace, so a partial save cannot silently disable the rest of the options.
 - **Inside a provided option, both `enabled` and `pattern_code` are required** (`422` if either is missing) — a form always submits both.
-- `pattern_code` may be empty (`""`) or `null`; when empty, the sender falls back to its free-text/custom template (this is what `refund_completed` does today).
+- `pattern_code` may be empty (`""`) or `null`. An option that requires a pattern (every option except `refund_completed`) **skips the send and records it** when the code is empty — there is no fallback to custom text, because the provider filters it. `refund_completed` does not require a pattern and sends its free-text message when no code is configured.
 - Disabling an option never clears its `pattern_code`; the stored code is kept so re-enabling restores it.
 - Response: `200` with the full `GET` payload, so the frontend can re-render from the server state in one round-trip.
 
@@ -499,7 +499,7 @@ These are existing inconsistencies this contract surfaces. Each is a decision or
 | 4 | `create_studets` / `update_studets` / `create_enrollments` / `update_enrollments` flags are seeded for `ims`/`moodle` but read nowhere. | They are exposed as editable settings that do nothing. Exclude them from `schema` until they are wired, or remove them. |
 | 5 | `payment-gateways` documents sensitive values as `••••••` and returns `settings: []` when unset, while the actual mask is `***REDACTED***`. | This contract standardizes on `***REDACTED***` + always-object `settings`; the payment endpoint should be aligned separately. |
 | 6 | No global SMS master switch; each notification option has its own `enabled`. | Confirm whether a single "SMS notifications on/off" toggle is wanted in addition to per-option switches. |
-| 7 | ~~Nothing reads a gateway-level `enabled` today: `IpPanelSmsService::validateConfig()` only checks `api_key`/`from`, and `SmsChannel` sends unconditionally.~~ Resolved by #106: `IpPanelSmsService` resolves the stored gateway setting and treats `enabled` as a kill switch, recording a skipped `sms_logs` row instead of throwing. | The gateway toggle is now a guaranteed kill switch. The per-option notification toggles stay cosmetic until #107 wires them into the send path. |
-| 8 | `OtpSmsNotification` hardcodes pattern `mdoe1j1587`, and `RefundCompletedNotification` has no pattern at all. | Wiring `pattern_code` requires reading the option settings inside each notification (or in `SmsChannel` via the message `log_type`). |
+| 7 | ~~Nothing reads a gateway-level `enabled` today: `IpPanelSmsService::validateConfig()` only checks `api_key`/`from`, and `SmsChannel` sends unconditionally.~~ Resolved by #106: `IpPanelSmsService` resolves the stored gateway setting and treats `enabled` as a kill switch, recording a skipped `sms_logs` row instead of throwing. | The gateway toggle and the per-option toggles are both guaranteed switches: #107 wires each notification option into the send path. |
+| 8 | ~~`OtpSmsNotification` hardcodes pattern `mdoe1j1587`, and `RefundCompletedNotification` has no pattern at all.~~ Resolved by #107: `SmsMessage` carries only `content`, `parameters` and `type`, and `SmsChannel` reads the option's `pattern_code` from the settings via the message `log_type`. | Pattern codes now live only in the notification-option settings. |
 | 9 | `MoodleService::validateConfig()` checks `base_url` + `token` only, while `auth_userkey_token` is what makes customer SSO login work. | Without extending it, the panel reports `ready: true` for a Moodle provider that cannot log students in. |
 | 10 | `niliroom` has no adapter, no `ProvisioningProviderEnum` case, and no config entry yet. | It is a settings-only provider for now; decide whether it becomes a first-class provisioning provider or stays a live-session-only integration (ADR 0007 treats it as the primary BBB panel with `BbbService` as fallback). |

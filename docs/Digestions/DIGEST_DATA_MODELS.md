@@ -410,7 +410,14 @@
 - **`defaultConfig(): array`** — `config/sms.php` `notifications.<value>` defaults (`enabled`, `pattern_code`) used until the option is saved.
 - **`resolve(mixed $storedOption): array{enabled: bool, pattern_code: string}`** — merges one stored option over its config defaults field-by-field, dropping stored keys the config does not declare and normalizing `pattern_code` to a string.
 - **`label(): string`** — localized display label from `sms.notifications.<value>.label`.
-- **`requiresPattern(): bool`** — false for `refund_completed` (free-text send), true for every pattern-only option; drives the computed `configured`/`ready` state.
+- **`logType(): string`** — the outgoing `SmsMessage` type this option governs (`OTP`, `REFUND`, `ORDER`, `ENROLLMENT`, `WALLET`), matching the contract's `log_type` column.
+- **`fromLogType(string $logType): ?self`** — finds the option for an outgoing message type, or `null` when the type is not configurable (an ad-hoc send stays ungated).
+- **`isConfigured(array{enabled: bool, pattern_code: string} $settings): bool`** — `false` only when the option requires a pattern and none is set; shared by the admin `state.configured` badge and the runtime option gate so the two cannot disagree.
+- **`requiresPattern(): bool`** — false for `refund_completed` (free-text send), true for every pattern-only option; drives `isConfigured()` and the runtime `pattern_missing` skip.
+
+#### SmsSkipReasonEnum (`app/Enums/Sms/SmsSkipReasonEnum.php`)
+- **Values:** `GATEWAY_DISABLED` (`gateway_disabled`), `NOT_CONFIGURED` (`not_configured`), `OPTION_DISABLED` (`option_disabled`), `PATTERN_MISSING` (`pattern_missing`), `EMPTY_MESSAGE` (`empty_message`)
+- **Purpose:** The `data.reason` vocabulary for `SmsLog::STATUS_SKIPPED` rows, shared by the gateway gate (`IpPanelSmsService`) and the notification-option gate (`SmsChannel`) so the two are distinguishable in the delivery log.
 
 #### ProvisioningProviderSettingsEnum (`app/Enums/Provisioning/ProvisioningProviderSettingsEnum.php`)
 - **Values:** `IMS` (`ims`), `MOODLE` (`moodle`), `SPOTPLAYER` (`spotplayer`), `SKYROOM` (`skyroom`), `NILIROOM` (`niliroom`)
@@ -491,7 +498,7 @@
 ### SmsLog (`app/Models/SmsLog.php`)
 - **Purpose:** SMS delivery tracking and logging
 - **Key Fields:** `status`, `data`, `content`, `type`, `to` (recipients), `from` (sender), `sent_at`
-- **Constants:** `STATUS_SKIPPED` (`0`) — recorded when no provider call was made (gateway switched off, or gateway unconfigured); the `data.reason` field names the cause (`gateway_disabled`, `not_configured`) and `sent_at` holds the attempt time.
+- **Constants:** `STATUS_SKIPPED` (`0`) — recorded when no provider call was made (gateway switched off or unconfigured, notification option disabled, a required pattern missing, or an enabled option with nothing to send); the `data.reason` field names the cause with an `SmsSkipReasonEnum` value and `sent_at` holds the attempt time.
 - **Relationships:** Self-contained audit records for outbound SMS
 - **Special Features:** Casts payload and recipient metadata to arrays for structured logging. `to` holds a list for free-text sends and a single phone string for pattern sends, matching the `IpPanelSmsService` call path.
 

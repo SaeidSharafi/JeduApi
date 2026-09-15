@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Sms\SmsSkipReasonEnum;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Setting;
 use App\Models\SmsLog;
@@ -31,6 +32,10 @@ covers(IpPanelSmsService::class);
 |   field is declared by `config/sms.php` and merged in by
 |   `SmsGatewayEnum::resolvedSettings()`, so the fallbacks are unreachable and
 |   the mutants are equivalent.
+| - The `(string)` cast on the sender in `senderFrom()`: `sms_logs.from` is a
+|   string column, so an integer override is stored and read back as a string
+|   either way. The `?? $gateway['from']` half of that expression is covered by
+|   the sender-override test.
 |
 */
 
@@ -280,6 +285,31 @@ describe('Gateway settings', function (): void {
         $smsLog = SmsLog::latest()->first();
         expect($smsLog->status)->toBe(200)
             ->and($smsLog->data['message_id'])->toStartWith('Sandbox_');
+    });
+
+    it('records an option skip the notification gate requested without calling the provider', function (): void {
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->service->recordSkipped('09123456789', 'content', 'OTP', SmsSkipReasonEnum::OPTION_DISABLED);
+
+        Http::assertNothingSent();
+
+        $smsLog = SmsLog::latest()->first();
+        expect($smsLog->status)->toBe(SmsLog::STATUS_SKIPPED)
+            ->and($smsLog->data)->toBe(['reason' => 'option_disabled'])
+            ->and($smsLog->content)->toBe('content')
+            ->and($smsLog->type)->toBe('OTP')
+            ->and($smsLog->to)->toBe('09123456789')
+            ->and($smsLog->from)->toBe('1000');
+    });
+
+    it('records an option skip with the sender override when one was set', function (): void {
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $this->service->setFrom(9999);
+        $this->service->recordSkipped('09123456789', 'content', 'OTP', SmsSkipReasonEnum::OPTION_DISABLED);
+
+        expect(SmsLog::latest()->first()->from)->toBe('9999');
     });
 });
 

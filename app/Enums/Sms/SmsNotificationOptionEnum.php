@@ -20,6 +20,21 @@ enum SmsNotificationOptionEnum: string
     case WALLET_CAMPAIGN_CREDITED = 'wallet_campaign_credited';
 
     /**
+     * The option governing an outgoing message type, or `null` when the type is
+     * not configurable — an ad-hoc send stays ungated.
+     */
+    public static function fromLogType(string $logType): ?self
+    {
+        foreach (self::cases() as $option) {
+            if ($option->logType() === $logType) {
+                return $option;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Configuration-derived defaults, used until the option is saved.
      *
      * @return array<string, mixed>
@@ -57,6 +72,38 @@ enum SmsNotificationOptionEnum: string
     public function label(): string
     {
         return __("sms.notifications.{$this->value}.label");
+    }
+
+    /**
+     * The outgoing `SmsMessage` type this option governs.
+     *
+     * Matches the contract's `log_type` column, so the send path can find the
+     * option an outgoing message belongs to from the type it already carries.
+     */
+    public function logType(): string
+    {
+        return match ($this) {
+            self::OTP                      => 'OTP',
+            self::REFUND_COMPLETED         => 'REFUND',
+            self::ORDER_PAID               => 'ORDER',
+            self::ENROLLMENT_READY         => 'ENROLLMENT',
+            self::WALLET_CAMPAIGN_CREDITED => 'WALLET',
+        };
+    }
+
+    /**
+     * Whether the resolved settings let this option deliver.
+     *
+     * The refund does not require a pattern, so an empty code still counts as
+     * configured for it; every other option needs the code the provider
+     * requires. Shared by the admin `state.configured` badge and the runtime
+     * option gate so the two cannot disagree.
+     *
+     * @param  array{enabled: bool, pattern_code: string}  $settings
+     */
+    public function isConfigured(array $settings): bool
+    {
+        return ! $this->requiresPattern() || $settings['pattern_code'] !== '';
     }
 
     /**

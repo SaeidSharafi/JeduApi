@@ -51,7 +51,7 @@ final class BuildSmsNotificationsAction
     private function buildOption(SmsNotificationOptionEnum $option, array $stored): array
     {
         $settings   = $option->resolve($stored[$option->value] ?? null);
-        $configured = ! $option->requiresPattern() || $settings['pattern_code'] !== '';
+        $configured = $option->isConfigured($settings);
 
         return [
             'key'   => $option->value,

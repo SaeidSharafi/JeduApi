@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use App\Events\OtpPrepared;
 use App\Notifications\Auth\OtpSmsNotification;
+use App\Notifications\SmsChannel;
 use App\Notifications\SmsMessage;
+
+covers(OtpSmsNotification::class);
 
 beforeEach(function (): void {
     Notification::fake();
@@ -25,6 +28,19 @@ beforeEach(function (): void {
     );
 });
 describe('OTP SMS Notification', function (): void {
+    it('delivers the login code through the sms channel only', function (): void {
+        $otpEvent = new OtpPrepared(
+            identifier: '09321456987',
+            guard: 'user',
+            code: '123456',
+            type: App\Enums\System\OtpType::SIGNIN,
+            trackingCode: 'test-tracking',
+            params: []
+        );
+
+        expect((new OtpSmsNotification($otpEvent))->via(new App\Models\User()))->toBe(SmsChannel::class);
+    });
+
     it('creates the correct sms message payload for customer', function (): void {
         $user     = new App\Models\User();
         $otpEvent = new OtpPrepared(
@@ -40,7 +56,6 @@ describe('OTP SMS Notification', function (): void {
         $smsMessage = $notification->toSms($user);
 
         expect($smsMessage)->toBeInstanceOf(SmsMessage::class)
-            ->and($smsMessage->pattern)->toBe('mdoe1j1587')
             ->and($smsMessage->parameters)->toBe(['code' => '123456'])
             ->and($smsMessage->type)->toBe('OTP');
     });
@@ -60,7 +75,6 @@ describe('OTP SMS Notification', function (): void {
         $smsMessage = $notification->toSms($user);
 
         expect($smsMessage)->toBeInstanceOf(SmsMessage::class)
-            ->and($smsMessage->pattern)->toBe('mdoe1j1587')
             ->and($smsMessage->parameters)->toBe(['code' => '123456'])
             ->and($smsMessage->type)->toBe('OTP');
     });
