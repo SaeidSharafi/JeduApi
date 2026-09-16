@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController;
 
 require __DIR__.'/blog.php';
 require __DIR__.'/catalog.php';
+require __DIR__.'/import.php';
 require __DIR__.'/select_option.php';
 require __DIR__.'/file.php';
 require __DIR__.'/sale.php';

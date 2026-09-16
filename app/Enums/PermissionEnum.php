@@ -63,10 +63,10 @@ enum PermissionEnum: string
     case ENROLLMENT_DELETE                = 'enrollments.delete';
     case ENROLLMENT_DIAGNOSTICS_VIEW      = 'enrollments.diagnostics_view';
     case ENROLLMENT_RETRY_PROVISION       = 'enrollments.retry_provision';
-    case ENROLLMENT_WAIVE_PROVISION       = 'enrollments.waive_provision';
     case ENROLLMENT_UPDATE                = 'enrollments.update';
     case ENROLLMENT_VIEW                  = 'enrollments.view';
     case ENROLLMENT_VIEW_ANY              = 'enrollments.view_any';
+    case ENROLLMENT_WAIVE_PROVISION       = 'enrollments.waive_provision';
     case FILE_CREATE                      = 'files.create';
     case FILE_DELETE                      = 'files.delete';
     case FILE_DELETE_OWN                  = 'files.delete_own';
@@ -79,6 +79,8 @@ enum PermissionEnum: string
     case HOME_PAGE_BLOCK_UPDATE           = 'home_page_blocks.update';
     case HOME_PAGE_BLOCK_VIEW             = 'home_page_blocks.view';
     case HOME_PAGE_BLOCK_VIEW_ANY         = 'home_page_blocks.view_any';
+    case IMPORT_PREVIEW                   = 'imports.preview';
+    case IMPORT_TEMPLATE                  = 'imports.template';
     case ORDER_APPROVE                    = 'orders.approve';
     case ORDER_CREATE                     = 'orders.create';
     case ORDER_DELETE                     = 'orders.delete';

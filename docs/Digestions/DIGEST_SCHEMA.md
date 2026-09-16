@@ -596,6 +596,34 @@
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: INDEX(admin_id, created_at), INDEX(action_type, created_at), INDEX(resource_type, resource_id), INDEX(risk_level, created_at), INDEX(route_name), INDEX(ip_address)
 
+### Table: `import_runs`
+- Purpose: Immutable record of one uploaded import spreadsheet, its stored private file and its preview totals.
+- Columns:
+  - id (BIGINT, PK)
+  - uuid (UUID, unique) — public identifier
+  - resource (VARCHAR, indexed) — registered spreadsheet resource (`users`)
+  - identity_key (VARCHAR) — `phone` | `email`
+  - status (VARCHAR, indexed) — `preview_ready` (import tickets add `approved` | `processing` | `completed` | `completed_with_provider_failures` | `failed` | `expired`)
+  - staff_id (BIGINT nullable) FK -> staff(id) SET NULL
+  - original_filename (VARCHAR), file_path (VARCHAR), file_size (BIGINT nullable)
+  - rows_total / rows_valid / rows_invalid (INTEGER, default 0)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id), UNIQUE(uuid), INDEX(resource), INDEX(status), INDEX(resource, status), INDEX(staff_id)
+
+### Table: `import_run_rows`
+- Purpose: One validated row of an import run, with its preview outcome and normalized resource values.
+- Columns:
+  - id (BIGINT, PK)
+  - import_run_id (BIGINT) FK -> import_runs(id) CASCADE
+  - row_number (INTEGER) — spreadsheet row
+  - identity_value (VARCHAR nullable) — normalized identity
+  - action (VARCHAR nullable) — `create` | `update`
+  - is_valid (BOOLEAN)
+  - errors (JSONB nullable) — `[{field, code, message}]`
+  - data (JSONB) — normalized resource-owned values (no credentials)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id), UNIQUE(import_run_id, row_number), INDEX(import_run_id, identity_value), INDEX(import_run_id)
+
 ### Table: `reviews`
 - Purpose: User reviews for entities.
 - Columns:

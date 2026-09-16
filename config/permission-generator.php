@@ -144,6 +144,10 @@ return [
             PermissionAction::DELETE,
             'ban', // Custom String: users.ban (ban/unban customer accounts)
         ],
+        'import' => [
+            'preview',  // Custom String: imports.preview (validate an uploaded spreadsheet without mutation)
+            'template', // Custom String: imports.template (download the official import template)
+        ],
         'order' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
@@ -164,6 +168,7 @@ return [
             PermissionAction::DELETE,
             'retry_provision',
             'diagnostics_view',
+            'waive_provision', // Custom String: enrollments.waive_provision (waive/reconfirm a provider for an enrollment)
         ],
         'refund' => [
             PermissionAction::VIEW_SCOPED,

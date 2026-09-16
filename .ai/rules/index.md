@@ -10,3 +10,4 @@ Before planning or editing, find the row whose globs match the file's path and r
 | tests/Feature/Api/V1/Shop/Sale/** | .ai/rules/sale.md |
 | app/Subscribers/** | .ai/rules/subscribers.md |
 | tests/** | .ai/rules/tests.md |
+| app/Services/ImportExport/**, app/Actions/Admin/ImportExport/**, app/Http/Controllers/Api/Admin/ImportExport/** | .ai/rules/import-export.md |

@@ -159,6 +159,7 @@ return [
     'productable_exist'   => 'یک محصول فعال (منتشرشده) برای این :type با نام «:name» وجود دارد. لطفاً ابتدا محصول قبلی را از حالت انتشار خارج کنید.',
     'jdate'               => 'فرمت تاریخ «:attribute» معتبر نیست.',
     'invalid_jalali_date' => ':attribute یک تاریخ جلالی معتبر نیست.',
+    'iran_mobile_phone'   => ':attribute باید یک شماره تلفن همراه معتبر ایران باشد.',
     'jdate_before_equal'  => 'تاریخ «:attribute» باید قبل یا مساوی با تاریخ :date باشد.',
 
     /*

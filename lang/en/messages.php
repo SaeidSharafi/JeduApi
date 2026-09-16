@@ -335,6 +335,9 @@ return [
         'banned'   => 'Staff account banned successfully.',
         'unbanned' => 'Staff account unbanned successfully.',
     ],
+    'import' => [
+        'preview_ready' => 'Import preview generated successfully.',
+    ],
     'category' => [
         'good_for_start' => [
             'updated' => 'Good for start status updated successfully.',

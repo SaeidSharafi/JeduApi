@@ -33,6 +33,8 @@ Always pass `--parallel` for mutation runs, including single-file scopes. Pest r
 
 mutation runs takes a long time, so it's better to run them in background and check the results later. unless it is the last step and there is no other work to do, in which case it is better to run it in foreground and wait for the results.
 
+Never wrap a mutation run in `timeout` and never kill it. The process that dies is the host-side Sail wrapper: Pest keeps running orphaned inside the `jedu-test` container, keeps recreating `testing_test_*` databases, and its report is lost because the log file was already truncated or replaced. If a scope is too slow to finish, make it smaller instead: each mutant re-runs the whole covering test file, so a file with slow DB-heavy tests (thousands of rows, seeding, HTTP) can turn a few hundred mutants into hours. Narrow the run with `--mutate --class=App\Some\Class` (repeatable) and leave the rest for the final step.
+
 The goal is **meaningful coverage, not a 100% score**. Strengthen the behavior tests until every mutation that reflects a real decision is killed — especially mutations that remove a branch, alter a comparison, change a returned value, or skip a side effect. Do not add tests whose only purpose is to move the number, and do not chase survivors that cannot change observable behavior.
 
 A surviving mutant may be left only when it is demonstrably equivalent or intentionally outside the contract, and the reason must be recorded beside the test (see the `Mutation notes` blocks in `tests/Unit/Services/WeightedApportionmentTest.php` and `tests/Integration/Services/BundleAvailabilityPropagationServiceTest.php`) or in the ticket. Do not hide survivors by excluding broad classes of code.

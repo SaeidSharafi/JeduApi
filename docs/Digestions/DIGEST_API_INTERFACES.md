@@ -67,6 +67,14 @@
 - `update(UserUpdateData $request, User $user)`: **Route:** `PUT /api/v1/admin/users/{user}` - **Request DTO:** UserUpdateData - **Response DTO:** UserData
 - `destroy(User $user)`: **Route:** `DELETE /api/v1/admin/users/{user}` - **Delegates to:** User deletion
 
+### ImportExport controllers (`app/Http/Controllers/Api/Admin/ImportExport/`)
+- `DownloadImportTemplateController` (`DownloadImportTemplateController.php`): **Route:** `GET /api/v1/admin/{resource}/import/template` (`/api/v1/admin/users/import/template`) — streams the generated XLSX template (`{resource}-import-template.xlsx`) built from the resource column contract. **Permission:** `imports.template`. Unregistered resource -> 404.
+- `PreviewImportController` (`PreviewImportController.php`): **Route:** `POST /api/v1/admin/{resource}/import?identity_key=phone` (`/api/v1/admin/users/import`, multipart) — **Request DTO:** `ImportPreviewRequestData` (`file` XLSX up to 5 MB in the body, `identity_key` = `phone` | `email` in the query string) — **Response DTO:** `ImportPreviewData`. **Permission:** `imports.preview`.
+  - The route segment is constrained to the registered resources, so an unregistered resource returns 404 without reaching the controller.
+  - Envelope keys are resource agnostic: `run_id`, `resource`, `status` (`preview_ready`), `identity_key`, `summary` (`total_rows`/`valid_rows`/`invalid_rows`/`create_count`/`update_count`/`provider_provisioning_request_count`), `rows[]` (`row_number`, `status` = `valid`|`invalid`, `operation` = `create`|`update`|null, `errors[]` of `{field, code, message}`, `data` owned by the resource contract), `can_approve` and `approval_warning`.
+  - Structural spreadsheet problems (no data rows, more than 2000 data rows, missing required headings, unknown headings) return 422 with messages under `errors.file`. The first worksheet is read as it is: extra worksheets, merged cells, alignment and formatting are ignored rather than repaired, because the downloadable template defines the expected shape.
+  - Preview never mutates stored resources and never calls a provider; it stores the private upload plus the immutable Import Run.
+
 ### CategoryController (`app/Http/Controllers/Api/Admin/Category/CategoryController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/category` - **Delegates to:** Category listing with hierarchy - **Response DTO:** CategoryData collection
 - `store(CategoryCreateData $request)`: **Route:** `POST /api/v1/admin/category` - **Request DTO:** CategoryCreateData - **Response DTO:** CategoryData
