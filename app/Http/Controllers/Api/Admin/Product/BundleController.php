@@ -19,14 +19,12 @@ use Spatie\QueryBuilder\QueryBuilder;
 /**
  * @group Admin - Bundle Management
  *
- * APIs for managing courses
- *
  * @authenticated Staff
  */
 final class BundleController extends Controller
 {
     /**
-     * return a list of the bundles.
+     * List the bundles.
      *
      * @queryParam filter[slug] string Filter by bundle slug. Example: bundle-101
      * @queryParam filter[full_name] string Filter by bundle full name. Example: Full Stack Package

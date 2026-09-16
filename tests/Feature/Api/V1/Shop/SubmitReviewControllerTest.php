@@ -218,18 +218,6 @@ it('requires authentication', function (): void {
     ])->assertUnauthorized();
 });
 
-/*
- * Mutation notes
- * --------------
- * `SubmitReviewAction::resolveReviewable()` carries three defensive guards whose
- * mutants survive by equivalence, not by a coverage gap:
- * - `loadMissing()` is a query-efficiency guard; lazy loading resolves the same
- *   relations to the same outcome, so removing it changes nothing observable.
- * - both null-safe operators guard a dangling relation the schema forbids:
- *   `enrollments.product_delivery_option_id` is a non-null FK, and a Product always
- *   carries a `productable`.
- */
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 if (! function_exists('createEnrollmentForReview')) {

@@ -23,8 +23,6 @@ final class EnrollmentController extends Controller
     /**
      * Get a paginated list of the authenticated user's enrollments.
      *
-     * List enrollments for the authenticated user, with optional filtering by fulfillment type and product name.
-     *
      * @queryParam filter[fulfillment_type] string Filter by fulfillment type. Example: digital
      * @queryParam filter[name] string Filter by product name. Example: Course Name
      * @queryParam page integer Page number for pagination. Example: 1

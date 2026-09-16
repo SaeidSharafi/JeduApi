@@ -77,45 +77,6 @@ function provisioningProviderPayload(string $provider, array $overrides = []): a
     return array_merge($base, $overrides);
 }
 
-/*
-|--------------------------------------------------------------------------
-| Mutation notes
-|--------------------------------------------------------------------------
-|
-| Survivors left after `pest --mutate` for this file, and why:
-|
-| - `BuildProvisioningProviderSettingAction` `(bool)` cast on `enabled`: the
-|   config block casts every `enabled` with `(bool)` and the save action writes a
-|   boolean, so the cast cannot change a served value.
-| - `?? false` on `enabled` in both actions: the settings map is built by
-|   iterating `defaultConfig()`, which always declares `enabled`, so the fallback
-|   is unreachable.
-| - `ProvisioningProviderSettingData::requiredFields()` (confirmed with a
-|   `--class`-scoped run): every schema field declares `required` explicitly, so
-|   `?? false` / `?? true` are unreachable and dropping the coalesce changes
-|   nothing; widening `required && type !== boolean` to `||` only adds fields whose
-|   resolved defaults are non-empty (`timeout` 15, `default_role_id` 5, `/my/`, the
-|   endpoint URL, and `sandbox` false, which the emptiness check counts as
-|   present), so the computed state cannot change; and every label is already a
-|   string, so dropping the `(string)` cast is a no-op.
-| - Dropping a whole rule entry from a provider's `rules()` when that entry is
-|   exactly the rule spatie/laravel-data derives from the typed property —
-|   `bool` → `required|boolean`, `?string` → `nullable|string`, `?bool` →
-|   `nullable|boolean`. Every other entry is load-bearing and killed: dropping
-|   `base_url`/`endpoint` loses `url` (caught by the url dataset) and dropping a
-|   `?int` entry loses `min:1` (caught by the minimum dataset). Verified
-|   empirically by removing the `api_key` entry and re-running the non-string
-|   dataset.
-| - `ProvisioningProviderSettingData::normalizePayload()` `continue` → `break`:
-|   in every provider the sensitive fields sit last inside `connection`, after
-|   which only further sensitive fields follow, so breaking out of the walk skips
-|   nothing the sensitive guard would not skip anyway.
-| - Pest also reports a varying number of mutants as timeouts (0 to 24 across runs
-|   of identical production code). The changed code has no unbounded loop or
-|   recursion, so those are the shared 12-process mutation runner exceeding its
-|   per-mutation budget under load, not uncovered behaviour.
-*/
-
 describe('index', function (): void {
     it('returns the ims provider with its grouped schema, state and configuration defaults', function (): void {
         $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);

@@ -26,8 +26,6 @@ final class ResolveProvisioningController extends Controller
     /**
      * Resolve a failed provisioning provider.
      *
-     * Allows authorized staff to provide the external references needed to resolve a failed provisioning provider.
-     *
      * @responseFile 200 resources/responses/admin/enrollment/show.json
      * @responseFile 404 resources/responses/404.json
      * @responseFile 403 resources/responses/403.json

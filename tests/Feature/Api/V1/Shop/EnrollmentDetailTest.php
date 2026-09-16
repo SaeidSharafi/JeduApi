@@ -13,19 +13,6 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 
 covers(GetEnrollmentDetailAction::class);
 
-/*
- * Mutation notes
- * --------------
- * The review-info behavior introduced here (`buildReviewInfo()`) has no surviving
- * mutants. The remaining untested/timeout mutants reported for
- * `GetEnrollmentDetailAction` sit in pre-existing methods this change does not
- * touch — `handle()`'s relation-loading list, `buildTeachers()`,
- * `buildCertificateInfo()`, `buildQuizzes()` and `buildDeliveryAccess()` — where
- * fallbacks/coalesces/defaults are never exercised by the current assertions.
- * They are outside this change's contract and are left for the owners of those
- * methods rather than padded with assertions that cannot fail meaningfully.
- */
-
 beforeEach(function (): void {
     $this->customer();
 });

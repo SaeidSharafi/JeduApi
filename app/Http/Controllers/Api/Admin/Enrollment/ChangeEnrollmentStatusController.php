@@ -24,8 +24,6 @@ final class ChangeEnrollmentStatusController extends Controller
     /**
      * Change enrollment status.
      *
-     * This endpoint allows authorized staff to change the status of an enrollment.
-     *
      * @responseFile 200 resources/responses/admin/enrollment/show.json
      * @responseFile 404 resources/responses/404.json
      * @responseFile 403 resources/responses/403.json

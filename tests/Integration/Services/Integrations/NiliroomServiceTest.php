@@ -297,17 +297,3 @@ function makeNiliroomUser(
         'phone'      => $phone,
     ]);
 }
-
-/*
- * Mutation notes (`pest --mutate --parallel`, 96.36% — 53 tested, 2 uncovered):
- * The survivors are the `TIMEOUT_SECONDS` constant's IncrementInteger and
- * DecrementInteger mutants. `->timeout()` is a Guzzle client option, so it never
- * reaches the PSR-7 request that `Http::assertSent()` inspects: through this
- * seam the value is not observable, and asserting it would mean reaching into
- * the pending request. Left uncovered rather than coupling the test to the
- * client's internals.
- *
- * The mutant count drops when response-shape checks are consolidated: every
- * `data.<field>` guard now lives in `requiredString()`, so one branch has to be
- * killed instead of one per call site.
- */

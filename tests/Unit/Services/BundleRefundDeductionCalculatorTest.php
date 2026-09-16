@@ -242,13 +242,3 @@ it('redistributes across every component that still has paid value', function ()
         ->and($result['effective_deduction_amount'])->toBe(100000)
         ->and($result['refund_amount'])->toBe(540100);
 });
-/*
- * Mutation notes (`pest --mutate --parallel`):
- * The apportionment is numeric and branch-heavy; the surviving mutants are the
- * defensive/loop-bookkeeping ones whose alternatives reach the same fixed
- * point: the `$applied` accumulator only affects how many redistribution
- * rounds run (each round is capped at the component's remaining paid value, so
- * the final split is unchanged), and `array_values($capacities)` is
- * equivalent because `weightedShares` re-indexes its input. The negative-value
- * clamps (`max(0, ...)`) guard inputs the refund action already validates.
- */

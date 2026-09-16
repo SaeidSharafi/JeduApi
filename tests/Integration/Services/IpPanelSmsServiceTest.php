@@ -16,29 +16,6 @@ use Illuminate\Support\Facades\Log;
 
 covers(IpPanelSmsService::class);
 
-/*
-|--------------------------------------------------------------------------
-| Mutation notes
-|--------------------------------------------------------------------------
-|
-| Survivors left after `pest --mutate` for this file, and why:
-|
-| - `'Sandbox_'.randomNumber(10)` (IncrementInteger / DecrementInteger /
-|   ConcatRemoveRight on the free-text and pattern sandbox branches): the
-|   sandbox message id is deliberately random, and the tests assert the
-|   `Sandbox_` prefix and that the id is present. Pinning the value would test
-|   the mutator, not the send contract.
-| - The `?? false` / `?? ''` fallbacks in `resolveGatewaySettings()`: every
-|   field is declared by `config/sms.php` and merged in by
-|   `SmsGatewayEnum::resolvedSettings()`, so the fallbacks are unreachable and
-|   the mutants are equivalent.
-| - The `(string)` cast on the sender in `senderFrom()`: `sms_logs.from` is a
-|   string column, so an integer override is stored and read back as a string
-|   either way. The `?? $gateway['from']` half of that expression is covered by
-|   the sender-override test.
-|
-*/
-
 // Test setup common to both test groups
 beforeEach(function (): void {
     Http::preventStrayRequests();

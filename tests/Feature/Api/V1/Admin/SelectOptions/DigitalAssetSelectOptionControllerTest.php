@@ -13,21 +13,6 @@ uses(Tests\Support\Traits\FakeMediaTrait::class);
 covers(DigitalAssetSelectOptionController::class);
 covers(DigitalAssetSelectOptionData::class);
 
-/*
-|--------------------------------------------------------------------------
-| Mutation notes
-|--------------------------------------------------------------------------
-|
-| Survivor left after `pest --mutate --parallel` for this file, and why:
-|
-| - `DigitalAssetSelectOptionController` `RemoveArrayItem` on
-|   `withMediaAndVariants([MediaTagEnum::MAIN->value])` → `withMediaAndVariants([])`.
-|   Equivalent mutant: the DTO reads the file through
-|   `DigitalAsset::getMedia('main')`, which filters the loaded media by pivot tag,
-|   so loading every tag instead of only `main` produces an identical response
-|   (it only eager-loads media rows the response never reads).
-*/
-
 describe('Admin Digital Asset Select Option API', function (): void {
     beforeEach(function (): void {
         $this->authorized_user();

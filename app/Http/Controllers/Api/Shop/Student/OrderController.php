@@ -21,7 +21,6 @@ final class OrderController extends Controller
     /**
      * List authenticated user's orders.
      *
-     * This endpoint returns a paginated list of all orders belonging to the authenticated user.
      * Orders are sorted by creation date (newest first).
      *
      * @queryParam page integer Page number for pagination. Example: 1

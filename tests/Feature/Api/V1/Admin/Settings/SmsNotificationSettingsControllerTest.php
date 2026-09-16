@@ -28,36 +28,6 @@ function smsNotificationUrl(string $name): string
     return route("api.v1.admin.settings.sms-notifications.{$name}");
 }
 
-/*
-|--------------------------------------------------------------------------
-| Mutation notes
-|--------------------------------------------------------------------------
-|
-| Survivors left after `pest --mutate` for this file, and why:
-|
-| - `UpdateSmsNotificationsData::bodyParameters()` items (RemoveArrayItem,
-|   AlwaysReturnEmptyArray, TrueToFalse, EmptyStringToNotEmpty): documentation-only
-|   scribe metadata (marked `@codeCoverageIgnore`, like every sibling Data class);
-|   it never runs while serving a request.
-| - `SmsNotificationOptionKeyRule` `array_map(strval(...))` unwrap and the
-|   `(string)` cast on `reset($unknownKeys)`: `array_diff` already compares keys
-|   as strings, and the only non-string key an options map can carry is an array
-|   index that `(string)` renders identically, so neither change alters the
-|   rejection message.
-| - `UpdateSmsNotificationsAction` `(string) $key` cast: `options` is validated as
-|   a map keyed by known option strings before the action runs, so the cast is
-|   always a no-op.
-|
-| `SmsNotificationOptionData::rules()` items and the `'present'` rule on
-| `pattern_code` are all killed: the update request composes its dotted
-| `options.*.<field>` rules from them, so dropping one changes the `422`.
-|
-| Pest also reports a varying number of mutants as timeouts (1 in one run, 14 in
-| another, against identical production code). The changed code contains no loop
-| or recursion, so those are the shared 12-process mutation runner exceeding its
-| per-mutation budget under load, not uncovered behaviour.
-*/
-
 describe('index', function (): void {
     it('returns every option in a fixed order with the shared schema and configuration defaults', function (): void {
         $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);

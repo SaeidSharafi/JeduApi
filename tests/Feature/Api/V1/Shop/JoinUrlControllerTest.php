@@ -16,26 +16,6 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 
 covers(GetJoinUrlAction::class, JoinUrlController::class);
 
-/*
-|--------------------------------------------------------------------------
-| Mutation notes (`pest --mutate --parallel`, 88.89% — 24 tested, 3 untested)
-|--------------------------------------------------------------------------
-| All three survivors are equivalent rather than test gaps:
-|
-| - `RemoveMethodCall` on `$deliveryOption->loadMissing('product')`: an eager-load
-|   against a lazy one is a query-count concern, not an observable response. The
-|   bundle guard below reads the same relation either way.
-| - `RemoveNullSafeOperator` on `$deliveryOption->product?->productable_type`: the
-|   delivery option's `product_id` is non-nullable, so the relation is never null
-|   and both forms behave identically.
-| - `CoalesceRemoveLeft` on the Skyroom branch's `$customer->full_name ?? 'دانشجو'`:
-|   `User` has neither a `full_name` column nor an accessor for it, so the left
-|   operand is always null and the fallback always wins — asserting the nickname
-|   would mean asserting a fiction. The underlying defect (a Skyroom student always
-|   joins as «دانشجو») predates this ticket, and the Skyroom student flow is
-|   explicitly out of #112's scope, so it is reported rather than changed here.
-*/
-
 beforeEach(function (): void {
     $this->customer();
 });

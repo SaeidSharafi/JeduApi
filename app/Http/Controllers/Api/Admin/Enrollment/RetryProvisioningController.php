@@ -22,9 +22,6 @@ final class RetryProvisioningController extends Controller
     /**
      * Retry enrollment provisioning.
      *
-     * This endpoint allows authorized staff to retry the provisioning process for an enrollment, optionally
-     * targeting a single provider.
-     *
      * @urlParam provider string optional The provider to retry. Available values: `ims`, `moodle`, `spotplayer`, `skyroom`, `moodle_quiz`. Example: moodle
      *
      * @responseFile 200 resources/responses/admin/enrollment/retry-provisioning.json

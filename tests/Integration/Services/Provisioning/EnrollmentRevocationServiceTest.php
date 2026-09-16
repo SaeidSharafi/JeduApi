@@ -718,25 +718,3 @@ it('reports manual work when a missing attempt precedes an unsupported provider'
         ->and($fresh->enrollment_status)->toBe(EnrollmentStatusEnum::SUSPENDED);
     $this->assertDatabaseCount('provisioning_attempts', 2);
 });
-/*
- * Mutation notes (`pest --mutate --parallel`):
- * The remaining survivors are equivalent mutants, not uncovered behavior:
- * - L218 RemoveArrayItem in fail(): `retryable` is already true on every attempt
- *   `queue()` creates, and no reachable path starts a RUNNING attempt with it
- *   false, so dropping the explicit `true` persists the same value.
- * - L219 RemoveStringCast: the code is stored in the varchar `failure_code`
- *   column, which coerces an int to the identical string the cast produces.
- * - L232 + L255 BooleanOrToBooleanAnd: `! $enrollment && ...` is false on every
- *   reachable call (the enrollment always exists), and recalculate() itself
- *   early-returns on a completed enrollment, so both forms are indistinguishable.
- * - L329 FalseToTrue in canRevoke(): unreachable — ProvisioningProviderRegistry is
- *   final and every ProvisioningProviderEnum case has an adapter, so resolve()
- *   never throws and the catch never runs.
- * - L352 Decrement/IncrementInteger on `mb_substr(..., 0, 1000)`: the translated
- *   string is far shorter than 999 characters, so the length never truncates.
- * - L366 + L374 RemoveEarlyReturn in recalculate(): both guards are defensive —
- *   no caller reaches recalculate() with a completed enrollment, and falling
- *   through the `required === []` branch re-derives the same REVOKED/CANCELLED.
- * - L448 RemoveIntegerCast on max('sequence'): PHP coerces the numeric string or
- *   null to int for the `+ 1` and the int return type, so the cast is a no-op.
- */

@@ -17,30 +17,6 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 
 covers(GetTeacherJoinUrlAction::class, TeacherJoinUrlController::class);
 
-/*
-|--------------------------------------------------------------------------
-| Mutation notes (`pest --mutate --parallel`, 85.71% — 42 tested, 3 untested,
-| 4 uncovered)
-|--------------------------------------------------------------------------
-| The four uncovered mutants sit on the action's class constants, and are
-| coverage artifacts rather than test gaps: PHP compiles `const` declarations
-| instead of executing them, so no coverage driver can attribute a hit to those
-| lines. Both constants are asserted through the mocked `createLoginUrl` call
-| (access `2`, ttl `3600`).
-|
-| The two controller mutants are equivalent: `$user?->teacherData` and
-| `(bool) $teacher` only differ when the authenticated user is null, which the
-| `auth.cookie:user` + `auth:user` middleware already rejects before the
-| controller runs.
-|
-| The `RemoveArrayItem` mutant on the action's `default` arm is unreachable
-| while `DeliveryMethodEnum::getSeminars()` and that match agree — which it does
-| by construction, since both handled cases are exactly the two seminars. No
-| test can enter that arm without changing the enum, so it is left as the
-| graceful-degradation path (422 rather than a fatal `UnhandledMatchError`) for
-| a future seminar method added before its handler.
-*/
-
 beforeEach(function (): void {
     $this->customer();
 });

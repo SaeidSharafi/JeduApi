@@ -337,12 +337,3 @@ it('keeps revocation_pending when one component is revoked and another still blo
 
     expect($purchase->status)->toBe(BundlePurchaseStatusEnum::REVOCATION_PENDING);
 });
-/*
- * Mutation notes (pest --mutate --parallel):
- * Runs consistently score ~85% on this file. The surviving mutants cluster on
- * the BundlePurchase $fillable array (RemoveArrayItem) and on early-return /
- * disjunct branches whose alternatives produce an identical derived status for
- * every reachable input (e.g. all-REFUNDED is returned both by the dedicated
- * guard and by the inactive-components fallback). See issue #13 acceptance
- * criteria.
- */

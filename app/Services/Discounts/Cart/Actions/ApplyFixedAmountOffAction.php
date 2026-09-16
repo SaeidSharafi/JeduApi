@@ -38,7 +38,6 @@ final class ApplyFixedAmountOffAction implements DiscountActionContract
 
         $remainingDiscount = min($configuration->amount, $totalWeight);
 
-        // Proportional distribution across eligible items
         foreach ($eligibleItems as $item) {
             $ratio        = $item->total / $totalWeight;
             $itemDiscount = (int) round($remainingDiscount * $ratio);

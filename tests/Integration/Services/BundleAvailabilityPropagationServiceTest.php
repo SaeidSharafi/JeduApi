@@ -18,15 +18,6 @@ use Illuminate\Support\Facades\Event;
 
 covers(BundleAvailabilityPropagationService::class);
 
-// Surviving mutants (demonstrably equivalent, cannot be killed by behavior tests):
-// - L59 CoalesceRemoveLeft: collect($reasons ?? []) vs collect($reasons) — collect(null)
-//   yields an empty Collection, so removing the coalesce never changes stored reasons.
-// - L67/68/69 + L110 RemoveIntegerCast: product_id is already an int from PostgreSQL,
-//   the (int) cast is a no-op before it reaches the int-typed event properties.
-// - L95 + L123 RemoveEarlyReturn: each guarded empty-input path is followed by a second
-//   empty-guard (whereIn([], ...) matches nothing → next early return fires), so removing
-//   one guard never changes observable behavior.
-
 it('records every emitted review reason on the parent Bundle when components force a review', function (): void {
     $reasons = array_values(array_filter(
         BundleReviewReasonEnum::cases(),

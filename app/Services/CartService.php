@@ -256,7 +256,6 @@ final readonly class CartService
             ->first();
 
         if (! $userCart) {
-            // No user cart exists, convert guest cart to user cart.
             // Refresh each item snapshot against the current PDO state before
             // the guest cart is re-bound to the authenticated user.
             foreach ($guestCart->items as $guestItem) {
@@ -281,8 +280,8 @@ final readonly class CartService
                 ->first();
 
             if (! $existingItem) {
-                // Move item to user cart, refreshing the composition version
-                // snapshot against the current PDO state.
+                // Refresh the composition version snapshot against the
+                // current PDO state.
                 $guestItem->update([
                     'cart_id'             => $userCart->id,
                     'composition_version' => $this->compositionVersionFor($guestItem->productDeliveryOption),

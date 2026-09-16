@@ -136,9 +136,8 @@ it('agrees with each provider adapter', function (string $kind): void {
 
 it('agrees on configuration-only defaults when no provider row is stored', function (): void {
     foreach (ProvisioningProviderSettingsEnum::cases() as $provider) {
-        // No stored row: the panel and the adapter must both resolve the same
-        // config/provisioning.php block, which is what repointing the adapter
-        // fallback path unified.
+        // No stored row: only config/provisioning.php defines the provider, and
+        // the panel and the adapter must both resolve the same block.
         config()->set('provisioning.providers.'.$provider->value, array_merge(
             config('provisioning.providers.'.$provider->value, []),
             providerAgreementValues($provider, 'disabled but complete'),

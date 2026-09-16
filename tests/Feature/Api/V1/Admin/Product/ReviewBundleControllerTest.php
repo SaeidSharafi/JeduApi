@@ -25,14 +25,6 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 covers(ReviewBundleAction::class);
 covers(ReviewBundleController::class);
 
-// Mutation survivors (equivalent by design, intentionally left untested):
-// - ReviewBundleAction L26 RemoveNullSafeOperator: products.product_id is a
-//   NOT NULL FK, so `product?->productable_type` can never hit a null product
-//   and removing `?` is behaviorally identical for every reachable DB state.
-// - ReviewBundleAction L32 RemoveMethodCall (load('bundleComponents')): the
-//   relation is accessed right after in the map() closure, so removing the
-//   eager load only changes the query count, never the outcome.
-
 /**
  * Build a Bundle product with its parent COMPOSITE/BUNDLE delivery option.
  * FILE-LOCAL fixture (mirrors BundleAvailabilityServiceTest helpers) — do not

@@ -35,4 +35,4 @@ mutation runs takes a long time, so it's better to run them in background and ch
 
 The goal is **meaningful coverage, not a 100% score**. Strengthen the behavior tests until every mutation that reflects a real decision is killed — especially mutations that remove a branch, alter a comparison, change a returned value, or skip a side effect. Do not add tests whose only purpose is to move the number, and do not chase survivors that cannot change observable behavior.
 
-A surviving mutant may be left only when it is demonstrably equivalent or intentionally outside the contract, and the reason must be recorded beside the test (see the `Mutation notes` blocks in `tests/Unit/Services/WeightedApportionmentTest.php` and `tests/Integration/Services/BundleAvailabilityPropagationServiceTest.php`) or in the ticket. Do not hide survivors by excluding broad classes of code.
+A surviving mutant may be left when it is demonstrably equivalent or intentionally outside the contract. Do not hide survivors by excluding broad classes of code.

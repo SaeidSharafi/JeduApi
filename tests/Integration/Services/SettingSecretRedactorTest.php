@@ -11,9 +11,6 @@ use App\Services\SettingsService;
 
 covers(SettingSecretRedactor::class);
 
-// This file's mutation scope is the redactor registry alone: SettingsService's own
-// register/skip/audit behavior is exercised (and mutated) by SettingsServiceTest.
-
 /**
  * Every secret field of every integration setting, with a representative
  * plaintext value. Payment gateways are excluded: their secrets live under a

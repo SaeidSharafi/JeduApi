@@ -313,14 +313,13 @@ final readonly class ProductPriceService
             $productIdBinding = [];
 
             foreach ($chunk as $product) {
-                $jsonPlaceholder = $isPgsql ? 'cast(? as jsonb)' : '?';
-                $cases[]         = 'when ? then '.$jsonPlaceholder;
-                $cacheBindings[] = $product->id;
-                $cacheBindings[] = json_encode($product->price_data_cache, JSON_THROW_ON_ERROR);
+                $jsonPlaceholder    = $isPgsql ? 'cast(? as jsonb)' : '?';
+                $cases[]            = 'when ? then '.$jsonPlaceholder;
+                $cacheBindings[]    = $product->id;
+                $cacheBindings[]    = json_encode($product->price_data_cache, JSON_THROW_ON_ERROR);
                 $productIdBinding[] = (int) $product->id;
 
-                // Keep the in-memory model consistent with what's persisted,
-                // mirroring the timestamp side effect saveQuietly() used to have.
+                // Keep the in-memory model in sync with the persisted updated_at.
                 $product->setAttribute('updated_at', $now);
             }
 

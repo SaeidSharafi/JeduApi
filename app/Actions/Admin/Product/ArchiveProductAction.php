@@ -18,11 +18,8 @@ final readonly class ArchiveProductAction
     public function __construct(private BundleAvailabilityPropagationService $bundlePropagation) {}
 
     /**
-     * Archive a product and invalidate all dependent caches.
-     *
-     * Archiving flips the product out of the published shell, so availability
-     * and search caches MUST be invalidated (previously the controller updated
-     * status directly and skipped every invalidation event).
+     * Archive the product, invalidate its caches, and require review of any
+     * Bundle using it.
      */
     public function handle(Product $product): Product
     {

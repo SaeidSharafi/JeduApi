@@ -68,7 +68,6 @@ final class SettingsService
      */
     public function set(SettingKeyEnum $key, mixed $value, string $type = 'json', ?string $group = null): Setting
     {
-        // Encrypt secret fields for secret-bearing keys before persisting.
         $secretFields = $key->secretFields();
 
         if (is_array($value) && $secretFields !== []) {

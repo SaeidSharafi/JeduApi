@@ -190,9 +190,6 @@ describe('ProductPriceService: Updating Data', function (): void {
         ]);
     });
 
-    /**
-     * This is the most important new test. It proves the refactoring was successful.
-     */
     it('updates price data for multiple products efficiently using a single upsert query', function (): void {
         $productToUpdate = Product::factory()
             ->has(ProductDeliveryOption::factory(['price' => 10000, 'status' => 'published']))

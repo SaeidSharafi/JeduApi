@@ -16,7 +16,7 @@ final class UpdateUserAvatarData extends Data
 
     public static function rules(?ValidationContext $context = null): array
     {
-        $maxFileSize = config('mediable.max_size') / 1024; // in KB
+        $maxFileSize = config('mediable.max_size') / 1024;
 
         return [
             'file' => ['required', 'file', 'max:'.$maxFileSize],

@@ -96,7 +96,6 @@ final class ProductableSelectOptionController extends Controller
             $queries[] = $digitalAssetsQuery;
         }
 
-        // If no types were selected, return an empty page
         if ($queries === []) {
             return apiResponse()->success(
                 ProductableSelectOptionData::collect(new LengthAwarePaginator(

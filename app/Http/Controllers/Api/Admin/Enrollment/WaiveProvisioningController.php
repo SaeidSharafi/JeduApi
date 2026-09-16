@@ -26,8 +26,6 @@ final class WaiveProvisioningController extends Controller
     /**
      * Waive a failed provisioning provider.
      *
-     * Allows authorized staff to permanently waive a provisioning provider for an enrollment, skipping it entirely.
-     *
      * @responseFile 200 resources/responses/admin/enrollment/show.json
      * @responseFile 404 resources/responses/404.json
      * @responseFile 403 resources/responses/403.json

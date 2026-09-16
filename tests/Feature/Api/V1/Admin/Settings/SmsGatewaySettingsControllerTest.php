@@ -26,27 +26,6 @@ function smsGatewayUrl(string $name, array $parameters = []): string
     return route("api.v1.admin.settings.sms-gateways.{$name}", $parameters);
 }
 
-/*
-|--------------------------------------------------------------------------
-| Mutation notes
-|--------------------------------------------------------------------------
-|
-| Survivors left after `pest --mutate` for this file, and why:
-|
-| - `SmsGatewaySettingData::rules()` array items (RemoveArrayItem,
-|   AlwaysReturnEmptyArray): spatie/laravel-data re-derives an equivalent rule
-|   from each property type (`?string` → nullable|string, `bool` → boolean), so
-|   dropping an item from the array does not change the response.
-| - `SmsGatewaySettingData::bodyParameters()` items: documentation-only scribe
-|   metadata (marked `@codeCoverageIgnore`, like every sibling Data class); it
-|   never runs while serving a request.
-| - `BuildSmsGatewaySettingAction` `__((string) ($settings['label'] ?? ''))`: the
-|   config always declares a string `label`, so both fallbacks are unreachable.
-| - `UpdateSmsGatewaySettingAction` line 40 `?? null`: removing the coalesce
-|   only raises an undefined-array-key warning when no row is stored, which is
-|   not observable in the response.
-*/
-
 describe('index', function (): void {
     it('returns the ippanel gateway with its grouped schema and configuration defaults', function (): void {
         $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);

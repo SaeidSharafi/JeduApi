@@ -160,7 +160,6 @@ it('reports the purchase failed when every component provisioning fails', functi
         try {
             (new ProvisionEnrollmentProviderJob($attempt->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
         } catch (UnrecoverableProvisioningException) {
-            // expected
         }
     }
 

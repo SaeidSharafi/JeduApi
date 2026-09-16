@@ -46,12 +46,3 @@ it('clamps negative weights and amounts', function (): void {
     expect($this->apportionment->distribute(-100, [100000, 100000]))->toBe([0, 0])
         ->and($this->apportionment->distribute(100, [-5, 100000]))->toBe([0, 100]);
 });
-/*
- * Mutation notes (`pest --mutate --parallel`):
- * The survivors are equivalent mutants. The `max(0, ...)` clamp on the amount
- * and the `$remaining > 0` guard only differ for negative inputs the refund
- * contract never produces (`$remaining` is always non-negative, and entering
- * the loop with a zero remainder runs zero iterations). `ksort($shares)` and
- * `array_values($shares)` are no-ops because shares are built in ascending
- * index order.
- */

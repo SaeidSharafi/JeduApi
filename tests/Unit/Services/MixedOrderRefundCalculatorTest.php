@@ -225,11 +225,3 @@ it('floors a percentage that does not divide exactly', function (): void {
         ->and($result['effective_deduction_amount'])->toBe(3333)
         ->and($result['refund_amount'])->toBe(30002);
 });
-/*
- * Mutation notes (`pest --mutate --parallel`):
- * The remaining survivors are equivalent mutants: the `(int)` casts on
- * already-integer snapshots and the `max(0, ...)` clamps only differ for
- * negative or zero inputs that the refund action's validated snapshots never
- * produce, and `max(0, $amount ?? 0)` changing to `max(-1, ...)` is identical
- * for the zero and positive policy amounts the contract allows.
- */

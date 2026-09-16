@@ -200,11 +200,9 @@ describe('CartService', function (): void {
                 ->andReturnNull();
         });
 
-        // updateItem path
         $plainUpdate = makePlainCartOption();
         $updateItem  = seedCartItem($cart, $plainUpdate, snapshotVersion: null);
 
-        // addItem quantity-sum path
         $plainAdd = makePlainCartOption();
         $addItem  = seedCartItem($cart, $plainAdd, snapshotVersion: null);
 
