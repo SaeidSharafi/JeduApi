@@ -441,6 +441,11 @@ return [
             'action_error'  => 'خطای اسکای‌روم در [:action] کد :code: :message',
             'unknown_error' => 'خطای ناشناخته در ارتباط با سرویس اسکای‌روم.',
         ],
+        'niliroom' => [
+            'network_error'         => 'خطای شبکه در ارتباط با نیلی‌روم در آدرس [:endpoint]: :message',
+            'user_identity_missing' => 'نیلی‌روم برای استاد همگام‌سازی‌شده شناسه کاربری برنگرداند.',
+            'login_grant_invalid'   => 'نیلی‌روم لینک ورود ناقصی برنگرداند.',
+        ],
         'moodle' => [
             'username_missing'             => 'نام کاربری مورد نیاز مودل ارسال نشده است.',
             'user_creation_failed'         => 'فرآیند ساخت کاربر جدید در مودل با خطا مواجه شد.',

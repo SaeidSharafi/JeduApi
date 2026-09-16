@@ -80,9 +80,9 @@ function providerAgreementValues(ProvisioningProviderSettingsEnum $provider, str
 |
 | The badge the panel shows is computed from the provider schema, while the
 | adapters decide for themselves whether they can deliver. These tests are the
-| contract between the two: for every provider that has an adapter, the
-| schema-derived `enabled`/`configured`/`ready` must equal what the adapter
-| reports — both for a stored row and for a provider that only has
+| contract between the two: every provider listed in the panel has an adapter,
+| and its schema-derived `enabled`/`configured`/`ready` must equal what that
+| adapter reports — both for a stored row and for a provider that only has
 | `config/provisioning.php` defaults.
 |
 | `assertConfigured()` is the adapter's public configuration check; it throws
@@ -93,23 +93,12 @@ function providerAgreementValues(ProvisioningProviderSettingsEnum $provider, str
 /**
  * Assert the schema-derived state equals what the provider's adapter reports.
  *
- * A settings-only provider has no adapter to compare with, so only the
- * composition of its state is asserted.
- *
  * @param  array{enabled: bool, configured: bool, ready: bool}  $state
  */
 function expectProviderStateToMatchAdapter(ProvisioningProviderSettingsEnum $provider, array $state): void
 {
-    $serviceClass = $provider->serviceClass();
-
-    if ($serviceClass === null) {
-        expect($state['ready'])->toBe($state['enabled'] && $state['configured']);
-
-        return;
-    }
-
     /** @var AbstractIntegrationService $service */
-    $service = app($serviceClass);
+    $service = app($provider->serviceClass());
 
     $adapterConfigured = true;
 

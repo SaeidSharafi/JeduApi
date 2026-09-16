@@ -8,6 +8,7 @@ use App\Contracts\CartIdentifier;
 use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Contracts\OtpGeneratorInterface;
@@ -19,6 +20,7 @@ use App\Services\Discounts\DiscountMetadataService;
 use App\Services\Integrations\BbbService;
 use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
+use App\Services\Integrations\NiliroomService;
 use App\Services\Integrations\SkyroomService;
 use App\Services\Integrations\SpotPlayerService;
 use App\Services\RequestDataCacheService;
@@ -48,6 +50,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(SpotPlayerClientContract::class, SpotPlayerService::class);
         $this->app->bind(BbbClientContract::class, BbbService::class);
         $this->app->bind(SkyroomClientContract::class, SkyroomService::class);
+        $this->app->bind(NiliroomClientContract::class, NiliroomService::class);
 
         if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);

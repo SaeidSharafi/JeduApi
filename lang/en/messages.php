@@ -448,6 +448,11 @@ return [
             'action_error'  => 'Skyroom [:action] error :code: :message',
             'unknown_error' => 'Unknown Skyroom error',
         ],
+        'niliroom' => [
+            'network_error'         => 'Niliroom network error on [:endpoint]: :message',
+            'user_identity_missing' => 'Niliroom did not return a user identity for the synchronized teacher.',
+            'login_grant_invalid'   => 'Niliroom returned an incomplete login grant.',
+        ],
         'moodle' => [
             'username_missing'             => 'Moodle username source missing.',
             'user_creation_failed'         => 'Moodle user creation failed.',

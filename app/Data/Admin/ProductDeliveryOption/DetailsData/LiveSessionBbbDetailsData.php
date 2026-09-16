@@ -75,6 +75,13 @@ final class LiveSessionBbbDetailsData extends BaseDeliveryOptionDetailData imple
         #[Nullable, StringType, Max(255)]
         public ?string $meeting_id,
 
+        /**
+         * The Niliroom room public ID the teacher is sent to; staff store the ID of a room
+         * created manually in the panel, because rooms are never created through the API.
+         */
+        #[Nullable, StringType, Max(255)]
+        public ?string $nili_room_id,
+
         #[Nullable, IntegerType]
         public ?int $moodle_quiz_course_id = null,
     ) {}

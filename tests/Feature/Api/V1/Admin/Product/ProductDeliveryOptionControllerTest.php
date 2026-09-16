@@ -142,6 +142,54 @@ describe('User with permissions', function (): void {
         ]);
     });
 
+    it('should store the Niliroom room id on a BBB seminar delivery option', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
+        ]);
+        $this->simpleData['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
+        $this->simpleData['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
+        $this->simpleData['details']          = ['nili_room_id' => 'nili-room-1404'];
+
+        $response = $this->postJson(
+            route('api.v1.admin.delivery-options.store', ['product' => $this->product->id]),
+            $this->simpleData
+        );
+
+        $response->assertCreated()
+            ->assertJsonPath('data.details.nili_room_id', 'nili-room-1404');
+        $this->assertDatabaseHas('product_delivery_options', [
+            'id'                         => $response->json('data.id'),
+            'details_json->nili_room_id' => 'nili-room-1404',
+        ]);
+    });
+
+    it('should update the Niliroom room id on a BBB seminar delivery option', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_UPDATE,
+        ]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'       => $this->product->id,
+            'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB,
+            'details_json'     => ['nili_room_id' => 'nili-room-old'],
+        ])->fresh();
+        $data             = $deliveryOption->toArray();
+        $data['details']  = ['nili_room_id' => 'nili-room-new'];
+        $data['teachers'] = $this->teachers->pluck('id')->toArray();
+
+        $response = $this->putJson(route('api.v1.admin.delivery-options.update', [
+            'product'         => $deliveryOption->product_id,
+            'delivery_option' => $deliveryOption->id,
+        ]), $data);
+
+        $response->assertOk()
+            ->assertJsonPath('data.details.nili_room_id', 'nili-room-new');
+        $this->assertDatabaseHas('product_delivery_options', [
+            'id'                         => $deliveryOption->id,
+            'details_json->nili_room_id' => 'nili-room-new',
+        ]);
+    });
+
     it('should create a composite delivery option for a Bundle product', function (): void {
         $bundle        = Bundle::factory()->create();
         $bundleProduct = App\Models\Product::factory()->create([

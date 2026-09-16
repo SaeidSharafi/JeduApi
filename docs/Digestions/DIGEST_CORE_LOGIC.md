@@ -654,7 +654,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `isReady(): bool` — combines `isEnabled()` + `validateConfig()`
   - `resolveConfig(): void` — resolves the stored settings row for `getSettingKey()`, falling back to the `getConfigFallbackPath()` config array when no row exists
   - `handleHttpErrors(Response $response, string $endpoint): void` — standardized error handler for JSON REST integrations (throws `RecoverableProvisioningException` for 5xx, `UnrecoverableProvisioningException` for 4xx)
-- **Subclasses:** ImsService, MoodleService, SpotPlayerService, BbbService, SkyroomService all extend this base
+- **Subclasses:** ImsService, MoodleService, SpotPlayerService, BbbService, SkyroomService, NiliroomService all extend this base
 
 #### SkyroomClientContract (`app/Contracts/Integrations/SkyroomClientContract.php`)
 - **Purpose:** Narrow boundary shared by the real Skyroom API client and the deterministic E2E simulated client.
@@ -717,6 +717,21 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### BbbClientContract (`app/Contracts/Integrations/BbbClientContract.php`)
 - **Purpose:** Shared boundary for BBB provisioning, join URL generation, and readiness checks. The real client is used in normal environments; `FakeBbbService` implements the same contract in E2E with stable, credential-free meeting URLs and no outbound requests.
+
+#### NiliroomService (`app/Services/Integrations/NiliroomService.php`)
+- **Purpose:** Niliroom panel adapter implementing `NiliroomClientContract`, binding `NiliroomClientContract` in `AppServiceProvider`. It owns the three-call teacher access flow of ADR 0007 and never creates rooms — the room is a staff-created public ID the caller supplies.
+- **Configuration:** Stored `niliroom` setting (`SettingKeyEnum::NILIROOM`) with `config('provisioning.providers.niliroom')` fallback; reads `enabled`, `base_url` and `api_token` (env `NILIROOM_ENABLED` / `NILIROOM_BASE_URL` / `NILIROOM_API_TOKEN`). `validateConfig()` needs both `base_url` and `api_token`, which is what the admin provider area's schema-derived `configured`/`ready` state mirrors.
+- **Methods:**
+  - `issueTeacherLoginGrant(User $user, string $roomId): array{url: string, expires_at: CarbonInterface}`: The whole flow in order — sync user, enroll as teacher, issue the login grant — and the only public caller-facing method. `assertConfigured()` runs first, so an unconfigured panel fails before any request.
+- **Provider protocol (Niliroom public API v1):** Bearer auth via `withToken()`, `application/json`, base URL = host and `/api/v1` as the path prefix (the IMS convention). Every call is a mutation and carries a freshly generated `Idempotency-Key`; a reused key would be replayed by the provider with its stored response body, which is exactly how a teacher would be handed a grant they already redeemed.
+  1. `PUT /api/v1/users/eshop/user-{shopUserId}` with `{name, phone}` — one identity per shop user, `provider=eshop`, `subject=user-{id}`; returns the opaque identity public ID that the next two calls address. A `data.id` of `null` (the provider's "no identity" case) is unrecoverable.
+  2. `PUT /api/v1/rooms/{room}/enrollments/{identity}` with `{role: teacher}` — upsert, so an unenrolled teacher works on first login.
+  3. `POST /api/v1/login-grants` with `{user_id, room_id}` — returns `{url, expires_at}`; the single-use redemption URL and its expiry are what the teacher join endpoint hands back (as `type: niliroom`).
+- **Error taxonomy:** `handleHttpErrors()` classifies provider responses — every `4xx` (401/403 and the 404/409/422 the provider's own spec declares) is `UnrecoverableProvisioningException`, `5xx` is `RecoverableProvisioningException` — while `ConnectionException` is caught in the shared `send()` wrapper and rethrown as recoverable. A response missing the identity ID or the grant URL/expiry is unrecoverable (`messages.integration.niliroom.*`).
+- **Tests:** `tests/Integration/Services/Integrations/NiliroomServiceTest.php` fakes the three endpoints and asserts the call sequence with payloads and idempotency headers, the returned grant, fresh keys per call, and the taxonomy.
+
+#### NiliroomClientContract (`app/Contracts/Integrations/NiliroomClientContract.php`)
+- **Purpose:** Narrow boundary for the Niliroom panel adapter so the teacher session-login flow depends on an interface rather than the HTTP client; it also carries the `isEnabled()`/`assertConfigured()`/`isReady()` readiness trio every integration contract exposes.
 
 ### Provisioning Jobs (`app/Jobs/Provisioning/`)
 

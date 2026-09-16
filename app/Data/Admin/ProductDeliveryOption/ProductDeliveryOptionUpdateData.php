@@ -351,6 +351,11 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => 'bbb-meeting-spring-1404',
             ],
+            'details.nili_room_id' => [
+                'description' => 'For `live_session_bbb`. Public ID of the Niliroom room the session runs in. Rooms are created manually in the Niliroom panel — the API never creates them. Required for the teacher and student Niliroom join flows.',
+                'required'    => false,
+                'example'     => '01J8ZQ4W6M9K3T7YB2C5NDRHXF',
+            ],
             'details.moderator_password' => [
                 'description' => 'For `live_session_bbb`. Moderator (presenter) password. Falls back to the global BBB default if omitted.',
                 'required'    => false,
