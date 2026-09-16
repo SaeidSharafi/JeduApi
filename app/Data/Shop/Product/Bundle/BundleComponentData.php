@@ -62,7 +62,7 @@ final class BundleComponentData extends Data
                 'lms_moodle'                => 'Moodle',
                 'video_platform_spotplayer' => 'SpotPlayer',
                 'direct_download'           => 'Digital download',
-                'live_session_bbb'          => 'BigBlueButton',
+                'live_session_niliroom'     => 'Niliroom',
                 'live_session_skyroom'      => 'Skyroom',
                 'in_person'                 => 'In person',
                 default                     => 'Component fulfillment',

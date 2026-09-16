@@ -48,7 +48,7 @@ return [
     ],
     'DeliveryMethodEnum' => [
         'direct_download'           => 'دانلود مستقیم',
-        'live_session_bbb'          => 'جلسه زنده با BBB',
+        'live_session_niliroom'     => 'جلسه زنده با Niliroom',
         'live_session_skyroom'      => 'جلسه زنده با Skyroom',
         'lms_moodle'                => 'LMS Moodle',
         'video_platform_spotplayer' => 'پلتفرم ویدیویی SpotPlayer',
@@ -135,7 +135,6 @@ return [
         'ims'         => 'IMS',
         'moodle'      => 'Moodle',
         'spotplayer'  => 'SpotPlayer',
-        'bbb'         => 'BBB',
         'skyroom'     => 'Skyroom',
         'moodle_quiz' => 'آزمون Moodle',
     ],

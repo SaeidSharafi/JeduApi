@@ -16,7 +16,6 @@ enum SettingKeyEnum: string
     case HOME_PAGE_BLOCKS  = 'home_page_blocks';
     case IMS               = 'ims';
     case MOODLE            = 'moodle';
-    case BIG_BLUE_BUTTON   = 'big_blue_button';
     case SPOT_PLAYER       = 'spot_player';
     case SKYROOM           = 'skyroom';
     case NILIROOM          = 'niliroom';
@@ -41,16 +40,15 @@ enum SettingKeyEnum: string
     public function secretFields(): array
     {
         return match ($this) {
-            self::IMS             => ['api_key'],
-            self::MOODLE          => ['token', 'auth_userkey_token'],
-            self::BIG_BLUE_BUTTON => ['secret', 'default_attendee_password', 'default_moderator_password'],
-            self::SPOT_PLAYER     => ['api_key'],
-            self::SKYROOM         => ['api_key', 'secret'],
-            self::NILIROOM        => ['api_token'],
-            self::SMS_IPPANEL     => ['api_key'],
-            self::MELLAT          => ['password'],
-            self::DIGIPAY         => ['client_secret', 'password'],
-            default               => [],
+            self::IMS         => ['api_key'],
+            self::MOODLE      => ['token', 'auth_userkey_token'],
+            self::SPOT_PLAYER => ['api_key'],
+            self::SKYROOM     => ['api_key', 'secret'],
+            self::NILIROOM    => ['api_token'],
+            self::SMS_IPPANEL => ['api_key'],
+            self::MELLAT      => ['password'],
+            self::DIGIPAY     => ['client_secret', 'password'],
+            default           => [],
         };
     }
 

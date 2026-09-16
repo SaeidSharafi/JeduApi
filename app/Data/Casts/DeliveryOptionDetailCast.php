@@ -8,7 +8,7 @@ use App\Contracts\DeliveryOptionDetailDataContract;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\EmptyDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData;
-use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionNiliroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
@@ -36,7 +36,7 @@ final class DeliveryOptionDetailCast implements Cast
             DeliveryMethodEnum::LMS_MOODLE                => LmsMoodleDetailsData::from($value),
             DeliveryMethodEnum::DIRECT_DOWNLOAD           => DirectDownloadDetailsData::from($value),
             DeliveryMethodEnum::IN_PERSON                 => InPersonDetailsData::from($value),
-            DeliveryMethodEnum::LIVE_SESSION_BBB          => LiveSessionBbbDetailsData::from($value),
+            DeliveryMethodEnum::LIVE_SESSION_NILIROOM     => LiveSessionNiliroomDetailsData::from($value),
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM      => LiveSessionSkyroomDetailsData::from($value),
             DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => VideoPlatformSpotplayerDetailsData::from($value),
             DeliveryMethodEnum::BUNDLE                    => EmptyDetailsData::from([]),

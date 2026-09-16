@@ -14,24 +14,13 @@ use App\Enums\System\SettingKeyEnum;
 use App\Services\Integrations\AbstractIntegrationService;
 use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
+use App\Services\Integrations\NiliroomService;
 use App\Services\Integrations\SkyroomService;
 use App\Services\Integrations\SpotPlayerService;
 
 /**
- * The provisioning providers the admin panel can configure.
- *
- * This is the settings-facing list, not the persisted
- * {@see \App\Enums\ProvisioningProviderEnum}. BBB is intentionally absent
- * because ADR 0012 keeps it as an environment-configured legacy fallback rather
- * than something the panel manages, and Moodle Quiz has no credentials of its
- * own because it runs on the Moodle configuration — so both, and any unknown
- * key, are `404` through route binding rather than a special case.
- *
- * Niliroom has no adapter yet, so it is settings-only: it is listed, saved and
- * masked like the others, and its readiness comes from the schema alone.
- *
- * Adding a provider is a backend-only change: add a case with its setting key,
- * data class (schema + request rules), config defaults and translated label.
+ * The provisioning providers the admin panel can configure, as opposed to the persisted
+ * {@see \App\Enums\ProvisioningProviderEnum}.
  */
 enum ProvisioningProviderSettingsEnum: string
 {
@@ -72,23 +61,22 @@ enum ProvisioningProviderSettingsEnum: string
     }
 
     /**
-     * The integration service that consumes this provider's configuration, or
-     * null while the provider is settings-only because its adapter has not
-     * landed yet.
+     * The integration service that consumes this provider's configuration.
      *
      * This is the seam the adapter-agreement test uses to prove the computed
-     * state matches the adapter's own configuration check.
+     * state matches the adapter's own configuration check, so every case the
+     * panel lists must name the adapter that reads its settings.
      *
-     * @return class-string<AbstractIntegrationService>|null
+     * @return class-string<AbstractIntegrationService>
      */
-    public function serviceClass(): ?string
+    public function serviceClass(): string
     {
         return match ($this) {
             self::IMS        => ImsService::class,
             self::MOODLE     => MoodleService::class,
             self::SPOTPLAYER => SpotPlayerService::class,
             self::SKYROOM    => SkyroomService::class,
-            self::NILIROOM   => null,
+            self::NILIROOM   => NiliroomService::class,
         };
     }
 

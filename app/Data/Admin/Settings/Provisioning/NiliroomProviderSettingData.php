@@ -6,11 +6,6 @@ namespace App\Data\Admin\Settings\Provisioning;
 
 /**
  * The flat Niliroom provider settings the panel edits.
- *
- * Niliroom is the live-session panel that replaces BBB on the admin surface
- * (ADR 0012). It has no adapter yet, so it is stageable ahead of the service:
- * the credential field is `api_token` and readiness needs both the URL and the
- * token, resolved from configuration until an admin saves them.
  */
 final class NiliroomProviderSettingData extends ProvisioningProviderSettingData
 {

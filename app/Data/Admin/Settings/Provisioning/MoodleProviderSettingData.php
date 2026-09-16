@@ -6,13 +6,6 @@ namespace App\Data\Admin\Settings\Provisioning;
 
 /**
  * The flat Moodle provider settings the panel edits.
- *
- * The service token and the login token are separate credentials by privilege
- * (ADR 0011): the login token may only mint a customer login URL, while the
- * service token performs the administrative calls. Both are required, together
- * with the URL, before an enabled Moodle provider is configured — an enabled
- * provider without the login token can provision courses but cannot log the
- * customer in.
  */
 final class MoodleProviderSettingData extends ProvisioningProviderSettingData
 {

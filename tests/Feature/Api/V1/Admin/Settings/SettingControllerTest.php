@@ -5,8 +5,11 @@ declare(strict_types=1);
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
 use App\Enums\PermissionEnum;
+use App\Http\Controllers\Api\Admin\Settings\SettingController;
 use App\Models\Setting;
 use App\Services\SettingSecretRedactor;
+
+covers(SettingController::class);
 
 it('can get list of settings', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
@@ -57,21 +60,6 @@ it('redacts moodle token and auth_userkey_token in index response', function ():
         ->and($moodleSettings['value']['auth_userkey_token'])->toBe(SettingSecretRedactor::REDACTED);
 });
 
-it('redacts big_blue_button secret and passwords in index response', function (): void {
-    $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
-    Setting::factory()->bigBlueButton()->create();
-
-    $response = $this->getJson(route('api.v1.admin.settings.index'));
-
-    $response->assertStatus(200);
-
-    $bbbSettings = collect($response->json('data'))->flatten(1)->firstWhere('key', 'big_blue_button');
-    expect($bbbSettings)->not->toBeNull()
-        ->and($bbbSettings['value']['secret'])->toBe(SettingSecretRedactor::REDACTED)
-        ->and($bbbSettings['value']['default_attendee_password'])->toBe(SettingSecretRedactor::REDACTED)
-        ->and($bbbSettings['value']['default_moderator_password'])->toBe(SettingSecretRedactor::REDACTED);
-});
-
 it('redacts spot_player api_key in index response', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
     Setting::factory()->spotPlayer()->create();
@@ -112,13 +100,13 @@ it('redacts skyroom api_key and secret in index response', function (): void {
 
 it('does not redact non-secret fields for integration settings', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
-    Setting::factory()->bigBlueButton()->create();
+    Setting::factory()->spotPlayer()->create();
 
     $response = $this->getJson(route('api.v1.admin.settings.index'));
 
-    $bbbSettings = collect($response->json('data'))->flatten(1)->firstWhere('key', 'big_blue_button');
-    expect($bbbSettings['value']['base_url'])->toBe('https://bbb.example.com')
-        ->and($bbbSettings['value']['enabled'])->toBeFalse();
+    $spotSettings = collect($response->json('data'))->flatten(1)->firstWhere('key', 'spot_player');
+    expect($spotSettings['value']['endpoint'])->toBe('https://panel.spotplayer.ir/license/edit/')
+        ->and($spotSettings['value']['enabled'])->toBeFalse();
 });
 
 it('does not redact non-integration settings', function (): void {

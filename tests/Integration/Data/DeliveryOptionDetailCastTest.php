@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionNiliroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
 
@@ -84,41 +84,23 @@ it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function (): 
         ->toBe(verta($details['enrollment_end_date'])->format('Y-m-d H:i:s'));
 });
 
-it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', function (): void {
+it('return LiveSessionNiliroomDetailsData if delivery_method is LIVE_SESSION_NILIROOM', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE;
-    $properties['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB;
+    $properties['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_NILIROOM;
     $details                        = [
-        'moderator_password'                 => 'mod',
-        'attendee_password'                  => 'att',
-        'record_session'                     => true,
-        'auto_start_recording'               => false,
-        'allow_start_stop_recording'         => true,
-        'webcams_only_for_moderator'         => false,
-        'mute_on_start'                      => true,
-        'allow_mods_to_unmute_users'         => false,
-        'lock_settings_disable_cam'          => true,
-        'lock_settings_disable_mic'          => false,
-        'lock_settings_disable_private_chat' => true,
-        'lock_settings_disable_public_chat'  => false,
-        'lock_settings_disable_note'         => true,
-        'lock_settings_locked_layout'        => false,
-        'welcome_message'                    => 'Welcome to the session',
-        'session_duration'                   => 180,
-        'default_presentation_url'           => 'https://example.com/presentation',
-        'admin_notes'                        => 'Admin Note',
+        'nili_room_id'          => '01J8ZQ4W6M9K3T7YB2C5NDRHXF',
+        'admin_notes'           => 'Admin Note',
+        'moodle_quiz_course_id' => 77,
     ];
     $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
-        ->toBeInstanceOf(LiveSessionBbbDetailsData::class)
+        ->toBeInstanceOf(LiveSessionNiliroomDetailsData::class)
         ->and($delivery_option->toArray())->toBe(array_merge($details, [
-            'auto_create_meeting'   => null,
-            'meeting_id'            => null,
-            'moodle_quiz_course_id' => null,
-            'lms_course_code'       => null,
-            'start_date'            => null,
-            'schedule_days'         => null,
-            'duration'              => null,
+            'lms_course_code' => null,
+            'start_date'      => null,
+            'schedule_days'   => null,
+            'duration'        => null,
         ]));
 });
 

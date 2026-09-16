@@ -36,7 +36,7 @@ final class ManualProvisioningResolutionData extends Data
     {
         return [
             'provider' => [
-                'description' => 'The provisioning provider. Available values: `ims`, `moodle`, `spotplayer`, `bbb`, `skyroom`, `moodle_quiz`.',
+                'description' => 'The provisioning provider. Available values: `ims`, `moodle`, `spotplayer`, `skyroom`, `moodle_quiz`.',
                 'example'     => ProvisioningProviderEnum::MOODLE->value,
             ],
             'references' => [

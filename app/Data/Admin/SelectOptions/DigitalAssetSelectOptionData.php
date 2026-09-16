@@ -30,8 +30,6 @@ final class DigitalAssetSelectOptionData extends Data
 
     /**
      * Summarise the asset's single main file as "<TYPE> · <SIZE>".
-     *
-     * The single main file constraint is documented in ADR 0006.
      */
     private static function fileSummary(DigitalAsset $digitalAsset): string
     {

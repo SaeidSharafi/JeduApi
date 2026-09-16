@@ -217,8 +217,10 @@ return [
     'enrollments' => [
         'not_found'                       => 'ثبت‌نام مورد نظر یافت نشد.',
         'not_moodle'                      => 'این ثبت‌نام مربوط به دوره‌های مودل (Moodle) نیست.',
+        'not_seminar'                     => 'این مورد یک سمینار آنلاین (کلاس زنده) نیست.',
         'moodle_provisioning_incomplete'  => 'فرآیند آماده‌سازی و ثبت‌نام در Moodle هنوز نهایی نشده است.',
         'moodle_not_configured'           => 'سرویس مودل پیکربندی نشده است.',
+        'niliroom_not_configured'         => 'سرویس نیلی‌روم پیکربندی نشده است.',
         'moodle_auth_userkey_missing'     => 'توکن اختصاصی ورود مودل (auth_userkey) پیکربندی نشده است.',
         'moodle_service_error'            => 'خطا در ایجاد پیوند ورود یکپارچه مودل (SSO). لطفاً بعداً تلاش کنید.',
         'retry_provisioning_not_allowed'  => 'امکان تلاش مجدد برای آماده‌سازی با وضعیت «:status» وجود ندارد.',
@@ -247,7 +249,7 @@ return [
             'course_code'    => 'کد دوره', 'course_url' => 'لینک دوره', 'login_path' => 'مسیر ورود',
             'ims_student_id' => 'شناسهٔ دانش‌پذیر در IMS', 'ims_enrollment_id' => 'شناسهٔ ثبت‌نام در IMS',
             'spot_id'        => 'شناسهٔ محتوا در SpotPlayer', 'player_url' => 'لینک پلیر / پخش‌کننده',
-            'meeting_id'     => 'شناسهٔ جلسهٔ BBB', 'nili_room_id' => 'شناسهٔ اتاق Niliroom',
+            'nili_room_id'   => 'شناسهٔ اتاق Niliroom',
             'room_id'        => 'شناسهٔ اتاق', 'skyroom_user_id' => 'شناسهٔ کاربر در Skyroom',
             'provisioned_at' => 'زمان آماده‌سازی',
         ],
@@ -398,7 +400,6 @@ return [
 
     'enrollment' => [
         'delivery_no_join_url'    => 'روش ارائه [:method] از پیوند ورود مستقیم (Join URL) پشتیبانی نمی‌کند.',
-        'bbb_not_provisioned'     => 'جلسه کلاس مجازی BBB هنوز ایجاد یا آماده نشده است.',
         'skyroom_not_provisioned' => 'اتاق اسکای‌روم هنوز ایجاد یا آماده نشده است.',
         'revocation_retried'      => 'تلاش مجدد برای لغو دسترسی ثبت‌نام انجام شد.',
         'revocation_confirmed'    => 'لغو دسترسی ثبت‌نام به‌صورت دستی تأیید شد.',
@@ -431,14 +432,18 @@ return [
             'invalid_response' => 'پاسخ دریافتی از اسپات‌پلیر در قالب استاندارد نیست.',
             'service_error'    => 'سرویس اسپات‌پلیر با خطا مواجه شد.',
         ],
-        'bbb' => [
-            'create_meeting_failed' => 'درخواست ساخت کلاس در سیستم BBB با خطا مواجه شد.',
-        ],
         'skyroom' => [
             'network_error' => 'خطای شبکه در ارتباط با اسکای‌روم در متد [:action]: :message',
             'http_error'    => 'خطای پروتکل اسکای‌روم در [:action]: وضعیت :status',
             'action_error'  => 'خطای اسکای‌روم در [:action] کد :code: :message',
             'unknown_error' => 'خطای ناشناخته در ارتباط با سرویس اسکای‌روم.',
+        ],
+        'niliroom' => [
+            'network_error'            => 'خطای شبکه در ارتباط با نیلی‌روم در آدرس [:endpoint]: :message',
+            'user_identity_missing'    => 'نیلی‌روم برای کاربر همگام‌سازی‌شده شناسه کاربری برنگرداند.',
+            'login_grant_invalid'      => 'نیلی‌روم لینک ورود ناقصی برنگرداند.',
+            'meeting_identity_missing' => 'نیلی‌روم برای این اتاق شناسه جلسه برنگرداند.',
+            'meeting_join_url_missing' => 'نیلی‌روم لینک ورود به جلسه را برنگرداند.',
         ],
         'moodle' => [
             'username_missing'             => 'نام کاربری مورد نیاز مودل ارسال نشده است.',
@@ -480,10 +485,10 @@ return [
         'payment_not_belong'            => 'این تراکنش پرداخت متعلق به سفارش جاری نیست.',
         'payment_must_be_completed'     => 'پیش از آماده‌سازی در IMS، پرداخت باید با موفقیت نهایی شود.',
         'skyroom_room_id_missing'       => 'شناسه اتاق اسکای‌روم در جزئیات گزینه تحویل یافت نشد.',
+        'niliroom_room_id_missing'      => 'شناسه اتاق نیلی‌روم (nili_room_id) در جزئیات گزینه تحویل یافت نشد.',
         'moodle_quiz_course_id_missing' => 'شناسه آزمون مودل در جزئیات گزینه تحویل مشخص نشده است.',
         'moodle_course_id_missing'      => 'شناسه دوره مودل در جزئیات گزینه تحویل مشخص نشده است.',
         'spotplayer_spot_id_missing'    => 'شناسه دوره اسپات‌پلیر در جزئیات گزینه تحویل یافت نشد.',
-        'bbb_meeting_id_missing'        => 'شناسه کلاس BBB در جزئیات گزینه تحویل مشخص نشده است.',
         'revocation_not_supported'      => 'این سرویس‌دهنده API لغو دسترسی ندارد؛ دسترسی را به‌صورت دستی لغو کنید.',
     ],
 

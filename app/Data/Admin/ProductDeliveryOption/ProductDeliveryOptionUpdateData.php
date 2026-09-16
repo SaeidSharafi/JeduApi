@@ -267,7 +267,7 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'example'     => 24,
             ],
             'details.moodle_quiz_course_id' => [
-                'description' => 'For `live_session_bbb`, `live_session_skyroom`, `video_platform_spotplayer`, `in_person`. Moodle course ID used exclusively for the quiz section shown in the student\'s course page. When set, the system provisions a separate Moodle enrollment just for quizzes, independent of the primary delivery method.',
+                'description' => 'For `live_session_niliroom`, `live_session_skyroom`, `video_platform_spotplayer`, `in_person`. Moodle course ID used exclusively for the quiz section shown in the student\'s course page. When set, the system provisions a separate Moodle enrollment just for quizzes, independent of the primary delivery method.',
                 'required'    => false,
                 'example'     => 145,
             ],
@@ -340,66 +340,11 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'example'     => '1405-01-01',
             ],
 
-            // ── live_session_bbb ──────────────────────────────────────────────
-            'details.auto_create_meeting' => [
-                'description' => 'For `live_session_bbb`. When true, the provisioning job automatically creates the BBB meeting. When false, you must supply an existing `meeting_id`.',
+            // ── live_session_niliroom ──────────────────────────────────────────────
+            'details.nili_room_id' => [
+                'description' => 'For `live_session_niliroom`. Public ID of the Niliroom room the session runs in. Rooms are created manually in the Niliroom panel — the API never creates them. Required for the teacher and student Niliroom join flows.',
                 'required'    => false,
-                'example'     => true,
-            ],
-            'details.meeting_id' => [
-                'description' => 'For `live_session_bbb`. Existing BBB meeting ID to reuse. Only relevant when `auto_create_meeting` is false.',
-                'required'    => false,
-                'example'     => 'bbb-meeting-spring-1404',
-            ],
-            'details.moderator_password' => [
-                'description' => 'For `live_session_bbb`. Moderator (presenter) password. Falls back to the global BBB default if omitted.',
-                'required'    => false,
-                'example'     => 'modSecret123',
-            ],
-            'details.session_duration' => [
-                'description' => 'For `live_session_bbb`. Maximum session length in minutes. BBB will end the meeting after this duration.',
-                'required'    => false,
-                'example'     => 90,
-            ],
-            'details.allow_start_stop_recording' => [
-                'description' => 'For `live_session_bbb`. Allows moderators to start and stop recording mid-session.',
-                'required'    => false,
-                'example'     => true,
-            ],
-            'details.allow_mods_to_unmute_users' => [
-                'description' => 'For `live_session_bbb`. Allows moderators to unmute participants.',
-                'required'    => false,
-                'example'     => true,
-            ],
-            'details.lock_settings_disable_cam' => [
-                'description' => 'For `live_session_bbb`. Prevents participants from enabling their camera.',
-                'required'    => false,
-                'example'     => false,
-            ],
-            'details.lock_settings_disable_mic' => [
-                'description' => 'For `live_session_bbb`. Prevents participants from unmuting their microphone.',
-                'required'    => false,
-                'example'     => false,
-            ],
-            'details.lock_settings_disable_private_chat' => [
-                'description' => 'For `live_session_bbb`. Disables private (direct) messages between participants.',
-                'required'    => false,
-                'example'     => false,
-            ],
-            'details.lock_settings_disable_public_chat' => [
-                'description' => 'For `live_session_bbb`. Disables the public chat for all participants.',
-                'required'    => false,
-                'example'     => false,
-            ],
-            'details.lock_settings_disable_note' => [
-                'description' => 'For `live_session_bbb`. Disables the shared notes panel.',
-                'required'    => false,
-                'example'     => false,
-            ],
-            'details.lock_settings_locked_layout' => [
-                'description' => 'For `live_session_bbb`. Locks the layout so participants cannot change their view.',
-                'required'    => false,
-                'example'     => false,
+                'example'     => '01J8ZQ4W6M9K3T7YB2C5NDRHXF',
             ],
 
             // ── live_session_skyroom ──────────────────────────────────────────
@@ -424,44 +369,9 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'example'     => 90,
             ],
 
-            // ── shared: live_session_bbb + live_session_skyroom ───────────────
-            'details.attendee_password' => [
-                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Password students must enter to join. Falls back to global defaults if omitted.',
-                'required'    => false,
-                'example'     => 'attend1404',
-            ],
-            'details.record_session' => [
-                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Whether this session should be recorded.',
-                'required'    => false,
-                'example'     => true,
-            ],
-            'details.auto_start_recording' => [
-                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Start recording automatically when the first participant joins.',
-                'required'    => false,
-                'example'     => true,
-            ],
-            'details.webcams_only_for_moderator' => [
-                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Restricts video to moderators/presenters only; participants cannot share their camera.',
-                'required'    => false,
-                'example'     => true,
-            ],
-            'details.mute_on_start' => [
-                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Mutes all participants when they first join.',
-                'required'    => false,
-                'example'     => true,
-            ],
-            'details.welcome_message' => [
-                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Message shown to participants when they enter the room.',
-                'required'    => false,
-                'example'     => 'به کلاس خوش آمدید!',
-            ],
-            'details.default_presentation_url' => [
-                'description' => 'For `live_session_bbb` or `live_session_skyroom`. URL of a PDF or presentation file to load automatically when the session starts.',
-                'required'    => false,
-                'example'     => 'https://example.com/slides/session-1.pdf',
-            ],
+            // ── shared: live_session_niliroom + live_session_skyroom ───────────────
             'details.admin_notes' => [
-                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Internal admin notes about this session setup. Not visible to students.',
+                'description' => 'For `live_session_niliroom` or `live_session_skyroom`. Internal admin notes about this session setup. Not visible to students.',
                 'required'    => false,
                 'example'     => 'Backup room: room-id 43',
             ],

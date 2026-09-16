@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use App\Actions\Shop\Student\GetJoinUrlAction;
-use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\EnrollmentStatusEnum;
@@ -21,9 +21,10 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
-use App\Services\Fakes\FakeBbbService;
+use App\Services\Enrollment\ProvisioningPlanResolver;
 use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
+use App\Services\Fakes\FakeNiliroomService;
 use App\Services\Fakes\FakeSkyroomService;
 use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
@@ -289,10 +290,10 @@ it('provisions SpotPlayer with stable simulated references through the queued li
         ->toBe($firstData['player_url']);
 });
 
-it('provisions BBB with stable simulated meeting data through the queued lifecycle', function (): void {
-    app()->instance(BbbClientContract::class, new FakeBbbService());
+it('serves a live_session_niliroom seminar from Niliroom without provisioning it', function (): void {
+    app()->instance(NiliroomClientContract::class, new FakeNiliroomService());
     $option = ProductDeliveryOption::factory()->create([
-        'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_BBB,
+        'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
         'details_json'    => ['nili_room_id' => 'NILI-E2E-80'],
     ]);
     $orderItem = OrderItem::factory()->create([
@@ -304,34 +305,12 @@ it('provisions BBB with stable simulated meeting data through the queued lifecyc
         'customer_id'                => $orderItem->order->customer_id,
         'product_delivery_option_id' => $option->id,
         'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
-        'provisioning_plan'          => [
-            'version'   => 1,
-            'providers' => [['provider' => 'bbb', 'applicable' => true, 'readiness' => 'ready']],
-            'status'    => ProvisioningStatusEnum::READY->value,
-        ],
     ]);
 
-    $attempts = app(ProvisioningAttemptService::class);
-    $attempt  = $attempts->queue($enrollment, ProvisioningTriggerEnum::PAYMENT,
-        provider: ProvisioningProviderEnum::BBB);
-    (new ProvisionEnrollmentProviderJob($attempt->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
+    expect(app(ProvisioningPlanResolver::class)->resolve($option)['providers'])->toBe([])
+        ->and($enrollment->provisioningAttempts()->count())->toBe(0);
 
-    $enrollment->refresh();
-    $firstData = data_get($enrollment->provisioning_data, 'providers.bbb.data');
-    $joinUrl   = app(GetJoinUrlAction::class)->handle($enrollment)->url;
-
-    expect($attempt->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
-        ->and($enrollment->provisioning_status)->toBe(ProvisioningStatusEnum::HEALTHY)
-        ->and($firstData)->toBe(['meeting_id' => 'NILI-E2E-80'])
-        ->and($joinUrl)->toContain('meetingID=NILI-E2E-80');
-
-    $retry = $attempts->queue($enrollment, ProvisioningTriggerEnum::RETRY,
-        provider: ProvisioningProviderEnum::BBB);
-    (new ProvisionEnrollmentProviderJob($retry->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
-
-    expect($retry->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
-        ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.bbb.data.meeting_id'))
-        ->toBe($firstData['meeting_id']);
+    expect(app(GetJoinUrlAction::class)->handle($enrollment)->url)->toContain('room_id=NILI-E2E-80');
 });
 
 it('provisions Skyroom with stable simulated room and customer data through the queued lifecycle', function (): void {

@@ -48,7 +48,7 @@ return [
     ],
     'DeliveryMethodEnum' => [
         'direct_download'           => 'Direct Download',
-        'live_session_bbb'          => 'Live Session (BBB)',
+        'live_session_niliroom'     => 'Live Session (Niliroom)',
         'live_session_skyroom'      => 'Live Session (Skyroom)',
         'lms_moodle'                => 'LMS Moodle',
         'video_platform_spotplayer' => 'Video Platform (SpotPlayer)',
@@ -135,7 +135,6 @@ return [
         'ims'         => 'IMS',
         'moodle'      => 'Moodle',
         'spotplayer'  => 'SpotPlayer',
-        'bbb'         => 'BBB',
         'skyroom'     => 'Skyroom',
         'moodle_quiz' => 'Moodle Quiz',
     ],

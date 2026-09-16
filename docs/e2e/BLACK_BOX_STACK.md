@@ -186,7 +186,10 @@ The repository-side safety boundary is covered by these automated checks:
   repeated callback idempotency.
 
 The simulated provisioning clients are in-process and deterministic for IMS,
-Moodle/Moodle Quiz, SpotPlayer, BBB, and Skyroom. They do not issue provider
-HTTP requests. The Compose network is `internal`, so only declared service
-traffic is available; the external browser-facing ports are the API, Mailpit,
-and simulator ports listed above.
+Moodle/Moodle Quiz, SpotPlayer, and Skyroom. The Niliroom live-session client
+(`NiliroomClientContract`) is simulated too, but it is not a provisioning
+provider — `live_session_niliroom` plans no provider at all (ADR 0013) — so it is
+asserted explicitly instead of through the provider loop.
+None of them issue provider HTTP requests. The Compose network is `internal`,
+so only declared service traffic is available; the external browser-facing ports
+are the API, Mailpit, and simulator ports listed above.

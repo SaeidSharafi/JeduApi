@@ -14,7 +14,6 @@ enum ProvisioningProviderEnum: string
     case IMS         = 'ims';
     case MOODLE      = 'moodle';
     case SPOTPLAYER  = 'spotplayer';
-    case BBB         = 'bbb';
     case SKYROOM     = 'skyroom';
     case MOODLE_QUIZ = 'moodle_quiz';
 }

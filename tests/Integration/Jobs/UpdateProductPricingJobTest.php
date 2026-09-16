@@ -25,7 +25,7 @@ it('handle non existing product ids', function (): void {
 });
 
 it('synchronizes search only when indexed pricing values change', function (): void {
-    $product = Product::withoutSyncingToSearch(fn(): Product => Product::factory()->create());
+    $product = Product::withoutSyncingToSearch(fn (): Product => Product::factory()->create());
     ProductDeliveryOption::factory()->create([
         'product_id' => $product->id,
         'price'      => 250_000,
@@ -36,7 +36,7 @@ it('synchronizes search only when indexed pricing values change', function (): v
     restoreAfterCommitEventManager($transactionManager);
 
     Event::assertDispatched(ProductSearchIndexInvalidated::class,
-        fn(ProductSearchIndexInvalidated $event): bool => $event->productIds === [$product->id]);
+        fn (ProductSearchIndexInvalidated $event): bool => $event->productIds === [$product->id]);
 
     $transactionManager = fakeAfterCommitEventsImmediately(ProductSearchIndexInvalidated::class);
     (new UpdateProductPricingJob([$product->id]))->handle(app(ProductPriceService::class));
@@ -110,12 +110,12 @@ it('persists the correct price cache for every product in the batch', function (
 it('keeps the query count of a batch independent of the number of products with active prices', function (): void {
     Event::fake([ProductSearchIndexInvalidated::class]);
 
-    $productsWithTwoOptions = static fn(int $productCount) => Product::withoutSyncingToSearch(fn() => Product::factory()
+    $productsWithTwoOptions = static fn (int $productCount) => Product::withoutSyncingToSearch(fn () => Product::factory()
         ->count($productCount)
         ->has(ProductDeliveryOption::factory()->count(2))
         ->create());
 
-    $countBatchQueries = static fn(Collection $products): int => captureExecutedQueries(fn(
+    $countBatchQueries = static fn (Collection $products): int => captureExecutedQueries(fn (
     ) => (new UpdateProductPricingJob($products->modelKeys()))
         ->handle(app(ProductPriceService::class)))
         ->count();
@@ -128,9 +128,9 @@ it('keeps the query count of a batch independent of the number of products with 
     Event::fake([ProductSearchIndexInvalidated::class]);
 
     $staleProducts = static function (int $productCount): Collection {
-        $products = Product::withoutSyncingToSearch(fn() => Product::factory()->count($productCount)->create());
+        $products = Product::withoutSyncingToSearch(fn () => Product::factory()->count($productCount)->create());
 
-        $products->each(fn(Product $product) => $product->productPrice()->create([
+        $products->each(fn (Product $product) => $product->productPrice()->create([
             'product_id'          => $product->id,
             'min_price'           => 1000, 'min_original_price' => 1000, 'max_price' => 1000,
             'max_original_price'  => 1000,
@@ -141,7 +141,7 @@ it('keeps the query count of a batch independent of the number of products with 
         return $products;
     };
 
-    $countBatchQueries = static fn(Collection $products): int => captureExecutedQueries(fn(
+    $countBatchQueries = static fn (Collection $products): int => captureExecutedQueries(fn (
     ) => (new UpdateProductPricingJob($products->modelKeys()))
         ->handle(app(ProductPriceService::class)))
         ->count();
@@ -153,9 +153,9 @@ it('keeps the query count of a batch independent of the number of products with 
 it('removes stale price index rows for products with no priced delivery options', function (): void {
     Event::fake([ProductSearchIndexInvalidated::class]);
 
-    $products = Product::withoutSyncingToSearch(fn() => Product::factory()->count(3)->create());
+    $products = Product::withoutSyncingToSearch(fn () => Product::factory()->count(3)->create());
 
-    $products->each(fn(Product $product) => $product->productPrice()->create([
+    $products->each(fn (Product $product) => $product->productPrice()->create([
         'product_id'          => $product->id,
         'min_price'           => 1000, 'min_original_price' => 1000, 'max_price' => 1000,
         'max_original_price'  => 1000,
@@ -170,7 +170,6 @@ it('removes stale price index rows for products with no priced delivery options'
 
 /**
  * @param  callable(): void  $callback
- *
  * @return Collection<int, string>
  */
 function captureExecutedQueries(callable $callback): Collection

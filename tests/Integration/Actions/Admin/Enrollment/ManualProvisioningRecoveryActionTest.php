@@ -54,7 +54,7 @@ it('rejects references for a provider outside the canonical plan', function (): 
 
     expect(fn () => app(ManualProvisioningRecoveryAction::class)->resolve(
         $enrollment,
-        new ManualProvisioningResolutionData(ProvisioningProviderEnum::BBB, ['meeting_id' => 'room'], 'Verified.'),
+        new ManualProvisioningResolutionData(ProvisioningProviderEnum::SKYROOM, ['room_id' => 42], 'Verified.'),
         Staff::factory()->create()->id,
     ))->toThrow(ValidationException::class);
 });

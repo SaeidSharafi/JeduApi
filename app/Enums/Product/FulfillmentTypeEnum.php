@@ -39,7 +39,7 @@ enum FulfillmentTypeEnum: string
             ],
             self::PHYSICAL       => [],
             self::ONLINE_SERVICE => [
-                DeliveryMethodEnum::LIVE_SESSION_BBB,
+                DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
                 DeliveryMethodEnum::LIVE_SESSION_SKYROOM,
                 DeliveryMethodEnum::LMS_MOODLE,
             ],

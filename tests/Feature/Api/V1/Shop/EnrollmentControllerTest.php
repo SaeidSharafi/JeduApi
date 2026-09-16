@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Contracts\Integrations\BbbClientContract;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Models\ProductDeliveryOption;
 
@@ -98,30 +98,32 @@ it('does not show other users enrollment details', function (): void {
 // ─── Join URL ─────────────────────────────────────────────────────────────────
 
 it('returns join url for bbb enrollment', function (): void {
-    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
-    $enrollment->forceFill([
-        'provisioning_data' => [
-            'providers' => [
-                'bbb' => [
-                    'status' => 'completed',
-                    'data'   => ['meeting_id' => 'test-meeting-123'],
-                ],
-            ],
-        ],
-    ])->saveQuietly();
+    $deliveryOption = ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+        'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->getFulfillmentType(),
+        'details_json'     => ['nili_room_id' => 'room-public-1'],
+    ]);
 
-    $this->mock(BbbClientContract::class, function ($mock): void {
-        $mock->shouldReceive('buildJoinUrl')->andReturn('https://bbb.test/join/abc');
+    $enrollment = createEnrollment(
+        $this->user,
+        DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+        deliveryOption: $deliveryOption,
+    );
+
+    $this->mock(NiliroomClientContract::class, function ($mock): void {
+        $mock->shouldReceive('isReady')->andReturnTrue();
+        $mock->shouldReceive('issueStudentMeetingJoinGrant')
+            ->andReturn('https://niliroom.test/meetings/join/abc');
     });
 
     getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
-        ->assertJsonPath('data.url', 'https://bbb.test/join/abc');
+        ->assertJsonPath('data.url', 'https://niliroom.test/meetings/join/abc');
 });
 
 it('returns 404 for join url when enrollment belongs to another user', function (): void {
     $otherUser  = App\Models\User::factory()->create();
-    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_BBB);
+    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_NILIROOM);
 
     getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertNotFound();

@@ -200,8 +200,10 @@ return [
     'enrollments' => [
         'not_found'                       => 'Enrollment not found.',
         'not_moodle'                      => 'This enrollment is not a Moodle LMS enrollment.',
+        'not_seminar'                     => 'This is not an online seminar (live class).',
         'moodle_provisioning_incomplete'  => 'Moodle provisioning is incomplete for this enrollment.',
         'moodle_not_configured'           => 'Moodle is not configured.',
+        'niliroom_not_configured'         => 'Niliroom is not configured.',
         'moodle_auth_userkey_missing'     => 'Moodle auth_userkey token is not configured.',
         'moodle_service_error'            => 'Failed to generate Moodle SSO URL. Please try again later.',
         'retry_provisioning_not_allowed'  => 'Cannot retry provisioning for enrollment with status: :status',
@@ -229,7 +231,7 @@ return [
             'moodle_user_id' => 'Moodle User ID', 'moodle_course_id' => 'Moodle Course ID',
             'course_code'    => 'Course Code', 'course_url' => 'Course Link', 'login_path' => 'Login Path',
             'ims_student_id' => 'IMS Student ID', 'ims_enrollment_id' => 'IMS Enrollment ID',
-            'spot_id'        => 'SpotPlayer Content ID', 'player_url' => 'Player Link', 'meeting_id' => 'BBB Meeting ID',
+            'spot_id'        => 'SpotPlayer Content ID', 'player_url' => 'Player Link',
             'nili_room_id'   => 'Niliroom Room ID', 'room_id' => 'Room ID', 'skyroom_user_id' => 'Skyroom User ID',
             'provisioned_at' => 'Provisioning Time',
         ],
@@ -405,7 +407,6 @@ return [
 
     'enrollment' => [
         'delivery_no_join_url'    => 'Delivery method [:method] does not support join URLs.',
-        'bbb_not_provisioned'     => 'BBB meeting not provisioned yet.',
         'skyroom_not_provisioned' => 'Skyroom room not provisioned yet.',
         'revocation_retried'      => 'Enrollment revocation retried.',
         'revocation_confirmed'    => 'Enrollment revocation confirmed as completed.',
@@ -438,14 +439,18 @@ return [
             'invalid_response' => 'SpotPlayer returned an invalid response format.',
             'service_error'    => 'SpotPlayer returned an error.',
         ],
-        'bbb' => [
-            'create_meeting_failed' => 'BBB create meeting request failed.',
-        ],
         'skyroom' => [
             'network_error' => 'Skyroom network error on [:action]: :message',
             'http_error'    => 'Skyroom HTTP error on [:action]: status :status',
             'action_error'  => 'Skyroom [:action] error :code: :message',
             'unknown_error' => 'Unknown Skyroom error',
+        ],
+        'niliroom' => [
+            'network_error'            => 'Niliroom network error on [:endpoint]: :message',
+            'user_identity_missing'    => 'Niliroom did not return a user identity for the synchronized user.',
+            'login_grant_invalid'      => 'Niliroom returned an incomplete login grant.',
+            'meeting_identity_missing' => 'Niliroom did not return a meeting identity for the room.',
+            'meeting_join_url_missing' => 'Niliroom did not return a meeting join URL.',
         ],
         'moodle' => [
             'username_missing'             => 'Moodle username source missing.',
@@ -487,10 +492,10 @@ return [
         'payment_not_belong'            => 'Payment does not belong to enrollment order.',
         'payment_must_be_completed'     => 'Payment must be completed before IMS provisioning.',
         'skyroom_room_id_missing'       => 'Skyroom room_id is missing from delivery option details.',
+        'niliroom_room_id_missing'      => 'Niliroom nili_room_id is missing from delivery option details.',
         'moodle_quiz_course_id_missing' => 'Moodle quiz course_id is missing from delivery option details.',
         'moodle_course_id_missing'      => 'Moodle course_id is missing from delivery option details.',
         'spotplayer_spot_id_missing'    => 'SpotPlayer spot_id is missing from delivery option details.',
-        'bbb_meeting_id_missing'        => 'BBB meeting_id is missing from delivery option details.',
         'revocation_not_supported'      => 'The provider has no supported access-revocation API; revoke access manually.',
     ],
 

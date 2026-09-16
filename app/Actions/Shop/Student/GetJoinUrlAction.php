@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\Student;
 
-use App\Contracts\Integrations\BbbClientContract;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Data\Shop\Student\JoinUrlData;
 use App\Enums\Product\DeliveryMethodEnum;
@@ -17,7 +17,7 @@ use InvalidArgumentException;
 final readonly class GetJoinUrlAction
 {
     public function __construct(
-        private BbbClientContract $bbbService,
+        private NiliroomClientContract $niliroomService,
         private SkyroomClientContract $skyroomService,
     ) {}
 
@@ -33,31 +33,35 @@ final readonly class GetJoinUrlAction
         }
 
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LIVE_SESSION_BBB     => $this->buildBbbJoinUrl($enrollment, $provisioning),
-            DeliveryMethodEnum::LIVE_SESSION_SKYROOM => $this->buildSkyroomJoinUrl($enrollment, $provisioning),
-            default                                  => throw new InvalidArgumentException(
+            DeliveryMethodEnum::LIVE_SESSION_NILIROOM => $this->buildNiliroomJoinUrl($enrollment, $deliveryOption->details_json ?? []),
+            DeliveryMethodEnum::LIVE_SESSION_SKYROOM  => $this->buildSkyroomJoinUrl($enrollment, $provisioning),
+            default                                   => throw new InvalidArgumentException(
                 __('messages.enrollment.delivery_no_join_url', ['method' => $deliveryMethod->value])
             ),
         };
     }
 
     /**
-     * @param  array<string, mixed>  $provisioning
+     * Build the student's Niliroom meeting join URL for the delivery option's room.
+     *
+     * @param  array<string, mixed>  $details
      */
-    private function buildBbbJoinUrl(Enrollment $enrollment, array $provisioning): JoinUrlData
+    private function buildNiliroomJoinUrl(Enrollment $enrollment, array $details): JoinUrlData
     {
-        $meetingId = data_get($provisioning, 'bbb.data.meeting_id');
+        $roomId = data_get($details, 'nili_room_id');
 
-        if (! $meetingId) {
-            throw new ResourceNotProvisionedException(__('messages.enrollment.bbb_not_provisioned'));
+        if (! is_string($roomId) || mb_trim($roomId) === '') {
+            throw new ResourceNotProvisionedException(__('messages.provisioning.niliroom_room_id_missing'));
         }
 
-        $joinUrl = $this->bbbService->buildJoinUrl(
-            meetingId: (string) $meetingId,
-            fullName: $enrollment->customer->full_name ?? 'دانشجو',
-        );
+        if (! $this->niliroomService->isReady()) {
+            throw new ResourceNotProvisionedException(__('messages.enrollments.niliroom_not_configured'));
+        }
 
-        return new JoinUrlData(url: $joinUrl, type: 'bbb');
+        $joinUrl = $this->niliroomService->issueStudentMeetingJoinGrant($enrollment->customer, mb_trim($roomId));
+
+        // The panel puts no lifetime on a meeting join grant, so there is no expiry to report.
+        return new JoinUrlData(url: $joinUrl, type: 'niliroom');
     }
 
     /**

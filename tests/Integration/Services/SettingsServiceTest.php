@@ -255,23 +255,21 @@ test('get() returns plaintext legacy secret fields without error (backward compa
         ->and($value['auth_userkey_token'])->toBe('legacy-plain-userkey');
 });
 
-test('set() encrypts all secret fields for BIG_BLUE_BUTTON', function (): void {
+test('set() encrypts all secret fields for SKYROOM', function (): void {
     $service = new SettingsService();
 
-    $service->set(SettingKeyEnum::BIG_BLUE_BUTTON, [
-        'enabled'                    => false,
-        'base_url'                   => 'https://bbb.example.com',
-        'secret'                     => 'bbb-secret',
-        'default_attendee_password'  => 'attendee-pass',
-        'default_moderator_password' => 'moderator-pass',
+    $service->set(SettingKeyEnum::SKYROOM, [
+        'enabled'  => false,
+        'base_url' => 'https://www.skyroom.online/skyroom/api',
+        'api_key'  => 'skyroom-key',
+        'secret'   => 'skyroom-secret',
     ]);
 
-    $raw    = DB::table('settings')->where('key', 'big_blue_button')->value('value');
+    $raw    = DB::table('settings')->where('key', 'skyroom')->value('value');
     $stored = json_decode($raw, true);
 
-    expect(Crypt::decryptString($stored['secret']))->toBe('bbb-secret')
-        ->and(Crypt::decryptString($stored['default_attendee_password']))->toBe('attendee-pass')
-        ->and(Crypt::decryptString($stored['default_moderator_password']))->toBe('moderator-pass');
+    expect(Crypt::decryptString($stored['api_key']))->toBe('skyroom-key')
+        ->and(Crypt::decryptString($stored['secret']))->toBe('skyroom-secret');
 });
 
 test('set() does not encrypt empty secret fields', function (): void {
@@ -363,26 +361,24 @@ test('set() audit log records the acting staff id', function (): void {
         ->and($log->action_type)->toBe('update');
 });
 
-test('set() audit log redacts all BBB secret fields', function (): void {
+test('set() audit log redacts every SKYROOM secret field', function (): void {
     $staff   = Staff::factory()->create();
     $service = new SettingsService();
 
     $this->actingAs($staff, 'staff');
 
-    $service->set(SettingKeyEnum::BIG_BLUE_BUTTON, [
-        'enabled'                    => true,
-        'base_url'                   => 'https://bbb.example.com',
-        'secret'                     => 'bbb-secret',
-        'default_attendee_password'  => 'attendee-pass',
-        'default_moderator_password' => 'moderator-pass',
+    $service->set(SettingKeyEnum::SKYROOM, [
+        'enabled'  => true,
+        'base_url' => 'https://www.skyroom.online/skyroom/api',
+        'api_key'  => 'skyroom-key',
+        'secret'   => 'skyroom-secret',
     ]);
 
-    $log = AdminActionLog::where('route_name', 'settings.integration.big_blue_button')->firstOrFail();
+    $log = AdminActionLog::where('route_name', 'settings.integration.skyroom')->firstOrFail();
 
-    expect($log->request_data['value']['secret'])->toBe(SettingSecretRedactor::REDACTED)
-        ->and($log->request_data['value']['default_attendee_password'])->toBe(SettingSecretRedactor::REDACTED)
-        ->and($log->request_data['value']['default_moderator_password'])->toBe(SettingSecretRedactor::REDACTED)
-        ->and($log->request_data['value']['base_url'])->toBe('https://bbb.example.com');
+    expect($log->request_data['value']['api_key'])->toBe(SettingSecretRedactor::REDACTED)
+        ->and($log->request_data['value']['secret'])->toBe(SettingSecretRedactor::REDACTED)
+        ->and($log->request_data['value']['base_url'])->toBe('https://www.skyroom.online/skyroom/api');
 });
 
 test('set() does NOT create audit log for non-integration keys', function (): void {

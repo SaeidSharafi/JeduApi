@@ -112,9 +112,6 @@ final readonly class RetryProvisioningAction
             } elseif ($provider === 'spotplayer') {
                 $this->dispatchProvider($enrollment, ProvisioningProviderEnum::SPOTPLAYER);
                 $dispatched[] = 'spotplayer';
-            } elseif ($provider === 'bbb') {
-                $this->dispatchProvider($enrollment, ProvisioningProviderEnum::BBB);
-                $dispatched[] = 'bbb';
             } elseif ($provider === 'skyroom') {
                 $this->dispatchProvider($enrollment, ProvisioningProviderEnum::SKYROOM);
                 $dispatched[] = 'skyroom';
@@ -157,11 +154,6 @@ final readonly class RetryProvisioningAction
         if ($plannedProviders->contains('spotplayer')) {
             $this->dispatchProvider($enrollment, ProvisioningProviderEnum::SPOTPLAYER);
             $dispatched[] = 'spotplayer';
-        }
-
-        if ($plannedProviders->contains('bbb')) {
-            $this->dispatchProvider($enrollment, ProvisioningProviderEnum::BBB);
-            $dispatched[] = 'bbb';
         }
 
         if ($plannedProviders->contains('skyroom')) {

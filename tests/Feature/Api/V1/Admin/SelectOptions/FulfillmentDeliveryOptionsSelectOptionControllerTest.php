@@ -40,8 +40,8 @@ it('returns each fulfillment with its compatible delivery options', function ():
 
     expect($onlineService['delivery_options'])->toEqual([
         [
-            'value' => DeliveryMethodEnum::LIVE_SESSION_BBB->value,
-            'label' => DeliveryMethodEnum::LIVE_SESSION_BBB->translate(),
+            'value' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->value,
+            'label' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->translate(),
         ],
         [
             'value' => DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value,

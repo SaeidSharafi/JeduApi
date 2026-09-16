@@ -287,7 +287,7 @@ return [
 
 ## 4. Enrollment providers
 
-Purpose: configure the external providers that enrollments are provisioned into. Same interaction model as payment gateways, but the settings objects are the **flat arrays already stored** under `SettingKeyEnum::IMS`, `MOODLE`, `SPOT_PLAYER`, `BIG_BLUE_BUTTON`, `SKYROOM` (plus a new `NILIROOM` key) and read by `AbstractIntegrationService::resolveConfig()`.
+Purpose: configure the external providers that enrollments are provisioned into. Same interaction model as payment gateways, but the settings objects are the **flat arrays already stored** under `SettingKeyEnum::IMS`, `MOODLE`, `SPOT_PLAYER`, `SKYROOM`, `NILIROOM` and read by `AbstractIntegrationService::resolveConfig()`.
 
 ### 4.1 Endpoints
 
@@ -304,9 +304,8 @@ Purpose: configure the external providers that enrollments are provisioned into.
 | `ims` | `ims` | IMS | `ImsService` |
 | `moodle` | `moodle` | مودل | `MoodleService` |
 | `spotplayer` | `spot_player` | اسپات‌پلیر | `SpotPlayerService` |
-| `bbb` | `big_blue_button` | بیگ‌بلوباتن | `BbbService` |
 | `skyroom` | `skyroom` | اسکای‌روم | `SkyroomService` |
-| `niliroom` | `niliroom` (new) | نیلی‌روم | planned — no adapter yet |
+| `niliroom` | `niliroom` | نیلی‌روم | `NiliroomService` |
 
 `moodle_quiz` (present in `ProvisioningProviderEnum` and `ProvisioningProviderRegistry`) has **no credentials of its own** — it runs on the `moodle` configuration. It is intentionally absent from this list and must not appear as a form: `GET/PUT .../enrollment-providers/moodle_quiz` → `404`.
 
@@ -353,20 +352,6 @@ Ready condition: non-empty `base_url` **and** `token` **and** `auth_userkey_toke
 
 Ready condition: non-empty `endpoint` **and** `api_key`. Note the key is `endpoint`, not `base_url`.
 
-#### `bbb`
-
-| Group | `key` | Type | Required | Sensitive | Default |
-| --- | --- | --- | --- | --- | --- |
-| `general` | `enabled` | boolean | yes | no | `false` |
-| `connection` | `base_url` | url | yes | no | `config('services.bbb.base_url')` |
-| `credentials` | `secret` | password | yes | **yes** | `config('services.bbb.secret')` |
-| `advanced` | `api_path` | text | no | no | `/bigbluebutton/api` |
-| `advanced` | `default_attendee_password` | password | no | **yes** | `ap` |
-| `advanced` | `default_moderator_password` | password | no | **yes** | `mp` |
-| `advanced` | `timeout` | number | no | no | `15` |
-
-Ready condition: non-empty `base_url` **and** `secret`.
-
 #### `skyroom`
 
 | Group | `key` | Type | Required | Sensitive | Default |
@@ -379,17 +364,15 @@ Ready condition: non-empty `api_key`.
 
 #### `niliroom`
 
-Niliroom is the panel behind BBB live sessions: teachers are sent to it through a provider-native login grant, with `BbbService` as the fallback when Niliroom is disabled or unconfigured (ADR 0007). Its credentials are a plain base URL + API key pair, shaped like `skyroom`.
+Niliroom is the panel behind live sessions, and the only one: `live_session_niliroom` names the delivery method, and the retired BigBlueButton integration has no fallback (ADR 0013). Teachers are sent to Niliroom through a provider-native login grant. Its credentials are a plain base URL + API token pair, shaped like `skyroom`.
 
 | Group | `key` | Type | Required | Sensitive | Default |
 | --- | --- | --- | --- | --- | --- |
 | `general` | `enabled` | boolean | yes | no | `false` |
-| `connection` | `base_url` | url | yes | no | `config('services.niliroom.base_url')` |
-| `credentials` | `api_key` | password | yes | **yes** | `config('services.niliroom.api_key')` |
+| `connection` | `base_url` | url | yes | no | `config('provisioning.providers.niliroom.base_url')` |
+| `credentials` | `api_token` | password | yes | **yes** | `config('provisioning.providers.niliroom.api_token')` |
 
-Ready condition: non-empty `base_url` **and** `api_key`.
-
-No provisioning adapter reads this configuration yet, so it is the one provider whose `state.ready` can be `true` without any live behaviour behind it. It must still be listed, saved, and masked like the others so the admin panel is complete before the adapter lands.
+Ready condition: non-empty `base_url` **and** `api_token`. `NiliroomService` reads this configuration, so the state badges reflect live behaviour.
 
 ### 4.3 Response — `GET /enrollment-providers`
 
@@ -475,8 +458,8 @@ Flat body, exactly the provider's keys:
 
 Required for these endpoints to exist:
 
-1. `config/sms.php` with `gateways` and `notifications` blocks (section 3.5), plus a `services.niliroom` entry (`base_url`, `api_key`).
-2. `SettingKeyEnum`: `SMS_IPPANEL = 'sms.ippanel'` (group `sms`, secret field `api_key`), `SMS_NOTIFICATIONS = 'sms_notifications'` (group `sms`), and `NILIROOM = 'niliroom'` (group `integrations`, secret field `api_key`).
+1. `config/sms.php` with `gateways` and `notifications` blocks (section 3.5), plus a `providers.niliroom` entry (`base_url`, `api_token`) in `config/provisioning.php`.
+2. `SettingKeyEnum`: `SMS_IPPANEL = 'sms.ippanel'` (group `sms`, secret field `api_key`), `SMS_NOTIFICATIONS = 'sms_notifications'` (group `sms`), and `NILIROOM = 'niliroom'` (group `integrations`, secret field `api_token`).
 3. `SettingSecretRedactor::SECRET_FIELDS` + `SettingsService::SKIP_MEDIA`: add `sms.ippanel`, `niliroom`, and `skyroom` (see gaps below).
 4. Data classes: `SmsGatewaySettingData` (+ per-gateway `schema()`), `SmsNotificationSettingsData`, `EnrollmentProviderSettingData` (+ per-provider `schema()`), following `MellatGatewaySettingData`.
 5. Controllers under `app/Http/Controllers/Api/Admin/Settings/`: `SmsGatewaySettingsController`, `SmsNotificationSettingsController`, `EnrollmentProviderSettingsController` — thin, `Gate::authorize(...)`, all logic in `SettingsService`/actions. The enrollment controller accepts `niliroom` alongside the provisioning enum keys.
@@ -494,7 +477,7 @@ These are existing inconsistencies this contract surfaces. Each is a decision or
 | # | Gap | Impact |
 | --- | --- | --- |
 | 1 | `skyroom` is missing from `SettingSecretRedactor::SECRET_FIELDS` and `SettingsService::SKIP_MEDIA`, although `SettingKeyEnum::SKYROOM::secretFields()` lists `api_key`/`secret`. | Reading `skyroom` through the generic settings API returns decrypted secrets, and the `witImages` media lookup runs on a credentials array. |
-| 2 | `BbbService` reads `default_attendee_pw` / `default_moderator_pw`, but the seeder, config, and `SettingKeyEnum::BIG_BLUE_BUTTON::secretFields()` use `default_attendee_password` / `default_moderator_password`. | This contract uses the `*_password` names; `BbbService` must be corrected or BBB meeting joins will ignore the configured passwords. |
+| 2 | ~~`BbbService` reads `default_attendee_pw` / `default_moderator_pw`, but the seeder, config, and `SettingKeyEnum::BIG_BLUE_BUTTON::secretFields()` use `default_attendee_password` / `default_moderator_password`.~~ Resolved by #113: the BigBlueButton integration, its passwords and its setting key are gone (ADR 0013). | BBB meeting joins no longer exist to ignore the passwords. |
 | 3 | `SettingsSeeder` stores no `enabled` for `spot_player` and reads `config('services.spotplayer.base_url')`, which does not exist (the config key is `endpoint`). | The seeded value has a null endpoint, and `enabled` currently falls back to the config file instead of the DB. |
 | 4 | `create_studets` / `update_studets` / `create_enrollments` / `update_enrollments` flags are seeded for `ims`/`moodle` but read nowhere. | They are exposed as editable settings that do nothing. Exclude them from `schema` until they are wired, or remove them. |
 | 5 | `payment-gateways` documents sensitive values as `••••••` and returns `settings: []` when unset, while the actual mask is `***REDACTED***`. | This contract standardizes on `***REDACTED***` + always-object `settings`; the payment endpoint should be aligned separately. |
@@ -502,4 +485,4 @@ These are existing inconsistencies this contract surfaces. Each is a decision or
 | 7 | ~~Nothing reads a gateway-level `enabled` today: `IpPanelSmsService::validateConfig()` only checks `api_key`/`from`, and `SmsChannel` sends unconditionally.~~ Resolved by #106: `IpPanelSmsService` resolves the stored gateway setting and treats `enabled` as a kill switch, recording a skipped `sms_logs` row instead of throwing. | The gateway toggle and the per-option toggles are both guaranteed switches: #107 wires each notification option into the send path. |
 | 8 | ~~`OtpSmsNotification` hardcodes pattern `mdoe1j1587`, and `RefundCompletedNotification` has no pattern at all.~~ Resolved by #107: `SmsMessage` carries only `content`, `parameters` and `type`, and `SmsChannel` reads the option's `pattern_code` from the settings via the message `log_type`. | Pattern codes now live only in the notification-option settings. |
 | 9 | `MoodleService::validateConfig()` checks `base_url` + `token` only, while `auth_userkey_token` is what makes customer SSO login work. | Without extending it, the panel reports `ready: true` for a Moodle provider that cannot log students in. |
-| 10 | `niliroom` has no adapter, no `ProvisioningProviderEnum` case, and no config entry yet. | It is a settings-only provider for now; decide whether it becomes a first-class provisioning provider or stays a live-session-only integration (ADR 0007 treats it as the primary BBB panel with `BbbService` as fallback). |
+| 10 | ~~`niliroom` has no adapter, no `ProvisioningProviderEnum` case, and no config entry yet.~~ Resolved by #54/#113: `NiliroomService` is the adapter, and it stays out of `ProvisioningProviderEnum` deliberately — Niliroom has no resource to create, so `live_session_niliroom` plans zero providers (ADR 0013). | It remains a live-session-only integration, configured here and read at join time. |

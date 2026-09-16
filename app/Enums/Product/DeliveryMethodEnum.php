@@ -6,7 +6,7 @@ namespace App\Enums\Product;
 
 use App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData;
-use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionNiliroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
@@ -22,7 +22,7 @@ enum DeliveryMethodEnum: string
     case DIRECT_DOWNLOAD           = 'direct_download';
     case VIDEO_PLATFORM_SPOTPLAYER = 'video_platform_spotplayer';
     case IN_PERSON                 = 'in_person';
-    case LIVE_SESSION_BBB          = 'live_session_bbb';
+    case LIVE_SESSION_NILIROOM     = 'live_session_niliroom';
     case LIVE_SESSION_SKYROOM      = 'live_session_skyroom';
     case BUNDLE                    = 'bundle';
 
@@ -33,13 +33,13 @@ enum DeliveryMethodEnum: string
     {
         if ($asString) {
             return [
-                self::LIVE_SESSION_BBB->value,
+                self::LIVE_SESSION_NILIROOM->value,
                 self::LIVE_SESSION_SKYROOM->value,
             ];
         }
 
         return [
-            self::LIVE_SESSION_BBB,
+            self::LIVE_SESSION_NILIROOM,
             self::LIVE_SESSION_SKYROOM,
         ];
     }
@@ -51,7 +51,7 @@ enum DeliveryMethodEnum: string
             self::DIRECT_DOWNLOAD           => DirectDownloadDetailsData::class,
             self::VIDEO_PLATFORM_SPOTPLAYER => VideoPlatformSpotplayerDetailsData::class,
             self::IN_PERSON                 => InPersonDetailsData::class,
-            self::LIVE_SESSION_BBB          => LiveSessionBbbDetailsData::class,
+            self::LIVE_SESSION_NILIROOM     => LiveSessionNiliroomDetailsData::class,
             self::LIVE_SESSION_SKYROOM      => LiveSessionSkyroomDetailsData::class,
             self::BUNDLE                    => \App\Data\Admin\ProductDeliveryOption\DetailsData\EmptyDetailsData::class,
         };
@@ -61,7 +61,7 @@ enum DeliveryMethodEnum: string
     {
         return match ($this) {
             self::LMS_MOODLE,
-            self::LIVE_SESSION_BBB,
+            self::LIVE_SESSION_NILIROOM,
             self::VIDEO_PLATFORM_SPOTPLAYER,
             self::LIVE_SESSION_SKYROOM => FulfillmentTypeEnum::ONLINE_SERVICE,
             self::DIRECT_DOWNLOAD      => FulfillmentTypeEnum::DIGITAL,
@@ -74,7 +74,7 @@ enum DeliveryMethodEnum: string
     {
         return match ($this) {
             self::LMS_MOODLE,
-            self::LIVE_SESSION_BBB,
+            self::LIVE_SESSION_NILIROOM,
             self::VIDEO_PLATFORM_SPOTPLAYER,
             self::LIVE_SESSION_SKYROOM             => true,
             self::DIRECT_DOWNLOAD, self::IN_PERSON => false,

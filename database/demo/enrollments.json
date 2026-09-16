@@ -164,15 +164,7 @@
         "access_start_date": "2024-12-02",
         "access_end_date": "2025-03-02",
         "provisioning_data": {
-            "providers": {
-                "bbb": {
-                    "status": "success",
-                    "data": {
-                        "meeting_id": "bbb-meeting-pdo13-order7"
-                    },
-                    "attempt_sequence": 1
-                }
-            }
+            "providers": {}
         },
         "notes": null,
         "created_at": "2024-12-02 08:00:00",
@@ -232,15 +224,7 @@
         "access_start_date": "2024-12-11",
         "access_end_date": "2025-03-11",
         "provisioning_data": {
-            "providers": {
-                "bbb": {
-                    "status": "success",
-                    "data": {
-                        "meeting_id": "bbb-meeting-pdo22-order8"
-                    },
-                    "attempt_sequence": 1
-                }
-            }
+            "providers": {}
         },
         "notes": null,
         "created_at": "2024-12-11 07:30:00",
@@ -287,15 +271,7 @@
         "access_start_date": "2025-01-16",
         "access_end_date": "2025-06-16",
         "provisioning_data": {
-            "providers": {
-                "bbb": {
-                    "status": "success",
-                    "data": {
-                        "meeting_id": "bbb-meeting-pdo8-order10"
-                    },
-                    "attempt_sequence": 1
-                }
-            }
+            "providers": {}
         },
         "notes": "پیش‌پرداخت دریافت شد - دسترسی فعال است",
         "created_at": "2025-01-16 10:00:00",

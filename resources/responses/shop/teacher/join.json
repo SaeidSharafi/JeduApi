@@ -1,0 +1,7 @@
+{
+  "data": {
+    "url": "https://skyroom.example.com/login?room=456&access=2",
+    "type": "skyroom",
+    "expires_at": "1404-10-11 13:00:00"
+  }
+}

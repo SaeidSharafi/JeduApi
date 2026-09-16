@@ -82,7 +82,6 @@ if (! function_exists('apiResponse')) {
 if (! function_exists('formatFileSize')) {
     /**
      * Format bytes to human readable decimal size (1 MB = 1_000_000 bytes).
-     * Single file per digital asset constraint documented in ADR 0006.
      */
     function formatFileSize(?int $bytes): ?string
     {

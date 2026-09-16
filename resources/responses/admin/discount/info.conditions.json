@@ -236,8 +236,8 @@
                 "label": "حضوری"
               },
               {
-                "value": "live_session_bbb",
-                "label": "جلسه زنده با BBB"
+                "value": "live_session_niliroom",
+                "label": "جلسه زنده با Niliroom"
               },
               {
                 "value": "live_session_skyroom",

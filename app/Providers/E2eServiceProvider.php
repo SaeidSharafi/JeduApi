@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\ProvisioningProviderEnum;
-use App\Services\Fakes\FakeBbbService;
 use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
+use App\Services\Fakes\FakeNiliroomService;
 use App\Services\Fakes\FakeSkyroomService;
 use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\SettingsService;
@@ -34,8 +34,8 @@ final class E2eServiceProvider extends ServiceProvider
     {
         $this->app->singleton(SpotPlayerClientContract::class, FakeSpotPlayerService::class);
         $this->app->singleton(SkyroomClientContract::class, FakeSkyroomService::class);
+        $this->app->singleton(NiliroomClientContract::class, FakeNiliroomService::class);
 
-        $this->app->singleton(BbbClientContract::class, fn (): FakeBbbService => new FakeBbbService());
         $this->app->singleton(
             MoodleClientContract::class,
             fn ($app): FakeMoodleService => new FakeMoodleService($app->make(SettingsService::class)),
@@ -69,6 +69,9 @@ final class E2eServiceProvider extends ServiceProvider
         $this->assertCompleteProviderCoverage();
     }
 
+    /**
+     * Assert every outbound client is backed by its simulated client in E2E.
+     */
     private function assertCompleteProviderCoverage(): void
     {
         foreach (ProvisioningProviderEnum::cases() as $provider) {
@@ -78,6 +81,10 @@ final class E2eServiceProvider extends ServiceProvider
             if (! $client instanceof $fakeClass) {
                 throw new LogicException("E2E provider [{$provider->value}] is not backed by its simulated client.");
             }
+        }
+
+        if (! $this->app->make(NiliroomClientContract::class) instanceof FakeNiliroomService) {
+            throw new LogicException('E2E live-session provider [niliroom] is not backed by its simulated client.');
         }
     }
 
@@ -89,7 +96,6 @@ final class E2eServiceProvider extends ServiceProvider
             ProvisioningProviderEnum::MOODLE,
             ProvisioningProviderEnum::MOODLE_QUIZ => MoodleClientContract::class,
             ProvisioningProviderEnum::SPOTPLAYER  => SpotPlayerClientContract::class,
-            ProvisioningProviderEnum::BBB         => BbbClientContract::class,
             ProvisioningProviderEnum::SKYROOM     => SkyroomClientContract::class,
         };
     }
@@ -102,7 +108,6 @@ final class E2eServiceProvider extends ServiceProvider
             ProvisioningProviderEnum::MOODLE,
             ProvisioningProviderEnum::MOODLE_QUIZ => FakeMoodleService::class,
             ProvisioningProviderEnum::SPOTPLAYER  => FakeSpotPlayerService::class,
-            ProvisioningProviderEnum::BBB         => FakeBbbService::class,
             ProvisioningProviderEnum::SKYROOM     => FakeSkyroomService::class,
         };
     }

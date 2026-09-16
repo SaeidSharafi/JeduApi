@@ -259,11 +259,11 @@ function getDeliveryBlock(
                 ['enrollment' => $enrollment->uuid, 'digitalAsset' => $digitalAsset->id], absolute: true),
 
         ],
-        'live_session_bbb', 'live_session_skyroom' => [
+        'live_session_niliroom', 'live_session_skyroom' => [
             'type'          => $deliveryMethod,
             'is_ready'      => false,
             'session_label' => 'کلاس آنلاین',
-            'join_url_path' => '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
+            'join_url_path' => route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid], absolute: false),
             'course_url'    => null,
             'completed'     => null,
             'course_grade'  => null,
@@ -365,7 +365,7 @@ dataset('valid product', [
     // [
     //    ProductableEnum::SEMINAR,
     //    'online_service',
-    //    'live_session_bbb',
+    //    'live_session_niliroom',
     //    [
     //        'session_url'      => 'https://bbb.example.com/meetings/12345',
     //        'session_id'       => '12345',
@@ -424,7 +424,7 @@ dataset('valid product only requried', [
     ],
     [
         'online_service',
-        'live_session_bbb',
+        'live_session_niliroom',
         [
             'session_url'      => 'https://bbb.example.com/meetings/12345',
             'session_id'       => '12345',

@@ -61,18 +61,29 @@ it('returns enrollment detail for digital asset enrollment', function (): void {
 
 // ─── Delivery access ─────────────────────────────────────────────────────────
 
-it('show returns bbb delivery_access for live_session_bbb enrollment', function (): void {
-    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
+it('show returns niliroom delivery_access for live_session_niliroom enrollment', function (array $details, bool $isReady): void {
+    $enrollment = createEnrollment(
+        $this->user,
+        DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+        deliveryOption: App\Models\ProductDeliveryOption::factory()->create([
+            'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+            'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->getFulfillmentType(),
+            'details_json'     => $details,
+        ]),
+    );
 
     $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]));
 
     $response->assertOk()
         ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
     $access = $response->json('data.delivery_access');
-    expect($access)->toHaveKey('type')
-        ->and($access)->toHaveKey('is_ready')
-        ->and($access)->toHaveKey('join_url_path');
-});
+    expect($access['type'])->toBe(DeliveryMethodEnum::LIVE_SESSION_NILIROOM->value)
+        ->and($access['is_ready'])->toBe($isReady)
+        ->and($access['join_url_path'])->toBe(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid], absolute: false));
+})->with([
+    'room configured' => [['nili_room_id' => 'NILI-ROOM-1'], true],
+    'room missing'    => [[], false],
+]);
 
 it('show returns moodle delivery_access for lms_moodle enrollment', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, provisioning: true);

@@ -263,13 +263,13 @@
     "order_id": 7,
     "product_delivery_option_id": 13,
     "vendor_id": 1,
-    "name": "وبینار امنیت سایبری - BigBlueButton",
-    "sku": "bbb-pdo-13",
+    "name": "وبینار امنیت سایبری - Niliroom",
+    "sku": "nili-pdo-13",
     "product_data_snapshot_json": {
       "product_name": "وبینار امنیت سایبری - زمستان ۱۴۰۳",
-      "pdo_name": "شرکت در وبینار آنلاین (BBB)",
+      "pdo_name": "شرکت در وبینار آنلاین (Niliroom)",
       "fulfillment_type": "online_service",
-      "delivery_method": "bbb",
+      "delivery_method": "live_session_niliroom",
       "product_type": "Seminar"
     },
     "applied_discount_details_json": [
@@ -361,13 +361,13 @@
     "order_id": 8,
     "product_delivery_option_id": 22,
     "vendor_id": 1,
-    "name": "وبینار داده‌کاوی و یادگیری ماشین - BigBlueButton",
-    "sku": "bbb-pdo-22",
+    "name": "وبینار داده‌کاوی و یادگیری ماشین - Niliroom",
+    "sku": "nili-pdo-22",
     "product_data_snapshot_json": {
       "product_name": "وبینار داده‌کاوی و یادگیری ماشین - زمستان ۱۴۰۳",
-      "pdo_name": "شرکت در وبینار آنلاین (BBB)",
+      "pdo_name": "شرکت در وبینار آنلاین (Niliroom)",
       "fulfillment_type": "online_service",
-      "delivery_method": "bbb",
+      "delivery_method": "live_session_niliroom",
       "product_type": "Seminar"
     },
     "applied_discount_details_json": null,
@@ -445,13 +445,13 @@
     "order_id": 10,
     "product_delivery_option_id": 8,
     "vendor_id": 1,
-    "name": "دوره معماری نرم‌افزار - BigBlueButton (پیش‌پرداخت)",
-    "sku": "bbb-pdo-8",
+    "name": "دوره معماری نرم‌افزار - Niliroom (پیش‌پرداخت)",
+    "sku": "nili-pdo-8",
     "product_data_snapshot_json": {
       "product_name": "دوره معماری نرم‌افزار - بهار ۱۴۰۴",
-      "pdo_name": "شرکت در دوره آنلاین (BBB)",
+      "pdo_name": "شرکت در دوره آنلاین (Niliroom)",
       "fulfillment_type": "online_service",
-      "delivery_method": "bbb",
+      "delivery_method": "live_session_niliroom",
       "product_type": "Course"
     },
     "applied_discount_details_json": null,

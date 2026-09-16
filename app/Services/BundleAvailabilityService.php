@@ -15,7 +15,6 @@ final class BundleAvailabilityService
 {
     private const array PROVIDER_IDENTIFIER_KEYS = [
         'ims_course_code',
-        'meeting_id',
         'moodle_course_id',
         'moodle_quiz_course_id',
         'nili_room_id',

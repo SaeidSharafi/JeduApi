@@ -30,7 +30,7 @@ it('get delivery methods correctly for ONLINE_SERVICE', function (): void {
     expect($deliveryMethods)
         ->toBeArray()
         ->toHaveCount(3)
-        ->toContain(App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB)
+        ->toContain(App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_NILIROOM)
         ->toContain(App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_SKYROOM)
         ->toContain(App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE);
 });

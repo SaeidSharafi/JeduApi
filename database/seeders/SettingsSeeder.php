@@ -132,15 +132,6 @@ final class SettingsSeeder extends Seeder
             'update_enrollments'            => true,
         ], 'json', 'integrations');
 
-        Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, [
-            'enabled'                    => false,
-            'base_url'                   => config('services.bbb.base_url'),
-            'secret'                     => config('services.bbb.secret'),
-            'api_path'                   => config('services.bbb.api_path'),
-            'default_attendee_password'  => config('services.bbb.default_attendee_password'),
-            'default_moderator_password' => config('services.bbb.default_moderator_password'),
-        ], 'json', 'integrations');
-
         Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
             'enabled'  => false,
             'endpoint' => config('provisioning.providers.spotplayer.endpoint'),

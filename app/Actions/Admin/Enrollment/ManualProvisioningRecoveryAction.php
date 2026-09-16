@@ -79,8 +79,6 @@ final readonly class ManualProvisioningRecoveryAction
     private function validateReferences(ProvisioningProviderEnum $provider, array $references): void
     {
         $valid = match ($provider) {
-            ProvisioningProviderEnum::BBB => collect(['meeting_id', 'nili_room_id'])
-                ->contains(fn (string $key): bool => is_string($references[$key] ?? null) && filled($references[$key])),
             ProvisioningProviderEnum::SKYROOM                                       => filter_var($references['room_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) !== false,
             ProvisioningProviderEnum::MOODLE, ProvisioningProviderEnum::MOODLE_QUIZ => collect(['moodle_user_id', 'moodle_course_id'])
                 ->every(fn (string $key): bool => filter_var($references[$key] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) !== false),

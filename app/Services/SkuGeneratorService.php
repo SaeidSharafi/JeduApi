@@ -112,7 +112,7 @@ final class SkuGeneratorService
 
         $methodCode = match ($data->delivery_method) {
             DeliveryMethodEnum::IN_PERSON->value                 => 'INP',
-            DeliveryMethodEnum::LIVE_SESSION_BBB->value          => 'LIVE-BBB',
+            DeliveryMethodEnum::LIVE_SESSION_NILIROOM->value     => 'LIVE-NILI',
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value      => 'LIVE-SKY',
             DeliveryMethodEnum::LMS_MOODLE->value                => 'LMS',
             DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value => 'VID',

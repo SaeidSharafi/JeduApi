@@ -22,8 +22,7 @@ final class DigitalAssetEnrollmentController extends Controller
      * List current user's digital asset enrollments as flat per-asset rows.
      *
      * Returns only enrollments where the delivery method is DIRECT_DOWNLOAD.
-     * One row per downloadable file; single file per asset constraint (first
-     * main media) documented in ADR 0006.
+     * One row per downloadable file.
      *
      * @responseFile 200 resources/responses/shop/enrollments/digital-assets-index.json
      */
