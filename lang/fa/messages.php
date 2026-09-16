@@ -217,6 +217,7 @@ return [
     'enrollments' => [
         'not_found'                       => 'ثبت‌نام مورد نظر یافت نشد.',
         'not_moodle'                      => 'این ثبت‌نام مربوط به دوره‌های مودل (Moodle) نیست.',
+        'not_seminar'                     => 'این مورد یک سمینار آنلاین (کلاس زنده) نیست.',
         'moodle_provisioning_incomplete'  => 'فرآیند آماده‌سازی و ثبت‌نام در Moodle هنوز نهایی نشده است.',
         'moodle_not_configured'           => 'سرویس مودل پیکربندی نشده است.',
         'moodle_auth_userkey_missing'     => 'توکن اختصاصی ورود مودل (auth_userkey) پیکربندی نشده است.',

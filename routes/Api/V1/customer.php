@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\Shop\Teacher\CourseController;
 use App\Http\Controllers\Api\Shop\Teacher\GradeController;
 use App\Http\Controllers\Api\Shop\Teacher\QuizController as TeacherQuizController;
 use App\Http\Controllers\Api\Shop\Teacher\SeminarController;
+use App\Http\Controllers\Api\Shop\Teacher\TeacherJoinUrlController;
 use App\Http\Controllers\Api\Shop\Teacher\TeacherMoodleSsoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletInfoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletTopupController;
@@ -104,12 +105,11 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
                     ->name('index');
                 // Route::get('/{deliveryOption:uuid}', [EnrollmentController::class, 'show'])
                 //    ->name('show');
-                //
                 Route::post('/{deliveryOption:uuid}/moodle/sso', TeacherMoodleSsoController::class)
                     ->name('moodle.sso');
-                //
-                // Route::get('/{deliveryOption:uuid}/join', JoinUrlController::class)
-                //    ->name('join');
+
+                Route::get('/{deliveryOption:uuid}/join', TeacherJoinUrlController::class)
+                    ->name('join');
 
                 Route::apiResource('/{courseCode}/attendances', AttendanceController::class)->except('destroy');
                 Route::delete('/{courseCode}/attendances', [AttendanceController::class, 'destroy']);

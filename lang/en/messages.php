@@ -200,6 +200,7 @@ return [
     'enrollments' => [
         'not_found'                       => 'Enrollment not found.',
         'not_moodle'                      => 'This enrollment is not a Moodle LMS enrollment.',
+        'not_seminar'                     => 'This is not an online seminar (live class).',
         'moodle_provisioning_incomplete'  => 'Moodle provisioning is incomplete for this enrollment.',
         'moodle_not_configured'           => 'Moodle is not configured.',
         'moodle_auth_userkey_missing'     => 'Moodle auth_userkey token is not configured.',

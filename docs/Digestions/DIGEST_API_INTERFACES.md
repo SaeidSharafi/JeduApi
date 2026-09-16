@@ -578,6 +578,9 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 ##### TeacherMoodleSsoController (`app/Http/Controllers/Api/Shop/Teacher/TeacherMoodleSsoController.php`)
 - `__invoke(ProductDeliveryOption $deliveryOption)`: **Route:** `POST /api/v1/shop/teacher/courses/{deliveryOption:uuid}/moodle/sso` - Generates a Moodle SSO login URL for the teacher in the course's Moodle-linked delivery option. **Response DTO:** `MoodleSsoUrlData`.
 
+##### TeacherJoinUrlController (`app/Http/Controllers/Api/Shop/Teacher/TeacherJoinUrlController.php`)
+- `__invoke(ProductDeliveryOption $deliveryOption)`: **Route:** `GET /api/v1/shop/teacher/courses/{deliveryOption:uuid}/join` - Returns the authenticated teacher's own session login URL for a live seminar. **Delegates to:** GetTeacherJoinUrlAction. Requires a linked `Teacher` profile (403), assignment to the delivery option (403), and a seminar delivery method (422, `messages.enrollments.not_seminar`); a seminar without a usable Skyroom `room_id` returns 503 (`messages.provisioning.skyroom_room_id_missing`). **Response DTO:** `JoinUrlData` (`type: skyroom`, `expires_at` as a Jalali `Verta`).
+
 ##### AttendanceController (`app/Http/Controllers/Api/Shop/Teacher/AttendanceController.php`)
 - `index(ShowAttendanceData $request, string $courseCode)`: **Route:** `GET /api/v1/shop/teacher/courses/{courseCode}/attendances` - Reads attendance records via `ImsService::getAttendance()`
 - `store(StoreAttendanceData $data, string $courseCode)`: **Route:** `POST /api/v1/shop/teacher/courses/{courseCode}/attendances` - Creates attendance records; `UnrecoverableProvisioningException` surfaces validation errors (422)
