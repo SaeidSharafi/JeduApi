@@ -364,13 +364,13 @@ Ready condition: non-empty `api_key`.
 
 #### `niliroom`
 
-Niliroom is the panel behind BBB live sessions, and the only one: `live_session_bbb` names the delivery method, and the retired BigBlueButton integration has no fallback (ADR 0013). Teachers are sent to Niliroom through a provider-native login grant. Its credentials are a plain base URL + API key pair, shaped like `skyroom`.
+Niliroom is the panel behind BBB live sessions, and the only one: `live_session_bbb` names the delivery method, and the retired BigBlueButton integration has no fallback (ADR 0013). Teachers are sent to Niliroom through a provider-native login grant. Its credentials are a plain base URL + API token pair, shaped like `skyroom`.
 
 | Group | `key` | Type | Required | Sensitive | Default |
 | --- | --- | --- | --- | --- | --- |
 | `general` | `enabled` | boolean | yes | no | `false` |
-| `connection` | `base_url` | url | yes | no | `config('services.niliroom.base_url')` |
-| `credentials` | `api_token` | password | yes | **yes** | `config('services.niliroom.api_token')` |
+| `connection` | `base_url` | url | yes | no | `config('provisioning.providers.niliroom.base_url')` |
+| `credentials` | `api_token` | password | yes | **yes** | `config('provisioning.providers.niliroom.api_token')` |
 
 Ready condition: non-empty `base_url` **and** `api_token`. `NiliroomService` reads this configuration, so the state badges reflect live behaviour.
 
@@ -458,8 +458,8 @@ Flat body, exactly the provider's keys:
 
 Required for these endpoints to exist:
 
-1. `config/sms.php` with `gateways` and `notifications` blocks (section 3.5), plus a `services.niliroom` entry (`base_url`, `api_key`).
-2. `SettingKeyEnum`: `SMS_IPPANEL = 'sms.ippanel'` (group `sms`, secret field `api_key`), `SMS_NOTIFICATIONS = 'sms_notifications'` (group `sms`), and `NILIROOM = 'niliroom'` (group `integrations`, secret field `api_key`).
+1. `config/sms.php` with `gateways` and `notifications` blocks (section 3.5), plus a `providers.niliroom` entry (`base_url`, `api_token`) in `config/provisioning.php`.
+2. `SettingKeyEnum`: `SMS_IPPANEL = 'sms.ippanel'` (group `sms`, secret field `api_key`), `SMS_NOTIFICATIONS = 'sms_notifications'` (group `sms`), and `NILIROOM = 'niliroom'` (group `integrations`, secret field `api_token`).
 3. `SettingSecretRedactor::SECRET_FIELDS` + `SettingsService::SKIP_MEDIA`: add `sms.ippanel`, `niliroom`, and `skyroom` (see gaps below).
 4. Data classes: `SmsGatewaySettingData` (+ per-gateway `schema()`), `SmsNotificationSettingsData`, `EnrollmentProviderSettingData` (+ per-provider `schema()`), following `MellatGatewaySettingData`.
 5. Controllers under `app/Http/Controllers/Api/Admin/Settings/`: `SmsGatewaySettingsController`, `SmsNotificationSettingsController`, `EnrollmentProviderSettingsController` — thin, `Gate::authorize(...)`, all logic in `SettingsService`/actions. The enrollment controller accepts `niliroom` alongside the provisioning enum keys.
