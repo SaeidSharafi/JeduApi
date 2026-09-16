@@ -76,11 +76,9 @@ final class OrderStatusUpdateListener implements ShouldQueue
                 ProvisionEnrollmentProviderJob::dispatch($attempt->id);
             }
 
-            foreach ([ProvisioningProviderEnum::BBB, ProvisioningProviderEnum::SKYROOM] as $provider) {
-                if ($plannedProviders->contains($provider->value) && $this->isProviderReady($plan, $provider->value)) {
-                    $attempt = $this->attemptService->queue($item->enrollment, ProvisioningTriggerEnum::PAYMENT, provider: $provider);
-                    ProvisionEnrollmentProviderJob::dispatch($attempt->id);
-                }
+            if ($plannedProviders->contains('skyroom') && $this->isProviderReady($plan, 'skyroom')) {
+                $attempt = $this->attemptService->queue($item->enrollment, ProvisioningTriggerEnum::PAYMENT, provider: ProvisioningProviderEnum::SKYROOM);
+                ProvisionEnrollmentProviderJob::dispatch($attempt->id);
             }
 
             if ($plannedProviders->contains('moodle_quiz') && $this->isProviderReady($plan, 'moodle_quiz')) {

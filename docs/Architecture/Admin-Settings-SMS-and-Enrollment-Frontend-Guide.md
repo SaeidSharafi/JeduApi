@@ -247,9 +247,8 @@ Unknown `{provider}` → `404`.
 | `ims` | IMS | Student/course management system |
 | `moodle` | مودل | LMS (courses, enrollments, student login) |
 | `spotplayer` | اسپات‌پلیر | Video/recording delivery |
-| `bbb` | بیگ‌بلوباتن | Live sessions |
 | `skyroom` | اسکای‌روم | Live sessions |
-| `niliroom` | نیلی‌روم | Live-session panel |
+| `niliroom` | نیلی‌روم | Live-session panel — the only panel behind BBB live sessions (ADR 0013) |
 
 `moodle_quiz` is **not** a configurable provider — it has no credentials of its own and is served by the Moodle configuration. `GET/PUT .../enrollment-providers/moodle_quiz` returns `404`; do not render a form for it.
 
@@ -292,18 +291,6 @@ Each provider returns its own `schema` groups. The `Default` column is the value
 
 Note the key is `endpoint`, not `base_url`.
 
-#### `bbb`
-
-| Group | `key` | Type | Required | Sensitive | Default |
-| --- | --- | --- | --- | --- | --- |
-| `general` | `enabled` | boolean | yes | no | `false` |
-| `connection` | `base_url` | url | yes | no | server default |
-| `credentials` | `secret` | password | yes | **yes** | server default |
-| `advanced` | `api_path` | text | no | no | `/bigbluebutton/api` |
-| `advanced` | `default_attendee_password` | password | no | **yes** | `ap` |
-| `advanced` | `default_moderator_password` | password | no | **yes** | `mp` |
-| `advanced` | `timeout` | number | no | no | `15` |
-
 #### `skyroom`
 
 | Group | `key` | Type | Required | Sensitive | Default |
@@ -318,7 +305,7 @@ Note the key is `endpoint`, not `base_url`.
 | --- | --- | --- | --- | --- | --- |
 | `general` | `enabled` | boolean | yes | no | `false` |
 | `connection` | `base_url` | url | yes | no | server default |
-| `credentials` | `api_key` | password | yes | **yes** | server default |
+| `credentials` | `api_token` | password | yes | **yes** | server default |
 
 ### 4.3 Response — `GET /enrollment-providers`
 

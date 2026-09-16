@@ -19,7 +19,7 @@
 
 ### Black-box E2E safety boundary
 - **Stack contract:** `docs/e2e/BLACK_BOX_STACK.md` version 1 defines the isolated Compose services, required variables/images, health checks, startup order, shutdown, reset protocol, browser boundary, and external Mailpit/gateway controls.
-- **Provider isolation:** `E2eServiceProvider` binds every outbound integration contract to its deterministic in-process fake in E2E: IMS, Moodle/Moodle Quiz, SpotPlayer, BBB, Skyroom, and Niliroom. These fakes do not make provider HTTP calls; the E2E Compose network is internal and denies undeclared egress. Niliroom is not a `ProvisioningProviderEnum` case (ADR 0013), so its fake is asserted explicitly rather than through the provisioning-provider loop — the guard exists so a later adapter cannot silently reach a real panel.
+- **Provider isolation:** `E2eServiceProvider` binds every outbound integration contract to its deterministic in-process fake in E2E: IMS, Moodle/Moodle Quiz, SpotPlayer, Skyroom, and Niliroom. These fakes do not make provider HTTP calls; the E2E Compose network is internal and denies undeclared egress. Niliroom is not a `ProvisioningProviderEnum` case (ADR 0013), so its fake is asserted explicitly rather than through the provisioning-provider loop — the guard exists so a later adapter cannot silently reach a real panel.
 - **Verification:** Provider binding, production fail-closed configuration, reset authorization/isolation, simulator callback validation, retry semantics, and callback idempotency are covered by the provider, reset, gateway, and simulator tests described in the runbook.
 
 ### Admin Actions (`app/Actions/Admin/`)
@@ -309,7 +309,7 @@
   - `handle(EnrollmentUpdateData $data, Enrollment $enrollment): Enrollment`: Updates enrollment metadata including access dates, notes, and survey completion status. Access-date changes trigger `recordAccessReconciliation()` (remote re-enrollment with new dates for providers supporting it, manual-action otherwise) and append a staff-attributed audit note when a reason is supplied.
 
 #### Enrollment Provisioning Plan (`app/Services/Enrollment/ProvisioningPlanResolver.php`)
-- Resolves the sole canonical provider matrix at Enrollment creation. IMS applies when `ims_course_code` is present; the delivery method selects Moodle, SpotPlayer, BBB, or Skyroom; a separate numeric `moodle_quiz_course_id` selects Moodle Quiz for non-Moodle delivery methods.
+- Resolves the sole canonical provider matrix at Enrollment creation. IMS applies when `ims_course_code` is present; the delivery method selects Moodle, SpotPlayer, or Skyroom; a separate numeric `moodle_quiz_course_id` selects Moodle Quiz for non-Moodle delivery methods. `LIVE_SESSION_BBB` selects nothing: Niliroom has no resource to create, so the method plans zero providers (ADR 0013).
 - Each applicable provider records `ready`, `disabled`, or `invalid` readiness. Disabled or invalid required providers remain visible and produce aggregate `manual_action_required` health instead of being omitted.
 - The persisted aggregate status is `healthy`, `ready`, `in_progress`, `degraded`, or `manual_action_required`. Provider adapters update this aggregate through the shared attempt lifecycle.
 - A structural Bundle PDO (delivery method `bundle`) is rejected here with `BundleStructuralInvariantException` (`messages.product.bundle_not_directly_provisionable`). The same domain-invariant guard also fires at `ProvisioningAttemptService::queue`, `OrderStatusService::completeOrderItemAfterPayment`, the live-session join seam (`GetJoinUrlAction`), digital-asset downloads, teacher Moodle SSO, and the student enrollment detail action — a parent Bundle never provisions, joins, downloads, or enrolls; only its components do.
@@ -319,7 +319,7 @@
 
 `ProvisioningAttemptService` records queued, running, succeeded, retry-scheduled, failed, and manual-action-required states for provider executions. `ProvisionEnrollmentProviderJob` runs Moodle and IMS through provider adapters and `ProvisioningProviderRegistry`; lifecycle transitions and enrollment snapshot merges lock fresh rows in short transactions, with external calls outside those locks. Failure metadata is whitelisted and canonical provider references are persisted without raw provider payloads.
 
-BBB/Niliroom and Skyroom also run through `ProvisionEnrollmentProviderJob` using dedicated adapters. Their adapters consume only the canonical plan and staff-created room references (`meeting_id`/`nili_room_id` or `room_id`); they never create provider rooms. Missing or invalid references become manual-action-required attempt failures. The legacy live-session jobs are no longer dispatched by order completion or retry flows.
+Skyroom also runs through `ProvisionEnrollmentProviderJob` using a dedicated adapter. It consumes only the canonical plan and the staff-created room reference (`room_id`); it never creates provider rooms. Missing or invalid references become manual-action-required attempt failures. `live_session_bbb` has no adapter and dispatches nothing — the legacy live-session jobs are no longer dispatched by order completion or retry flows.
 
 Authorized staff can manually resolve or waive a canonical provider through `ManualProvisioningRecoveryAction`. Resolution requires provider-specific safe references and a reason; waiver requires a separate permission and reason. Both append staff-attributed manual attempts and recalculate aggregate health. Plan rebuilds expose an explicit provider diff, require confirmation, increment the plan version, and preserve the prior snapshot and all attempts.
 
@@ -550,7 +550,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 ### Enrollment Revocation (`app/Services/Provisioning/EnrollmentRevocationService.php`)
 - Owns the per-Enrollment external provider revocation lifecycle, independent of provisioning health. It is triggered by every refund that completes — a single Order Item refund, a full-order refund (standalone units and Bundle units alike), or a Bundle Purchase refund. `begin()` marks the refunded Enrollment `SUSPENDED` (still occupying its seat) plus `revocation_status`, and queues one `ProvisioningAttempt` per required provider; supported providers get a `RevokeEnrollmentProviderJob`, unsupported ones become `manual_action_required`. A provider is required only when it actually granted external access (`provisioning_data.providers.<provider>.status = success`) or when its provisioning attempt is still in flight and could still grant access; a provider that failed, was waived, or was never provisioned is skipped. When no provider is required it completes immediately (`REVOKED` + `CANCELLED`).
 - `succeed()`/`fail()`/`scheduleRetry()` derive the state from the immutable attempt log; `retry()` re-queues only providers that have not succeeded; `confirmManually()` records staff confirmation for providers with no revocation API. Once `REVOKED`, a provider is never re-opened, so a later component failure cannot restore access.
-- The database allows one active attempt per `(enrollment, provider)` across provisioning, reconciliation, and revocation, so `begin()` waits when another attempt is already running and queues the revocation once that attempt succeeds. `MoodleProvisioningProvider` and `MoodleQuizProvisioningProvider` implement `RevocationProvider`; IMS, SpotPlayer, BBB, and Skyroom do not.
+- The database allows one active attempt per `(enrollment, provider)` across provisioning, reconciliation, and revocation, so `begin()` waits when another attempt is already running and queues the revocation once that attempt succeeds. `MoodleProvisioningProvider` and `MoodleQuizProvisioningProvider` implement `RevocationProvider`; IMS, SpotPlayer, and Skyroom do not.
 
 ### RequestCartIdentifier (`app/Services/Cart/RequestCartIdentifier.php`)
 - **Purpose:** HTTP-scoped implementation of `CartIdentifier` that decides whether to use an authenticated user ID or a persistent guest token (via `X-Guest-Token` header)
@@ -638,7 +638,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Methods:**
   - `redact(string $settingKey, mixed $value): mixed`: Replaces known secret field values with `***REDACTED***`. Top-level fields only: a secret nested inside another object is not reached.
   - `hasSecrets(string $settingKey): bool`: Whether a setting key has any registered secret fields
-- **Registered secret fields:** IMS (`api_key`), Moodle (`token`, `auth_userkey_token`), BBB (`secret`, `default_attendee_password`, `default_moderator_password`), SpotPlayer (`api_key`), Skyroom (`api_key`, `secret`), Niliroom (`api_token`), SMS IPPanel (`api_key`), plus the pre-existing Mellat (`password`) and Digipay (`client_secret`, `password`) declarations.
+- **Registered secret fields:** IMS (`api_key`), Moodle (`token`, `auth_userkey_token`), SpotPlayer (`api_key`), Skyroom (`api_key`, `secret`), Niliroom (`api_token`), SMS IPPanel (`api_key`), plus the pre-existing Mellat (`password`) and Digipay (`client_secret`, `password`) declarations.
 - **Usage:** Applied in `SettingData::fromModel()` (the admin settings read path), in `SettingsService::auditIntegrationWrite()`, and during `set()` for placeholder detection. Runtime consumers that need the real credential call `SettingsService::get()` directly and must never let the value reach a response.
 
 ### Integration Services (`app/Services/Integrations/`)
@@ -655,7 +655,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `isReady(): bool` — combines `isEnabled()` + `validateConfig()`
   - `resolveConfig(): void` — resolves the stored settings row for `getSettingKey()`, falling back to the `getConfigFallbackPath()` config array when no row exists
   - `handleHttpErrors(Response $response, string $endpoint): void` — standardized error handler for JSON REST integrations (throws `RecoverableProvisioningException` for 5xx, `UnrecoverableProvisioningException` for 4xx)
-- **Subclasses:** ImsService, MoodleService, SpotPlayerService, BbbService, SkyroomService, NiliroomService all extend this base
+- **Subclasses:** ImsService, MoodleService, SpotPlayerService, SkyroomService, NiliroomService all extend this base
 
 #### SkyroomClientContract (`app/Contracts/Integrations/SkyroomClientContract.php`)
 - **Purpose:** Narrow boundary shared by the real Skyroom API client and the deterministic E2E simulated client.
@@ -709,16 +709,6 @@ Administrative status and access-date changes reconcile deliberately with applic
 #### SpotPlayerClientContract (`app/Contracts/Integrations/SpotPlayerClientContract.php`)
 - **Purpose:** Shared boundary for SpotPlayer provisioning and readiness checks. The real client is used in normal environments; `FakeSpotPlayerService` implements the same contract in E2E with stable, credential-free license references and no outbound requests.
 
-#### BbbService (`app/Services/Integrations/BbbService.php`)
-- **Purpose:** Real BigBlueButton API client implementing `BbbClientContract` for meeting management and join URL generation (SHA1 checksum auth)
-- **Configuration:** Stored `big_blue_button` setting with `config('services.bbb')` fallback; reads `base_url`, `secret`, `api_path`, `default_attendee_password` and `default_moderator_password`
-- **Methods:**
-  - `createMeeting(string $meetingId, string $name, ?string $attendeePw, ?string $moderatorPw): void`: Creates BBB meeting, falling back to the configured attendee/moderator passwords when none are passed
-  - `buildJoinUrl(string $meetingId, string $fullName, ?string $password): string`: Generates attendee join URL, falling back to the configured attendee password when none is passed
-
-#### BbbClientContract (`app/Contracts/Integrations/BbbClientContract.php`)
-- **Purpose:** Shared boundary for BBB provisioning, join URL generation, and readiness checks. The real client is used in normal environments; `FakeBbbService` implements the same contract in E2E with stable, credential-free meeting URLs and no outbound requests.
-
 #### NiliroomService (`app/Services/Integrations/NiliroomService.php`)
 - **Purpose:** Niliroom panel adapter implementing `NiliroomClientContract`, binding `NiliroomClientContract` in `AppServiceProvider`. It owns the teacher login-grant and student meeting-join flows and never creates rooms — the room is a staff-created public ID the caller supplies. The panel owns the room's meeting lifecycle, so the platform stores no meeting reference of its own.
 - **Configuration:** Stored `niliroom` setting (`SettingKeyEnum::NILIROOM`) with `config('provisioning.providers.niliroom')` fallback; reads `enabled`, `base_url` and `api_token` (env `NILIROOM_ENABLED` / `NILIROOM_BASE_URL` / `NILIROOM_API_TOKEN`). `validateConfig()` needs both `base_url` and `api_token`, which is what the admin provider area's schema-derived `configured`/`ready` state mirrors.
@@ -751,7 +741,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **ImsProvisioningProvider:** Creates/updates the IMS student and stores the enrollment with payment details; ambiguous outcomes require manual verification. Does not support access reconciliation. For a Bundle component OrderItem (`bundle_purchase_id` set) the payload uses the immutable per-item snapshot: `payment.amount` = allocation, `payment.discount_amount` = PDO base price − allocation, `discount_type` = `manual` (zero allocations send 0 paid + full base as manual discount), `payment.discount_code` is always null, and the note carries the Bundle name/SKU line plus the JeduShop order number.
 - **SpotPlayerProvisioningProvider:** Issues a SpotPlayer licence from the canonical delivery-option plan and returns safe licence references; uncertain issuance outcomes require manual verification.
 - **MoodleQuizProvisioningProvider:** Finds/creates the Moodle user and enrolls them in the canonical quiz course without a date window.
-- **BbbProvisioningProvider / SkyroomProvisioningProvider:** Consume only the canonical plan and staff-created room references; they never create provider rooms. Missing or invalid references become manual-action-required attempt failures.
+- **SkyroomProvisioningProvider:** Consumes only the canonical plan and the staff-created room reference; it never creates provider rooms. Missing or invalid references become manual-action-required attempt failures.
 
 ### Provisioning Orchestration
 
@@ -763,8 +753,8 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `LMS_MOODLE` delivery → Moodle adapter
   - `VIDEO_PLATFORM_SPOTPLAYER` delivery → SpotPlayer adapter
   - applicable `moodle_quiz_course_id` → Moodle Quiz adapter
-  - `LIVE_SESSION_BBB` delivery → BBB adapter
   - `LIVE_SESSION_SKYROOM` delivery → Skyroom adapter (join URL generated lazily via `GetJoinUrlAction` at request time)
+  - `LIVE_SESSION_BBB` delivery → no adapter: Niliroom plans no provider (ADR 0013), so the seminar is active without provisioning
   - No planned providers → `activateIfNoProvisioningRequired()` (keeps `provisioning_status` healthy)
 - The legacy per-provider jobs (ProvisionMoodleEnrollmentJob, ProvisionImsEnrollmentJob, ProvisionSpotPlayerEnrollmentJob, ProvisionBbbEnrollmentJob, ProvisionSkyroomEnrollmentJob, ProvisionMoodleQuizJob), `AbstractProvisioningJob`, and the `HandlesProvisioningStatus` trait are removed — provisioning runs exclusively through the canonical job and adapters.
 
@@ -944,7 +934,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `get(SettingKeyEnum $key, mixed $default = null): mixed`: Reads a single setting from cached collection. Skips `witImages()` for the integration keys (listed in `INTEGRATION_KEYS`) to avoid unnecessary media queries — payment gateways are excluded so their `icon` still hydrates into `MediaData`. Automatically tries decryption of registered secret fields via `Crypt::decryptString()` on read.
   - `set(SettingKeyEnum $key, mixed $value, string $type = 'json', ?string $group = null): Setting`: Persists value. Encrypts registered secret fields via `Crypt::encryptString()` before write. Preserves existing secrets when `***REDACTED***` placeholder is sent. Creates audit log entries for secret-bearing key writes via `SettingSecretRedactor`.
   - `forget(): void`: Exposes cache invalidation hook used by observers/actions to refresh settings payloads
-- **INTEGRATION_KEYS:** IMS, Moodle, BBB, SpotPlayer, Skyroom, Niliroom and the SMS IPPanel gateway skip `witImages()` media hydration, because they store credentials rather than content with media references. The list is explicit: deriving it from the secret registry would also skip media for Mellat/Digipay, whose top-level `icon` the payment-gateway endpoints still hydrate.
+- **INTEGRATION_KEYS:** IMS, Moodle, SpotPlayer, Skyroom, Niliroom and the SMS IPPanel gateway skip `witImages()` media hydration, because they store credentials rather than content with media references. The list is explicit: deriving it from the secret registry would also skip media for Mellat/Digipay, whose top-level `icon` the payment-gateway endpoints still hydrate.
 - **Encryption on Write:** Secret fields defined by `SettingKeyEnum::secretFields()` are encrypted at rest using Laravel's `Crypt::encryptString()`
 - **Decryption on Read:** Encrypted values are transparently decrypted when retrieved via `get()`, with graceful fallback for legacy plaintext
 - **Audit Logging:** Writes to any secret-bearing key are logged via `AdminActionLog` with secrets redacted, risk level "high" (staff-guard only — unauthenticated writes are not logged)

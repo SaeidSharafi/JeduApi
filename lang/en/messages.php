@@ -231,7 +231,7 @@ return [
             'moodle_user_id' => 'Moodle User ID', 'moodle_course_id' => 'Moodle Course ID',
             'course_code'    => 'Course Code', 'course_url' => 'Course Link', 'login_path' => 'Login Path',
             'ims_student_id' => 'IMS Student ID', 'ims_enrollment_id' => 'IMS Enrollment ID',
-            'spot_id'        => 'SpotPlayer Content ID', 'player_url' => 'Player Link', 'meeting_id' => 'BBB Meeting ID',
+            'spot_id'        => 'SpotPlayer Content ID', 'player_url' => 'Player Link',
             'nili_room_id'   => 'Niliroom Room ID', 'room_id' => 'Room ID', 'skyroom_user_id' => 'Skyroom User ID',
             'provisioned_at' => 'Provisioning Time',
         ],
@@ -439,9 +439,6 @@ return [
             'invalid_response' => 'SpotPlayer returned an invalid response format.',
             'service_error'    => 'SpotPlayer returned an error.',
         ],
-        'bbb' => [
-            'create_meeting_failed' => 'BBB create meeting request failed.',
-        ],
         'skyroom' => [
             'network_error' => 'Skyroom network error on [:action]: :message',
             'http_error'    => 'Skyroom HTTP error on [:action]: status :status',
@@ -499,7 +496,6 @@ return [
         'moodle_quiz_course_id_missing' => 'Moodle quiz course_id is missing from delivery option details.',
         'moodle_course_id_missing'      => 'Moodle course_id is missing from delivery option details.',
         'spotplayer_spot_id_missing'    => 'SpotPlayer spot_id is missing from delivery option details.',
-        'bbb_meeting_id_missing'        => 'BBB meeting_id is missing from delivery option details.',
         'revocation_not_supported'      => 'The provider has no supported access-revocation API; revoke access manually.',
     ],
 

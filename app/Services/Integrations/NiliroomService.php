@@ -19,12 +19,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 /**
- * The Niliroom panel adapter (ADR 0007): one provider identity per shop user, keyed by
- * `provider=eshop` and `subject=user-{shopUserId}`, so a teacher is never duplicated.
- *
- * Rooms are staff-created in the panel and referenced by their public ID; this adapter only
- * syncs the user, enrolls them, and issues a login or meeting join grant — it never creates
- * rooms, and the panel owns the room's meeting lifecycle.
+ * The Niliroom panel adapter: syncs the shop user, enrolls them in a staff-created room,
+ * and issues login and meeting join grants. It never creates rooms.
  */
 final class NiliroomService extends AbstractIntegrationService implements NiliroomClientContract
 {

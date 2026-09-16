@@ -27,7 +27,7 @@ final class ManualProvisioningWaiverData extends Data
     {
         return [
             'provider' => [
-                'description' => 'The provisioning provider to waive. Available values: `ims`, `moodle`, `spotplayer`, `bbb`, `skyroom`, `moodle_quiz`.',
+                'description' => 'The provisioning provider to waive. Available values: `ims`, `moodle`, `spotplayer`, `skyroom`, `moodle_quiz`.',
                 'example'     => ProvisioningProviderEnum::MOODLE->value,
             ],
             'reason' => [

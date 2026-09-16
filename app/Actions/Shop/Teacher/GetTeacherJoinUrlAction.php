@@ -79,19 +79,13 @@ final readonly class GetTeacherJoinUrlAction
     }
 
     /**
-     * Niliroom replaces BBB entirely (ADR 0013): a `live_session_bbb` seminar is served by the
-     * Niliroom panel alone, so an unusable panel is a clear failure rather than a BBB fallback.
-     *
-     * The panel owns the grant's lifetime, so the reported expiry is the provider's own rather
-     * than a TTL computed here.
+     * Build the teacher's Niliroom login grant for the delivery option's room.
      */
     private function buildNiliroomLoginGrant(User $user, ProductDeliveryOption $deliveryOption): JoinUrlData
     {
         $roomId = data_get($deliveryOption->details_json, 'nili_room_id');
         $roomId = is_string($roomId) ? mb_trim($roomId) : '';
 
-        // The room is an opaque public ID staff paste from the panel, so anything but a
-        // non-empty string is a delivery-option mistake rather than a provider problem.
         if ($roomId === '') {
             throw new ResourceNotProvisionedException(__('messages.provisioning.niliroom_room_id_missing'));
         }

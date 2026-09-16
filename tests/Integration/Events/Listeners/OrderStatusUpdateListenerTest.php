@@ -30,9 +30,6 @@ describe('OrderStatusUpdateListener', function (): void {
         Setting::setValue(SettingKeyEnum::MOODLE, [
             'enabled' => true, 'base_url' => 'https://moodle.test', 'token' => 'moodle-key', 'auth_userkey_token' => 'moodle-login-key',
         ], 'json', 'integrations');
-        Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, [
-            'enabled' => true, 'base_url' => 'https://bbb.test', 'secret' => 'bbb-key',
-        ], 'json', 'integrations');
         Queue::fake([
             ProvisionEnrollmentProviderJob::class,
         ]);
@@ -87,24 +84,46 @@ describe('OrderStatusUpdateListener', function (): void {
         ]);
         Enrollment::factory()->for($downloadItem)->create();
 
-        $bbbItem = OrderItem::factory()->for($order)->create([
+        $seminarItem = OrderItem::factory()->for($order)->create([
             'product_delivery_option_id' => ProductDeliveryOption::factory()
                 ->create([
                     'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_BBB,
                     'details_json'    => [
-                        'meeting_id'      => 'BBB-1',
+                        'nili_room_id'    => 'NILI-ROOM-1',
                         'ims_course_code' => 'IMS-BBB',
                     ],
                 ])->id,
         ]);
-        Enrollment::factory()->for($bbbItem)->create();
+        Enrollment::factory()->for($seminarItem)->create();
 
         OrderItem::factory()->for($order)->create();
         $event = new OrderStatusUpdatedEvent($order);
 
         (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))->handle($event);
 
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 8);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 7);
+    });
+
+    it('dispatches no provider job for a Niliroom-only seminar', function (): void {
+        Event::fake([
+            EnrollmentStatusChanged::class,
+        ]);
+        $order = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
+        Payment::factory()->for($order)->create(['status' => 'completed']);
+
+        $item = OrderItem::factory()->for($order)->create([
+            'product_delivery_option_id' => ProductDeliveryOption::factory()
+                ->create([
+                    'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_BBB,
+                    'details_json'    => ['nili_room_id' => 'NILI-ROOM-1'],
+                ])->id,
+        ]);
+        Enrollment::factory()->for($item)->create();
+
+        (new OrderStatusUpdateListener(app(ProvisioningPlanResolver::class), app(\App\Services\Provisioning\ProvisioningAttemptService::class)))
+            ->handle(new OrderStatusUpdatedEvent($order));
+
+        Queue::assertNotPushed(ProvisionEnrollmentProviderJob::class);
     });
 
     it('handles an order with no items gracefully', function (): void {

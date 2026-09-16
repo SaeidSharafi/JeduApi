@@ -214,7 +214,6 @@ it('requires review only when provider identifiers change', function (): void {
     $before                 = makeComponent(null);
     $providerIdentifierKeys = [
         'ims_course_code',
-        'meeting_id',
         'moodle_course_id',
         'moodle_quiz_course_id',
         'nili_room_id',

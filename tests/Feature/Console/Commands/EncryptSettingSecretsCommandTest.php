@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Console\Commands\EncryptSettingSecretsCommand;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Setting;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Crypt;
 
 use function Pest\Laravel\artisan;
+
+covers(EncryptSettingSecretsCommand::class);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -33,49 +36,46 @@ function insertPlaintextSetting(SettingKeyEnum $key, array $value): void
 // ---------------------------------------------------------------------------
 
 it('encrypts plaintext secret fields and leaves non-secret fields untouched', function (): void {
-    insertPlaintextSetting(SettingKeyEnum::BIG_BLUE_BUTTON, [
-        'url'                        => 'https://bbb.example.com',
-        'secret'                     => 'my-plaintext-secret',
-        'default_attendee_password'  => 'attendee123',
-        'default_moderator_password' => 'mod456',
+    insertPlaintextSetting(SettingKeyEnum::SKYROOM, [
+        'base_url' => 'https://www.skyroom.online/skyroom/api',
+        'api_key'  => 'my-plaintext-key',
+        'secret'   => 'my-plaintext-secret',
     ]);
 
     artisan('settings:encrypt-secrets')
         ->assertExitCode(0);
 
-    $raw    = Setting::where('key', SettingKeyEnum::BIG_BLUE_BUTTON->value)->first();
+    $raw    = Setting::where('key', SettingKeyEnum::SKYROOM->value)->first();
     $stored = $raw->value; // cast to array
 
     // Non-secret field unchanged.
-    expect($stored['url'])->toBe('https://bbb.example.com');
+    expect($stored['base_url'])->toBe('https://www.skyroom.online/skyroom/api');
 
     // Secret fields are now encrypted (not plaintext).
+    expect($stored['api_key'])->not->toBe('my-plaintext-key');
     expect($stored['secret'])->not->toBe('my-plaintext-secret');
-    expect($stored['default_attendee_password'])->not->toBe('attendee123');
-    expect($stored['default_moderator_password'])->not->toBe('mod456');
 
     // Decryptable via Crypt.
+    expect(Crypt::decryptString($stored['api_key']))->toBe('my-plaintext-key');
     expect(Crypt::decryptString($stored['secret']))->toBe('my-plaintext-secret');
-    expect(Crypt::decryptString($stored['default_attendee_password']))->toBe('attendee123');
-    expect(Crypt::decryptString($stored['default_moderator_password']))->toBe('mod456');
 });
 
 it('is idempotent — re-running does not double-encrypt already-encrypted values', function (): void {
-    insertPlaintextSetting(SettingKeyEnum::BIG_BLUE_BUTTON, [
-        'url'    => 'https://bbb.example.com',
-        'secret' => 'my-plaintext-secret',
+    insertPlaintextSetting(SettingKeyEnum::SKYROOM, [
+        'base_url' => 'https://www.skyroom.online/skyroom/api',
+        'secret'   => 'my-plaintext-secret',
     ]);
 
     // First run.
     artisan('settings:encrypt-secrets')->assertExitCode(0);
 
-    $afterFirst      = Setting::where('key', SettingKeyEnum::BIG_BLUE_BUTTON->value)->first()->value;
+    $afterFirst      = Setting::where('key', SettingKeyEnum::SKYROOM->value)->first()->value;
     $encryptedSecret = $afterFirst['secret'];
 
     // Second run.
     artisan('settings:encrypt-secrets')->assertExitCode(0);
 
-    $afterSecond = Setting::where('key', SettingKeyEnum::BIG_BLUE_BUTTON->value)->first()->value;
+    $afterSecond = Setting::where('key', SettingKeyEnum::SKYROOM->value)->first()->value;
 
     // Encrypted payload must be identical (not re-encrypted).
     expect($afterSecond['secret'])->toBe($encryptedSecret);
@@ -105,11 +105,9 @@ it('handles mixed payload — skips already-encrypted, encrypts remaining plaint
 });
 
 it('integration settings are readable via SettingsService::get() after migration', function (): void {
-    insertPlaintextSetting(SettingKeyEnum::BIG_BLUE_BUTTON, [
-        'url'                        => 'https://bbb.example.com',
-        'secret'                     => 'my-secret',
-        'default_attendee_password'  => 'attendee-pass',
-        'default_moderator_password' => 'mod-pass',
+    insertPlaintextSetting(SettingKeyEnum::NILIROOM, [
+        'base_url'  => 'https://niliroom.example.com',
+        'api_token' => 'my-secret',
     ]);
 
     artisan('settings:encrypt-secrets')->assertExitCode(0);
@@ -117,12 +115,10 @@ it('integration settings are readable via SettingsService::get() after migration
     // Bust the SmartCache so SettingsService reads fresh DB data.
     app(SettingsService::class)->forget();
 
-    $value = app(SettingsService::class)->get(SettingKeyEnum::BIG_BLUE_BUTTON);
+    $value = app(SettingsService::class)->get(SettingKeyEnum::NILIROOM);
 
-    expect($value['url'])->toBe('https://bbb.example.com');
-    expect($value['secret'])->toBe('my-secret');
-    expect($value['default_attendee_password'])->toBe('attendee-pass');
-    expect($value['default_moderator_password'])->toBe('mod-pass');
+    expect($value['base_url'])->toBe('https://niliroom.example.com');
+    expect($value['api_token'])->toBe('my-secret');
 });
 
 it('skips settings that do not exist in the database', function (): void {

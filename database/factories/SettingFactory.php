@@ -85,25 +85,6 @@ final class SettingFactory extends Factory
     }
 
     /**
-     * Create a BigBlueButton integration setting with plaintext secrets.
-     */
-    public function bigBlueButton(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'key'   => 'big_blue_button',
-            'value' => [
-                'enabled'                    => false,
-                'base_url'                   => 'https://bbb.example.com',
-                'secret'                     => 'bbb-shared-secret',
-                'default_attendee_password'  => 'attendee-pass',
-                'default_moderator_password' => 'moderator-pass',
-            ],
-            'type'  => 'json',
-            'group' => 'integrations',
-        ]);
-    }
-
-    /**
      * Create a SpotPlayer integration setting with a plaintext api_key.
      */
     public function spotPlayer(): static

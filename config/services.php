@@ -41,14 +41,4 @@ return [
         'use_fake_email' => env('EMAIL_USE_FAKE_EMAIL', false),
     ],
 
-    'bbb' => [
-        'enabled'                    => env('BBB_ENABLED', false),
-        'base_url'                   => env('BBB_BASE_URL'),
-        'secret'                     => env('BBB_SECRET'),
-        'api_path'                   => env('BBB_API_PATH', '/bigbluebutton/api'),
-        'default_attendee_password'  => env('BBB_DEFAULT_ATTENDEE_PASSWORD', 'ap'),
-        'default_moderator_password' => env('BBB_DEFAULT_MODERATOR_PASSWORD', 'mp'),
-        'timeout'                    => (int) env('BBB_TIMEOUT', 15),
-    ],
-
 ];

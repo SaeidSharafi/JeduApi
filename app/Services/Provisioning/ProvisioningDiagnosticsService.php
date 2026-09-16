@@ -26,7 +26,7 @@ final class ProvisioningDiagnosticsService
             $outcome    = data_get($data, "providers.{$provider}", []);
             $status     = (string) ($outcome['status'] ?? 'pending');
             $status     = $status === ProvisioningOutcomeStatusEnum::SUCCESS->value ? 'succeeded' : $status;
-            $references = collect(data_get($outcome, 'data', []))->only(['moodle_user_id', 'moodle_course_id', 'ims_student_id', 'ims_enrollment_id', 'course_code', 'spot_id', 'player_url', 'login_path', 'meeting_id', 'nili_room_id', 'room_id', 'skyroom_user_id'])->all();
+            $references = collect(data_get($outcome, 'data', []))->only(['moodle_user_id', 'moodle_course_id', 'ims_student_id', 'ims_enrollment_id', 'course_code', 'spot_id', 'player_url', 'login_path', 'nili_room_id', 'room_id', 'skyroom_user_id'])->all();
 
             $attempt = $latestAttempts->get($provider)?->first();
 

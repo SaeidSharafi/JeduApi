@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\CartIdentifier;
-use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
 use App\Contracts\Integrations\NiliroomClientContract;
@@ -17,7 +16,6 @@ use App\Services\Cart\RequestCartIdentifier;
 use App\Services\DefaultOtpGenerator;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
-use App\Services\Integrations\BbbService;
 use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
 use App\Services\Integrations\NiliroomService;
@@ -48,7 +46,6 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(MoodleClientContract::class, MoodleService::class);
         $this->app->bind(ImsClientContract::class, ImsService::class);
         $this->app->bind(SpotPlayerClientContract::class, SpotPlayerService::class);
-        $this->app->bind(BbbClientContract::class, BbbService::class);
         $this->app->bind(SkyroomClientContract::class, SkyroomService::class);
         $this->app->bind(NiliroomClientContract::class, NiliroomService::class);
 

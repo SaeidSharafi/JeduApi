@@ -92,7 +92,7 @@ Route::post('enrollments/{enrollment}/retry-provisioning', RetryProvisioningCont
     ->name('enrollments.retry-provisioning');
 Route::post('enrollments/{enrollment}/retry-provisioning/{provider}', RetryProvisioningController::class)
     ->name('enrollments.retry-provisioning.provider')
-    ->whereIn('provider', ['ims', 'moodle', 'spotplayer', 'bbb', 'skyroom', 'moodle_quiz']);
+    ->whereIn('provider', ['ims', 'moodle', 'spotplayer', 'skyroom', 'moodle_quiz']);
 Route::post('enrollments/{enrollment}/retry-revocation', RetryEnrollmentRevocationController::class)
     ->name('enrollments.retry-revocation')
     ->whereNumber('enrollment');

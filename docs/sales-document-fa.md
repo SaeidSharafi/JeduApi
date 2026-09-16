@@ -26,7 +26,7 @@
 - پرداخت کیف پول، انتقال بانکی، بانک ملت و Digipay
 - موتور تخفیف سبد خرید و قیمت‌های تخفیفی پیش‌محاسبه‌شده
 - کیف پول با دفتر تراکنش، قفل همزمانی و کنترل تکرار عملیات
-- فعال‌سازی صف‌بندی‌شده در IMS، Moodle، SpotPlayer، BigBlueButton و Skyroom
+- فعال‌سازی صف‌بندی‌شده در IMS، Moodle، SpotPlayer، Skyroom و Niliroom
 - جستجو با Typesense و fallback پایگاه داده
 - احراز هویت Sanctum، OTP و کنترل دسترسی کارکنان
 - مستندسازی API از قراردادهای DTO با Scribe

@@ -213,17 +213,18 @@ final readonly class GetEnrollmentDetailAction
         $details        = $deliveryOption->details_json               ?? [];
         $provisioning   = $enrollment->provisioning_data['providers'] ?? [];
 
-        // Readiness is the canonical provider outcome status — never field
-        // presence — so the frontend derives "در حال آمادهسازی" from one signal.
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LIVE_SESSION_BBB,
+            DeliveryMethodEnum::LIVE_SESSION_BBB => new DeliveryAccessData(
+                type: $deliveryMethod->value,
+                session_label: 'کلاس آنلاین',
+                join_url_path: '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
+                is_ready: filled(data_get($details, 'nili_room_id')),
+            ),
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 session_label: 'کلاس آنلاین',
                 join_url_path: '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
-                is_ready: $deliveryMethod                       === DeliveryMethodEnum::LIVE_SESSION_BBB
-                    ? data_get($provisioning, 'bbb.status')     === ProvisioningOutcomeStatusEnum::SUCCESS->value
-                    : data_get($provisioning, 'skyroom.status') === ProvisioningOutcomeStatusEnum::SUCCESS->value,
+                is_ready: data_get($provisioning, 'skyroom.status') === ProvisioningOutcomeStatusEnum::SUCCESS->value,
             ),
             DeliveryMethodEnum::LMS_MOODLE => new DeliveryAccessData(
                 type: $deliveryMethod->value,

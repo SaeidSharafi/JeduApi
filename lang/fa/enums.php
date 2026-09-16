@@ -135,7 +135,6 @@ return [
         'ims'         => 'IMS',
         'moodle'      => 'Moodle',
         'spotplayer'  => 'SpotPlayer',
-        'bbb'         => 'BBB',
         'skyroom'     => 'Skyroom',
         'moodle_quiz' => 'آزمون Moodle',
     ],

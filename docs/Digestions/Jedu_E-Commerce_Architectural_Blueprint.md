@@ -89,7 +89,7 @@ This engine orchestrates the journey from purchase to access with a focus on int
 
     3.  **SpotPlayer (Video Platform):** License issuance API — generates a license key and player URL for the user.
 
-    4.  **BigBlueButton (Live Sessions):** Meeting creation and join URL generation using SHA1 checksum authentication.
+    4.  **Niliroom (Live Sessions):** Login grants for teachers and meeting join grants for students, so a `live_session_bbb` seminar is served by the panel alone (ADR 0013).
 
     All services resolve credentials through the SettingsService, allowing configuration via the admin panel without code changes.
 
@@ -160,7 +160,7 @@ The Admin Interface is built for granular control and total accountability.
     The system can then generate compliance reports that provide not just data, but an overall risk score and actionable recommendations like "Conduct immediate audit".
 
 -   **Secrets Management (Encrypted at Rest, Redacted in Transit):**  
-    Integration credentials (API keys, tokens, passwords for IMS, Moodle, SpotPlayer, BBB) are sensitive data requiring special handling. The SettingsService handles this with three layers of protection:
+    Integration credentials (API keys, tokens, passwords for IMS, Moodle, SpotPlayer, Skyroom, Niliroom) are sensitive data requiring special handling. The SettingsService handles this with three layers of protection:
 
     1.  **Encryption at Rest:** Secret field values are automatically encrypted via Laravel's `Crypt::encryptString()` when saved through the admin panel. A dedicated `settings:encrypt-secrets` command migrates any legacy plaintext values.
     

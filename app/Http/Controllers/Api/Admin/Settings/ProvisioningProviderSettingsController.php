@@ -60,8 +60,8 @@ final class ProvisioningProviderSettingsController extends Controller
      *
      * Returns a single provider shaped exactly like an element of the list
      * `data`, so a detail page can be opened by deep link without first fetching
-     * the list. BBB and Moodle Quiz are not offered at all, so their keys and
-     * any unknown key are `404`.
+     * the list. Moodle Quiz is not offered at all, so its key and any unknown
+     * key are `404`.
      *
      * @urlParam provider string required The provider key. Enum: `ims`, `moodle`, `spotplayer`, `skyroom`, `niliroom`. Example: ims
      *

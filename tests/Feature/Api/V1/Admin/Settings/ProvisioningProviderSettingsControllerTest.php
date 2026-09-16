@@ -426,7 +426,7 @@ describe('show', function (): void {
         $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
 
         $this->getJson(provisioningProviderUrl('show', ['provider' => $provider]))->assertNotFound();
-    })->with(['bbb', 'moodle_quiz', 'unknown-provider']);
+    })->with(['moodle_quiz', 'unknown-provider']);
 
     it('returns 403 without the settings view permission', function (): void {
         $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);

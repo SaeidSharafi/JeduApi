@@ -64,24 +64,8 @@ $fulfillmentDeliveryPairsWithDetails = [
         FulfillmentTypeEnum::ONLINE_SERVICE->value,
         DeliveryMethodEnum::LIVE_SESSION_BBB->value,
         [
-            'moderator_password'                 => 'mod',
-            'attendee_password'                  => 'att',
-            'record_session'                     => true,
-            'auto_start_recording'               => false,
-            'allow_start_stop_recording'         => true,
-            'webcams_only_for_moderator'         => false,
-            'mute_on_start'                      => true,
-            'allow_mods_to_unmute_users'         => false,
-            'lock_settings_disable_cam'          => true,
-            'lock_settings_disable_mic'          => false,
-            'lock_settings_disable_private_chat' => true,
-            'lock_settings_disable_public_chat'  => false,
-            'lock_settings_disable_note'         => true,
-            'lock_settings_locked_layout'        => false,
-            'welcome_message'                    => 'Welcome to the session',
-            'session_duration'                   => 180,
-            'default_presentation_url'           => 'https://example.com/presentation',
-            'admin_notes'                        => 'Admin Note',
+            'nili_room_id' => '01J8ZQ4W6M9K3T7YB2C5NDRHXF',
+            'admin_notes'  => 'Admin Note',
         ],
     ],
     // ONLINE_SERVICE - LIVE_SESSION_SKYROOM
@@ -209,24 +193,9 @@ it('creates delivery validation rules for LIVE_SESSION_BBB', function (): void {
     $fulfillmentType = FulfillmentTypeEnum::ONLINE_SERVICE->value;
     $deliveryMethod  = DeliveryMethodEnum::LIVE_SESSION_BBB->value;
     $detailsData     = [
-        'moderator_password'                 => 'mod',
-        'attendee_password'                  => 'att',
-        'record_session'                     => true,
-        'auto_start_recording'               => false,
-        'allow_start_stop_recording'         => true,
-        'webcams_only_for_moderator'         => false,
-        'mute_on_start'                      => true,
-        'allow_mods_to_unmute_users'         => false,
-        'lock_settings_disable_cam'          => true,
-        'lock_settings_disable_mic'          => false,
-        'lock_settings_disable_private_chat' => true,
-        'lock_settings_disable_public_chat'  => false,
-        'lock_settings_disable_note'         => true,
-        'lock_settings_locked_layout'        => false,
-        'welcome_message'                    => 'Welcome to the session',
-        'session_duration'                   => 180,
-        'default_presentation_url'           => 'https://example.com/presentation',
-        'admin_notes'                        => 'Admin Note',
+        'nili_room_id'          => '01J8ZQ4W6M9K3T7YB2C5NDRHXF',
+        'admin_notes'           => 'Admin Note',
+        'moodle_quiz_course_id' => 12,
     ];
     $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData::getValidationRules($detailsData);
     $action        = new GetDeliveryDetailsValidationRulesAction();
@@ -237,7 +206,9 @@ it('creates delivery validation rules for LIVE_SESSION_BBB', function (): void {
     }
     expect($rules)->toHaveKey('details');
     expect($rules['details'][0])->toBe('required');
-    expect($rules['details'][1])->toStartWith('array:');
+    expect($rules['details'][1])->toStartWith('array:')
+        ->and($rules['details'][1])->toContain('nili_room_id')
+        ->and($rules['details'][1])->not->toContain('meeting_id');
 });
 
 it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function (): void {

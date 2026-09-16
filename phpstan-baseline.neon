@@ -61,12 +61,6 @@ parameters:
 			path: app/Providers/EventServiceProvider.php
 
 		-
-			message: '#^Property App\\Services\\Fakes\\FakeBbbService\:\:\$settings is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: app/Services/Fakes/FakeBbbService.php
-
-		-
 			message: '#^Property App\\Services\\Fakes\\FakeMoodleService\:\:\$settings is never read, only written\.$#'
 			identifier: property.onlyWritten
 			count: 1

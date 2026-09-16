@@ -42,13 +42,7 @@ final readonly class GetJoinUrlAction
     }
 
     /**
-     * Niliroom replaces BBB entirely (ADR 0013): a `live_session_bbb` student joins the meeting
-     * the room is running, never the panel, so an unusable panel is a clear failure rather
-     * than a BBB fallback.
-     *
-     * The room comes from the staff-entered delivery-option details rather than the enrollment's
-     * provisioning state, which carries nothing for this method once #113 removes the legacy BBB
-     * provider. The panel owns the room's meeting lifecycle, so this action stores no meeting.
+     * Build the student's Niliroom meeting join URL for the delivery option's room.
      *
      * @param  array<string, mixed>  $details
      */
@@ -56,8 +50,6 @@ final readonly class GetJoinUrlAction
     {
         $roomId = data_get($details, 'nili_room_id');
 
-        // The room is an opaque public ID staff paste from the panel, so anything but a
-        // non-empty string is a delivery-option mistake rather than a provider problem.
         if (! is_string($roomId) || mb_trim($roomId) === '') {
             throw new ResourceNotProvisionedException(__('messages.provisioning.niliroom_room_id_missing'));
         }

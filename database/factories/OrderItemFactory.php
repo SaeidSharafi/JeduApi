@@ -133,16 +133,7 @@ final class OrderItemFactory extends Factory
                             ],
                         ],
                     ],
-                    DeliveryMethodEnum::LIVE_SESSION_BBB => [
-                        'bbb' => [
-                            'status'           => \App\Enums\ProvisioningOutcomeStatusEnum::SUCCESS->value,
-                            'attempt_sequence' => 1,
-                            'data'             => [
-                                'meeting_id'     => 'MEETING_ID',
-                                'provisioned_at' => now()->toISOString(),
-                            ],
-                        ],
-                    ],
+                    DeliveryMethodEnum::LIVE_SESSION_BBB => [],
                 };
                 if (isset($orderItem->productDeliveryOption->details_json['ims_course_code'])) {
                     $provisionData['providers']['ims'] = [

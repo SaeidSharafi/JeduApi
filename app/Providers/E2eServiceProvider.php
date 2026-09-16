@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
 use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\ProvisioningProviderEnum;
-use App\Services\Fakes\FakeBbbService;
 use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
 use App\Services\Fakes\FakeNiliroomService;
@@ -38,7 +36,6 @@ final class E2eServiceProvider extends ServiceProvider
         $this->app->singleton(SkyroomClientContract::class, FakeSkyroomService::class);
         $this->app->singleton(NiliroomClientContract::class, FakeNiliroomService::class);
 
-        $this->app->singleton(BbbClientContract::class, fn (): FakeBbbService => new FakeBbbService());
         $this->app->singleton(
             MoodleClientContract::class,
             fn ($app): FakeMoodleService => new FakeMoodleService($app->make(SettingsService::class)),
@@ -73,10 +70,7 @@ final class E2eServiceProvider extends ServiceProvider
     }
 
     /**
-     * Every outbound client must be simulated in E2E, so a black-box run never reaches a real
-     * provider. The provisioning providers are enumerated from {@see ProvisioningProviderEnum};
-     * Niliroom is a live-session adapter rather than a provisioning provider (ADR 0013), so it is
-     * asserted explicitly — otherwise nothing would catch a missing fake for it.
+     * Assert every outbound client is backed by its simulated client in E2E.
      */
     private function assertCompleteProviderCoverage(): void
     {
@@ -102,7 +96,6 @@ final class E2eServiceProvider extends ServiceProvider
             ProvisioningProviderEnum::MOODLE,
             ProvisioningProviderEnum::MOODLE_QUIZ => MoodleClientContract::class,
             ProvisioningProviderEnum::SPOTPLAYER  => SpotPlayerClientContract::class,
-            ProvisioningProviderEnum::BBB         => BbbClientContract::class,
             ProvisioningProviderEnum::SKYROOM     => SkyroomClientContract::class,
         };
     }
@@ -115,7 +108,6 @@ final class E2eServiceProvider extends ServiceProvider
             ProvisioningProviderEnum::MOODLE,
             ProvisioningProviderEnum::MOODLE_QUIZ => FakeMoodleService::class,
             ProvisioningProviderEnum::SPOTPLAYER  => FakeSpotPlayerService::class,
-            ProvisioningProviderEnum::BBB         => FakeBbbService::class,
             ProvisioningProviderEnum::SKYROOM     => FakeSkyroomService::class,
         };
     }

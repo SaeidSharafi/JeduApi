@@ -19,22 +19,8 @@ use App\Services\Integrations\SkyroomService;
 use App\Services\Integrations\SpotPlayerService;
 
 /**
- * The provisioning providers the admin panel can configure.
- *
- * This is the settings-facing list, not the persisted
- * {@see \App\Enums\ProvisioningProviderEnum}. BBB is intentionally absent
- * because ADR 0012 keeps it as an environment-configured legacy fallback rather
- * than something the panel manages, and Moodle Quiz has no credentials of its
- * own because it runs on the Moodle configuration — so both, and any unknown
- * key, are `404` through route binding rather than a special case.
- *
- * Niliroom is a live-session integration rather than a provisioning provider
- * (ADR 0007), but it is configured here like the others and its readiness now
- * comes from its adapter as well as its schema.
- *
- * Adding a provider is a backend-only change: add a case with its setting key,
- * data class (schema + request rules), config defaults, translated label and, if
- * it talks to a provider, its adapter.
+ * The provisioning providers the admin panel can configure, as opposed to the persisted
+ * {@see \App\Enums\ProvisioningProviderEnum}.
  */
 enum ProvisioningProviderSettingsEnum: string
 {

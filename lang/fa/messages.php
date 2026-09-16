@@ -249,7 +249,7 @@ return [
             'course_code'    => 'کد دوره', 'course_url' => 'لینک دوره', 'login_path' => 'مسیر ورود',
             'ims_student_id' => 'شناسهٔ دانش‌پذیر در IMS', 'ims_enrollment_id' => 'شناسهٔ ثبت‌نام در IMS',
             'spot_id'        => 'شناسهٔ محتوا در SpotPlayer', 'player_url' => 'لینک پلیر / پخش‌کننده',
-            'meeting_id'     => 'شناسهٔ جلسهٔ BBB', 'nili_room_id' => 'شناسهٔ اتاق Niliroom',
+            'nili_room_id'   => 'شناسهٔ اتاق Niliroom',
             'room_id'        => 'شناسهٔ اتاق', 'skyroom_user_id' => 'شناسهٔ کاربر در Skyroom',
             'provisioned_at' => 'زمان آماده‌سازی',
         ],
@@ -432,9 +432,6 @@ return [
             'invalid_response' => 'پاسخ دریافتی از اسپات‌پلیر در قالب استاندارد نیست.',
             'service_error'    => 'سرویس اسپات‌پلیر با خطا مواجه شد.',
         ],
-        'bbb' => [
-            'create_meeting_failed' => 'درخواست ساخت کلاس در سیستم BBB با خطا مواجه شد.',
-        ],
         'skyroom' => [
             'network_error' => 'خطای شبکه در ارتباط با اسکای‌روم در متد [:action]: :message',
             'http_error'    => 'خطای پروتکل اسکای‌روم در [:action]: وضعیت :status',
@@ -492,7 +489,6 @@ return [
         'moodle_quiz_course_id_missing' => 'شناسه آزمون مودل در جزئیات گزینه تحویل مشخص نشده است.',
         'moodle_course_id_missing'      => 'شناسه دوره مودل در جزئیات گزینه تحویل مشخص نشده است.',
         'spotplayer_spot_id_missing'    => 'شناسه دوره اسپات‌پلیر در جزئیات گزینه تحویل یافت نشد.',
-        'bbb_meeting_id_missing'        => 'شناسه کلاس BBB در جزئیات گزینه تحویل مشخص نشده است.',
         'revocation_not_supported'      => 'این سرویس‌دهنده API لغو دسترسی ندارد؛ دسترسی را به‌صورت دستی لغو کنید.',
     ],
 

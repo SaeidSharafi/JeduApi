@@ -136,28 +136,6 @@ describe('RetryProvisioningAction', function (): void {
         Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
     });
 
-    it('dispatches BBB provisioning job for failed BBB provider', function (): void {
-        $pdo = ProductDeliveryOption::factory()->create([
-            'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_BBB,
-        ]);
-
-        $enrollment = Enrollment::factory()->create([
-            'product_delivery_option_id' => $pdo->id,
-            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
-            'provisioning_data'          => [
-                'providers' => [
-                    'bbb' => ['status' => 'failed'],
-                ],
-            ],
-        ]);
-
-        $result = $this->action->handle($enrollment);
-
-        expect($result['providers'])->toBe(['bbb']);
-
-        Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
-    });
-
     it('dispatches Skyroom provisioning job for failed Skyroom provider', function (): void {
         $pdo = ProductDeliveryOption::factory()->create([
             'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_SKYROOM,

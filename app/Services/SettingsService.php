@@ -24,7 +24,6 @@ final class SettingsService
     private const array INTEGRATION_KEYS = [
         SettingKeyEnum::IMS,
         SettingKeyEnum::MOODLE,
-        SettingKeyEnum::BIG_BLUE_BUTTON,
         SettingKeyEnum::SPOT_PLAYER,
         SettingKeyEnum::SKYROOM,
         SettingKeyEnum::NILIROOM,

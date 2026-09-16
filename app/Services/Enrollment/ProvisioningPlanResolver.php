@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Enrollment;
 
-use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
@@ -23,7 +22,6 @@ final readonly class ProvisioningPlanResolver
         private ImsClientContract $ims,
         private MoodleClientContract $moodle,
         private SpotPlayerClientContract $spotPlayer,
-        private BbbClientContract $bbb,
         private SkyroomClientContract $skyroom,
     ) {}
 
@@ -46,7 +44,6 @@ final readonly class ProvisioningPlanResolver
         $deliveryProvider = match ($deliveryOption->delivery_method) {
             DeliveryMethodEnum::LMS_MOODLE                => [ProvisioningProviderEnum::MOODLE, $this->moodle],
             DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => [ProvisioningProviderEnum::SPOTPLAYER, $this->spotPlayer],
-            DeliveryMethodEnum::LIVE_SESSION_BBB          => [ProvisioningProviderEnum::BBB, $this->bbb],
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM      => [ProvisioningProviderEnum::SKYROOM, $this->skyroom],
             default                                       => null,
         };
@@ -79,7 +76,7 @@ final readonly class ProvisioningPlanResolver
     /**
      * @return array{provider: string, applicable: bool, readiness: string, configuration_issue: ?string}
      */
-    private function provider(ProvisioningProviderEnum $provider, AbstractIntegrationService|BbbClientContract|ImsClientContract|MoodleClientContract|SkyroomClientContract|SpotPlayerClientContract $service): array
+    private function provider(ProvisioningProviderEnum $provider, AbstractIntegrationService|ImsClientContract|MoodleClientContract|SkyroomClientContract|SpotPlayerClientContract $service): array
     {
         $readiness = ! $service->isEnabled()
             ? ProvisioningReadinessEnum::DISABLED
