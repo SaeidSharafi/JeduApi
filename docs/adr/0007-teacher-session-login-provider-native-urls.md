@@ -16,3 +16,5 @@ Consequences: `LiveSessionBbbDetailsData` gains `nili_room_id`; `BbbService` gai
 
 **Related:** ADR 0012 drops BBB from the admin settings surface, so this fallback is configured by deployment environment rather than by an admin form. The Niliroom-primary decision above is unchanged.
 
+> Superseded in part by ADR 0013: the BBB fallback bullet above no longer stands, and neither does the Consequences clause that gives `BbbService` a role-based join. Niliroom replaces BBB entirely, `live_session_bbb` is served by Niliroom alone, and the BBB delivery path is retired. The rest of this ADR — provider-native URLs, never API-created rooms, room IDs in the delivery option's details, and the `GetTeacherJoinUrlAction` + controller shape — still holds.
+

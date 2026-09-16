@@ -117,8 +117,8 @@ _Avoid_: session, conference
 ### Providers & Integrations
 
 **Provisioning Provider**:
-An external system that a customer's or teacher's access is delivered through: IMS, Moodle, SpotPlayer, and the live-session panels BBB, Skyroom, and Niliroom. Niliroom is the panel behind BBB live sessions, and Moodle Quiz has no credentials of its own: it runs on the Moodle configuration.
-_Avoid_: enrollment provider, integration, gateway
+An external system that a customer's or teacher's access is delivered through: IMS, Moodle, SpotPlayer, and the live-session panels Skyroom and Niliroom. `live_session_bbb` is a delivery method, not a provider: it is served by Niliroom alone, and the legacy BigBlueButton integration is retired (ADR 0013). Moodle Quiz has no credentials of its own: it runs on the Moodle configuration.
+_Avoid_: enrollment provider, integration, gateway, BBB as a provider
 
 **SMS Gateway**:
 The external provider that delivers transactional SMS (IPPanel today). One gateway serves every SMS Notification Option, and switching it off stops all sending.
