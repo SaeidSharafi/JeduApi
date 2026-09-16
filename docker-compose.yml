@@ -59,7 +59,7 @@ services:
     redis:
         image: redis:latest
         ports:
-            - "6379:6379"
+            - '${FORWARD_REDIS_PORT:-6379}:6379'
         expose:
             - "6379"
         volumes:
