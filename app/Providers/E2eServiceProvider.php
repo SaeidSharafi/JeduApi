@@ -7,12 +7,14 @@ namespace App\Providers;
 use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\ProvisioningProviderEnum;
 use App\Services\Fakes\FakeBbbService;
 use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
+use App\Services\Fakes\FakeNiliroomService;
 use App\Services\Fakes\FakeSkyroomService;
 use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\SettingsService;
@@ -34,6 +36,7 @@ final class E2eServiceProvider extends ServiceProvider
     {
         $this->app->singleton(SpotPlayerClientContract::class, FakeSpotPlayerService::class);
         $this->app->singleton(SkyroomClientContract::class, FakeSkyroomService::class);
+        $this->app->singleton(NiliroomClientContract::class, FakeNiliroomService::class);
 
         $this->app->singleton(BbbClientContract::class, fn (): FakeBbbService => new FakeBbbService());
         $this->app->singleton(
@@ -69,6 +72,12 @@ final class E2eServiceProvider extends ServiceProvider
         $this->assertCompleteProviderCoverage();
     }
 
+    /**
+     * Every outbound client must be simulated in E2E, so a black-box run never reaches a real
+     * provider. The provisioning providers are enumerated from {@see ProvisioningProviderEnum};
+     * Niliroom is a live-session adapter rather than a provisioning provider (ADR 0013), so it is
+     * asserted explicitly — otherwise nothing would catch a missing fake for it.
+     */
     private function assertCompleteProviderCoverage(): void
     {
         foreach (ProvisioningProviderEnum::cases() as $provider) {
@@ -78,6 +87,10 @@ final class E2eServiceProvider extends ServiceProvider
             if (! $client instanceof $fakeClass) {
                 throw new LogicException("E2E provider [{$provider->value}] is not backed by its simulated client.");
             }
+        }
+
+        if (! $this->app->make(NiliroomClientContract::class) instanceof FakeNiliroomService) {
+            throw new LogicException('E2E live-session provider [niliroom] is not backed by its simulated client.');
         }
     }
 

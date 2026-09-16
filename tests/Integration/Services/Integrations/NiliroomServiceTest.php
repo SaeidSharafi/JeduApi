@@ -39,7 +39,9 @@ describe('issueTeacherLoginGrant', function (): void {
         ]);
 
         expect($grant['url'])->toBe('https://niliroom.test/login/abc123')
-            ->and($grant['expires_at']->toIso8601String())->toBe('2026-09-16T12:05:00+00:00');
+            // The panel answers in UTC; the same instant reads as Tehran, so a consumer that
+            // renders the value directly cannot land hours off.
+            ->and($grant['expires_at']->toIso8601String())->toBe('2026-09-16T15:35:00+03:30');
     });
 
     it('identifies a teacher with no profile name by their subject instead of sending an empty name', function (): void {

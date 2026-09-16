@@ -13,6 +13,7 @@ use App\Providers\AppServiceProvider;
 use App\Services\Fakes\FakeBbbService;
 use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
+use App\Services\Fakes\FakeNiliroomService;
 use App\Services\Fakes\FakeSkyroomService;
 use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\Integrations\BbbService;
@@ -67,5 +68,6 @@ it('registers a simulated client for every provisioning provider in E2E', functi
         ->and(app(SpotPlayerClientContract::class))->toBeInstanceOf(FakeSpotPlayerService::class)
         ->and(app(BbbClientContract::class))->toBeInstanceOf(FakeBbbService::class)
         ->and(app(SkyroomClientContract::class))->toBeInstanceOf(FakeSkyroomService::class)
+        ->and(app(NiliroomClientContract::class))->toBeInstanceOf(FakeNiliroomService::class)
         ->and(ProvisioningProviderEnum::cases())->toHaveCount(6);
 });

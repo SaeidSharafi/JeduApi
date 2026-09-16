@@ -24,14 +24,18 @@ final class TeacherJoinUrlController extends Controller
      * Get the session login URL for a teacher's live seminar.
      *
      * Returns a short-lived provider login URL that drops the authenticated teacher into their own
-     * seminar room. Skyroom seminars return a presenter login URL; no provider user is created.
+     * seminar room. Skyroom seminars return a presenter login URL and create no Skyroom user, with
+     * the expiry derived from the requested TTL; `live_session_bbb` seminars return a Niliroom login
+     * grant, which syncs the teacher, enrolls them in the room as a teacher, and logs them into the
+     * panel on the room page, carrying the panel's own grant expiry.
      *
      * @responseFile resources/responses/shop/teacher/join.json
      * @responseFile 403 resources/responses/403.json
      *
      * @response 422 {"message": "This is not an online seminar (live class)."}
-     * @response 422 {"message": "Delivery method [live_session_bbb] does not support join URLs."}
      * @response 503 {"message": "Skyroom room_id is missing from delivery option details."}
+     * @response 503 {"message": "Niliroom nili_room_id is missing from delivery option details."}
+     * @response 503 {"message": "Niliroom is not configured."}
      */
     public function __invoke(
         Request $request,

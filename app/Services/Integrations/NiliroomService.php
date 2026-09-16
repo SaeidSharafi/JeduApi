@@ -137,7 +137,13 @@ final class NiliroomService extends AbstractIntegrationService implements Niliro
             );
         }
 
-        return ['url' => $url, 'expires_at' => CarbonImmutable::parse($expiresAt)];
+        // The panel answers with an offset-bearing ISO-8601 instant (UTC in practice). Express
+        // it in the application timezone, or every consumer renders it in the panel's zone:
+        // `Verta` keeps the incoming offset, so the Jalali date would be hours off.
+        return [
+            'url'        => $url,
+            'expires_at' => CarbonImmutable::parse($expiresAt)->setTimezone(config()->string('app.timezone')),
+        ];
     }
 
     /**

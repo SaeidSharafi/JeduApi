@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Actions\Shop\Teacher\GetTeacherJoinUrlAction;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Http\Controllers\Api\Shop\Teacher\TeacherJoinUrlController;
 use App\Models\ProductDeliveryOption;
 use App\Models\Teacher;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
@@ -17,17 +19,26 @@ covers(GetTeacherJoinUrlAction::class, TeacherJoinUrlController::class);
 
 /*
 |--------------------------------------------------------------------------
-| Mutation notes (`pest --mutate --parallel`)
+| Mutation notes (`pest --mutate --parallel`, 85.71% — 42 tested, 3 untested,
+| 4 uncovered)
 |--------------------------------------------------------------------------
-| The four survivors on the action's class constants are coverage artifacts,
-| not test gaps: PHP compiles `const` declarations instead of executing them,
-| so no coverage driver can attribute a hit to those lines. Both constants are
-| asserted through the mocked `createLoginUrl` call (access `2`, ttl `3600`).
+| The four uncovered mutants sit on the action's class constants, and are
+| coverage artifacts rather than test gaps: PHP compiles `const` declarations
+| instead of executing them, so no coverage driver can attribute a hit to those
+| lines. Both constants are asserted through the mocked `createLoginUrl` call
+| (access `2`, ttl `3600`).
 |
-| The two controller survivors are equivalent mutants: `$user?->teacherData`
-| and `(bool) $teacher` only differ when the authenticated user is null, which
-| the `auth.cookie:user` + `auth:user` middleware already rejects before the
+| The two controller mutants are equivalent: `$user?->teacherData` and
+| `(bool) $teacher` only differ when the authenticated user is null, which the
+| `auth.cookie:user` + `auth:user` middleware already rejects before the
 | controller runs.
+|
+| The `RemoveArrayItem` mutant on the action's `default` arm is unreachable
+| while `DeliveryMethodEnum::getSeminars()` and that match agree — which it does
+| by construction, since both handled cases are exactly the two seminars. No
+| test can enter that arm without changing the enum, so it is left as the
+| graceful-degradation path (422 rather than a fatal `UnhandledMatchError`) for
+| a future seminar method added before its handler.
 */
 
 beforeEach(function (): void {
@@ -72,20 +83,69 @@ it('returns 422 for a non-seminar delivery option', function (): void {
         ->assertJsonFragment(['message' => __('messages.enrollments.not_seminar')]);
 });
 
-// Ticket #55 extends the endpoint to BBB/Niliroom seminars; until then BBB is not served.
-it('returns 422 for a BBB seminar', function (): void {
+it('returns the niliroom login grant for the assigned teacher', function (): void {
     $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
 
-    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_BBB);
+    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_BBB, [
+        'nili_room_id' => 'room-public-456',
+    ]);
+
+    $grantUrl  = 'https://niliroom.example.ir/login/abc123';
+    $expiresAt = CarbonImmutable::parse('2026-01-01 12:05:00');
+
+    $this->mock(NiliroomClientContract::class, function ($mock) use ($grantUrl, $expiresAt): void {
+        $mock->shouldReceive('isReady')->once()->andReturnTrue();
+        $mock->shouldReceive('issueTeacherLoginGrant')
+            ->once()
+            ->with(Mockery::on(fn (User $user): bool => $user->id === $this->user->id), 'room-public-456')
+            ->andReturn(['url' => $grantUrl, 'expires_at' => $expiresAt]);
+    });
 
     $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
-        ->assertUnprocessable()
-        ->assertJsonFragment([
-            'message' => __('messages.enrollment.delivery_no_join_url', [
-                'method' => DeliveryMethodEnum::LIVE_SESSION_BBB->value,
-            ]),
-        ]);
+        ->assertOk()
+        ->assertJsonPath('data.url', $grantUrl)
+        ->assertJsonPath('data.type', 'niliroom')
+        // The provider's own expiry, not a locally computed TTL.
+        ->assertJsonPath('data.expires_at', '1404-10-11 12:05:00');
 });
+
+it('returns 503 when the niliroom panel is not ready', function (): void {
+    $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
+
+    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_BBB, [
+        'nili_room_id' => 'room-public-456',
+    ]);
+
+    $this->mock(NiliroomClientContract::class, function ($mock): void {
+        $mock->shouldReceive('isReady')->once()->andReturnFalse();
+        $mock->shouldNotReceive('issueTeacherLoginGrant');
+    });
+
+    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+        ->assertStatus(503)
+        ->assertJsonFragment(['message' => __('messages.enrollments.niliroom_not_configured')]);
+});
+
+it('returns 503 when the niliroom room id is missing or malformed', function (mixed $roomId): void {
+    $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
+
+    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_BBB, ['nili_room_id' => $roomId]);
+
+    $this->mock(NiliroomClientContract::class, function ($mock): void {
+        $mock->shouldReceive('isReady')->andReturnTrue();
+        $mock->shouldNotReceive('issueTeacherLoginGrant');
+    });
+
+    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+        ->assertStatus(503)
+        ->assertJsonFragment(['message' => __('messages.provisioning.niliroom_room_id_missing')]);
+})->with([
+    'absent'          => null,
+    'empty string'    => '',
+    'whitespace only' => '   ',
+    'integer'         => 456,
+    'array'           => [['room']],
+]);
 
 it('returns 503 when the delivery option has no skyroom room id', function (): void {
     $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
