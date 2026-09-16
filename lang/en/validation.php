@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'invalid_jalali_date' => 'The :attribute is not a valid Jalali date.',
+    'iran_mobile_phone'   => 'The :attribute must be a valid Iranian mobile phone number.',
 
     'custom' => [
         'attribute-name' => [

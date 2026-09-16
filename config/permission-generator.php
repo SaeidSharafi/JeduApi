@@ -152,6 +152,10 @@ return [
             PermissionAction::DELETE,
             'ban', // Custom String: users.ban (ban/unban customer accounts)
         ],
+        'import' => [
+            'preview',  // Custom String: imports.preview (validate an uploaded spreadsheet without mutation)
+            'template', // Custom String: imports.template (download the official import template)
+        ],
         'order' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,

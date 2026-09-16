@@ -91,6 +91,8 @@ enum PermissionEnum: string
     case LEARNING_PATH_UPDATE                     = 'learning_paths.update';
     case LEARNING_PATH_VIEW                       = 'learning_paths.view';
     case LEARNING_PATH_VIEW_ANY                   = 'learning_paths.view_any';
+    case IMPORT_PREVIEW = 'imports.preview';
+    case IMPORT_TEMPLATE = 'imports.template';
     case ORDER_APPROVE                            = 'orders.approve';
     case ORDER_CREATE                             = 'orders.create';
     case ORDER_DELETE                             = 'orders.delete';

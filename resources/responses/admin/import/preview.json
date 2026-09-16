@@ -1,0 +1,94 @@
+{
+  "message": "پیش‌نمایش فایل با موفقیت آماده شد.",
+  "data": {
+    "run_id": "01932f7c-6f2a-7c31-9d5a-6f1c2b8e4a10",
+    "resource": "users",
+    "status": "preview_ready",
+    "identity_key": "phone",
+    "summary": {
+      "total_rows": 3,
+      "valid_rows": 2,
+      "invalid_rows": 1,
+      "create_count": 1,
+      "update_count": 1,
+      "provider_provisioning_request_count": 2
+    },
+    "rows": [
+      {
+        "row_number": 2,
+        "status": "valid",
+        "operation": "create",
+        "data": {
+          "phone": "09123456789",
+          "email": "ali@example.com",
+          "first_name": "علی",
+          "last_name": "محمدی",
+          "phone2": null,
+          "civil_id": "0000000019",
+          "civil_id_type": "national_code",
+          "date_of_birth": "1991-03-21",
+          "father_name": "حسن",
+          "gender": "male",
+          "education_level": "bachelor",
+          "field_of_study": "مهندسی کامپیوتر",
+          "education_status": "graduated",
+          "provision_moodle": true,
+          "provision_ims": false,
+          "provision_spotplayer": true
+        },
+        "errors": []
+      },
+      {
+        "row_number": 3,
+        "status": "valid",
+        "operation": "update",
+        "data": {
+          "phone": "09120000000",
+          "first_name": "زهرا",
+          "provision_moodle": false,
+          "provision_ims": false,
+          "provision_spotplayer": false
+        },
+        "errors": []
+      },
+      {
+        "row_number": 4,
+        "status": "invalid",
+        "operation": null,
+        "data": {
+          "phone": "09120000001",
+          "email": "not-an-email",
+          "first_name": "رضا",
+          "last_name": "کریمی",
+          "phone2": null,
+          "civil_id": "1234567890",
+          "civil_id_type": "national_code",
+          "date_of_birth": "1995-06-11",
+          "father_name": "محمود",
+          "gender": "male",
+          "education_level": null,
+          "field_of_study": null,
+          "education_status": null,
+          "provision_moodle": false,
+          "provision_ims": false,
+          "provision_spotplayer": false
+        },
+        "errors": [
+          {
+            "field": "email",
+            "code": "invalid",
+            "message": "نشانی ایمیل email معتبر نیست."
+          },
+          {
+            "field": "civil_id",
+            "code": "identity_conflict",
+            "message": "کد شناسایی وارد شده معتبر نیست. لطفا کد ملی صحیح را وارد کنید."
+          }
+        ]
+      }
+    ],
+    "can_approve": true,
+    "approval_warning": "هنوز هیچ داده‌ای تغییر نکرده است. با تأیید این اجرا، همه ردیف‌های معتبر وارد می‌شوند."
+  },
+  "metadata": []
+}
