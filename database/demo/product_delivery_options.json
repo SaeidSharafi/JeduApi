@@ -459,7 +459,9 @@
     "status": "published",
     "is_prepayment_available": true,
     "prepayment_amount": 100000,
-    "details_json": {},
+    "details_json": {
+      "nili_room_id": "01M2N68DMSA75VCYZ817CNY5ZY"
+    },
     "is_featured": false,
     "featured_price": 0,
     "featured_price_start_date": null,
