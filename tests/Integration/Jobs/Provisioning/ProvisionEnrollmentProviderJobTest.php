@@ -290,10 +290,10 @@ it('provisions SpotPlayer with stable simulated references through the queued li
         ->toBe($firstData['player_url']);
 });
 
-it('serves a live_session_bbb seminar from Niliroom without provisioning it', function (): void {
+it('serves a live_session_niliroom seminar from Niliroom without provisioning it', function (): void {
     app()->instance(NiliroomClientContract::class, new FakeNiliroomService());
     $option = ProductDeliveryOption::factory()->create([
-        'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_BBB,
+        'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
         'details_json'    => ['nili_room_id' => 'NILI-E2E-80'],
     ]);
     $orderItem = OrderItem::factory()->create([

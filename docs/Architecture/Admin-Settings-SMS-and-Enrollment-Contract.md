@@ -364,7 +364,7 @@ Ready condition: non-empty `api_key`.
 
 #### `niliroom`
 
-Niliroom is the panel behind BBB live sessions, and the only one: `live_session_bbb` names the delivery method, and the retired BigBlueButton integration has no fallback (ADR 0013). Teachers are sent to Niliroom through a provider-native login grant. Its credentials are a plain base URL + API token pair, shaped like `skyroom`.
+Niliroom is the panel behind live sessions, and the only one: `live_session_niliroom` names the delivery method, and the retired BigBlueButton integration has no fallback (ADR 0013). Teachers are sent to Niliroom through a provider-native login grant. Its credentials are a plain base URL + API token pair, shaped like `skyroom`.
 
 | Group | `key` | Type | Required | Sensitive | Default |
 | --- | --- | --- | --- | --- | --- |
@@ -485,4 +485,4 @@ These are existing inconsistencies this contract surfaces. Each is a decision or
 | 7 | ~~Nothing reads a gateway-level `enabled` today: `IpPanelSmsService::validateConfig()` only checks `api_key`/`from`, and `SmsChannel` sends unconditionally.~~ Resolved by #106: `IpPanelSmsService` resolves the stored gateway setting and treats `enabled` as a kill switch, recording a skipped `sms_logs` row instead of throwing. | The gateway toggle and the per-option toggles are both guaranteed switches: #107 wires each notification option into the send path. |
 | 8 | ~~`OtpSmsNotification` hardcodes pattern `mdoe1j1587`, and `RefundCompletedNotification` has no pattern at all.~~ Resolved by #107: `SmsMessage` carries only `content`, `parameters` and `type`, and `SmsChannel` reads the option's `pattern_code` from the settings via the message `log_type`. | Pattern codes now live only in the notification-option settings. |
 | 9 | `MoodleService::validateConfig()` checks `base_url` + `token` only, while `auth_userkey_token` is what makes customer SSO login work. | Without extending it, the panel reports `ready: true` for a Moodle provider that cannot log students in. |
-| 10 | ~~`niliroom` has no adapter, no `ProvisioningProviderEnum` case, and no config entry yet.~~ Resolved by #54/#113: `NiliroomService` is the adapter, and it stays out of `ProvisioningProviderEnum` deliberately — Niliroom has no resource to create, so `live_session_bbb` plans zero providers (ADR 0013). | It remains a live-session-only integration, configured here and read at join time. |
+| 10 | ~~`niliroom` has no adapter, no `ProvisioningProviderEnum` case, and no config entry yet.~~ Resolved by #54/#113: `NiliroomService` is the adapter, and it stays out of `ProvisioningProviderEnum` deliberately — Niliroom has no resource to create, so `live_session_niliroom` plans zero providers (ADR 0013). | It remains a live-session-only integration, configured here and read at join time. |

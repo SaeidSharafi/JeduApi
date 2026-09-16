@@ -86,7 +86,7 @@ it('returns 422 for a non-seminar delivery option', function (): void {
 it('returns the niliroom login grant for the assigned teacher', function (): void {
     $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
 
-    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_BBB, [
+    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, [
         'nili_room_id' => 'room-public-456',
     ]);
 
@@ -112,7 +112,7 @@ it('returns the niliroom login grant for the assigned teacher', function (): voi
 it('returns 503 when the niliroom panel is not ready', function (): void {
     $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
 
-    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_BBB, [
+    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, [
         'nili_room_id' => 'room-public-456',
     ]);
 
@@ -129,7 +129,7 @@ it('returns 503 when the niliroom panel is not ready', function (): void {
 it('returns 503 when the niliroom room id is missing or malformed', function (mixed $roomId): void {
     $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
 
-    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_BBB, ['nili_room_id' => $roomId]);
+    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, ['nili_room_id' => $roomId]);
 
     $this->mock(NiliroomClientContract::class, function ($mock): void {
         $mock->shouldReceive('isReady')->andReturnTrue();

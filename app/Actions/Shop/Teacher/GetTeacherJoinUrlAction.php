@@ -36,8 +36,8 @@ final readonly class GetTeacherJoinUrlAction
         }
 
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LIVE_SESSION_SKYROOM => $this->buildSkyroomLoginUrl($user, $deliveryOption),
-            DeliveryMethodEnum::LIVE_SESSION_BBB     => $this->buildNiliroomLoginGrant($user, $deliveryOption),
+            DeliveryMethodEnum::LIVE_SESSION_SKYROOM  => $this->buildSkyroomLoginUrl($user, $deliveryOption),
+            DeliveryMethodEnum::LIVE_SESSION_NILIROOM => $this->buildNiliroomLoginGrant($user, $deliveryOption),
             // Only reachable if getSeminars() grows a method before its handler lands.
             default => throw new InvalidArgumentException(
                 __('messages.enrollment.delivery_no_join_url', ['method' => $deliveryMethod->value])

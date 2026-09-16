@@ -32,7 +32,7 @@ $fulfillmentDeliveryPairs = [
     // DIGITAL
     [FulfillmentTypeEnum::DIGITAL->value, DeliveryMethodEnum::DIRECT_DOWNLOAD->value],
     // ONLINE_SERVICE
-    [FulfillmentTypeEnum::ONLINE_SERVICE->value, DeliveryMethodEnum::LIVE_SESSION_BBB->value],
+    [FulfillmentTypeEnum::ONLINE_SERVICE->value, DeliveryMethodEnum::LIVE_SESSION_NILIROOM->value],
     [FulfillmentTypeEnum::ONLINE_SERVICE->value, DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value],
     [FulfillmentTypeEnum::ONLINE_SERVICE->value, DeliveryMethodEnum::LMS_MOODLE->value],
     // OFFLINE_SERVICE
@@ -59,10 +59,10 @@ $fulfillmentDeliveryPairsWithDetails = [
             'expiration_date' => '2023-12-31 23:59:59',
         ],
     ],
-    // ONLINE_SERVICE - LIVE_SESSION_BBB
+    // ONLINE_SERVICE - LIVE_SESSION_NILIROOM
     [
         FulfillmentTypeEnum::ONLINE_SERVICE->value,
-        DeliveryMethodEnum::LIVE_SESSION_BBB->value,
+        DeliveryMethodEnum::LIVE_SESSION_NILIROOM->value,
         [
             'nili_room_id' => '01J8ZQ4W6M9K3T7YB2C5NDRHXF',
             'admin_notes'  => 'Admin Note',
@@ -189,15 +189,15 @@ it('creates delivery validation rules for LMS_MOODLE', function (): void {
     expect($rules['details'][1])->toStartWith('array:');
 });
 
-it('creates delivery validation rules for LIVE_SESSION_BBB', function (): void {
+it('creates delivery validation rules for LIVE_SESSION_NILIROOM', function (): void {
     $fulfillmentType = FulfillmentTypeEnum::ONLINE_SERVICE->value;
-    $deliveryMethod  = DeliveryMethodEnum::LIVE_SESSION_BBB->value;
+    $deliveryMethod  = DeliveryMethodEnum::LIVE_SESSION_NILIROOM->value;
     $detailsData     = [
         'nili_room_id'          => '01J8ZQ4W6M9K3T7YB2C5NDRHXF',
         'admin_notes'           => 'Admin Note',
         'moodle_quiz_course_id' => 12,
     ];
-    $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData::getValidationRules($detailsData);
+    $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionNiliroomDetailsData::getValidationRules($detailsData);
     $action        = new GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {

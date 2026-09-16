@@ -61,13 +61,13 @@ it('returns enrollment detail for digital asset enrollment', function (): void {
 
 // ─── Delivery access ─────────────────────────────────────────────────────────
 
-it('show returns niliroom delivery_access for live_session_bbb enrollment', function (array $details, bool $isReady): void {
+it('show returns niliroom delivery_access for live_session_niliroom enrollment', function (array $details, bool $isReady): void {
     $enrollment = createEnrollment(
         $this->user,
-        DeliveryMethodEnum::LIVE_SESSION_BBB,
+        DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
         deliveryOption: App\Models\ProductDeliveryOption::factory()->create([
-            'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_BBB,
-            'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_BBB->getFulfillmentType(),
+            'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+            'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->getFulfillmentType(),
             'details_json'     => $details,
         ]),
     );
@@ -77,7 +77,7 @@ it('show returns niliroom delivery_access for live_session_bbb enrollment', func
     $response->assertOk()
         ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
     $access = $response->json('data.delivery_access');
-    expect($access['type'])->toBe(DeliveryMethodEnum::LIVE_SESSION_BBB->value)
+    expect($access['type'])->toBe(DeliveryMethodEnum::LIVE_SESSION_NILIROOM->value)
         ->and($access['is_ready'])->toBe($isReady)
         ->and($access['join_url_path'])->toBe(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid], absolute: false));
 })->with([

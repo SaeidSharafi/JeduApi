@@ -213,7 +213,7 @@ final class ProductDeliveryOptionCreateData extends Data
             'delivery_method' => [
                 'description' => 'Specific delivery mechanism. Prohibited for bundle products. Must belong to the chosen `fulfillment_type`:
 - `digital` → `direct_download`
-- `online_service` → `lms_moodle`, `live_session_bbb`, `live_session_skyroom`
+- `online_service` → `lms_moodle`, `live_session_niliroom`, `live_session_skyroom`
 - `offline_service` → `video_platform_spotplayer`
 - `in_person_service` → `in_person`
 
@@ -331,7 +331,7 @@ Each value determines which `details.*` fields are required.',
                 'example'     => 24,
             ],
             'details.moodle_quiz_course_id' => [
-                'description' => 'For `live_session_bbb`, `live_session_skyroom`, `video_platform_spotplayer`, `in_person`. Moodle course ID used exclusively for the quiz section shown in the student\'s course page. When set, the system provisions a separate Moodle enrollment just for quizzes, independent of the primary delivery method.',
+                'description' => 'For `live_session_niliroom`, `live_session_skyroom`, `video_platform_spotplayer`, `in_person`. Moodle course ID used exclusively for the quiz section shown in the student\'s course page. When set, the system provisions a separate Moodle enrollment just for quizzes, independent of the primary delivery method.',
                 'required'    => false,
                 'example'     => 145,
             ],
@@ -416,16 +416,16 @@ Each value determines which `details.*` fields are required.',
                 'example'     => 90,
             ],
 
-            // ── live_session_bbb ──────────────────────────────────────────────
+            // ── live_session_niliroom ──────────────────────────────────────────────
             'details.nili_room_id' => [
-                'description' => 'For `live_session_bbb`. Public ID of the Niliroom room the session runs in. Rooms are created manually in the Niliroom panel — the API never creates them. Required for the teacher and student Niliroom join flows.',
+                'description' => 'For `live_session_niliroom`. Public ID of the Niliroom room the session runs in. Rooms are created manually in the Niliroom panel — the API never creates them. Required for the teacher and student Niliroom join flows.',
                 'required'    => false,
                 'example'     => '01J8ZQ4W6M9K3T7YB2C5NDRHXF',
             ],
 
-            // ── shared: live_session_bbb + live_session_skyroom ───────────────
+            // ── shared: live_session_niliroom + live_session_skyroom ───────────────
             'details.admin_notes' => [
-                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Internal admin notes about this session setup. Not visible to students.',
+                'description' => 'For `live_session_niliroom` or `live_session_skyroom`. Internal admin notes about this session setup. Not visible to students.',
                 'required'    => false,
                 'example'     => 'Backup room: room-id 43',
             ],

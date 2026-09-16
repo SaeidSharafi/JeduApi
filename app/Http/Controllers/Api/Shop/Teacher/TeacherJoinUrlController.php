@@ -25,7 +25,7 @@ final class TeacherJoinUrlController extends Controller
      *
      * Returns a short-lived provider login URL that drops the authenticated teacher into their own
      * seminar room. Skyroom seminars return a presenter login URL and create no Skyroom user, with
-     * the expiry derived from the requested TTL; `live_session_bbb` seminars return a Niliroom login
+     * the expiry derived from the requested TTL; `live_session_niliroom` seminars return a Niliroom login
      * grant, which syncs the teacher, enrolls them in the room as a teacher, and logs them into the
      * panel on the room page, carrying the panel's own grant expiry.
      *

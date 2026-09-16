@@ -25,7 +25,7 @@ final class JoinUrlController extends Controller
      * Get join URL for a live session enrollment.
      *
      * Returns a time-limited join URL for Skyroom live sessions, and the Niliroom meeting join
-     * URL for `live_session_bbb` seminars.
+     * URL for `live_session_niliroom` seminars.
      *
      * @responseFile resources/responses/shop/my-courses/join.json
      *

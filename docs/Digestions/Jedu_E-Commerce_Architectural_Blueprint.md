@@ -41,7 +41,7 @@ The product system is a three-layer model that moves from abstract concept to a 
 -   **Layer 3: The Purchase Options (ProductDeliveryOption):**  
     This is the specific **SKU** a customer adds to their cart. It defines the precise method and terms of purchase. A single "Intro to Python (Fall 2025)" Product could have multiple delivery options:
 
-    -   **Option 1 (SKU: PYT-F25-LIVE):** "Live Online Cohort" via LIVE_SESSION_BBB - Price: $1,200.
+    -   **Option 1 (SKU: PYT-F25-LIVE):** "Live Online Cohort" via LIVE_SESSION_NILIROOM - Price: $1,200.
 
     -   **Option 2 (SKU: PYT-F25-SELF):** "Self-Paced with Moodle Access" via LMS_MOODLE - Price: $600.
 
@@ -89,7 +89,7 @@ This engine orchestrates the journey from purchase to access with a focus on int
 
     3.  **SpotPlayer (Video Platform):** License issuance API — generates a license key and player URL for the user.
 
-    4.  **Niliroom (Live Sessions):** Login grants for teachers and meeting join grants for students, so a `live_session_bbb` seminar is served by the panel alone (ADR 0013).
+    4.  **Niliroom (Live Sessions):** Login grants for teachers and meeting join grants for students, so a `live_session_niliroom` seminar is served by the panel alone (ADR 0013).
 
     All services resolve credentials through the SettingsService, allowing configuration via the admin panel without code changes.
 

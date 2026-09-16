@@ -437,7 +437,7 @@
 - **`normalizePayload(array $payload): array`** — maps the empty string a form sends for a cleared non-sensitive input to `null`, while leaving a sensitive field's empty string intact so it can clear the stored secret.
 
 #### DeliveryMethodEnum (`app/Enums/Product/DeliveryMethodEnum.php`)
-- **Values:** `LMS_MOODLE`, `VIDEO_PLATFORM_SPOTPLAYER`, `LIVE_SESSION_BBB`, `LIVE_SESSION_SKYROOM`, `DIRECT_DOWNLOAD`, `IN_PERSON`
+- **Values:** `LMS_MOODLE`, `VIDEO_PLATFORM_SPOTPLAYER`, `LIVE_SESSION_NILIROOM`, `LIVE_SESSION_SKYROOM`, `DIRECT_DOWNLOAD`, `IN_PERSON`
 - **Purpose:** Maps product delivery methods to external integration providers for provisioning routing
 
 #### FulfillmentTypeEnum (`app/Enums/Product/FulfillmentTypeEnum.php`)

@@ -147,7 +147,7 @@ describe('User with permissions', function (): void {
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
         $this->simpleData['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-        $this->simpleData['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
+        $this->simpleData['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_NILIROOM->value;
         $this->simpleData['details']          = ['nili_room_id' => 'nili-room-1404'];
 
         $response = $this->postJson(
@@ -170,7 +170,7 @@ describe('User with permissions', function (): void {
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'       => $this->product->id,
             'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
-            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB,
+            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
             'details_json'     => ['nili_room_id' => 'nili-room-old'],
         ])->fresh();
         $data             = $deliveryOption->toArray();

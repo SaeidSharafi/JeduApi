@@ -133,7 +133,7 @@ final class OrderItemFactory extends Factory
                             ],
                         ],
                     ],
-                    DeliveryMethodEnum::LIVE_SESSION_BBB => [],
+                    DeliveryMethodEnum::LIVE_SESSION_NILIROOM => [],
                 };
                 if (isset($orderItem->productDeliveryOption->details_json['ims_course_code'])) {
                     $provisionData['providers']['ims'] = [

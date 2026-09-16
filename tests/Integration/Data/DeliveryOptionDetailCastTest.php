@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionNiliroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
 
@@ -84,10 +84,10 @@ it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function (): 
         ->toBe(verta($details['enrollment_end_date'])->format('Y-m-d H:i:s'));
 });
 
-it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', function (): void {
+it('return LiveSessionNiliroomDetailsData if delivery_method is LIVE_SESSION_NILIROOM', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE;
-    $properties['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB;
+    $properties['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_NILIROOM;
     $details                        = [
         'nili_room_id'          => '01J8ZQ4W6M9K3T7YB2C5NDRHXF',
         'admin_notes'           => 'Admin Note',
@@ -95,7 +95,7 @@ it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', fu
     ];
     $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
-        ->toBeInstanceOf(LiveSessionBbbDetailsData::class)
+        ->toBeInstanceOf(LiveSessionNiliroomDetailsData::class)
         ->and($delivery_option->toArray())->toBe(array_merge($details, [
             'lms_course_code' => null,
             'start_date'      => null,

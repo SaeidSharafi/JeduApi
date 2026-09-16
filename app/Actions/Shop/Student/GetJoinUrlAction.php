@@ -33,9 +33,9 @@ final readonly class GetJoinUrlAction
         }
 
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LIVE_SESSION_BBB     => $this->buildNiliroomJoinUrl($enrollment, $deliveryOption->details_json ?? []),
-            DeliveryMethodEnum::LIVE_SESSION_SKYROOM => $this->buildSkyroomJoinUrl($enrollment, $provisioning),
-            default                                  => throw new InvalidArgumentException(
+            DeliveryMethodEnum::LIVE_SESSION_NILIROOM => $this->buildNiliroomJoinUrl($enrollment, $deliveryOption->details_json ?? []),
+            DeliveryMethodEnum::LIVE_SESSION_SKYROOM  => $this->buildSkyroomJoinUrl($enrollment, $provisioning),
+            default                                   => throw new InvalidArgumentException(
                 __('messages.enrollment.delivery_no_join_url', ['method' => $deliveryMethod->value])
             ),
         };

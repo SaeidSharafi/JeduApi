@@ -99,14 +99,14 @@ it('does not show other users enrollment details', function (): void {
 
 it('returns join url for bbb enrollment', function (): void {
     $deliveryOption = ProductDeliveryOption::factory()->create([
-        'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_BBB,
-        'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_BBB->getFulfillmentType(),
+        'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+        'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->getFulfillmentType(),
         'details_json'     => ['nili_room_id' => 'room-public-1'],
     ]);
 
     $enrollment = createEnrollment(
         $this->user,
-        DeliveryMethodEnum::LIVE_SESSION_BBB,
+        DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
         deliveryOption: $deliveryOption,
     );
 
@@ -123,7 +123,7 @@ it('returns join url for bbb enrollment', function (): void {
 
 it('returns 404 for join url when enrollment belongs to another user', function (): void {
     $otherUser  = App\Models\User::factory()->create();
-    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_BBB);
+    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_NILIROOM);
 
     getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertNotFound();

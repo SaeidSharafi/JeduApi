@@ -11,9 +11,9 @@ use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 
 /**
- * Details for a `live_session_bbb` delivery option.
+ * Details for a `live_session_niliroom` delivery option.
  */
-final class LiveSessionBbbDetailsData extends BaseDeliveryOptionDetailData implements DeliveryOptionDetailDataContract
+final class LiveSessionNiliroomDetailsData extends BaseDeliveryOptionDetailData implements DeliveryOptionDetailDataContract
 {
     public function __construct(
         /** The Niliroom room public ID the session runs in. */

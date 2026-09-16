@@ -44,13 +44,13 @@ beforeEach(function (): void {
 
 it('returns 404 when enrollment belongs to another user', function (): void {
     $otherUser  = User::factory()->create();
-    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_BBB);
+    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_NILIROOM);
 
     $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertNotFound();
 });
 
-// ─── Niliroom (live_session_bbb) ────────────────────────────────────────────
+// ─── Niliroom (live_session_niliroom) ────────────────────────────────────────────
 
 it('returns the niliroom meeting join url for an enrolled student', function (): void {
     $enrollment = seminarEnrollment($this->user, ['nili_room_id' => 'room-public-1']);
@@ -191,17 +191,17 @@ it('returns 500 when an unexpected error occurs', function (): void {
 });
 
 /**
- * A `live_session_bbb` enrollment whose delivery option carries the staff-entered Niliroom room.
+ * A `live_session_niliroom` enrollment whose delivery option carries the staff-entered Niliroom room.
  *
  * @param  array<string, mixed>  $details
  */
 function seminarEnrollment(User $customer, array $details): Enrollment
 {
     $deliveryOption = ProductDeliveryOption::factory()->create([
-        'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_BBB,
-        'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_BBB->getFulfillmentType(),
+        'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+        'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->getFulfillmentType(),
         'details_json'     => $details,
     ]);
 
-    return createEnrollment($customer, DeliveryMethodEnum::LIVE_SESSION_BBB, deliveryOption: $deliveryOption);
+    return createEnrollment($customer, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, deliveryOption: $deliveryOption);
 }

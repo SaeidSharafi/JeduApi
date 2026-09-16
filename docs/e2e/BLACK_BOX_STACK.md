@@ -188,7 +188,7 @@ The repository-side safety boundary is covered by these automated checks:
 The simulated provisioning clients are in-process and deterministic for IMS,
 Moodle/Moodle Quiz, SpotPlayer, and Skyroom. The Niliroom live-session client
 (`NiliroomClientContract`) is simulated too, but it is not a provisioning
-provider — `live_session_bbb` plans no provider at all (ADR 0013) — so it is
+provider — `live_session_niliroom` plans no provider at all (ADR 0013) — so it is
 asserted explicitly instead of through the provider loop.
 None of them issue provider HTTP requests. The Compose network is `internal`,
 so only declared service traffic is available; the external browser-facing ports

@@ -34,7 +34,7 @@ it('presents each delivery method by its provider while keeping the persisted me
     'moodle'     => [DeliveryMethodEnum::LMS_MOODLE, 'Moodle'],
     'spotplayer' => [DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER, 'SpotPlayer'],
     'download'   => [DeliveryMethodEnum::DIRECT_DOWNLOAD, 'Digital download'],
-    'niliroom'   => [DeliveryMethodEnum::LIVE_SESSION_BBB, 'Niliroom'],
+    'niliroom'   => [DeliveryMethodEnum::LIVE_SESSION_NILIROOM, 'Niliroom'],
     'skyroom'    => [DeliveryMethodEnum::LIVE_SESSION_SKYROOM, 'Skyroom'],
     'in person'  => [DeliveryMethodEnum::IN_PERSON, 'In person'],
     'unmapped'   => [DeliveryMethodEnum::BUNDLE, 'Component fulfillment'],

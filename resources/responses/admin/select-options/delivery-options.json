@@ -21,8 +21,8 @@
       "label": "سرویس آنلاین",
       "delivery_options": [
         {
-          "value": "live_session_bbb",
-          "label": "جلسه زنده با BBB"
+          "value": "live_session_niliroom",
+          "label": "جلسه زنده با Niliroom"
         },
         {
           "value": "live_session_skyroom",

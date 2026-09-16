@@ -214,7 +214,7 @@ final readonly class GetEnrollmentDetailAction
         $provisioning   = $enrollment->provisioning_data['providers'] ?? [];
 
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LIVE_SESSION_BBB => new DeliveryAccessData(
+            DeliveryMethodEnum::LIVE_SESSION_NILIROOM => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 session_label: 'کلاس آنلاین',
                 join_url_path: $this->joinUrlPath($enrollment),

@@ -38,9 +38,9 @@ it('resolves a direct download as having no external providers', function (): vo
         ->and($plan['resolved_at'])->not->toBeEmpty();
 });
 
-it('plans no provider for a live_session_bbb seminar', function (): void {
+it('plans no provider for a live_session_niliroom seminar', function (): void {
     $deliveryOption = ProductDeliveryOption::factory()->create([
-        'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_BBB,
+        'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
         'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
         'details_json'     => ['nili_room_id' => 'NILI-ROOM-1'],
     ]);

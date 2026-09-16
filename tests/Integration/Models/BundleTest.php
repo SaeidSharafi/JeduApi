@@ -7,22 +7,22 @@ test('to array', function (): void {
 
     expect($bundle->toArray())
         ->toEqual([
-            'id'                           => $bundle->id,
-            'slug'                         => $bundle->slug,
-            'full_name'                    => $bundle->full_name,
-            'short_name'                   => $bundle->short_name,
-            'description'                  => $bundle->description,
-            'thumbnail_url'                => $bundle->thumbnail_url,
-            'faq'                          => $bundle->faq,
-            'additional_info'              => $bundle->additional_info,
-            'meta_title'                   => $bundle->meta_title,
-            'meta_description'             => $bundle->meta_description,
-            'meta_keywords'                => $bundle->meta_keywords,
-            'properties'                   => $bundle->properties,
-            'status'                       => $bundle->status->value,
-            'created_by'                   => $bundle->created_by,
-            'created_at'                   => $bundle->created_at?->utc()->toJSON(),
-            'updated_at'                   => $bundle->updated_at?->utc()->toJSON(),
+            'id'               => $bundle->id,
+            'slug'             => $bundle->slug,
+            'full_name'        => $bundle->full_name,
+            'short_name'       => $bundle->short_name,
+            'description'      => $bundle->description,
+            'thumbnail_url'    => $bundle->thumbnail_url,
+            'faq'              => $bundle->faq,
+            'additional_info'  => $bundle->additional_info,
+            'meta_title'       => $bundle->meta_title,
+            'meta_description' => $bundle->meta_description,
+            'meta_keywords'    => $bundle->meta_keywords,
+            'properties'       => $bundle->properties,
+            'status'           => $bundle->status->value,
+            'created_by'       => $bundle->created_by,
+            'created_at'       => $bundle->created_at?->utc()->toJSON(),
+            'updated_at'       => $bundle->updated_at?->utc()->toJSON(),
 
         ]);
 

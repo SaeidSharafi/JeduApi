@@ -378,7 +378,7 @@ describe('CartController - Guest Users', function (): void {
                     'prepayment_amount'       => 10,
                 ]
             );
-            $guestToken     = Str::uuid()->toString();
+            $guestToken = Str::uuid()->toString();
 
             $cart     = Cart::factory()->create(['guest_token' => $guestToken]);
             $cartItem = CartItem::factory()->create([

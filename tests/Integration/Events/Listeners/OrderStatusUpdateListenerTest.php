@@ -87,7 +87,7 @@ describe('OrderStatusUpdateListener', function (): void {
         $seminarItem = OrderItem::factory()->for($order)->create([
             'product_delivery_option_id' => ProductDeliveryOption::factory()
                 ->create([
-                    'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_BBB,
+                    'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
                     'details_json'    => [
                         'nili_room_id'    => 'NILI-ROOM-1',
                         'ims_course_code' => 'IMS-BBB',
@@ -114,7 +114,7 @@ describe('OrderStatusUpdateListener', function (): void {
         $item = OrderItem::factory()->for($order)->create([
             'product_delivery_option_id' => ProductDeliveryOption::factory()
                 ->create([
-                    'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_BBB,
+                    'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
                     'details_json'    => ['nili_room_id' => 'NILI-ROOM-1'],
                 ])->id,
         ]);
