@@ -400,7 +400,6 @@ return [
 
     'enrollment' => [
         'delivery_no_join_url'    => 'روش ارائه [:method] از پیوند ورود مستقیم (Join URL) پشتیبانی نمی‌کند.',
-        'bbb_not_provisioned'     => 'جلسه کلاس مجازی BBB هنوز ایجاد یا آماده نشده است.',
         'skyroom_not_provisioned' => 'اتاق اسکای‌روم هنوز ایجاد یا آماده نشده است.',
         'revocation_retried'      => 'تلاش مجدد برای لغو دسترسی ثبت‌نام انجام شد.',
         'revocation_confirmed'    => 'لغو دسترسی ثبت‌نام به‌صورت دستی تأیید شد.',
@@ -443,9 +442,11 @@ return [
             'unknown_error' => 'خطای ناشناخته در ارتباط با سرویس اسکای‌روم.',
         ],
         'niliroom' => [
-            'network_error'         => 'خطای شبکه در ارتباط با نیلی‌روم در آدرس [:endpoint]: :message',
-            'user_identity_missing' => 'نیلی‌روم برای استاد همگام‌سازی‌شده شناسه کاربری برنگرداند.',
-            'login_grant_invalid'   => 'نیلی‌روم لینک ورود ناقصی برنگرداند.',
+            'network_error'            => 'خطای شبکه در ارتباط با نیلی‌روم در آدرس [:endpoint]: :message',
+            'user_identity_missing'    => 'نیلی‌روم برای کاربر همگام‌سازی‌شده شناسه کاربری برنگرداند.',
+            'login_grant_invalid'      => 'نیلی‌روم لینک ورود ناقصی برنگرداند.',
+            'meeting_identity_missing' => 'نیلی‌روم برای این اتاق شناسه جلسه برنگرداند.',
+            'meeting_join_url_missing' => 'نیلی‌روم لینک ورود به جلسه را برنگرداند.',
         ],
         'moodle' => [
             'username_missing'             => 'نام کاربری مورد نیاز مودل ارسال نشده است.',

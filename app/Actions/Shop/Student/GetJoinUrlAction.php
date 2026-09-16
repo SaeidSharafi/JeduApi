@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\Student;
 
-use App\Contracts\Integrations\BbbClientContract;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Data\Shop\Student\JoinUrlData;
 use App\Enums\Product\DeliveryMethodEnum;
@@ -17,7 +17,7 @@ use InvalidArgumentException;
 final readonly class GetJoinUrlAction
 {
     public function __construct(
-        private BbbClientContract $bbbService,
+        private NiliroomClientContract $niliroomService,
         private SkyroomClientContract $skyroomService,
     ) {}
 
@@ -33,7 +33,7 @@ final readonly class GetJoinUrlAction
         }
 
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LIVE_SESSION_BBB     => $this->buildBbbJoinUrl($enrollment, $provisioning),
+            DeliveryMethodEnum::LIVE_SESSION_BBB     => $this->buildNiliroomJoinUrl($enrollment, $deliveryOption->details_json ?? []),
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM => $this->buildSkyroomJoinUrl($enrollment, $provisioning),
             default                                  => throw new InvalidArgumentException(
                 __('messages.enrollment.delivery_no_join_url', ['method' => $deliveryMethod->value])
@@ -42,22 +42,34 @@ final readonly class GetJoinUrlAction
     }
 
     /**
-     * @param  array<string, mixed>  $provisioning
+     * Niliroom replaces BBB entirely (ADR 0013): a `live_session_bbb` student joins the meeting
+     * the room is running, never the panel, so an unusable panel is a clear failure rather
+     * than a BBB fallback.
+     *
+     * The room comes from the staff-entered delivery-option details rather than the enrollment's
+     * provisioning state, which carries nothing for this method once #113 removes the legacy BBB
+     * provider. The panel owns the room's meeting lifecycle, so this action stores no meeting.
+     *
+     * @param  array<string, mixed>  $details
      */
-    private function buildBbbJoinUrl(Enrollment $enrollment, array $provisioning): JoinUrlData
+    private function buildNiliroomJoinUrl(Enrollment $enrollment, array $details): JoinUrlData
     {
-        $meetingId = data_get($provisioning, 'bbb.data.meeting_id');
+        $roomId = data_get($details, 'nili_room_id');
 
-        if (! $meetingId) {
-            throw new ResourceNotProvisionedException(__('messages.enrollment.bbb_not_provisioned'));
+        // The room is an opaque public ID staff paste from the panel, so anything but a
+        // non-empty string is a delivery-option mistake rather than a provider problem.
+        if (! is_string($roomId) || mb_trim($roomId) === '') {
+            throw new ResourceNotProvisionedException(__('messages.provisioning.niliroom_room_id_missing'));
         }
 
-        $joinUrl = $this->bbbService->buildJoinUrl(
-            meetingId: (string) $meetingId,
-            fullName: $enrollment->customer->full_name ?? 'دانشجو',
-        );
+        if (! $this->niliroomService->isReady()) {
+            throw new ResourceNotProvisionedException(__('messages.enrollments.niliroom_not_configured'));
+        }
 
-        return new JoinUrlData(url: $joinUrl, type: 'bbb');
+        $joinUrl = $this->niliroomService->issueStudentMeetingJoinGrant($enrollment->customer, mb_trim($roomId));
+
+        // The panel puts no lifetime on a meeting join grant, so there is no expiry to report.
+        return new JoinUrlData(url: $joinUrl, type: 'niliroom');
     }
 
     /**

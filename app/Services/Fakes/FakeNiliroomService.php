@@ -36,4 +36,12 @@ final class FakeNiliroomService implements NiliroomClientContract
             'expires_at' => CarbonImmutable::now()->addMinutes(5),
         ];
     }
+
+    public function issueStudentMeetingJoinGrant(User $user, string $roomId): string
+    {
+        return 'https://niliroom.demo.jedushop.ir/meetings/join?'.http_build_query([
+            'user_id' => 'user-'.$user->id,
+            'room_id' => $roomId,
+        ]);
+    }
 }

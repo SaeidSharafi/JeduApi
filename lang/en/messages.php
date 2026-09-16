@@ -407,7 +407,6 @@ return [
 
     'enrollment' => [
         'delivery_no_join_url'    => 'Delivery method [:method] does not support join URLs.',
-        'bbb_not_provisioned'     => 'BBB meeting not provisioned yet.',
         'skyroom_not_provisioned' => 'Skyroom room not provisioned yet.',
         'revocation_retried'      => 'Enrollment revocation retried.',
         'revocation_confirmed'    => 'Enrollment revocation confirmed as completed.',
@@ -450,9 +449,11 @@ return [
             'unknown_error' => 'Unknown Skyroom error',
         ],
         'niliroom' => [
-            'network_error'         => 'Niliroom network error on [:endpoint]: :message',
-            'user_identity_missing' => 'Niliroom did not return a user identity for the synchronized teacher.',
-            'login_grant_invalid'   => 'Niliroom returned an incomplete login grant.',
+            'network_error'            => 'Niliroom network error on [:endpoint]: :message',
+            'user_identity_missing'    => 'Niliroom did not return a user identity for the synchronized user.',
+            'login_grant_invalid'      => 'Niliroom returned an incomplete login grant.',
+            'meeting_identity_missing' => 'Niliroom did not return a meeting identity for the room.',
+            'meeting_join_url_missing' => 'Niliroom did not return a meeting join URL.',
         ],
         'moodle' => [
             'username_missing'             => 'Moodle username source missing.',

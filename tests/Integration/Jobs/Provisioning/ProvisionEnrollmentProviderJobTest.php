@@ -6,6 +6,7 @@ use App\Actions\Shop\Student\GetJoinUrlAction;
 use App\Contracts\Integrations\BbbClientContract;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Enums\EnrollmentStatusEnum;
@@ -24,6 +25,7 @@ use App\Models\Staff;
 use App\Services\Fakes\FakeBbbService;
 use App\Services\Fakes\FakeImsService;
 use App\Services\Fakes\FakeMoodleService;
+use App\Services\Fakes\FakeNiliroomService;
 use App\Services\Fakes\FakeSkyroomService;
 use App\Services\Fakes\FakeSpotPlayerService;
 use App\Services\Provisioning\Providers\MoodleProvisioningProvider;
@@ -291,6 +293,7 @@ it('provisions SpotPlayer with stable simulated references through the queued li
 
 it('provisions BBB with stable simulated meeting data through the queued lifecycle', function (): void {
     app()->instance(BbbClientContract::class, new FakeBbbService());
+    app()->instance(NiliroomClientContract::class, new FakeNiliroomService());
     $option = ProductDeliveryOption::factory()->create([
         'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_BBB,
         'details_json'    => ['nili_room_id' => 'NILI-E2E-80'],
@@ -323,7 +326,8 @@ it('provisions BBB with stable simulated meeting data through the queued lifecyc
     expect($attempt->refresh()->status)->toBe(ProvisioningAttemptStatusEnum::SUCCEEDED)
         ->and($enrollment->provisioning_status)->toBe(ProvisioningStatusEnum::HEALTHY)
         ->and($firstData)->toBe(['meeting_id' => 'NILI-E2E-80'])
-        ->and($joinUrl)->toContain('meetingID=NILI-E2E-80');
+        // The join is served by Niliroom (ADR 0013), and the fake echoes the room it was handed.
+        ->and($joinUrl)->toContain('room_id=NILI-E2E-80');
 
     $retry = $attempts->queue($enrollment, ProvisioningTriggerEnum::RETRY,
         provider: ProvisioningProviderEnum::BBB);

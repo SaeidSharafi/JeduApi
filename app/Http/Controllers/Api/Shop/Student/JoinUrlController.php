@@ -24,13 +24,15 @@ final class JoinUrlController extends Controller
     /**
      * Get join URL for a live session enrollment.
      *
-     * Returns a time-limited join URL for BBB or Skyroom live sessions.
+     * Returns a time-limited join URL for Skyroom live sessions, and the Niliroom meeting join
+     * URL for `live_session_bbb` seminars.
      *
      * @responseFile resources/responses/shop/my-courses/join.json
      *
      * @response 404 {"message": "Enrollment not found."}
      * @response 422 {"message": "Delivery method does not support join URLs."}
-     * @response 503 {"message": "BBB meeting not provisioned yet."}
+     * @response 503 {"message": "Niliroom nili_room_id is missing from delivery option details."}
+     * @response 503 {"message": "Niliroom is not configured."}
      */
     public function __invoke(Enrollment $enrollment, GetJoinUrlAction $action): ApiResponseInterface
     {

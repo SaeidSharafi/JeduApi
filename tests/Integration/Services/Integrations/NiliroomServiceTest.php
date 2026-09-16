@@ -77,6 +77,96 @@ describe('issueTeacherLoginGrant', function (): void {
     });
 });
 
+describe('issueStudentMeetingJoinGrant', function (): void {
+    it('syncs the student identity, enrolls them as a student, and returns the room meeting join url', function (): void {
+        fakeNiliroomApi();
+
+        $joinUrl = makeNiliroomService()->issueStudentMeetingJoinGrant(
+            makeNiliroomUser(7, 'Ali', 'Karimi', '09120000000'),
+            'room-public-1',
+        );
+
+        Http::assertSentInOrder([
+            fn (Request $request): bool => $request->method() === 'PUT'
+                && $request->url()                            === 'https://niliroom.test/api/v1/users/eshop/user-7'
+                && $request->data()                           === ['name' => 'Ali Karimi', 'phone' => '09120000000']
+                && $request->hasHeader('Idempotency-Key'),
+            fn (Request $request): bool => $request->method() === 'PUT'
+                && $request->url()                            === 'https://niliroom.test/api/v1/rooms/room-public-1/enrollments/ident-1'
+                && $request->data()                           === ['role' => 'student']
+                && $request->hasHeader('Idempotency-Key'),
+            // The panel owns the meeting lifecycle: the platform holds no meeting ID of its own.
+            fn (Request $request): bool => $request->method() === 'POST'
+                && $request->url()                            === 'https://niliroom.test/api/v1/rooms/room-public-1/meetings/start'
+                && $request->hasHeader('Idempotency-Key'),
+            fn (Request $request): bool => $request->method() === 'POST'
+                && $request->url()                            === 'https://niliroom.test/api/v1/meetings/meeting-public-1/join-grants'
+                // The enrolled identity joins; a guest grant would bypass the room enrollment.
+                && $request->data() === ['user_id' => 'ident-1']
+                && $request->hasHeader('Idempotency-Key'),
+        ]);
+
+        expect($joinUrl)->toBe('https://niliroom.test/meetings/join/xyz789');
+    });
+
+    it('throws UnrecoverableProvisioningException when the API token is missing', function (): void {
+        $settings = Mockery::mock(SettingsService::class);
+        $settings->shouldReceive('get')
+            ->with(SettingKeyEnum::NILIROOM, Mockery::any())
+            ->andReturn(['enabled' => true, 'base_url' => 'https://niliroom.test', 'api_token' => '']);
+
+        $service = new NiliroomService($settings);
+
+        expect(fn (): string => $service->issueStudentMeetingJoinGrant(makeNiliroomUser(7), 'room-public-1'))
+            ->toThrow(UnrecoverableProvisioningException::class);
+    });
+
+    it('throws RecoverableProvisioningException when the room meeting cannot be started', function (): void {
+        fakeNiliroomApi([
+            'https://niliroom.test/api/v1/rooms/room-public-1/meetings/start' => Http::response([], 503),
+        ]);
+
+        expect(fn (): string => makeNiliroomService()->issueStudentMeetingJoinGrant(makeNiliroomUser(7), 'room-public-1'))
+            ->toThrow(RecoverableProvisioningException::class);
+    });
+
+    it('throws UnrecoverableProvisioningException when the provider returns no meeting identity', function (): void {
+        fakeNiliroomApi([
+            'https://niliroom.test/api/v1/rooms/room-public-1/meetings/start' => Http::response(['data' => ['id' => null]]),
+        ]);
+
+        expect(fn (): string => makeNiliroomService()->issueStudentMeetingJoinGrant(makeNiliroomUser(7), 'room-public-1'))
+            ->toThrow(UnrecoverableProvisioningException::class);
+    });
+
+    it('throws UnrecoverableProvisioningException when the meeting is unknown to the provider', function (): void {
+        fakeNiliroomApi([
+            'https://niliroom.test/api/v1/meetings/*' => Http::response(['error' => ['code' => 'not_found', 'message' => 'Meeting not found']], 404),
+        ]);
+
+        expect(fn (): string => makeNiliroomService()->issueStudentMeetingJoinGrant(makeNiliroomUser(7), 'room-public-1'))
+            ->toThrow(UnrecoverableProvisioningException::class);
+    });
+
+    it('throws UnrecoverableProvisioningException when the provider returns no meeting join url', function (): void {
+        fakeNiliroomApi([
+            'https://niliroom.test/api/v1/meetings/*' => Http::response(['data' => ['meeting_id' => 'meeting-public-1', 'guest_id' => null]], 201),
+        ]);
+
+        expect(fn (): string => makeNiliroomService()->issueStudentMeetingJoinGrant(makeNiliroomUser(7), 'room-public-1'))
+            ->toThrow(UnrecoverableProvisioningException::class);
+    });
+
+    it('throws RecoverableProvisioningException when the provider fails to issue the grant', function (): void {
+        fakeNiliroomApi([
+            'https://niliroom.test/api/v1/meetings/*' => Http::response([], 503),
+        ]);
+
+        expect(fn (): string => makeNiliroomService()->issueStudentMeetingJoinGrant(makeNiliroomUser(7), 'room-public-1'))
+            ->toThrow(RecoverableProvisioningException::class);
+    });
+});
+
 describe('error handling', function (): void {
     it('throws UnrecoverableProvisioningException when the API token is missing', function (): void {
         $settings = Mockery::mock(SettingsService::class);
@@ -155,19 +245,31 @@ describe('error handling', function (): void {
 });
 
 /**
- * Fake the three Niliroom endpoints of the login-grant flow.
+ * Fake the Niliroom endpoints of the teacher login-grant and student meeting-join flows.
  *
  * @param  array<string, mixed>  $overrides
  */
 function fakeNiliroomApi(array $overrides = []): void
 {
     Http::fake($overrides + [
-        'https://niliroom.test/api/v1/users/*'      => Http::response(['data' => ['id' => 'ident-1', 'name' => 'Ali Karimi', 'phone' => '09120000000', 'active' => true]]),
-        'https://niliroom.test/api/v1/rooms/*'      => Http::response(['data' => ['id' => 'enroll-1', 'room_id' => 'room-public-1', 'user_id' => 'ident-1', 'role' => 'teacher', 'active' => true]]),
+        'https://niliroom.test/api/v1/users/*'                => Http::response(['data' => ['id' => 'ident-1', 'name' => 'Ali Karimi', 'phone' => '09120000000', 'active' => true]]),
+        'https://niliroom.test/api/v1/rooms/*/enrollments/*'  => Http::response(['data' => ['id' => 'enroll-1', 'room_id' => 'room-public-1', 'user_id' => 'ident-1', 'role' => 'teacher', 'active' => true]]),
+        'https://niliroom.test/api/v1/rooms/*/meetings/start' => Http::response(['data' => [
+            'id'         => 'meeting-public-1',
+            'room_id'    => 'room-public-1',
+            'status'     => 'started',
+            'started_at' => '2026-09-16T12:00:00.000000Z',
+            'ended_at'   => null,
+        ]]),
         'https://niliroom.test/api/v1/login-grants' => Http::response(['data' => [
             'id'         => 'grant-1',
             'url'        => 'https://niliroom.test/login/abc123',
             'expires_at' => '2026-09-16T12:05:00.000000Z',
+        ]], 201),
+        'https://niliroom.test/api/v1/meetings/*/join-grants' => Http::response(['data' => [
+            'meeting_id' => 'meeting-public-1',
+            'join_url'   => 'https://niliroom.test/meetings/join/xyz789',
+            'guest_id'   => null,
         ]], 201),
     ]);
 }
@@ -197,11 +299,15 @@ function makeNiliroomUser(
 }
 
 /*
- * Mutation notes (`pest --mutate --parallel`, 96.61% — 57 tested, 2 uncovered):
+ * Mutation notes (`pest --mutate --parallel`, 96.36% — 53 tested, 2 uncovered):
  * The survivors are the `TIMEOUT_SECONDS` constant's IncrementInteger and
  * DecrementInteger mutants. `->timeout()` is a Guzzle client option, so it never
  * reaches the PSR-7 request that `Http::assertSent()` inspects: through this
  * seam the value is not observable, and asserting it would mean reaching into
  * the pending request. Left uncovered rather than coupling the test to the
  * client's internals.
+ *
+ * The mutant count drops when response-shape checks are consolidated: every
+ * `data.<field>` guard now lives in `requiredString()`, so one branch has to be
+ * killed instead of one per call site.
  */

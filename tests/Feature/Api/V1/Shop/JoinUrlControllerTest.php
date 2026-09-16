@@ -2,13 +2,39 @@
 
 declare(strict_types=1);
 
-use App\Contracts\Integrations\BbbClientContract;
+use App\Actions\Shop\Student\GetJoinUrlAction;
+use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Http\Controllers\Api\Shop\Student\JoinUrlController;
 use App\Models\Enrollment;
+use App\Models\ProductDeliveryOption;
+use App\Models\User;
+use Illuminate\Support\Facades\Exceptions;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+covers(GetJoinUrlAction::class, JoinUrlController::class);
+
+/*
+|--------------------------------------------------------------------------
+| Mutation notes (`pest --mutate --parallel`, 88.89% — 24 tested, 3 untested)
+|--------------------------------------------------------------------------
+| All three survivors are equivalent rather than test gaps:
+|
+| - `RemoveMethodCall` on `$deliveryOption->loadMissing('product')`: an eager-load
+|   against a lazy one is a query-count concern, not an observable response. The
+|   bundle guard below reads the same relation either way.
+| - `RemoveNullSafeOperator` on `$deliveryOption->product?->productable_type`: the
+|   delivery option's `product_id` is non-nullable, so the relation is never null
+|   and both forms behave identically.
+| - `CoalesceRemoveLeft` on the Skyroom branch's `$customer->full_name ?? 'دانشجو'`:
+|   `User` has neither a `full_name` column nor an accessor for it, so the left
+|   operand is always null and the fallback always wins — asserting the nickname
+|   would mean asserting a fiction. The underlying defect (a Skyroom student always
+|   joins as «دانشجو») predates this ticket, and the Skyroom student flow is
+|   explicitly out of #112's scope, so it is reported rather than changed here.
+*/
 
 beforeEach(function (): void {
     $this->customer();
@@ -17,99 +43,79 @@ beforeEach(function (): void {
 // ─── Ownership ──────────────────────────────────────────────────────────────
 
 it('returns 404 when enrollment belongs to another user', function (): void {
-    $otherUser  = App\Models\User::factory()->create();
+    $otherUser  = User::factory()->create();
     $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_BBB);
 
     $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertNotFound();
 });
 
-// ─── BBB ─────────────────────────────────────────────────────────────────────
+// ─── Niliroom (live_session_bbb) ────────────────────────────────────────────
 
-it('returns join url for BBB live session', function (): void {
-    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
-    markEnrollmentProvidersReady($enrollment);
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'bbb' => [
-                'status' => 'success', 'data' => ['meeting_id' => 'meeting-abc-123'],
-            ],
-        ],
-    ];
-    $enrollment->save();
-    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'bbb' => [
-                'status' => 'success',
-                'data'   => ['meeting_id' => 'meeting-abc-123'],
-            ],
-        ],
-    ];
-    $enrollment->save();
+it('returns the niliroom meeting join url for an enrolled student', function (): void {
+    $enrollment = seminarEnrollment($this->user, ['nili_room_id' => 'room-public-1']);
 
-    $joinUrl = 'https://bbb.example.com/join?meetingId=meeting-abc-123&fullName=Test+User';
+    $joinUrl = 'https://niliroom.example.ir/meetings/join/abc123';
 
-    $this->mock(BbbClientContract::class, function ($mock) use ($joinUrl): void {
-        $mock->shouldReceive('buildJoinUrl')
+    $this->mock(NiliroomClientContract::class, function ($mock) use ($joinUrl): void {
+        $mock->shouldReceive('isReady')->once()->andReturnTrue();
+        $mock->shouldReceive('issueStudentMeetingJoinGrant')
             ->once()
-            ->with('meeting-abc-123', Mockery::any())
+            ->with(
+                Mockery::on(fn (User $user): bool => $user->id === $this->user->id),
+                'room-public-1',
+            )
             ->andReturn($joinUrl);
     });
 
     $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', $joinUrl)
-        ->assertJsonPath('data.type', 'bbb');
+        ->assertJsonPath('data.type', 'niliroom')
+        // The meeting join grant is not time-limited by the panel, unlike the teacher login grant.
+        ->assertJsonPath('data.expires_at', null);
 });
 
-it('returns 503 when BBB meeting is not provisioned yet', function (): void {
-    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
-    markEnrollmentProvidersReady($enrollment);
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'bbb' => [
-                'status' => 'success', 'data' => ['meeting_id' => 'meeting-abc-123'],
-            ],
-        ],
-    ];
-    $enrollment->save();
-    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
-    // provisioning_data has no bbb meeting_id
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'bbb' => [
-                'status' => 'provisioning',
-                'data'   => [],
-            ],
-        ],
-    ];
-    $enrollment->save();
+it('returns 503 when the niliroom panel is not ready', function (): void {
+    $enrollment = seminarEnrollment($this->user, ['nili_room_id' => 'room-public-1']);
+
+    $this->mock(NiliroomClientContract::class, function ($mock): void {
+        $mock->shouldReceive('isReady')->once()->andReturnFalse();
+        $mock->shouldNotReceive('issueStudentMeetingJoinGrant');
+    });
 
     $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertStatus(503)
-        ->assertJsonFragment(['message' => 'BBB meeting not provisioned yet.']);
+        ->assertJsonFragment(['message' => __('messages.enrollments.niliroom_not_configured')]);
 });
+
+it('returns 503 when the niliroom room id is missing or malformed', function (mixed $roomId): void {
+    $enrollment = seminarEnrollment($this->user, ['nili_room_id' => $roomId]);
+
+    $this->mock(NiliroomClientContract::class, function ($mock): void {
+        $mock->shouldNotReceive('issueStudentMeetingJoinGrant');
+    });
+
+    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
+        ->assertStatus(503)
+        ->assertJsonFragment(['message' => __('messages.provisioning.niliroom_room_id_missing')]);
+})->with([
+    'absent'          => null,
+    'empty string'    => '',
+    'whitespace only' => '   ',
+    'integer'         => 456,
+    'array'           => [['room']],
+]);
 
 // ─── Skyroom ─────────────────────────────────────────────────────────────────
 
 it('returns join url for Skyroom live session', function (): void {
-    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM);
-    markEnrollmentProvidersReady($enrollment);
+    $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM);
     $enrollment->provisioning_data = [
         'providers' => [
             'skyroom' => [
-                'status' => 'success', 'data' => ['room_id' => 456],
-            ],
-        ],
-    ];
-    $enrollment->save();
-    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'skyroom' => [
-                'status' => 'success',
-                'data'   => ['room_id' => 456],
+                // provisioning_data is an untyped JSON column, so the room id may be a numeric string.
+                'status' => 'success', 'data' => ['room_id' => '456'],
             ],
         ],
     ];
@@ -120,7 +126,9 @@ it('returns join url for Skyroom live session', function (): void {
     $this->mock(SkyroomClientContract::class, function ($mock) use ($joinUrl): void {
         $mock->shouldReceive('createLoginUrl')
             ->once()
-            ->with(456, 'user-'.$this->user->id, Mockery::any())
+            // The nickname is not asserted: the student path reads `customer->full_name`, which
+            // `User` has no attribute for, so it is always the default — see the mutation notes.
+            ->with(Mockery::mustBe(456), 'user-'.$this->user->id, Mockery::any())
             ->andReturn($joinUrl);
     });
 
@@ -131,18 +139,7 @@ it('returns join url for Skyroom live session', function (): void {
 });
 
 it('returns 503 when Skyroom room is not provisioned yet', function (): void {
-    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM);
-    markEnrollmentProvidersReady($enrollment);
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'skyroom' => [
-                'status' => 'success', 'data' => ['room_id' => 456],
-            ],
-        ],
-    ];
-    $enrollment->save();
-    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
-    // provisioning_data has no skyroom room_id
+    $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM);
     $enrollment->provisioning_data = [
         'providers' => [
             'skyroom' => [
@@ -162,53 +159,49 @@ it('returns 503 when Skyroom room is not provisioned yet', function (): void {
 
 it('returns 422 when delivery method does not support join URLs', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON);
-    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
 
     $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
-        ->assertUnprocessable();
+        ->assertUnprocessable()
+        ->assertJsonFragment([
+            'message' => __('messages.enrollment.delivery_no_join_url', [
+                'method' => DeliveryMethodEnum::IN_PERSON->value,
+            ]),
+        ]);
 });
 
 // ─── Throwable catch ────────────────────────────────────────────────────────
 
 it('returns 500 when an unexpected error occurs', function (): void {
-    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
-    markEnrollmentProvidersReady($enrollment);
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'bbb' => [
-                'status' => 'success', 'data' => ['meeting_id' => 'meeting-abc-123'],
-            ],
-        ],
-    ];
-    $enrollment->save();
-    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'bbb' => [
-                'status' => 'success',
-                'data'   => ['meeting_id' => 'meeting-abc-123'],
-            ],
-        ],
-    ];
-    $enrollment->save();
+    Exceptions::fake();
 
-    $this->mock(BbbClientContract::class, function ($mock): void {
-        $mock->shouldReceive('buildJoinUrl')
+    $enrollment = seminarEnrollment($this->user, ['nili_room_id' => 'room-public-1']);
+
+    $this->mock(NiliroomClientContract::class, function ($mock): void {
+        $mock->shouldReceive('isReady')->andReturnTrue();
+        $mock->shouldReceive('issueStudentMeetingJoinGrant')
             ->once()
-            ->andThrow(new RuntimeException('BbbService crashed'));
+            ->andThrow(new RuntimeException('NiliroomService crashed'));
     });
 
     $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertServerError();
+
+    // An unexpected provider failure must reach the logs, not just a 500 to the client.
+    Exceptions::assertReported(fn (RuntimeException $e): bool => $e->getMessage() === 'NiliroomService crashed');
 });
 
-function markEnrollmentProvidersReady(Enrollment $enrollment): void
+/**
+ * A `live_session_bbb` enrollment whose delivery option carries the staff-entered Niliroom room.
+ *
+ * @param  array<string, mixed>  $details
+ */
+function seminarEnrollment(User $customer, array $details): Enrollment
 {
-    $plan = $enrollment->provisioning_plan;
+    $deliveryOption = ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_BBB,
+        'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_BBB->getFulfillmentType(),
+        'details_json'     => $details,
+    ]);
 
-    foreach ($plan['providers'] ?? [] as $index => $provider) {
-        $plan['providers'][$index]['readiness'] = 'ready';
-    }
-
-    $enrollment->updateQuietly(['provisioning_plan' => $plan]);
+    return createEnrollment($customer, DeliveryMethodEnum::LIVE_SESSION_BBB, deliveryOption: $deliveryOption);
 }

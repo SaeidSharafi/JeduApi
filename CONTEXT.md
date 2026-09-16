@@ -107,8 +107,12 @@ A single-use, short-lived URL that authenticates the current teacher into the li
 _Avoid_: join URL, access link
 
 **Niliroom room**:
-The provider-side meeting room for a BBB seminar, created manually by staff in the Niliroom panel and referenced by its opaque public ID stored in the delivery option's details (`nili_room_id`). Never created via API.
+The provider-side meeting room for a BBB seminar, created manually by staff in the Niliroom panel and referenced by its opaque public ID stored in the delivery option's details (`nili_room_id`). Never created via API. The panel alone decides whether a meeting runs in the room — the platform stores no meeting reference and, when it issues a student join grant, asks the panel for the room's meeting (the panel returns the running one or starts it).
 _Avoid_: meeting, BBB room
+
+**Meeting Join Grant**:
+The Niliroom grant a student redeems to attend a live meeting (`POST /meetings/{meeting}/join-grants`), issued for the student's enrolled identity and carrying no expiry. It returns the meeting's own join URL, so the student never lands in the panel UI — unlike a **Session Login URL**, which authenticates a teacher into the panel.
+_Avoid_: login URL, panel link
 
 **Skyroom room**:
 The provider-side conference room for a Skyroom seminar, created manually in the Skyroom panel and referenced by its numeric ID stored in the delivery option's details (`room_id`). Never created via API.

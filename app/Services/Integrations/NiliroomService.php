@@ -22,14 +22,17 @@ use Illuminate\Support\Str;
  * The Niliroom panel adapter (ADR 0007): one provider identity per shop user, keyed by
  * `provider=eshop` and `subject=user-{shopUserId}`, so a teacher is never duplicated.
  *
- * Rooms are staff-created in the panel and referenced by their public ID; this adapter
- * only syncs the user, enrolls them, and issues a login grant — it never creates rooms.
+ * Rooms are staff-created in the panel and referenced by their public ID; this adapter only
+ * syncs the user, enrolls them, and issues a login or meeting join grant — it never creates
+ * rooms, and the panel owns the room's meeting lifecycle.
  */
 final class NiliroomService extends AbstractIntegrationService implements NiliroomClientContract
 {
     private const string PROVIDER = 'eshop';
 
     private const string TEACHER_ROLE = 'teacher';
+
+    private const string STUDENT_ROLE = 'student';
 
     private const int TIMEOUT_SECONDS = 15;
 
@@ -44,9 +47,21 @@ final class NiliroomService extends AbstractIntegrationService implements Niliro
         $this->assertConfigured();
 
         $identityId = $this->syncUser($user);
-        $this->enrollAsTeacher($identityId, $roomId);
+        $this->enroll($identityId, $roomId, self::TEACHER_ROLE);
 
         return $this->issueLoginGrant($identityId, $roomId);
+    }
+
+    public function issueStudentMeetingJoinGrant(User $user, string $roomId): string
+    {
+        $this->assertConfigured();
+
+        $identityId = $this->syncUser($user);
+        $this->enroll($identityId, $roomId, self::STUDENT_ROLE);
+
+        $meetingId = $this->startOrGetRoomMeeting($roomId);
+
+        return $this->issueMeetingJoinGrant($identityId, $meetingId);
     }
 
     protected function getSettingKey(): SettingKeyEnum
@@ -79,15 +94,26 @@ final class NiliroomService extends AbstractIntegrationService implements Niliro
             $endpoint,
         );
 
-        $identityId = data_get($data, 'id');
-
-        if (! is_string($identityId) || $identityId === '') {
-            throw new UnrecoverableProvisioningException(
-                __('messages.integration.niliroom.user_identity_missing')
-            );
-        }
+        $identityId = $this->requiredString($data, 'id', 'user_identity_missing');
 
         return $identityId;
+    }
+
+    /**
+     * The panel answers every call inside a `data` envelope, and a response that omits the field
+     * the next call needs is unrecoverable rather than a blank identifier travelling onward.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function requiredString(array $data, string $key, string $messageKey): string
+    {
+        $value = data_get($data, $key);
+
+        if (! is_string($value) || $value === '') {
+            throw new UnrecoverableProvisioningException(__('messages.integration.niliroom.'.$messageKey));
+        }
+
+        return $value;
     }
 
     /**
@@ -101,16 +127,47 @@ final class NiliroomService extends AbstractIntegrationService implements Niliro
     }
 
     /**
-     * Upsert, so a teacher who is not enrolled yet gets access on their first login.
+     * Upsert, so a participant who is not enrolled yet gets access on their first login.
      */
-    private function enrollAsTeacher(string $identityId, string $roomId): void
+    private function enroll(string $identityId, string $roomId, string $role): void
     {
         $endpoint = sprintf('%s/rooms/%s/enrollments/%s', self::API_PREFIX, $roomId, $identityId);
 
         $this->send(
-            fn (PendingRequest $request): Response => $request->put($endpoint, ['role' => self::TEACHER_ROLE]),
+            fn (PendingRequest $request): Response => $request->put($endpoint, ['role' => $role]),
             $endpoint,
         );
+    }
+
+    /**
+     * A student joins the meeting a room is running, and the platform stores no meeting of its
+     * own: the panel owns the meeting lifecycle, so this call returns the running meeting — or
+     * starts one when nobody has yet — and hands back the public ID the join grant is addressed
+     * to. A room whose meeting is already running therefore costs nothing extra.
+     */
+    private function startOrGetRoomMeeting(string $roomId): string
+    {
+        $endpoint = sprintf('%s/rooms/%s/meetings/start', self::API_PREFIX, $roomId);
+
+        $data = $this->send(fn (PendingRequest $request): Response => $request->post($endpoint), $endpoint);
+
+        return $this->requiredString($data, 'id', 'meeting_identity_missing');
+    }
+
+    /**
+     * The grant is addressed to the enrolled identity, never to an anonymous guest: a guest
+     * grant would mint a throwaway participant outside the room's roster.
+     */
+    private function issueMeetingJoinGrant(string $identityId, string $meetingId): string
+    {
+        $endpoint = sprintf('%s/meetings/%s/join-grants', self::API_PREFIX, $meetingId);
+
+        $data = $this->send(
+            fn (PendingRequest $request): Response => $request->post($endpoint, ['user_id' => $identityId]),
+            $endpoint,
+        );
+
+        return $this->requiredString($data, 'join_url', 'meeting_join_url_missing');
     }
 
     /**
@@ -128,14 +185,8 @@ final class NiliroomService extends AbstractIntegrationService implements Niliro
             $endpoint,
         );
 
-        $url       = data_get($data, 'url');
-        $expiresAt = data_get($data, 'expires_at');
-
-        if (! is_string($url) || $url === '' || ! is_string($expiresAt) || $expiresAt === '') {
-            throw new UnrecoverableProvisioningException(
-                __('messages.integration.niliroom.login_grant_invalid')
-            );
-        }
+        $url       = $this->requiredString($data, 'url', 'login_grant_invalid');
+        $expiresAt = $this->requiredString($data, 'expires_at', 'login_grant_invalid');
 
         // The panel answers with an offset-bearing ISO-8601 instant (UTC in practice). Express
         // it in the application timezone, or every consumer renders it in the panel's zone:
@@ -149,7 +200,7 @@ final class NiliroomService extends AbstractIntegrationService implements Niliro
     /**
      * Send one Niliroom mutation with the shared base URL, bearer token and a fresh
      * per-call `Idempotency-Key`: a replayed key would hand back a grant that the
-     * teacher may already have redeemed, so each request gets its own.
+     * participant may already have redeemed, so each request gets its own.
      *
      * @param  Closure(PendingRequest): Response  $send
      * @return array<string, mixed>
