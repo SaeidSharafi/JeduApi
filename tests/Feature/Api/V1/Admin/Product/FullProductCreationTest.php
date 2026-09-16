@@ -263,7 +263,7 @@ function getDeliveryBlock(
             'type'          => $deliveryMethod,
             'is_ready'      => false,
             'session_label' => 'کلاس آنلاین',
-            'join_url_path' => '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
+            'join_url_path' => route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid], absolute: false),
             'course_url'    => null,
             'completed'     => null,
             'course_grade'  => null,

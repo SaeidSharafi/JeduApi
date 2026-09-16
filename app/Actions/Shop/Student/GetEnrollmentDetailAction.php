@@ -217,13 +217,13 @@ final readonly class GetEnrollmentDetailAction
             DeliveryMethodEnum::LIVE_SESSION_BBB => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 session_label: 'کلاس آنلاین',
-                join_url_path: '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
+                join_url_path: $this->joinUrlPath($enrollment),
                 is_ready: filled(data_get($details, 'nili_room_id')),
             ),
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM => new DeliveryAccessData(
                 type: $deliveryMethod->value,
                 session_label: 'کلاس آنلاین',
-                join_url_path: '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
+                join_url_path: $this->joinUrlPath($enrollment),
                 is_ready: data_get($provisioning, 'skyroom.status') === ProvisioningOutcomeStatusEnum::SUCCESS->value,
             ),
             DeliveryMethodEnum::LMS_MOODLE => new DeliveryAccessData(
@@ -250,5 +250,13 @@ final readonly class GetEnrollmentDetailAction
                 is_ready: true,
             ),
         };
+    }
+
+    /**
+     * Path of the student join endpoint for a live-session enrollment.
+     */
+    private function joinUrlPath(Enrollment $enrollment): string
+    {
+        return route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid], absolute: false);
     }
 }

@@ -79,7 +79,7 @@ it('show returns niliroom delivery_access for live_session_bbb enrollment', func
     $access = $response->json('data.delivery_access');
     expect($access['type'])->toBe(DeliveryMethodEnum::LIVE_SESSION_BBB->value)
         ->and($access['is_ready'])->toBe($isReady)
-        ->and($access['join_url_path'])->toBe('/api/v1/shop/my-courses/'.$enrollment->uuid.'/join');
+        ->and($access['join_url_path'])->toBe(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid], absolute: false));
 })->with([
     'room configured' => [['nili_room_id' => 'NILI-ROOM-1'], true],
     'room missing'    => [[], false],
