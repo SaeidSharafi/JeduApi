@@ -107,7 +107,7 @@ it('returns join url for Skyroom live session', function (): void {
         $mock->shouldReceive('createLoginUrl')
             ->once()
             // The nickname is not asserted: the student path reads `customer->full_name`, which
-            // `User` has no attribute for, so it is always the default — see the mutation notes.
+            // `User` has no attribute for, so it is always the default.
             ->with(Mockery::mustBe(456), 'user-'.$this->user->id, Mockery::any())
             ->andReturn($joinUrl);
     });

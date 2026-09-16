@@ -354,38 +354,6 @@ function createProdutable(ProductableEnum $productableType): array
 }
 
 dataset('valid product', [
-    // [
-    //    ProductableEnum::DIGITAL_ASSET,
-    //    'digital',
-    //    'direct_download',
-    //    [
-    //        'max_downloads' => 5,
-    //    ],
-    // ],
-    // [
-    //    ProductableEnum::SEMINAR,
-    //    'online_service',
-    //    'live_session_niliroom',
-    //    [
-    //        'session_url'      => 'https://bbb.example.com/meetings/12345',
-    //        'session_id'       => '12345',
-    //        'session_password' => 'password',
-    //        'start_time'       => now()->addDays(7)->toDateTimeString(),
-    //        'end_time'         => now()->addDays(7)->addHour()->toDateTimeString(),
-    //    ],
-    // ],
-    // [
-    //    ProductableEnum::SEMINAR,
-    //    'online_service',
-    //    'live_session_skyroom',
-    //    [
-    //        'session_url'      => 'https://skyroom.example.com/meetings/12345',
-    //        'session_id'       => '12345',
-    //        'session_password' => 'password',
-    //        'start_time'       => now()->addDays(7)->toDateTimeString(),
-    //        'end_time'         => now()->addDays(7)->addHour()->toDateTimeString(),
-    //    ],
-    // ],
     [
         ProductableEnum::COURSE,
         'online_service',
@@ -394,24 +362,6 @@ dataset('valid product', [
             'moodle_course_id' => '12345',
         ],
     ],
-    // [
-    //    ProductableEnum::COURSE,
-    //    'offline_service',
-    //    'video_platform_spotplayer',
-    //    [
-    //        'spot_id'  => '12345',
-    //        'access_key' => 'access_key',
-    //    ],
-    // ],
-    // [
-    //    ProductableEnum::COURSE,
-    //    'in_person_service',
-    //    'in_person',
-    //    [
-    //        'address' => '123 Main St, Anytown, USA',
-    //        'map_url' => 'https://maps.google.com/?q=123+Main+St,+Anytown,+USA',
-    //    ],
-    // ],
 ]);
 
 dataset('valid product only requried', [
