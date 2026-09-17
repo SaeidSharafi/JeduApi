@@ -72,7 +72,7 @@ final class ProductController extends Controller
     /**
      * Store a newly created product in storage.
      *
-     * @responseFile 201 resources/responses/201.json
+     * @responseFile 201 resources/responses/admin/product/show.json
      * @responseFile 422 resources/responses/422.json
      */
     public function store(ProductCreateData $data, CreateProductAction $action): ApiResponseInterface
