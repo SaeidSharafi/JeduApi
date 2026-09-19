@@ -108,9 +108,6 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
                 Route::post('/{deliveryOption:uuid}/moodle/sso', TeacherMoodleSsoController::class)
                     ->name('moodle.sso');
 
-                Route::get('/{deliveryOption:uuid}/join', TeacherJoinUrlController::class)
-                    ->name('join');
-
                 Route::apiResource('/{courseCode}/attendances', AttendanceController::class)->except('destroy');
                 Route::delete('/{courseCode}/attendances', [AttendanceController::class, 'destroy']);
                 Route::apiResource('/{courseCode}/grades', GradeController::class);
@@ -118,7 +115,11 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
 
             });
             Route::get('/quizzes', TeacherQuizController::class)->name('quizzes');
-            Route::get('/seminars', SeminarController::class)->name('seminars');
+            Route::prefix('seminars')->name('seminars.')->group(function (): void {
+                Route::get('/', SeminarController::class)->name('seminars');
+                Route::get('/{deliveryOption:uuid}/join', TeacherJoinUrlController::class)
+                    ->name('join');
+            });
         });
 
         // ==========================================

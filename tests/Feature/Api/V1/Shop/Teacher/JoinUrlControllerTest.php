@@ -30,7 +30,7 @@ it('returns 403 when the authenticated user has no teacher profile', function ()
         $mock->shouldNotReceive('createLoginUrl');
     });
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertForbidden();
 });
 
@@ -45,7 +45,7 @@ it('returns 403 when the teacher is not assigned to the delivery option', functi
         $mock->shouldNotReceive('createLoginUrl');
     });
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertForbidden();
 });
 
@@ -54,7 +54,7 @@ it('returns 422 for a non-seminar delivery option', function (): void {
 
     $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::IN_PERSON);
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertUnprocessable()
         ->assertJsonFragment(['message' => __('messages.enrollments.not_seminar')]);
 });
@@ -77,7 +77,7 @@ it('returns the niliroom login grant for the assigned teacher', function (): voi
             ->andReturn(['url' => $grantUrl, 'expires_at' => $expiresAt]);
     });
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', $grantUrl)
         ->assertJsonPath('data.type', 'niliroom')
@@ -97,7 +97,7 @@ it('returns 503 when the niliroom panel is not ready', function (): void {
         $mock->shouldNotReceive('issueTeacherLoginGrant');
     });
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertStatus(503)
         ->assertJsonFragment(['message' => __('messages.enrollments.niliroom_not_configured')]);
 });
@@ -112,7 +112,7 @@ it('returns 503 when the niliroom room id is missing or malformed', function (mi
         $mock->shouldNotReceive('issueTeacherLoginGrant');
     });
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertStatus(503)
         ->assertJsonFragment(['message' => __('messages.provisioning.niliroom_room_id_missing')]);
 })->with([
@@ -132,7 +132,7 @@ it('returns 503 when the delivery option has no skyroom room id', function (): v
         $mock->shouldNotReceive('createLoginUrl');
     });
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertStatus(503)
         ->assertJsonFragment(['message' => __('messages.provisioning.skyroom_room_id_missing')]);
 });
@@ -146,7 +146,7 @@ it('returns 503 when the skyroom room id is not a positive integer', function (s
         $mock->shouldNotReceive('createLoginUrl');
     });
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertStatus(503)
         ->assertJsonFragment(['message' => __('messages.provisioning.skyroom_room_id_missing')]);
 })->with([
@@ -178,7 +178,7 @@ it('returns a presenter skyroom login url for the assigned teacher', function ()
             ->andReturn($loginUrl);
     });
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', $loginUrl)
         ->assertJsonPath('data.type', 'skyroom')
@@ -202,7 +202,7 @@ it('falls back to a default nickname when the teacher account has no name', func
             ->andReturn('https://skyroom.example.com/login?room=1');
     });
 
-    $this->getJson(route('api.v1.shop.teacher.courses.join', ['deliveryOption' => $deliveryOption->uuid]))
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertOk();
 });
 
