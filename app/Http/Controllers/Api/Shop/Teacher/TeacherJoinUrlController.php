@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use InvalidArgumentException;
 
 /**
- * @group Shop - Teacher - Seminars
+ * @group Shop - Teacher - Seminar
  *
  * @authenticated user
  */
