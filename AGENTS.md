@@ -20,7 +20,7 @@ Before editing any file, check .ai/rules/index.md for a glob matching the path i
 - Business logic in app/Actions/. Controllers thin, no logic in them.
 
 ## Testing
-PEST only. AuthTestTrait, not actingAs(). No RefreshDatabase.
+PEST only. AuthTestTrait, not actingAs(). Database reset is owned by the shared `Tests\TestCase` — never add a refresh trait to an individual test.
 
 ## Commands
 sail artisan always, never bare php artisan. Run `sail bin pint --dirty --format agent` before finalizing any PHP change.
