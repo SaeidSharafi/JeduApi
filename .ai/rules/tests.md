@@ -49,3 +49,9 @@ Prefer the real implementation over a double:
 - Use the real implementation for everything else, including the database.
 
 Never mock Eloquent models, the query builder, or the test database. Create real records with factories and assert the result; a test that mocks them asserts the mock, and the mutations it was meant to catch survive.
+
+## Architecture tests declare conventions; behavioral tests prove behavior
+
+Arch tests live in `tests/Architecture`, registered as its own `Architecture` testsuite in `phpunit.xml`. They are AST-based and are not bound to `Tests\TestCase`, so they never boot the application or the database.
+
+A convention that covers a directory or the whole suite belongs in an arch rule, not in a behavioral test. Asserting which trait a class uses, or reading a framework's internal migration state, asserts an implementation detail — and such a test usually passes under the wrong implementation too, so it proves nothing. State the rule with `arch()` and let it fail when a new file breaks it.

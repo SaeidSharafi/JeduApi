@@ -6,9 +6,6 @@ use App\Enums\Payment\PaymentPurposeEnum;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->user = User::factory()->create();

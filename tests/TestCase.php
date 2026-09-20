@@ -5,7 +5,7 @@ namespace Tests;
 use App\Contracts\OtpGeneratorInterface;
 use App\Http\Middleware\AdminAuditMiddleware;
 use Database\Seeders\PermissionsSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Http;
 use Tests\Support\Traits\DateUtilTestTrait;
@@ -14,7 +14,7 @@ use Tests\Support\Traits\FakeMediaTrait;
 abstract class TestCase extends BaseTestCase
 {
     //use CreatesApplication;
-    use RefreshDatabase;
+    use LazilyRefreshDatabase;
     use \Tests\Support\Traits\AuthTestTrait;
     use DateUtilTestTrait;
     use FakeMediaTrait;

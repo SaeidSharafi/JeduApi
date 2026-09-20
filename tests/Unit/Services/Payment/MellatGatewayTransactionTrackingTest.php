@@ -17,9 +17,6 @@ use App\Services\Payment\MellatGatewayPaymentProcessor;
 use App\Services\Payment\SoapClientFactory;
 use App\Services\PaymentTransactionReferenceService;
 use App\Services\SettingsService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->referenceService = app(PaymentTransactionReferenceService::class);
