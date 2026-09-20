@@ -25,12 +25,12 @@ use SoapClient;
 use SoapFault;
 
 beforeEach(function (): void {
-    config()->set('payments.mellat.test_mode', true);
+    config()->set('payments.mellat.config.test_mode', true);
     config()->set('payments.mellat.test_server_url', 'https://mellat.test/wsdl');
     config()->set('payments.mellat.test_gateway_url', 'https://mellat.test/redirect');
-    config()->set('payments.mellat.terminal_id', '123456');
-    config()->set('payments.mellat.username', 'merchant');
-    config()->set('payments.mellat.password', 'secret');
+    config()->set('payments.mellat.config.terminal_id', '123456');
+    config()->set('payments.mellat.config.username', 'merchant');
+    config()->set('payments.mellat.config.password', 'secret');
     config()->set('payments.mellat.callback_url', 'https://callback.test/mellat');
 });
 
@@ -77,7 +77,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
                 // orderId now uses generated transaction reference, so we only assert amount
                 return $payload['amount'] === $amount && isset($payload['orderId']);
             }))
-            ->andReturn((object) ['return' => $refId]);
+            ->andReturn((object) ['return' => '0,'.$refId]);
 
         $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
 

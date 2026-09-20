@@ -218,8 +218,9 @@ describe('Coupon usage counters move to order completion', function (): void {
             'ResCode' => '12',
             'RefId'   => 'ref123',
         ])->assertRedirect(
-            config('payments.redirect.failure')
-            ."?payment={$payment->uuid}&purpose={$payment->purpose->value}&order={$response->json('data.order.increment_id')}"
+            mb_rtrim(config('payments.redirect.shopdomain'), '/')
+            .'/'.mb_trim(config('payments.redirect.order'), '/')
+            ."/{$response->json('data.order.increment_id')}"
         );
 
         assertDatabaseHas('orders', [

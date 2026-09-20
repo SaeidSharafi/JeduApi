@@ -66,10 +66,10 @@ it('creates payment transaction record when initiating Mellat gateway payment', 
         'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
     ]);
 
-    // Mock successful gateway response
+    // Mock successful gateway response (statusCode,RefId)
     $this->soapClientMock->shouldReceive('bpPayRequest')
         ->once()
-        ->andReturn((object) ['return' => '1234567890']);
+        ->andReturn((object) ['return' => '0,1234567890']);
 
     // Act
     $result = $this->processor->process($payment);
@@ -125,7 +125,7 @@ it('increments attempt number for subsequent Mellat payment attempts', function 
 
     $this->soapClientMock->shouldReceive('bpPayRequest')
         ->once()
-        ->andReturn((object) ['return' => '9876543210']);
+        ->andReturn((object) ['return' => '0,9876543210']);
 
     $result = $this->processor->process($paymentNew);
 
@@ -328,12 +328,12 @@ it('generates unique transaction references for multiple Mellat payments', funct
         'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
     ]);
 
-    // Mock gateway responses
+    // Mock gateway responses (statusCode,RefId)
     $this->soapClientMock->shouldReceive('bpPayRequest')
         ->twice()
         ->andReturn(
-            (object) ['return' => '1111111111'],
-            (object) ['return' => '2222222222']
+            (object) ['return' => '0,1111111111'],
+            (object) ['return' => '0,2222222222']
         );
 
     // Act

@@ -5,12 +5,26 @@ declare(strict_types=1);
 use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Exceptions\Payment\DuplicatePaymentException;
+use App\Http\Controllers\Api\Shop\Payment\GatewayCallbackController;
 use App\Models\Payment;
 use Mockery as m;
 
 use function Pest\Laravel\postJson;
 
-it('redirects customers to the success page when the payment is verified', function (): void {
+covers(GatewayCallbackController::class);
+
+/**
+ * Build the shop redirect URL the callback controller produces:
+ * {shop domain}/{purpose path}/{identifier}
+ */
+function gatewayCallbackControllerRedirect(string $path, string $identifier): string
+{
+    return mb_rtrim(config('payments.redirect.shopdomain'), '/')
+        .'/'.mb_trim($path, '/')
+        .'/'.$identifier;
+}
+
+it('redirects customers to the order details page when the payment is verified', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
         'method' => App\Enums\Payment\PaymentMethodEnum::MELLAT_GATEWAY,
@@ -30,10 +44,10 @@ it('redirects customers to the success page when the payment is verified', funct
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(config('payments.redirect.success')."?payment={$payment->uuid}&purpose={$payment->purpose->value}&order={$payment->order->increment_id}");
+    $response->assertRedirect(gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id));
 })->group('payment');
 
-it('redirects customers to the failure page when the payment verification fails', function (): void {
+it('redirects customers to the order details page when the payment verification fails', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
         'method' => App\Enums\Payment\PaymentMethodEnum::MELLAT_GATEWAY,
@@ -53,12 +67,33 @@ it('redirects customers to the failure page when the payment verification fails'
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(config('payments.redirect.failure')
-        ."?payment={$payment->uuid}&purpose={$payment->purpose->value}&order={$payment->order->increment_id}"
-    );
+    $response->assertRedirect(gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id));
 })->group('payment');
 
-it('redirects customers to the generic error page when verification throws', function (): void {
+it('redirects customers to the wallet topup details page when the payment is verified', function (): void {
+    $payment = Payment::factory()->topup()->create([
+        'status' => PaymentStatusEnum::PENDING,
+        'method' => App\Enums\Payment\PaymentMethodEnum::MELLAT_GATEWAY,
+    ]);
+
+    $callbackPayload = [
+        'ResCode' => '0',
+    ];
+
+    $actionMock = m::mock(VerifyPaymentAction::class);
+    $actionMock->expects('handle')
+        ->once()
+        ->with(m::on(fn (Payment $p) => $p->is($payment)), $callbackPayload)
+        ->andReturn(tap($payment)->setAttribute('status', PaymentStatusEnum::COMPLETED));
+
+    app()->instance(VerifyPaymentAction::class, $actionMock);
+
+    $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
+
+    $response->assertRedirect(gatewayCallbackControllerRedirect(config('payments.redirect.topup'), $payment->uuid));
+})->group('payment');
+
+it('redirects customers to the order details page with an error when verification throws', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
         'method' => App\Enums\Payment\PaymentMethodEnum::MELLAT_GATEWAY,
@@ -78,10 +113,13 @@ it('redirects customers to the generic error page when verification throws', fun
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(config('payments.redirect.failure')."?payment={$payment->uuid}&error=UNKNOWN_ERROR");
+    $response->assertRedirect(
+        gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id)
+        ."?payment={$payment->uuid}&error=UNKNOWN_ERROR"
+    );
 })->group('payment');
 
-it('redirects customers to the failure page with error code when gateway throws PaymentExceptionContract', function (): void {
+it('redirects customers to the order details page with an error code when gateway throws PaymentExceptionContract', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
         'method' => App\Enums\Payment\PaymentMethodEnum::MELLAT_GATEWAY,
@@ -104,5 +142,8 @@ it('redirects customers to the failure page with error code when gateway throws 
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(config('payments.redirect.failure')."?payment={$payment->uuid}&error=DUPLICATE_PAYMENT");
+    $response->assertRedirect(
+        gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id)
+        ."?payment={$payment->uuid}&error=DUPLICATE_PAYMENT"
+    );
 })->group('payment');

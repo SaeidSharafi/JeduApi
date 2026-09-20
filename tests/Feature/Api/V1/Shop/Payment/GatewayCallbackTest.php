@@ -5,10 +5,24 @@ declare(strict_types=1);
 use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Http\Controllers\Api\Shop\Payment\GatewayCallbackController;
 use App\Models\Payment;
 use Mockery as m;
 
 use function Pest\Laravel\postJson;
+
+covers(GatewayCallbackController::class);
+
+/**
+ * Build the shop redirect URL the callback controller produces:
+ * {shop domain}/{purpose path}/{identifier}
+ */
+function gatewayCallbackRedirect(string $path, string $identifier): string
+{
+    return mb_rtrim(config('payments.redirect.shopdomain'), '/')
+        .'/'.mb_trim($path, '/')
+        .'/'.$identifier;
+}
 
 /**
  * Tests for gateway callback specifically covering wallet topup payments
@@ -16,7 +30,7 @@ use function Pest\Laravel\postJson;
  */
 describe('Gateway callback with wallet topup', function (): void {
 
-    it('redirects to success for completed Mellat topup', function (): void {
+    it('redirects to the topup details page for completed Mellat topup', function (): void {
         $payment = Payment::factory()->topup()->create([
             'status' => PaymentStatusEnum::PENDING,
             'method' => PaymentMethodEnum::MELLAT_GATEWAY,
@@ -34,10 +48,10 @@ describe('Gateway callback with wallet topup', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(config('payments.redirect.success')."?payment={$payment->uuid}&purpose={$payment->purpose->value}");
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
     })->group('payment', 'wallet');
 
-    it('redirects to failure for failed Mellat topup', function (): void {
+    it('redirects to the topup details page for failed Mellat topup', function (): void {
         $payment = Payment::factory()->topup()->create([
             'status' => PaymentStatusEnum::PENDING,
             'method' => PaymentMethodEnum::MELLAT_GATEWAY,
@@ -55,10 +69,10 @@ describe('Gateway callback with wallet topup', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(config('payments.redirect.failure')."?payment={$payment->uuid}&purpose={$payment->purpose->value}");
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
     })->group('payment', 'wallet');
 
-    it('redirects to success for completed Digipay topup', function (): void {
+    it('redirects to the topup details page for completed Digipay topup', function (): void {
         $payment = Payment::factory()->topup()->create([
             'status' => PaymentStatusEnum::PENDING,
             'method' => PaymentMethodEnum::DIGIPAY,
@@ -82,10 +96,10 @@ describe('Gateway callback with wallet topup', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(config('payments.redirect.success')."?payment={$payment->uuid}&purpose={$payment->purpose->value}");
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
     })->group('payment', 'wallet');
 
-    it('redirects to failure for failed Digipay topup', function (): void {
+    it('redirects to the topup details page for failed Digipay topup', function (): void {
         $payment = Payment::factory()->topup()->create([
             'status' => PaymentStatusEnum::PENDING,
             'method' => PaymentMethodEnum::DIGIPAY,
@@ -109,7 +123,7 @@ describe('Gateway callback with wallet topup', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(config('payments.redirect.failure')."?payment={$payment->uuid}&purpose={$payment->purpose->value}");
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
     })->group('payment', 'wallet');
 
 });
@@ -143,7 +157,7 @@ describe('Gateway callback amount mismatch', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(config('payments.redirect.failure')."?payment={$payment->uuid}&purpose={$payment->purpose->value}");
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
     })->group('payment', 'wallet');
 
     it('handles Digipay amount mismatch via verify action', function (): void {
@@ -172,14 +186,14 @@ describe('Gateway callback amount mismatch', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(config('payments.redirect.failure')."?payment={$payment->uuid}&purpose={$payment->purpose->value}");
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
     })->group('payment', 'wallet');
 
 });
 
 describe('Gateway callback with order payments', function (): void {
 
-    it('redirects to success for completed Mellat order payment', function (): void {
+    it('redirects to the order details page for completed Mellat order payment', function (): void {
         $payment = Payment::factory()->create([
             'status' => PaymentStatusEnum::PENDING,
             'method' => PaymentMethodEnum::MELLAT_GATEWAY,
@@ -197,10 +211,10 @@ describe('Gateway callback with order payments', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(config('payments.redirect.success')."?payment={$payment->uuid}&purpose={$payment->purpose->value}&order={$payment->order->increment_id}");
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.order'), $payment->order->increment_id));
     })->group('payment', 'wallet');
 
-    it('redirects to success for completed Digipay order payment', function (): void {
+    it('redirects to the order details page for completed Digipay order payment', function (): void {
         $payment = Payment::factory()->create([
             'status' => PaymentStatusEnum::PENDING,
             'method' => PaymentMethodEnum::DIGIPAY,
@@ -224,7 +238,7 @@ describe('Gateway callback with order payments', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(config('payments.redirect.success')."?payment={$payment->uuid}&purpose={$payment->purpose->value}&order={$payment->order->increment_id}");
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.order'), $payment->order->increment_id));
     })->group('payment', 'wallet');
 
 });

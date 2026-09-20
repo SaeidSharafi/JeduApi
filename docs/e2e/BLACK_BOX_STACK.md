@@ -28,8 +28,9 @@ export E2E_APP_URL='http://localhost:8000'
 export E2E_CONTROL_KEY='...'
 export PAYMENT_SIMULATOR_SECRET='...'
 export PAYMENT_SIMULATOR_IMAGE='registry.example/gateway-simulator:tag'
-export FRONTEND_PAYMENT_SUCCESS_URL='http://localhost:3000/payment/success'
-export FRONTEND_PAYMENT_FAILURE_URL='http://localhost:3000/payment/fail'
+export FRONTEND_SHOP_DOMAIN='http://localhost:3000'
+export FRONTEND_ORDER_PAYMENT_URL='/profile/student/financial-reports/transaction-details'
+export FRONTEND_TOPUP_PAYMENT_URL='/profile/student/financial-reports/payment-details'
 docker compose -f docker-compose.e2e.yml up -d
 ```
 
@@ -37,9 +38,10 @@ Required variables are `APP_KEY`, `E2E_CONTROL_KEY`,
 `PAYMENT_SIMULATOR_SECRET`, and `PAYMENT_SIMULATOR_IMAGE`.
 `E2E_APP_URL` is required whenever the API is not browser-reachable at
 `http://localhost:8000`; it is used by Jedu to generate the simulator callback
-URL. The frontend team must provide `FRONTEND_PAYMENT_SUCCESS_URL` and
-`FRONTEND_PAYMENT_FAILURE_URL` as absolute, browser-reachable URLs for the
-frontend payment result pages. The Compose defaults assume a frontend on
+URL. The frontend team must provide `FRONTEND_SHOP_DOMAIN` (the browser-reachable
+shop origin) plus `FRONTEND_ORDER_PAYMENT_URL` and `FRONTEND_TOPUP_PAYMENT_URL`
+(the path segments of the Order transaction-details and wallet top-up
+payment-details pages). The Compose defaults assume a frontend on
 `http://localhost:3000`.
 
 Optional image overrides are `API_IMAGE`, `POSTGRES_IMAGE`, `REDIS_IMAGE`, and
@@ -143,10 +145,13 @@ leaves the Order retryable. A retry creates a new Payment and transaction for
 the same Order. Repeated initiation, browser actions, and callbacks are
 idempotent.
 
-After callback verification, Jedu returns an HTTP 302 redirect to
-`FRONTEND_PAYMENT_SUCCESS_URL` or `FRONTEND_PAYMENT_FAILURE_URL`. The redirect
-includes `payment`, `purpose`, and (for Order payments) `order`; failed gateway
-verification may also include `error`.
+After callback verification, Jedu returns an HTTP 302 redirect to the shop
+details page for the payment purpose: Order payments go to
+`{FRONTEND_SHOP_DOMAIN}{FRONTEND_ORDER_PAYMENT_URL}/{order-increment-id}`, and
+wallet top-ups go to
+`{FRONTEND_SHOP_DOMAIN}{FRONTEND_TOPUP_PAYMENT_URL}/{payment-uuid}`. Failed
+gateway verification redirects to that same page with `payment` and `error`
+query params.
 
 ## Testing boundary
 

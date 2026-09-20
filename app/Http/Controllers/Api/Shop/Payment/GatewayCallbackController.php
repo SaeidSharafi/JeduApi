@@ -8,10 +8,10 @@ use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Contracts\Payment\PaymentExceptionContract;
 use App\Data\Shop\Payment\GatewayCallbackData;
 use App\Enums\Payment\PaymentPurposeEnum;
-use App\Enums\Payment\PaymentStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -31,7 +31,7 @@ final class GatewayCallbackController extends Controller
      * @responseFile 200 resources/responses/shop/payment/verify.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function handle(Request $request, Payment $payment, GatewayCallbackData $data, VerifyPaymentAction $action): \Illuminate\Http\RedirectResponse
+    public function handle(Request $request, Payment $payment, GatewayCallbackData $data, VerifyPaymentAction $action): RedirectResponse
     {
         $callbackPayload = $data->gateway_response ?? $request->all();
 
@@ -44,17 +44,7 @@ final class GatewayCallbackController extends Controller
         try {
             $payment = $action->handle($payment, $callbackPayload);
 
-            [$subPath, $identifier] = match ($payment->purpose) {
-                PaymentPurposeEnum::ORDER        => [config('payments.redirect.order'), $payment->order->increment_id],
-                PaymentPurposeEnum::WALLET_TOPUP => [config('payments.redirect.topup'), $payment->uuid],
-            };
-
-            $baseUrl = rtrim(config('payments.redirect.shopdomain'), '/');
-            $path    = trim($subPath, '/');
-
-            return redirect()->away("{$baseUrl}/{$path}/{$identifier}");
-
-
+            return $this->redirectToPaymentDetails($payment);
         } catch (PaymentExceptionContract $e) {
             Log::error('Gateway callback error', [
                 'error_code'   => $e->errorCode(),
@@ -63,10 +53,7 @@ final class GatewayCallbackController extends Controller
                 'payment_uuid' => $payment->uuid,
             ]);
 
-            return redirect(config('payments.redirect.failure').'?'.http_build_query([
-                'payment' => $payment->uuid,
-                'error'   => $e->errorCode(),
-            ]));
+            return $this->redirectToPaymentDetails($payment, $e->errorCode());
         } catch (Exception $e) {
             // Genuinely unrecognized failure — worth distinguishing in logs from a known gateway decline.
             Log::critical('Unhandled gateway callback error', [
@@ -75,10 +62,34 @@ final class GatewayCallbackController extends Controller
                 'request'      => $callbackPayload,
             ]);
 
-            return redirect(config('payments.redirect.failure').'?'.http_build_query([
-                'payment' => $payment->uuid,
-                'error'   => 'UNKNOWN_ERROR',
-            ]));
+            return $this->redirectToPaymentDetails($payment, 'UNKNOWN_ERROR');
         }
+    }
+
+    /**
+     * Redirect the customer to the order or wallet-topup details page.
+     *
+     * Failed callbacks target the same details page and append the gateway error code.
+     */
+    private function redirectToPaymentDetails(Payment $payment, ?string $error = null): RedirectResponse
+    {
+        [$subPath, $identifier] = match ($payment->purpose) {
+            PaymentPurposeEnum::ORDER        => [config('payments.redirect.order'), $payment->order->increment_id],
+            PaymentPurposeEnum::WALLET_TOPUP => [config('payments.redirect.topup'), $payment->uuid],
+        };
+
+        $baseUrl = mb_rtrim(config('payments.redirect.shopdomain'), '/');
+        $path    = mb_trim($subPath, '/');
+
+        $url = "{$baseUrl}/{$path}/{$identifier}";
+
+        if ($error !== null) {
+            $url .= '?'.http_build_query([
+                'payment' => $payment->uuid,
+                'error'   => $error,
+            ]);
+        }
+
+        return redirect()->away($url);
     }
 }

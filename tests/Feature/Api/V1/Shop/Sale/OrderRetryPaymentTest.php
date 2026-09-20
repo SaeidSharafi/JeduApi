@@ -69,7 +69,7 @@ describe('Retry Order Payment', function (): void {
         $soapClientMock
             ->shouldReceive('bpPayRequest')
             ->once()
-            ->andReturn((object) ['return' => $fakeRefId]);
+            ->andReturn((object) ['return' => '0,'.$fakeRefId]);
         $this->customer($user);
         // Act: Retry with gateway (requires redirect)
         $response = $this->postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [

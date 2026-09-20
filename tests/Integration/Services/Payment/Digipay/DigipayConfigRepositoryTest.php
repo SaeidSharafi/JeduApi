@@ -10,7 +10,7 @@ use App\Services\SettingsService;
 beforeEach(function (): void {
     $this->settingsService = mock(SettingsService::class);
     $this->settingsService->shouldReceive('get')
-        ->with(SettingKeyEnum::DIGIPAY, [])
+        ->with(SettingKeyEnum::DIGIPAY, Mockery::type('array'))
         ->andReturn([
             'client_id'     => 'test-client-id',
             'client_secret' => 'test-client-secret',
@@ -53,7 +53,7 @@ it('detects sandbox mode', function (): void {
 it('detects production mode when sandbox is false', function (): void {
     $this->settingsService = mock(SettingsService::class);
     $this->settingsService->shouldReceive('get')
-        ->with(SettingKeyEnum::DIGIPAY, [])
+        ->with(SettingKeyEnum::DIGIPAY, Mockery::type('array'))
         ->andReturn([
             'client_id'     => 'prod-client',
             'client_secret' => 'prod-secret',
@@ -70,7 +70,7 @@ it('detects production mode when sandbox is false', function (): void {
 it('throws when required config key is missing', function (): void {
     $this->settingsService = mock(SettingsService::class);
     $this->settingsService->shouldReceive('get')
-        ->with(SettingKeyEnum::DIGIPAY, [])
+        ->with(SettingKeyEnum::DIGIPAY, Mockery::type('array'))
         ->andReturn([
             'client_id'     => 'test',
             'client_secret' => 'test',
@@ -87,7 +87,7 @@ it('throws when required config key is missing', function (): void {
 it('throws when required config key does not exist', function (): void {
     $this->settingsService = mock(SettingsService::class);
     $this->settingsService->shouldReceive('get')
-        ->with(SettingKeyEnum::DIGIPAY, [])
+        ->with(SettingKeyEnum::DIGIPAY, Mockery::type('array'))
         ->andReturn([
             'client_id'     => 'test',
             'client_secret' => 'test',
@@ -111,7 +111,7 @@ it('returns sandbox base_url when sandbox is enabled', function (): void {
 it('returns production base_url when sandbox is disabled', function (): void {
     $this->settingsService = mock(SettingsService::class);
     $this->settingsService->shouldReceive('get')
-        ->with(SettingKeyEnum::DIGIPAY, [])
+        ->with(SettingKeyEnum::DIGIPAY, Mockery::type('array'))
         ->andReturn([
             'client_id'     => 'prod-client',
             'client_secret' => 'prod-secret',
