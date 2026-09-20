@@ -58,6 +58,14 @@ final class EnrollmentController extends Controller
                         $query->where('product_id', $value);
                     });
                 }),
+                AllowedFilter::callback('productable_type', function ($query, $value): void {
+                    $query->whereHas('productDeliveryOption', function ($query) use ($value): void {
+                        $query->whereHas('product', function ($query) use ($value): void {
+                            $query->where('productable_type', $value);
+                        });
+
+                    });
+                }),
             ])
             ->allowedSorts(['created_at', 'enrollment_status', 'access_start_date'])
             ->defaultSort('-created_at')
