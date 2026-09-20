@@ -349,7 +349,11 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         if (! $result) {
             throw new MellatException(__('payment_gateways.mellat.errors.invalid_response'));
         }
-        [$statusCode, $refId] = explode(',', $result);
+        $parts = explode(',', (string) $result, 2);
+
+        $statusCode = $parts[0] ?? null;
+        $refId      = $parts[1] ?? null;
+
         if ($statusCode !== '0' ) {
             // Error code returned instead of RefId
             throw new MellatException($statusCode);
