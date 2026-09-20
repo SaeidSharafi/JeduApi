@@ -907,6 +907,22 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `suggest(string $query, int $limit = 5): array`: Returns SWR-cached autosuggest strings leveraging Typesense when available
 - **Implementation Notes:** Automatically builds faceted filters from `ProductFilterData`, respects `result_types`, and streams results through DTO transformers in controllers
 
+### CacheStore Gateway (`app/Contracts/Cache/CacheStore.php`, `app/Services/Cache/LaravelCacheStore.php`)
+- **Purpose:** Single entry point every cache read and write will go through; its one implementation is the only class permitted to touch Laravel's cache. Introduced in phase 1 of the cache consolidation (ADR 0014) and not yet consumed by call sites.
+- **Interface:**
+  - `get(CacheKey $key, array $params = [], mixed $default = null): mixed`: Reads the value stored under the registry key.
+  - `put(CacheKey $key, array $params, mixed $value): void`: Writes using the key's registered lifetime; a null value is ignored.
+  - `remember(CacheKey $key, array $params, Closure $callback): mixed`: Generates and stores the value on a miss.
+  - `rememberForever(CacheKey $key, array $params, Closure $callback): mixed`: Generates and stores the value with no expiry.
+  - `flexible(CacheKey $key, array $params, Closure $callback): mixed`: Native stale-while-revalidate read; serves the fresh value, then the stale value while refreshing after the response under a single-flight lock the caller cannot omit.
+  - `forget(CacheKey $key, array $params = []): void`: Deletes one exact key.
+  - `invalidate(CacheTag ...$tags): void`: Bumps each tag's version counter, making that tag's previous generation unreachable.
+- **Key registry (`app/Enums/System/CacheKey.php`):** Each case owns its key template, `ttl()`, `staleTtl()` and `group()`; `resolve()` substitutes named parameters and throws when one is missing. A null `ttl()` means no expiry; a null `staleTtl()` means the key must not be read through `flexible()`. `staleTtl()` is the window *after* the fresh lifetime, so `flexible()` stores for `ttl() + staleTtl()`.
+- **Tag vocabulary (`app/Enums/System/CacheTag.php`):** `HomePage`, `Content`, `Catalog`, `Search`, `Discounts`, `Settings`, `Auth`.
+- **Storage keys:** Values are stored at `cache:{tag}:v{version}:{template}`; version counters live at `cache.version:{tag}` and only `invalidate()` bumps them. Invalidation behaves identically on the array, database and Redis stores.
+- **Binding:** `AppServiceProvider` binds `CacheStore` to `LaravelCacheStore`.
+- **Notes:** Locks are deliberately not wrapped — call sites use Laravel's `Cache::lock()` directly. Null values are never stored through the gateway.
+
 ### SWRCacheService (`app/Services/SWRCacheService.php`)
 - **Purpose:** Provides Stale-While-Revalidate caching helpers on top of SmartCache
 - **Public Methods:**

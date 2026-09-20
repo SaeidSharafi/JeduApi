@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\Cache\CacheStore;
 use App\Contracts\CartIdentifier;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
@@ -12,6 +13,7 @@ use App\Contracts\Integrations\SkyroomClientContract;
 use App\Contracts\Integrations\SpotPlayerClientContract;
 use App\Contracts\OtpGeneratorInterface;
 use App\Enums\System\MorphTypeEnum;
+use App\Services\Cache\LaravelCacheStore;
 use App\Services\Cart\RequestCartIdentifier;
 use App\Services\DefaultOtpGenerator;
 use App\Services\Discounts\DiscountHandlerRegistry;
@@ -48,6 +50,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(SpotPlayerClientContract::class, SpotPlayerService::class);
         $this->app->bind(SkyroomClientContract::class, SkyroomService::class);
         $this->app->bind(NiliroomClientContract::class, NiliroomService::class);
+        $this->app->bind(CacheStore::class, LaravelCacheStore::class);
 
         if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
