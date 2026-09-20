@@ -76,7 +76,11 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         ];
 
         try {
+            // example response: 0, AF82041a2Bf6989c7fF9
+            // the first part is the result code, the second part is the RefId
+            // we should only get the RefId if the result code is 0 (success)
             $refId = $this->sendPayRequest($gatewayRequest);
+
         } catch (Exception $e) {
             $transaction->update([
                 'status'        => PaymentTransactionStatusEnum::FAILED,
@@ -345,15 +349,14 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         if (! $result) {
             throw new MellatException(__('payment_gateways.mellat.errors.invalid_response'));
         }
-
-        // Check if request was successful (result should be RefId if successful)
-        if (mb_strlen($result) < 10) {
+        [$statusCode, $refId] = explode(',', $result);
+        if ($statusCode !== '0' ) {
             // Error code returned instead of RefId
-            throw new MellatException($result);
+            throw new MellatException($statusCode);
         }
 
         // Return RefId
-        return $result;
+        return $refId;
     }
 
     private function verifyWithMellat(string $refId, string $saleOrderId, string $saleReferenceId): bool
