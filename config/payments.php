@@ -30,18 +30,21 @@ return [
         'label'                   => 'درگاه ملت',
         'description'             => null,
         'icon'                    => null,
-        'terminal_id'             => env('MELLAT_TERMINAL_ID'),
-        'username'                => env('MELLAT_USERNAME'),
-        'password'                => env('MELLAT_PASSWORD'),
+
         'ims_bank_account_number' => env('MELLAT_IMS_BANK_ACCOUNT_NUMBER'),
         'server_url'              => env('MELLAT_SERVER_URL', 'https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl'),
         'gateway_url'             => env('MELLAT_GATEWAY_URL', 'https://bpm.shaparak.ir/pgwchannel/startpay.mellat'),
         'callback_url'            => env('MELLAT_CALLBACK_URL', env('APP_URL').'/api/v1/shop/payment/gateway/callback'),
-        'test_mode'               => env('MELLAT_TEST_MODE', false),
         'test_server_url'         => env('MELLAT_TEST_SERVER_URL',
             'https://sandbox.banktest.ir/mellat/bpm.shaparak.ir/pgwchannel/services/pgw?wsdl'),
         'test_gateway_url' => env('MELLAT_TEST_GATEWAY_URL',
             'https://sandbox.banktest.ir/mellat/bpm.shaparak.ir/pgwchannel/startpay.mellat'),
+        'config' => [
+            'terminal_id'             => env('MELLAT_TERMINAL_ID'),
+            'username'                => env('MELLAT_USERNAME'),
+            'password'                => env('MELLAT_PASSWORD'),
+            'test_mode'               => env('MELLAT_TEST_MODE', false),
+        ],
     ],
 
     'bank_transfer' => [
@@ -69,6 +72,13 @@ return [
         'description'          => null,
         'icon'                 => null,
         'allow_partial_refund' => env('DIGIPAY_ALLOW_PARTIAL_REFUND', false),
+        'config'               => [
+            'client_id'     => env('DIGIPAY_CLIENT_ID'),
+            'client_secret' => env('DIGIPAY_CLIENT_SECRET'),
+            'username'      => env('DIGIPAY_USERNAME'),
+            'password'      => env('DIGIPAY_PASSWORD'),
+            'sandbox_mode'  => (bool) env('DIGIPAY_SANDBOX_MODE', false),
+        ],
         'endpoints'            => [
             'production' => [
                 'base_url' => 'https://api.mydigipay.com',

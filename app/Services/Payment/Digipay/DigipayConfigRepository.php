@@ -15,7 +15,7 @@ final class DigipayConfigRepository
 
     public function __construct(SettingsService $settingsService)
     {
-        $this->settings = $settingsService->get(SettingKeyEnum::DIGIPAY, []);
+        $this->settings = $settingsService->get(SettingKeyEnum::DIGIPAY, config('payments.digipay'));
     }
 
     public function getClientId(): string

@@ -474,6 +474,6 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
      */
     private function getConfig(string $key, mixed $default = null)
     {
-        return data_get($this->config, $key, $default);
+        return data_get($this->config, 'config.'.$key, $default);
     }
 }
