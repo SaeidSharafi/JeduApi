@@ -180,7 +180,8 @@ return [
     ],
 
     'redirect' => [
-        'success' => env('FRONTEND_PAYMENT_SUCCESS_URL', 'payment/success'),
-        'failure' => env('FRONTEND_PAYMENT_FAILURE_URL', 'payment/fail'),
+        'shopdomain' => env('FRONTEND_SHOP_DOMAIN', 'http://localhost:3000'),
+        'order' => env('FRONTEND_ORDER_PAYMENT_URL', '/profile/student/financial-reports/transaction-details'),
+        'topup' => env('FRONTEND_TOPUP_PAYMENT_URL', '/profile/student/financial-reports/payment-details'),
     ],
 ];

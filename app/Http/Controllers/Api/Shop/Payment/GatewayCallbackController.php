@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Shop\Payment;
 use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Contracts\Payment\PaymentExceptionContract;
 use App\Data\Shop\Payment\GatewayCallbackData;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
@@ -43,25 +44,16 @@ final class GatewayCallbackController extends Controller
         try {
             $payment = $action->handle($payment, $callbackPayload);
 
-            $query = [
-                'payment' => $payment->uuid,
-                'purpose' => $payment->purpose->value, // 'order' | 'top_up'
-            ];
+            [$subPath, $identifier] = match ($payment->purpose) {
+                PaymentPurposeEnum::ORDER        => [config('payments.redirect.order'), $payment->order->increment_id],
+                PaymentPurposeEnum::WALLET_TOPUP => [config('payments.redirect.topup'), $payment->uuid],
+            };
 
-            if ($payment->order) {
-                $query['order'] = $payment->order->increment_id;
-            }
+            $baseUrl = rtrim(config('payments.redirect.shopdomain'), '/');
+            $path    = trim($subPath, '/');
 
-            // Redirect customer based on payment status
-            if ($payment->status === PaymentStatusEnum::COMPLETED) {
-                return redirect(
-                    config('payments.redirect.success').'?'.http_build_query($query)
-                );
-            }
+            return redirect()->away("{$baseUrl}/{$path}/{$identifier}");
 
-            return redirect(
-                config('payments.redirect.failure').'?'.http_build_query($query)
-            );
 
         } catch (PaymentExceptionContract $e) {
             Log::error('Gateway callback error', [
