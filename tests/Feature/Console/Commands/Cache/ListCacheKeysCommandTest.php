@@ -27,7 +27,6 @@ it('lists every registry case with its template, durations and group', function 
                 ['DigipayAccessToken', 'digipay_access_token', '3300', 'none', 'settings'],
                 ['AccessToken', 'AccessToken::{hash}', '360', 'none', 'auth'],
                 ['Tokenable', 'token_{id}::id_{env}', '360', 'none', 'auth'],
-                ['UserProfile', 'user.{id}.profile', '86400', 'none', 'auth'],
                 ['OtpValue', 'otp_{identifier}_{guard}_value_{type}', '300', 'none', 'auth'],
                 ['OtpMarker', 'otp_{identifier}_{guard}_created_{type}', '900', 'none', 'auth'],
                 ['OtpAttempts', 'otp_{identifier}_{guard}_verify_attempts_{type}', '300', 'none', 'auth'],

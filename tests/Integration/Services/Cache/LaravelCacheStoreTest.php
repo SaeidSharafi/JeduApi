@@ -6,10 +6,9 @@ use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheKey;
 use App\Enums\System\CacheTag;
 use App\Services\Cache\LaravelCacheStore;
-use Illuminate\Cache\Repository;
-use Illuminate\Contracts\Cache\Factory;
 use Illuminate\Support\Defer\DeferredCallbackCollection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 covers(LaravelCacheStore::class);
 
@@ -46,10 +45,10 @@ it('keeps different key parameters apart', function (): void {
         ->and($cache->get(CacheKey::AccessToken, ['hash' => 'def']))->toBe('second');
 });
 
-it('returns the default when nothing is stored for the key', function (): void {
+it('returns null when nothing is stored for the key', function (): void {
     $cache = cacheGateway();
 
-    expect($cache->get(CacheKey::Settings, [], 'fallback'))->toBe('fallback');
+    expect($cache->get(CacheKey::Settings))->toBeNull();
 });
 
 it('generates a remembered value once and serves it from the cache afterwards', function (): void {
@@ -61,8 +60,8 @@ it('generates a remembered value once and serves it from the cache afterwards', 
         return 'generated';
     };
 
-    $first  = $cache->remember(CacheKey::UserProfile, ['id' => 7], $callback);
-    $second = $cache->remember(CacheKey::UserProfile, ['id' => 7], $callback);
+    $first  = $cache->remember(CacheKey::AccessToken, ['hash' => 'profile'], $callback);
+    $second = $cache->remember(CacheKey::AccessToken, ['hash' => 'profile'], $callback);
 
     expect($first)->toBe('generated')
         ->and($second)->toBe('generated')
@@ -92,21 +91,23 @@ it('does not cache a null value', function (): void {
         return $calls === 1 ? null : 'generated';
     };
 
-    expect($cache->remember(CacheKey::UserProfile, ['id' => 7], $callback))->toBeNull()
-        ->and($cache->remember(CacheKey::UserProfile, ['id' => 7], $callback))->toBe('generated')
+    expect($cache->remember(CacheKey::AccessToken, ['hash' => 'profile'], $callback))->toBeNull()
+        ->and($cache->remember(CacheKey::AccessToken, ['hash' => 'profile'], $callback))->toBe('generated')
         ->and($calls)->toBe(2);
 });
 
 it('ignores a null value written directly', function (): void {
     // Storing null is indistinguishable from a miss through the gateway's own
-    // reads, so the write is inspected instead of the resulting state.
-    $repository = Mockery::mock(Repository::class);
-    $repository->shouldNotReceive('put');
+    // reads, so the real store is inspected: the write must add no row at all.
+    config(['cache.default' => 'database']);
+    Cache::store('database')->flush();
 
-    $factory = Mockery::mock(Factory::class);
-    $factory->shouldReceive('store')->andReturn($repository);
+    $table  = config('cache.stores.database.table');
+    $before = DB::table($table)->count();
 
-    (new LaravelCacheStore($factory))->put(CacheKey::Settings, [], null);
+    app(CacheStore::class)->put(CacheKey::Settings, [], null);
+
+    expect(DB::table($table)->count())->toBe($before);
 });
 
 it('keeps a remembered-forever value far beyond any registered ttl', function (): void {
@@ -178,12 +179,12 @@ it('invalidates every tag it is given without touching the others', function ():
 it('keeps the previous generation unreachable while its values are still stored', function (): void {
     $cache = cacheGateway();
 
-    $cache->put(CacheKey::UserProfile, ['id' => 7], 'first');
-    $cache->invalidate(CacheTag::Auth);
+    $cache->put(CacheKey::Settings, [], 'first');
+    $cache->invalidate(CacheTag::Settings);
 
     $this->travel(1)->hour();
 
-    expect($cache->get(CacheKey::UserProfile, ['id' => 7]))->toBeNull();
+    expect($cache->get(CacheKey::Settings))->toBeNull();
 });
 
 it('serves a stale value and refreshes it after the response', function (): void {
@@ -226,23 +227,36 @@ it('serves a value as stale until its stale window ends', function (): void {
     expect($cache->flexible(CacheKey::Slider, [], $callback))->toBe('v2');
 });
 
-it('passes an explicit single-flight lock into the flexible refresh', function (): void {
-    // Whether the framework holds the refresh lock for a bounded time is not
-    // observable from cache state on the array store, so the call is inspected
-    // here: an unset argument silently collapses to a one-second lock on Redis.
-    $repository = Mockery::mock(Repository::class);
-    $repository->shouldReceive('get')->andReturn(0);
-    $repository->shouldReceive('flexible')
-        ->once()
-        ->withArgs(fn (string $key, array $ttl, Closure $callback, array $lock): bool => ($lock['seconds'] ?? 0) > 0)
-        ->andReturn('value');
+it('acquires the framework single-flight lock before refreshing flexibly', function (): void {
+    $cache    = cacheGateway();
+    $calls    = 0;
+    $callback = function () use (&$calls): string {
+        return 'v'.++$calls;
+    };
 
-    $factory = Mockery::mock(Factory::class);
-    $factory->shouldReceive('store')->andReturn($repository);
+    expect($cache->flexible(CacheKey::Slider, [], $callback))->toBe('v1');
 
-    $cache = new LaravelCacheStore($factory);
+    $this->travel(301)->seconds();
 
-    expect($cache->flexible(CacheKey::Slider, [], fn (): string => 'value'))->toBe('value');
+    // Hold the lock the framework names for this key, the way a concurrent
+    // refresh would, and prove the deferred refresh cannot regenerate through it.
+    $resolved = sprintf(
+        'cache:%s:v%d:%s',
+        CacheTag::HomePage->value,
+        $cache->version(CacheTag::HomePage),
+        CacheKey::Slider->resolve(),
+    );
+    $lock = Cache::store('array')->lock('illuminate:cache:flexible:lock:'.$resolved, 30);
+
+    expect($lock->get())->toBeTrue();
+
+    expect($cache->flexible(CacheKey::Slider, [], $callback))->toBe('v1');
+
+    app(DeferredCallbackCollection::class)->invoke();
+
+    expect($calls)->toBe(1);
+
+    $lock->release();
 });
 
 it('refuses to read flexibly when the registry declares no stale window', function (): void {
@@ -260,24 +274,22 @@ it('refuses to read a forever key flexibly', function (): void {
 });
 
 it('bumps the version counters on the database store across generations', function (): void {
+    config(['cache.default' => 'database']);
     Cache::store('database')->flush();
 
-    $factory = Mockery::mock(Factory::class);
-    $factory->shouldReceive('store')->andReturn(Cache::store('database'));
+    $cache = app(CacheStore::class);
 
-    $cache = new LaravelCacheStore($factory);
-
-    $cache->put(CacheKey::UserProfile, ['id' => 7], 'first');
-    $cache->invalidate(CacheTag::Auth);
+    $cache->put(CacheKey::Settings, [], 'first');
+    $cache->invalidate(CacheTag::Settings);
 
     $this->travel(1)->hour();
 
-    expect($cache->get(CacheKey::UserProfile, ['id' => 7]))->toBeNull()
-        ->and($cache->version(CacheTag::Auth))->toBe(1);
+    expect($cache->get(CacheKey::Settings))->toBeNull()
+        ->and($cache->version(CacheTag::Settings))->toBe(1);
 
-    $cache->put(CacheKey::UserProfile, ['id' => 7], 'second');
-    $cache->invalidate(CacheTag::Auth);
+    $cache->put(CacheKey::Settings, [], 'second');
+    $cache->invalidate(CacheTag::Settings);
 
-    expect($cache->get(CacheKey::UserProfile, ['id' => 7]))->toBeNull()
-        ->and($cache->version(CacheTag::Auth))->toBe(2);
+    expect($cache->get(CacheKey::Settings))->toBeNull()
+        ->and($cache->version(CacheTag::Settings))->toBe(2);
 });

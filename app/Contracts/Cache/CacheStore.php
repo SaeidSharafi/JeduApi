@@ -21,9 +21,12 @@ interface CacheStore
     /**
      * Read the value stored for the given registry key.
      *
+     * A miss is always null: the gateway never stores null, so callers do not
+     * need a fallback value to tell an empty entry from an absent one.
+     *
      * @param  array<string, scalar|null>  $params
      */
-    public function get(CacheKey $key, array $params = [], mixed $default = null): mixed;
+    public function get(CacheKey $key, array $params = []): mixed;
 
     /**
      * Store a value using the lifetime declared on the registry key.

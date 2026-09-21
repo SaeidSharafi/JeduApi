@@ -41,7 +41,7 @@ final class InvalidateCacheGroupCommand extends Command
             $this->error(sprintf(
                 'Unknown cache group [%s]. Available groups: %s.',
                 $group,
-                implode(', ', CacheTag::getAllValues()),
+                implode(', ', CacheTag::values()),
             ));
 
             return Command::FAILURE;

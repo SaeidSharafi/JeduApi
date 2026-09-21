@@ -43,7 +43,7 @@ it('refuses to resolve a template when a parameter is missing', function (): voi
 });
 
 it('exposes the invalidation vocabulary', function (): void {
-    expect(CacheTag::getAllValues())->toBe([
+    expect(CacheTag::values())->toBe([
         'home_page',
         'content',
         'catalog',

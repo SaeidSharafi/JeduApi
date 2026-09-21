@@ -38,7 +38,6 @@ enum CacheKey: string
     case DigipayAccessToken = 'digipay_access_token';
     case AccessToken        = 'AccessToken::{hash}';
     case Tokenable          = 'token_{id}::id_{env}';
-    case UserProfile        = 'user.{id}.profile';
     case OtpValue           = 'otp_{identifier}_{guard}_value_{type}';
     case OtpMarker          = 'otp_{identifier}_{guard}_created_{type}';
     case OtpAttempts        = 'otp_{identifier}_{guard}_verify_attempts_{type}';
@@ -75,7 +74,6 @@ enum CacheKey: string
     public function ttl(): ?int
     {
         return match ($this) {
-            self::UserProfile => 86400,
             self::Slider, self::PartnersInHome, self::PartnersInCourse,
             self::Partners, self::StudentStory, self::StudentQuizzes,
             self::TeacherQuizzes, self::Search => 300,
@@ -121,7 +119,7 @@ enum CacheKey: string
             self::DiscountHandlers                                   => CacheTag::Discounts,
             self::Settings, self::DigipayAccessToken                 => CacheTag::Settings,
             self::AccessToken, self::Tokenable,
-            self::UserProfile, self::OtpValue, self::OtpMarker, self::OtpAttempts => CacheTag::Auth,
+            self::OtpValue, self::OtpMarker, self::OtpAttempts => CacheTag::Auth,
         };
     }
 }

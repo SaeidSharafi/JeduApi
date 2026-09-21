@@ -33,18 +33,14 @@ final class LaravelCacheStore implements CacheStore
 
     public function __construct(private readonly Factory $cache) {}
 
-    public function get(CacheKey $key, array $params = [], mixed $default = null): mixed
+    public function get(CacheKey $key, array $params = []): mixed
     {
-        return $this->repository()->get($this->key($key, $params), $default);
+        return $this->repository()->get($this->key($key, $params));
     }
 
     public function put(CacheKey $key, array $params, mixed $value): void
     {
-        if ($value === null) {
-            return;
-        }
-
-        $this->repository()->put($this->key($key, $params), $value, $key->ttl());
+        $this->store($key, $params, $value, $key->ttl());
     }
 
     public function remember(CacheKey $key, array $params, Closure $callback): mixed
@@ -88,11 +84,13 @@ final class LaravelCacheStore implements CacheStore
     }
 
     /**
-     * Make every key of each tag unreachable by bumping that tag's version counter.
+     * Seed and bump each tag's version counter.
      *
      * The counter is seeded with an explicit lifetime before it is incremented:
      * the database store refuses to increment a missing key, and a zero lifetime
      * would let the counter expire while the values it guards are still stored.
+     * The two calls are not a single atomic step; the window between them can
+     * only let a concurrent reader keep the generation it already resolved.
      */
     public function invalidate(CacheTag ...$tags): void
     {
@@ -121,11 +119,23 @@ final class LaravelCacheStore implements CacheStore
 
         $value = $callback();
 
-        if ($value !== null) {
-            $this->repository()->put($this->key($key, $params), $value, $ttl);
-        }
+        $this->store($key, $params, $value, $ttl);
 
         return $value;
+    }
+
+    /**
+     * Write a non-null value with the given lifetime; a null value is ignored.
+     *
+     * @param  array<string, scalar|null>  $params
+     */
+    private function store(CacheKey $key, array $params, mixed $value, ?int $ttl): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $this->repository()->put($this->key($key, $params), $value, $ttl);
     }
 
     /**
