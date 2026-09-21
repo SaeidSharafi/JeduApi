@@ -257,6 +257,6 @@ final readonly class GetEnrollmentDetailAction
      */
     private function joinUrlPath(Enrollment $enrollment): string
     {
-        return route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid], absolute: false);
+        return route('api.v1.shop.student.seminars.join', ['enrollment' => $enrollment->uuid], absolute: false);
     }
 }

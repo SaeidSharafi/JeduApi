@@ -1,0 +1,66 @@
+{
+    "message": "Operation successful.",
+    "data": {
+        "uuid": "01a07b30-3c69-719c-8c81-cda76a3b2575",
+        "enrollment_status": {
+            "value": "active",
+            "label": "Active"
+        },
+        "access_start_date": "1403-01-02 00:00:00",
+        "access_end_date": "1403-12-30 00:00:00",
+        "notes": "incidunt",
+        "product": {
+            "uuid": "01a07b30-3c40-70a1-bbfa-c77d71b4f718",
+            "slug": "architecto-libero-optio-fugiat-mollitia-velit-rerum-adipisci-optio",
+            "name": "Mr. Ervin Dicki",
+            "short_name": "Verdie Tremblay",
+            "short_description": "Sint nisi cupiditate assumenda eos. Dolorem earum corrupti non dolorum iste nobis. Rem cumque autem dicta aliquid. Eligendi dolorem dolores aspernatur nostrum deserunt. Cupiditate fuga porro at quod.",
+            "vendor": "Friesen-Cummings",
+            "term": "Spring 2007",
+            "price": 800000,
+            "prepayment_amount": null,
+            "is_prepayment_available": false,
+            "price_data": null,
+            "fulfillment_type": {
+                "value": "online_service",
+                "label": "Online Service"
+            },
+            "delivery_method": {
+                "value": "lms_moodle",
+                "label": "LMS Moodle"
+            },
+            "status": "published",
+            "productable_type": "course",
+            "cover": null
+        },
+        "teachers": [],
+        "files": [],
+        "quizzes": [],
+        "delivery_access": {
+            "type": "lms_moodle",
+            "is_ready": false,
+            "session_label": null,
+            "join_url_path": null,
+            "course_url": null,
+            "completed": false,
+            "course_grade": null,
+            "license_key": null,
+            "player_url": null,
+            "address": null,
+            "map_url": null
+        },
+        "review_info": {
+            "has_reviewed": false,
+            "review": null
+        },
+        "certificate_info": {
+            "is_available": false,
+            "certificate_url": null
+        },
+        "survey_block": {
+            "url": null,
+            "message": null
+        }
+    },
+    "metadata": []
+}

@@ -26,8 +26,8 @@
                 "label": "Online Service"
             },
             "delivery_method": {
-                "value": "lms_moodle",
-                "label": "LMS Moodle"
+                "value": "live_session_niliroom",
+                "label": "Live Session (Niliroom)"
             },
             "status": "published",
             "productable_type": "seminar",
@@ -37,12 +37,12 @@
         "files": [],
         "quizzes": [],
         "delivery_access": {
-            "type": "lms_moodle",
-            "is_ready": false,
-            "session_label": null,
-            "join_url_path": null,
+            "type": "live_session_niliroom",
+            "is_ready": true,
+            "session_label": "کلاس آنلاین",
+            "join_url_path": "/api/v1/shop/student/seminars/01a07b30-3c69-719c-8c81-cda76a3b2575/join",
             "course_url": null,
-            "completed": false,
+            "completed": null,
             "course_grade": null,
             "license_key": null,
             "player_url": null,

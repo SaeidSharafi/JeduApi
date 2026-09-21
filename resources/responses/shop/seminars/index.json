@@ -31,8 +31,8 @@
                         "label": "Online Service"
                     },
                     "delivery_method": {
-                        "value": "lms_moodle",
-                        "label": "LMS Moodle"
+                        "value": "live_session_niliroom",
+                        "label": "Live Session (Niliroom)"
                     },
                     "status": "published",
                     "productable_type": "seminar",
@@ -40,10 +40,10 @@
                 }
             }
         ],
-        "first_page_url": "http://jedu.test/api/v1/shop/student/courses?page=1",
+        "first_page_url": "http://jedu.test/api/v1/shop/student/seminars?page=1",
         "from": 1,
         "last_page": 1,
-        "last_page_url": "http://jedu.test/api/v1/shop/student/courses?page=1",
+        "last_page_url": "http://jedu.test/api/v1/shop/student/seminars?page=1",
         "links": [
             {
                 "url": null,
@@ -52,7 +52,7 @@
                 "active": false
             },
             {
-                "url": "http://jedu.test/api/v1/shop/student/courses?page=1",
+                "url": "http://jedu.test/api/v1/shop/student/seminars?page=1",
                 "label": "1",
                 "page": 1,
                 "active": true
@@ -65,7 +65,7 @@
             }
         ],
         "next_page_url": null,
-        "path": "http://jedu.test/api/v1/shop/student/courses",
+        "path": "http://jedu.test/api/v1/shop/student/seminars",
         "per_page": 15,
         "prev_page_url": null,
         "to": 1,

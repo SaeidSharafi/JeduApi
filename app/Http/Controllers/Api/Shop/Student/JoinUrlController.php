@@ -13,7 +13,7 @@ use Exception;
 use InvalidArgumentException;
 
 /**
- * @group Shop - Student - Courses
+ * @group Shop - Student - Seminars
  *
  * @subgroup Join URL
  *

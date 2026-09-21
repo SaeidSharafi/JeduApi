@@ -2,29 +2,48 @@
 
 declare(strict_types=1);
 
-use App\Contracts\Integrations\NiliroomClientContract;
+use App\Actions\Shop\Student\ListStudentEnrollmentsAction;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
+use App\Http\Controllers\Api\Shop\Student\CourseController;
+use App\Models\Product;
 use App\Models\ProductDeliveryOption;
-
-use function Pest\Laravel\getJson;
+use App\Models\User;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+covers(ListStudentEnrollmentsAction::class, CourseController::class);
+
 beforeEach(function (): void {
     $this->customer();
 });
+
+it('lists only course enrollments', function (): void {
+    $courseEnrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
+    createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, productableType: ProductableEnum::SEMINAR);
+    createEnrollment($this->user, DeliveryMethodEnum::DIRECT_DOWNLOAD, productableType: ProductableEnum::DIGITAL_ASSET);
+
+    $this->getJson(route('api.v1.shop.student.courses.index'))
+        ->assertOk()
+        ->assertJsonCount(1, 'data.data')
+        ->assertJsonPath('data.data.0.uuid', $courseEnrollment->uuid);
+});
+
 it('should filter by fulfillment type', function (): void {
     createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, 2);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
     $this->getJson(route('api.v1.shop.student.courses.index', [
-        'filter' => ['fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value],
+        'filter' => ['fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value],
     ]))
         ->assertOk()
         ->assertJsonCount(1, 'data.data')
         ->assertJsonPath('data.data.0.product.fulfillment_type.value',
-            App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value);
+            FulfillmentTypeEnum::ONLINE_SERVICE->value);
 });
+
 it('should filter by product name', function (): void {
-    $product = App\Models\Product::factory()->create([
+    $product = Product::factory()->withCourse()->create([
         'name' => 'Test Product',
     ]);
     $deliveryOption = ProductDeliveryOption::factory()
@@ -42,6 +61,7 @@ it('should filter by product name', function (): void {
         ->assertJsonCount(1, 'data.data')
         ->assertJsonPath('data.data.0.product.name', 'Test Product');
 });
+
 it('should paginate results', function (): void {
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, count: 5);
     $this->getJson(route('api.v1.shop.student.courses.index', [
@@ -49,10 +69,11 @@ it('should paginate results', function (): void {
     ]))
         ->assertOk()
         ->assertJsonCount(1, 'data.data')
-        ->assertJsonPath('data.total', 5); // Assuming there are 3 enrollments in total
+        ->assertJsonPath('data.total', 5);
 });
+
 it('shows current user specific enrollment details', function (): void {
-    $product = App\Models\Product::factory()->create([
+    $product = Product::factory()->withCourse()->create([
         'name' => 'Test Product',
     ]);
     $deliveryOption = ProductDeliveryOption::factory()
@@ -81,57 +102,23 @@ it('shows current user specific enrollment details', function (): void {
     });
 
 });
-it('does not show other users enrollment details', function (): void {
 
-    $user       = App\Models\User::factory()->create()->fresh();
+it('returns 404 when showing a seminar enrollment on the courses route', function (): void {
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, productableType: ProductableEnum::SEMINAR);
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertNotFound()
+        ->assertJsonFragment(['message' => __('messages.enrollments.not_found')]);
+});
+
+it('does not show other users enrollment details', function (): void {
+    $user       = User::factory()->create()->fresh();
     $enrollment = createEnrollment($user, DeliveryMethodEnum::LMS_MOODLE);
-    $response   = $this->getJson(route('api.v1.shop.student.courses.show', [
+
+    $this->getJson(route('api.v1.shop.student.courses.show', [
         'enrollment' => $enrollment->uuid,
         'per_page'   => 1,
-    ]));
-
-    $response->assertNotFound();
-    $response->assertJsonFragment(['message' => __('messages.enrollments.not_found')]);
-
-});
-
-// ─── Join URL ─────────────────────────────────────────────────────────────────
-
-it('returns join url for bbb enrollment', function (): void {
-    $deliveryOption = ProductDeliveryOption::factory()->create([
-        'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
-        'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->getFulfillmentType(),
-        'details_json'     => ['nili_room_id' => 'room-public-1'],
-    ]);
-
-    $enrollment = createEnrollment(
-        $this->user,
-        DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
-        deliveryOption: $deliveryOption,
-    );
-
-    $this->mock(NiliroomClientContract::class, function ($mock): void {
-        $mock->shouldReceive('isReady')->andReturnTrue();
-        $mock->shouldReceive('issueStudentMeetingJoinGrant')
-            ->andReturn('https://niliroom.test/meetings/join/abc');
-    });
-
-    getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
-        ->assertOk()
-        ->assertJsonPath('data.url', 'https://niliroom.test/meetings/join/abc');
-});
-
-it('returns 404 for join url when enrollment belongs to another user', function (): void {
-    $otherUser  = App\Models\User::factory()->create();
-    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_NILIROOM);
-
-    getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
-        ->assertNotFound();
-});
-
-it('returns 422 for join url when delivery method does not support it', function (): void {
-    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
-
-    getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
-        ->assertUnprocessable();
+    ]))
+        ->assertNotFound()
+        ->assertJsonFragment(['message' => __('messages.enrollments.not_found')]);
 });

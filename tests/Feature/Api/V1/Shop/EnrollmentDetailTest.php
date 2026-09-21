@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 use App\Actions\Shop\Student\GetEnrollmentDetailAction;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Http\Controllers\Api\Shop\Student\CourseController;
 use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Course;
-use App\Models\DigitalAsset;
 use App\Models\Enrollment;
+use App\Models\Product;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(GetEnrollmentDetailAction::class);
+covers(GetEnrollmentDetailAction::class, CourseController::class);
 
 beforeEach(function (): void {
     $this->customer();
@@ -36,41 +37,7 @@ it('returns enrollment detail for owner', function (): void {
         ->assertJsonPath('data.uuid', $enrollment->uuid);
 });
 
-it('returns enrollment detail for digital asset enrollment', function (): void {
-    $digitalAsset = DigitalAsset::factory()->withFile()->create();
-    $enrollment   = createEnrollmentForProductable($this->user, DeliveryMethodEnum::DIRECT_DOWNLOAD, $digitalAsset);
-
-    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
-        ->assertOk()
-        ->assertJsonPath('data.uuid', $enrollment->uuid)
-        ->assertJsonCount(1, 'data.files');
-});
-
 // ─── Delivery access ─────────────────────────────────────────────────────────
-
-it('show returns niliroom delivery_access for live_session_niliroom enrollment', function (array $details, bool $isReady): void {
-    $enrollment = createEnrollment(
-        $this->user,
-        DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
-        deliveryOption: App\Models\ProductDeliveryOption::factory()->create([
-            'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
-            'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->getFulfillmentType(),
-            'details_json'     => $details,
-        ]),
-    );
-
-    $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]));
-
-    $response->assertOk()
-        ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
-    $access = $response->json('data.delivery_access');
-    expect($access['type'])->toBe(DeliveryMethodEnum::LIVE_SESSION_NILIROOM->value)
-        ->and($access['is_ready'])->toBe($isReady)
-        ->and($access['join_url_path'])->toBe(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid], absolute: false));
-})->with([
-    'room configured' => [['nili_room_id' => 'NILI-ROOM-1'], true],
-    'room missing'    => [[], false],
-]);
 
 it('show returns moodle delivery_access for lms_moodle enrollment', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, provisioning: true);
@@ -178,6 +145,7 @@ it('show dispatches SyncMoodleProgressJob (rate-limited) for provisioned moodle 
         'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE->value,
         'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
         'details_json'     => ['moodle_course_id' => $moodleCourseId],
+        'product_id'       => Product::factory()->withCourse(),
     ]);
 
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
@@ -215,6 +183,7 @@ it('show dispatches SyncMoodleProgressJob for moodle_quiz enrollment with provid
         'delivery_method'  => DeliveryMethodEnum::IN_PERSON->value,
         'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
         'details_json'     => ['moodle_quiz_course_id' => $moodleCourseId],
+        'product_id'       => Product::factory()->withCourse(),
     ]);
 
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
@@ -270,6 +239,7 @@ it('show does not dispatch SWR job for moodle enrollment without provisioning da
         'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE->value,
         'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
         'details_json'     => ['moodle_course_id' => 777],
+        'product_id'       => Product::factory()->withCourse(),
     ]);
 
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
@@ -307,6 +277,7 @@ it('show does not dispatch SyncMoodleProgressJob twice within decay window', fun
         'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE->value,
         'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
         'details_json'     => ['moodle_course_id' => $moodleCourseId],
+        'product_id'       => Product::factory()->withCourse(),
     ]);
 
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
@@ -334,6 +305,65 @@ it('show does not dispatch SyncMoodleProgressJob twice within decay window', fun
     $this->getJson($url)->assertOk();
 
     Illuminate\Support\Facades\Queue::assertPushed(SyncMoodleProgressJob::class, 1);
+});
+
+it('show dispatches SyncMoodleProgressJob when the moodle_quiz course id is a numeric string', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
+
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON->value,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        // details_json is an untyped JSON column, so an admin-entered id may arrive as a string.
+        'details_json' => ['moodle_quiz_course_id' => '777'],
+        'product_id'   => Product::factory()->withCourse(),
+    ]);
+
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'provisioning_data' => [
+            'providers' => [
+                'moodle_quiz' => [
+                    'data' => [
+                        'moodle_user_id' => 666,
+                    ],
+                ],
+            ],
+        ],
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+
+    Illuminate\Support\Facades\Queue::assertPushed(SyncMoodleProgressJob::class);
+});
+
+it('show does not dispatch SyncMoodleProgressJob when the moodle course id is not positive', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
+
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE->value,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'details_json'     => ['moodle_course_id' => 0],
+        'product_id'       => Product::factory()->withCourse(),
+    ]);
+
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'provisioning_data' => [
+            'providers' => [
+                'moodle' => [
+                    'data' => [
+                        'moodle_user_id' => 888,
+                    ],
+                ],
+            ],
+        ],
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+
+    Illuminate\Support\Facades\Queue::assertNotPushed(SyncMoodleProgressJob::class);
 });
 
 // ─── Review info ─────────────────────────────────────────────────────────────
@@ -417,8 +447,8 @@ function createEnrollmentForProductable(
     DeliveryMethodEnum $deliveryMethod,
     mixed $productable,
 ): Enrollment {
-    $product = App\Models\Product::factory()->create([
-        'productable_type' => $productable::class,
+    $product = Product::factory()->create([
+        'productable_type' => $productable->getMorphClass(),
         'productable_id'   => $productable->id,
     ]);
 

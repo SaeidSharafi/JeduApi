@@ -6,21 +6,22 @@ use App\Http\Controllers\Api\Shop\AvatarController;
 use App\Http\Controllers\Api\Shop\Profile\CustomerChangePasswordController;
 use App\Http\Controllers\Api\Shop\Profile\ProfileController;
 use App\Http\Controllers\Api\Shop\Student\CancelOrderController;
+use App\Http\Controllers\Api\Shop\Student\CourseController as StudentCourseController;
 use App\Http\Controllers\Api\Shop\Student\DigitalAssetDownloadController;
 use App\Http\Controllers\Api\Shop\Student\DigitalAssetEnrollmentController;
-use App\Http\Controllers\Api\Shop\Student\EnrollmentController;
 use App\Http\Controllers\Api\Shop\Student\JoinUrlController;
 use App\Http\Controllers\Api\Shop\Student\MoodleSsoController;
 use App\Http\Controllers\Api\Shop\Student\OrderController;
 use App\Http\Controllers\Api\Shop\Student\QuizController;
 use App\Http\Controllers\Api\Shop\Student\RetryPaymentController;
+use App\Http\Controllers\Api\Shop\Student\SeminarController as StudentSeminarController;
 use App\Http\Controllers\Api\Shop\Student\ShowPaymentController;
 use App\Http\Controllers\Api\Shop\Student\SubmitReviewController;
 use App\Http\Controllers\Api\Shop\Teacher\AttendanceController;
-use App\Http\Controllers\Api\Shop\Teacher\CourseController;
+use App\Http\Controllers\Api\Shop\Teacher\CourseController as TeacherCourseController;
 use App\Http\Controllers\Api\Shop\Teacher\GradeController;
 use App\Http\Controllers\Api\Shop\Teacher\QuizController as TeacherQuizController;
-use App\Http\Controllers\Api\Shop\Teacher\SeminarController;
+use App\Http\Controllers\Api\Shop\Teacher\SeminarController as TeacherSeminarController;
 use App\Http\Controllers\Api\Shop\Teacher\TeacherJoinUrlController;
 use App\Http\Controllers\Api\Shop\Teacher\TeacherMoodleSsoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletInfoController;
@@ -44,10 +45,10 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
 
             // Enrolled Courses
             Route::prefix('courses')->name('courses.')->group(function (): void {
-                Route::get('/', [EnrollmentController::class, 'index'])
+                Route::get('/', [StudentCourseController::class, 'index'])
                     ->name('index');
 
-                Route::get('/{enrollment:uuid}', [EnrollmentController::class, 'show'])
+                Route::get('/{enrollment:uuid}', [StudentCourseController::class, 'show'])
                     ->name('show');
 
                 Route::post('/{enrollment:uuid}/review', SubmitReviewController::class)
@@ -55,6 +56,15 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
 
                 Route::post('/{enrollment:uuid}/moodle/sso', MoodleSsoController::class)
                     ->name('moodle.sso');
+            });
+
+            // Enrolled Seminars
+            Route::prefix('seminars')->name('seminars.')->group(function (): void {
+                Route::get('/', [StudentSeminarController::class, 'index'])
+                    ->name('index');
+
+                Route::get('/{enrollment:uuid}', [StudentSeminarController::class, 'show'])
+                    ->name('show');
 
                 Route::get('/{enrollment:uuid}/join', JoinUrlController::class)
                     ->name('join');
@@ -101,10 +111,9 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
         // ==========================================
         Route::prefix('teacher')->name('teacher.')->group(function (): void {
             Route::prefix('courses')->name('courses.')->group(function (): void {
-                Route::get('/', [CourseController::class, 'index'])
+                Route::get('/', [TeacherCourseController::class, 'index'])
                     ->name('index');
-                // Route::get('/{deliveryOption:uuid}', [EnrollmentController::class, 'show'])
-                //    ->name('show');
+
                 Route::post('/{deliveryOption:uuid}/moodle/sso', TeacherMoodleSsoController::class)
                     ->name('moodle.sso');
 
@@ -116,7 +125,7 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
             });
             Route::get('/quizzes', TeacherQuizController::class)->name('quizzes');
             Route::prefix('seminars')->name('seminars.')->group(function (): void {
-                Route::get('/', SeminarController::class)->name('seminars');
+                Route::get('/', TeacherSeminarController::class)->name('seminars');
                 Route::get('/{deliveryOption:uuid}/join', TeacherJoinUrlController::class)
                     ->name('join');
             });

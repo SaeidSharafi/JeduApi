@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Student;
 
 use App\Actions\Shop\Student\GetEnrollmentDetailAction;
+use App\Actions\Shop\Student\ListStudentEnrollmentsAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Student\Enrollment\EnrollmentData;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Enrollment;
+use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 
 /**
@@ -18,58 +21,57 @@ use Illuminate\Support\Facades\RateLimiter;
  *
  * @authenticated user
  */
-final class EnrollmentController extends Controller
+final class CourseController extends Controller
 {
     /**
-     * Get a paginated list of the authenticated user's enrollments.
+     * Get a paginated list of the authenticated user's course enrollments.
+     *
+     * Only enrollments whose product is of course type are returned; seminars and digital
+     * assets have their own listings.
      *
      * @queryParam filter[fulfillment_type] string Filter by fulfillment type. Example: digital
      * @queryParam filter[name] string Filter by product name. Example: Course Name
      * @queryParam page integer Page number for pagination. Example: 1
      * @queryParam per_page integer Number of results per page. Example: 15
      *
-     * @responseFile 200 resources/responses/shop/enrollments/index.json
+     * @responseFile 200 resources/responses/shop/courses/index.json
      */
-    public function index(): ApiResponseInterface
+    public function index(ListStudentEnrollmentsAction $action): ApiResponseInterface
     {
-        $filters     = request()->array('filter');
-        $enrollments = auth()->user()->enrollments()
-            ->withWhereHas(
-                'productDeliveryOption', function ($query) use ($filters): void {
-                    $query->when(data_get($filters, 'fulfillment_type'), function ($query, $fulfillmentType): void {
-                        $query->where('fulfillment_type', $fulfillmentType);
-                    })->withWhereHas(
-                        'product', function ($query) use ($filters): void {
-                            $query
-                                ->when(data_get($filters, 'name'), function ($query, $name): void {
-                                    $query->whereLike('name', "%{$name}%");
-                                })
-                                ->with(['productableWithAllRelations']);
-                        })->with('teachers.media');
-                }
-            )
-            ->with(['orderItem.vendor'])
-            ->paginate(request()->integer('per_page', config('app.page_size')))
-            ->withQueryString();
+        /** @var User $user */
+        $user = auth()->user();
+
+        $enrollments = $action->handle(
+            $user,
+            ProductableEnum::COURSE,
+            request()->array('filter'),
+            request()->integer('per_page', config('app.page_size')),
+        );
 
         return apiResponse()->success(EnrollmentData::collect($enrollments));
     }
 
     /**
-     * Show a specific enrollment.
+     * Show a specific course enrollment.
      *
-     * Retrieve detailed information, including the enrolled product, teachers and related Moodle progress, for a
-     * single enrollment owned by the authenticated user.
+     * Retrieve detailed information, including the enrolled course, teachers and related Moodle progress, for a
+     * single course enrollment owned by the authenticated user.
      *
-     * @responseFile 200 resources/responses/shop/enrollments/show.json
+     * @responseFile 200 resources/responses/shop/courses/show.json
      *
      * @response 404 {"message": "Enrollment not found."}
      */
     public function show(Enrollment $enrollment, GetEnrollmentDetailAction $action): ApiResponseInterface
     {
-        if (auth()->user()->id !== $enrollment->customer_id) {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if ($user->id !== $enrollment->customer_id
+            || ! $enrollment->isOfProductableType(ProductableEnum::COURSE)
+        ) {
             return apiResponse()->notFound(__('messages.enrollments.not_found'));
         }
+
         $enrollment->loadMissing([
             'productDeliveryOption.product.productableWithAllRelations',
             'productDeliveryOption.teachers.media',

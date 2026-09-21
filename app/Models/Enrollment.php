@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Enums\ProvisioningOutcomeStatusEnum;
 use App\Enums\ProvisioningStatusEnum;
 use App\Events\EnrollmentStatusChanged;
@@ -100,6 +101,14 @@ final class Enrollment extends Model
     public function hasRequiredProvisioningProviders(): bool
     {
         return ($this->provisioning_plan['providers'] ?? []) !== [];
+    }
+
+    /**
+     * Whether the enrolled product's productable is of the given type.
+     */
+    public function isOfProductableType(ProductableEnum $type): bool
+    {
+        return $this->productDeliveryOption?->product?->productable_type === $type->value;
     }
 
     public function activateIfNoProvisioningRequired(): void

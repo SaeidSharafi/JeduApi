@@ -6,8 +6,10 @@ use App\Actions\Shop\Student\GetJoinUrlAction;
 use App\Contracts\Integrations\NiliroomClientContract;
 use App\Contracts\Integrations\SkyroomClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Api\Shop\Student\JoinUrlController;
 use App\Models\Enrollment;
+use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use Illuminate\Support\Facades\Exceptions;
@@ -24,9 +26,9 @@ beforeEach(function (): void {
 
 it('returns 404 when enrollment belongs to another user', function (): void {
     $otherUser  = User::factory()->create();
-    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_NILIROOM);
+    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, productableType: ProductableEnum::SEMINAR);
 
-    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.seminars.join', ['enrollment' => $enrollment->uuid]))
         ->assertNotFound();
 });
 
@@ -48,7 +50,7 @@ it('returns the niliroom meeting join url for an enrolled student', function ():
             ->andReturn($joinUrl);
     });
 
-    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.seminars.join', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', $joinUrl)
         ->assertJsonPath('data.type', 'niliroom')
@@ -64,7 +66,7 @@ it('returns 503 when the niliroom panel is not ready', function (): void {
         $mock->shouldNotReceive('issueStudentMeetingJoinGrant');
     });
 
-    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.seminars.join', ['enrollment' => $enrollment->uuid]))
         ->assertStatus(503)
         ->assertJsonFragment(['message' => __('messages.enrollments.niliroom_not_configured')]);
 });
@@ -76,7 +78,7 @@ it('returns 503 when the niliroom room id is missing or malformed', function (mi
         $mock->shouldNotReceive('issueStudentMeetingJoinGrant');
     });
 
-    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.seminars.join', ['enrollment' => $enrollment->uuid]))
         ->assertStatus(503)
         ->assertJsonFragment(['message' => __('messages.provisioning.niliroom_room_id_missing')]);
 })->with([
@@ -90,7 +92,7 @@ it('returns 503 when the niliroom room id is missing or malformed', function (mi
 // ─── Skyroom ─────────────────────────────────────────────────────────────────
 
 it('returns join url for Skyroom live session', function (): void {
-    $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM);
+    $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM, productableType: ProductableEnum::SEMINAR);
     $enrollment->provisioning_data = [
         'providers' => [
             'skyroom' => [
@@ -112,14 +114,14 @@ it('returns join url for Skyroom live session', function (): void {
             ->andReturn($joinUrl);
     });
 
-    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.seminars.join', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', $joinUrl)
         ->assertJsonPath('data.type', 'skyroom');
 });
 
 it('returns 503 when Skyroom room is not provisioned yet', function (): void {
-    $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM);
+    $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_SKYROOM, productableType: ProductableEnum::SEMINAR);
     $enrollment->provisioning_data = [
         'providers' => [
             'skyroom' => [
@@ -130,7 +132,7 @@ it('returns 503 when Skyroom room is not provisioned yet', function (): void {
     ];
     $enrollment->save();
 
-    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.seminars.join', ['enrollment' => $enrollment->uuid]))
         ->assertStatus(503)
         ->assertJsonFragment(['message' => 'Skyroom room not provisioned yet.']);
 });
@@ -140,7 +142,7 @@ it('returns 503 when Skyroom room is not provisioned yet', function (): void {
 it('returns 422 when delivery method does not support join URLs', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON);
 
-    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.seminars.join', ['enrollment' => $enrollment->uuid]))
         ->assertUnprocessable()
         ->assertJsonFragment([
             'message' => __('messages.enrollment.delivery_no_join_url', [
@@ -163,7 +165,7 @@ it('returns 500 when an unexpected error occurs', function (): void {
             ->andThrow(new RuntimeException('NiliroomService crashed'));
     });
 
-    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.seminars.join', ['enrollment' => $enrollment->uuid]))
         ->assertServerError();
 
     // An unexpected provider failure must reach the logs, not just a 500 to the client.
@@ -177,10 +179,12 @@ it('returns 500 when an unexpected error occurs', function (): void {
  */
 function seminarEnrollment(User $customer, array $details): Enrollment
 {
+    $product        = Product::factory()->withSeminar()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create([
         'delivery_method'  => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
         'fulfillment_type' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM->getFulfillmentType(),
         'details_json'     => $details,
+        'product_id'       => $product->id,
     ]);
 
     return createEnrollment($customer, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, deliveryOption: $deliveryOption);
