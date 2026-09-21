@@ -60,7 +60,7 @@ describe('CreateBlogPostAction', function (): void {
             ]
         );
 
-        $action = new CreateBlogPostAction();
+        $action = app(CreateBlogPostAction::class);
         $post   = $action->handle($data);
         $post->loadRelatedproductables();
         expect($post)->toBeInstanceOf(BlogPost::class)
@@ -101,7 +101,7 @@ describe('CreateBlogPostAction', function (): void {
             ],
         );
 
-        $action = new CreateBlogPostAction();
+        $action = app(CreateBlogPostAction::class);
         $post   = $action->handle($data);
 
         expect($post)->toBeInstanceOf(BlogPost::class)
@@ -143,7 +143,7 @@ describe('CreateBlogPostAction', function (): void {
             ]
         );
 
-        $action = new CreateBlogPostAction();
+        $action = app(CreateBlogPostAction::class);
         $post   = $action->handle($data);
 
         expect($post)->toBeInstanceOf(BlogPost::class)

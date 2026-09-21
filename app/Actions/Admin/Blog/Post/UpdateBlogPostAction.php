@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Blog\Post;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Blog\Post\BlogPostUpdateData;
 use App\Enums\MediaTagEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\System\CacheTag;
 use App\Models\Blog\BlogPost;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
 
 final readonly class UpdateBlogPostAction
 {
+    public function __construct(private CacheStore $cache) {}
+
     public function handle(BlogPost $post, BlogPostUpdateData $data): BlogPost
     {
         $slug          = $data->slug ?? Str::slug($data->title);
@@ -52,6 +56,8 @@ final readonly class UpdateBlogPostAction
 
         $post->syncRelatedProductables($data->related_productables);
         $post->refresh();
+
+        $this->cache->invalidate(CacheTag::Search);
 
         return $post;
     }

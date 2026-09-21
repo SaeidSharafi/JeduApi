@@ -19,7 +19,7 @@ describe('DeleteBlogPostAction', function (): void {
     });
 
     it('deletes a blog post and its media', function (): void {
-        $action = new App\Actions\Admin\Blog\Post\DeleteBlogPostAction();
+        $action = app(App\Actions\Admin\Blog\Post\DeleteBlogPostAction::class);
         $action->handle($this->post);
 
         expect(App\Models\Blog\BlogPost::find($this->post->id))->toBeNull()

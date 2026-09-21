@@ -60,8 +60,8 @@
 
 #### SynchronizeProductSearchIndexJob (`app/Jobs/SynchronizeProductSearchIndexJob.php`)
 - **Purpose:** Syncs the search engine index (Typesense) for a batch of products
-- **Signature:** `handle(): void`
-- **Functionality:** Loads products with productable, category slugs, price, delivery options, and term; splits into searchable (`shouldBeSearchable()` true → `searchableUsing()->update()`) and unsearchable (→ `searchableUsing()->delete()`) sets
+- **Signature:** `handle(CacheStore $cache): void`
+- **Functionality:** Loads products with productable, category slugs, price, delivery options, and term; splits into searchable (`shouldBeSearchable()` true → `searchableUsing()->update()`) and unsearchable (→ `searchableUsing()->delete()`) sets, then bumps `CacheTag::Search` through the `CacheStore` gateway so cached result pages cannot outlive the index they were built from
 - **Dispatch:** Listens on `ProductSearchIndexInvalidated` events
 
 ### Console Commands (`app/Console/Commands/`)
@@ -303,11 +303,11 @@
 
 #### Blog Post Actions (`app/Actions/Admin/Blog/Post/`)
 - **CreateBlogPostAction** (`app/Actions/Admin/Blog/Post/CreateBlogPostAction.php`)
-  - `handle(BlogPostCreateData $data, ?Staff $staff = null): BlogPost`: Creates new blog posts with publication workflow, read time calculation, and content relationships
+  - `handle(BlogPostCreateData $data, ?Staff $staff = null): BlogPost`: Creates new blog posts with publication workflow, read time calculation, and content relationships, then bumps `CacheTag::Search` since posts are a search collection
 - **UpdateBlogPostAction** (`app/Actions/Admin/Blog/Post/UpdateBlogPostAction.php`)
-  - `handle(BlogPost $post, BlogPostUpdateData $data): BlogPost`: Updates blog post content, status, and relationships
+  - `handle(BlogPost $post, BlogPostUpdateData $data): BlogPost`: Updates blog post content, status, and relationships, then bumps `CacheTag::Search`
 - **DeleteBlogPostAction** (`app/Actions/Admin/Blog/Post/DeleteBlogPostAction.php`)
-  - `handle(BlogPost $post): void`: Removes blog posts and cleans up media attachments
+  - `handle(BlogPost $post): void`: Removes blog posts and cleans up media attachments, then bumps `CacheTag::Search`
 
 #### Setting Actions (`app/Actions/Admin/Setting/`)
 - **StoreHomePageBlockAction** (`app/Actions/Admin/Setting/StoreHomePageBlockAction.php`)
@@ -985,11 +985,12 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 ### Availability & Search Invalidation Events
 - `ProductAvailabilityCacheInvalidated` (`app/Events/ProductAvailabilityCacheInvalidated.php`): carries `productIds`; dispatched after DB commit (`ShouldDispatchAfterCommit`); listeners invalidate availability snapshot caches so storefront availability reflects term/productable status changes
-- `ProductSearchIndexInvalidated` (`app/Events/ProductSearchIndexInvalidated.php`): carries `productIds`; dispatched after DB commit; listener runs `SynchronizeProductSearchIndexJob` to push/remove products from the Typesense index
+- `ProductSearchIndexInvalidated` (`app/Events/ProductSearchIndexInvalidated.php`): carries `productIds`; dispatched after DB commit; listener runs `SynchronizeProductSearchIndexJob` to push/remove products from the Typesense index, which then bumps `CacheTag::Search`
+- **Search cache freshness for product index changes:** `SynchronizeProductSearchIndexJob` bumps `CacheTag::Search` after the engine write, so a searchable-field edit on a Course, Seminar, DigitalAsset or Product (which only re-syncs the index) still clears cached search results and suggestions.
 
 ### Review Aggregation Pipeline
 - **Event:** `ReviewableAggregatesChanged` (`app/Events/ReviewableAggregatesChanged.php`) carries the reviewable ID/type whenever reviews change.
-- **Listener:** `RecalculateReviewableAggregates` (`app/Listeners/RecalculateReviewableAggregates.php`) runs on the queue, filters to models using the `HasReview` trait, and recomputes `review_count` & `average_rating` from approved reviews.
+- **Listener:** `RecalculateReviewableAggregates` (`app/Listeners/RecalculateReviewableAggregates.php`) runs on the queue, filters to models using the `HasReview` trait, recomputes `review_count` & `average_rating` from approved reviews, then bumps `CacheTag::Search` because cached search result pages carry those aggregates.
 - **Impact:** Keeps course/seminar/digital asset review snapshots synchronized for storefront queries without heavy joins.
 - **Student submissions do not move aggregates:** `SubmitReviewAction` creates `PENDING` reviews and dispatches nothing; only the admin `ApproveReviewAction`/`RejectReviewAction`/`UpdateReviewStatusAction` change approved-review counts, and each of those dispatches the event. On a model without the `HasReview` trait the listener is a no-op.
 
