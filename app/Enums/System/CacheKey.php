@@ -37,7 +37,6 @@ enum CacheKey: string
     case DiscountHandlers   = 'discounts.handler_registry.cache';
     case Settings           = 'settings.all';
     case DigipayAccessToken = 'digipay_access_token';
-    case StaffPermissions   = 'all_permissions';
     case AccessToken        = 'AccessToken::{hash}';
     case Tokenable          = 'token_{id}::id_{env}';
     case UserProfile        = 'user.{id}.profile';
@@ -89,7 +88,7 @@ enum CacheKey: string
             self::GoodForStart                 => 1800,
             self::DigipayAccessToken           => 3300,
             self::AccessToken, self::Tokenable => 360,
-            self::Settings, self::StaffPermissions, self::DiscountHandlers,
+            self::Settings, self::DiscountHandlers,
             self::PgroongaEnabled => null,
         };
     }
@@ -123,7 +122,7 @@ enum CacheKey: string
             self::Search, self::SearchSuggest, self::PgroongaEnabled => CacheTag::Search,
             self::DiscountHandlers                                   => CacheTag::Discounts,
             self::Settings, self::DigipayAccessToken                 => CacheTag::Settings,
-            self::StaffPermissions, self::AccessToken, self::Tokenable,
+            self::AccessToken, self::Tokenable,
             self::UserProfile, self::OtpValue, self::OtpMarker, self::OtpAttempts => CacheTag::Auth,
         };
     }

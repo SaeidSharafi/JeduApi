@@ -26,7 +26,6 @@ it('lists every registry case with its template, durations and group', function 
                 ['DiscountHandlers', 'discounts.handler_registry.cache', 'forever', 'none', 'discounts'],
                 ['Settings', 'settings.all', 'forever', 'none', 'settings'],
                 ['DigipayAccessToken', 'digipay_access_token', '3300', 'none', 'settings'],
-                ['StaffPermissions', 'all_permissions', 'forever', 'none', 'auth'],
                 ['AccessToken', 'AccessToken::{hash}', '360', 'none', 'auth'],
                 ['Tokenable', 'token_{id}::id_{env}', '360', 'none', 'auth'],
                 ['UserProfile', 'user.{id}.profile', '86400', 'none', 'auth'],

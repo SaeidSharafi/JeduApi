@@ -14,7 +14,6 @@ use App\Exceptions\UserBannedException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
-use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Permission;
 
 /**
@@ -70,9 +69,10 @@ final class StaffOtpAuthenticationController extends Controller
                 message: __('messages.auth.login.banned')
             );
         }
-        $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {
-            return Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
-        });
+        $permissions = Permission::query()
+            ->where('guard_name', 'staff')
+            ->pluck('name')
+            ->all();
 
         cookie()->queue(
             'staff_token',

@@ -54,3 +54,13 @@ Each phase leaves the test suite green.
 5. **Enforce and document.** Add the architecture test, the per-tag coverage test, the three artisan commands, and update the Digestion docs for any changed service/interface listings.
 
 **References:** `CACHE_AUDIT_REPORT.md` (findings F1–F16), `app/Services/CacheInvalidationService.php`, `app/Observers/InvalidationObserver.php`, `config/cache_invalidation.php`, `app/Services/SWRCacheService.php`, `app/Enums/System/CacheKeysEnum.php`.
+
+## Addendum — the staff permission list is deliberately not cached (#120)
+
+Decision 3 and the migration plan listed "staff permissions" among the write paths that would gain an explicit `forget()`. Implemented, that turned out to be the wrong repair: the cache itself was the problem, so it is removed instead.
+
+The value was `Permission::where('guard_name', 'staff')->pluck('name')` — 172 rows from a sequential scan that executes in 43 µs, behind an endpoint that runs once per login next to bcrypt. Caching it cost **two** gateway round trips (the version counter plus the value) against the database's **one**, and it required a registry key, a service, and a hook into the package's `permissions:sync` command for no purpose other than keeping it from going stale — precisely the invisible-state failure F1 reported.
+
+Both staff login paths (`StaffPasswordLoginController`, `StaffOtpAuthenticationController`) now query the list directly. `CacheKey::StaffPermissions` and the `config('cache.keys.all_permissions')` literal are gone. A list that is never stored cannot be stale, so no write path has to remember to clear it.
+
+Measured locally (`CACHE_STORE=redis`, 172 permissions): cached read 1.06 ms; direct query 3.56 ms, of which 3.06 ms is the PostgreSQL round trip and 0.043 ms is the query itself. The cache's apparent win was an artifact of Docker network asymmetry between the Redis and PostgreSQL containers; with both on the production LAN it is a wash.
