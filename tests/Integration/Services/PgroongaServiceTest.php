@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheKey;
 use App\Services\PgroongaService;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 covers(PgroongaService::class);
@@ -35,14 +34,23 @@ it('assumes PGroonga is unavailable when the database probe fails', function ():
     $cache = app(CacheStore::class);
     $cache->forget(CacheKey::PgroongaEnabled);
 
-    DB::shouldReceive('selectOne')
-        ->once()
-        ->andThrow(new QueryException(
-            'pgsql',
-            "SELECT 1 FROM pg_extension WHERE extname = 'pgroonga'",
-            [],
-            new RuntimeException('database unavailable'),
-        ));
+    // Force the failure with a real database that has no pg_extension catalog
+    // rather than mocking the connection, so the catch branch is exercised by
+    // an actual QueryException. Touch the default connection first so the
+    // test transaction stays on PostgreSQL.
+    DB::select('SELECT 1');
 
-    expect(app(PgroongaService::class)->isPgroongaEnabled())->toBeFalse();
+    $original = DB::getDefaultConnection();
+    config()->set('database.connections.pgroonga_probe_failure', [
+        'driver'   => 'sqlite',
+        'database' => ':memory:',
+        'prefix'   => '',
+    ]);
+    DB::setDefaultConnection('pgroonga_probe_failure');
+
+    try {
+        expect(app(PgroongaService::class)->isPgroongaEnabled())->toBeFalse();
+    } finally {
+        DB::setDefaultConnection($original);
+    }
 });
