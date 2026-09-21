@@ -75,7 +75,7 @@
 #### PublishPostCommand (`app/Console/Commands/PublishPostCommand.php`)
 - **Purpose:** Automated blog post publication for scheduled content
 - **Signature:** `post:publish`
-- **Functionality:** Publishes blog posts with SCHEDULED status where `published_at` date has passed, updating status to PUBLISHED
+- **Functionality:** Publishes blog posts with SCHEDULED status where `published_at` date has passed, updating status to PUBLISHED via a mass query-builder update; because that bypasses the model events and the blog post actions, it bumps `CacheTag::Search` through the `CacheStore` gateway itself (a no-op run leaves the caches untouched)
 - **Usage:** Intended for cron job scheduling to automate content publication workflow
 
 #### CheckStuckPaymentsCommand (`app/Console/Commands/CheckStuckPaymentsCommand.php`)

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use App\Enums\Content\PublicationStatusEnum;
 
+covers(App\Console\Commands\PublishPostCommand::class);
+
 describe('PublishPostCommand', function (): void {
     beforeEach(function (): void {
-        $this->command = new App\Console\Commands\PublishPostCommand();
+        $this->command = app(App\Console\Commands\PublishPostCommand::class);
     });
 
     it('should publish scheduled posts with past publish_at dates', function (): void {
@@ -77,5 +79,35 @@ describe('PublishPostCommand', function (): void {
         // Assert that the published post status is still PUBLISHED
         expect($publishedPost->status)->toBe(PublicationStatusEnum::PUBLISHED);
 
+    });
+
+    it('clears cached search results when posts are published', function (): void {
+        App\Models\Blog\BlogPost::factory()->create([
+            'status'       => PublicationStatusEnum::SCHEDULED,
+            'published_at' => now()->subDay(),
+        ]);
+
+        $cache = app(App\Contracts\Cache\CacheStore::class);
+        $cache->put(App\Enums\System\CacheKey::Search, ['hash' => 'query-hash'], ['stale']);
+        $cache->put(App\Enums\System\CacheKey::SearchSuggest, ['hash' => 'suggest-hash'], ['stale']);
+
+        $this->artisan('post:publish')->assertExitCode(0);
+
+        expect($cache->get(App\Enums\System\CacheKey::Search, ['hash' => 'query-hash']))->toBeNull()
+            ->and($cache->get(App\Enums\System\CacheKey::SearchSuggest, ['hash' => 'suggest-hash']))->toBeNull();
+    });
+
+    it('leaves cached search results alone when nothing is published', function (): void {
+        App\Models\Blog\BlogPost::factory()->create([
+            'status'       => PublicationStatusEnum::SCHEDULED,
+            'published_at' => now()->addDay(),
+        ]);
+
+        $cache = app(App\Contracts\Cache\CacheStore::class);
+        $cache->put(App\Enums\System\CacheKey::Search, ['hash' => 'query-hash'], ['stale']);
+
+        $this->artisan('post:publish')->assertExitCode(0);
+
+        expect($cache->get(App\Enums\System\CacheKey::Search, ['hash' => 'query-hash']))->toBe(['stale']);
     });
 });
