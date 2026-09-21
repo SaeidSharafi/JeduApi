@@ -184,9 +184,9 @@
 - **DeleteDigitalAssetAction**: Handles digital asset removal; bumps `CacheTag::Search`
 
 #### Seminar Actions (`app/Actions/Admin/Seminar/`)
-- **CreateSeminarAction**: Creates new seminar events
-- **UpdateSeminarAction**: Updates seminar scheduling and details
-- **DeleteSeminarAction**: Handles seminar cancellation and cleanup
+- **CreateSeminarAction**: Creates new seminar events and bumps `CacheTag::Search`, because the deleted model observer used to clear it on every Seminar save
+- **UpdateSeminarAction**: Updates seminar scheduling and details; searchable-field and status changes are still covered by `ProductableAvailabilityObserver`, which dispatches `ProductSearchIndexInvalidated`
+- **DeleteSeminarAction**: Handles seminar cancellation and cleanup; bumps `CacheTag::Search`
 
 #### ProductDeliveryOption Actions (`app/Actions/Admin/ProductDeliveryOption/`)
 - **CreateProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/CreateProductDeliveryOptionAction.php`)
@@ -222,14 +222,16 @@
 - **Ordinary item refund still rejects Bundle components**: `CreateRefundAction` throws a validation error when the Order Item is an internal Bundle component. The order-level endpoint now handles mixed orders (see `RefundOrderAction` above).
 
 #### Discount Actions (`app/Actions/Admin/Discounts/`)
+- **InvalidateDiscountCachesAction** (`app/Actions/Admin/Discounts/InvalidateDiscountCachesAction.php`)
+  - `handle(): void`: Bumps `CacheTag::Catalog`, `CacheTag::Search` and `CacheTag::Discounts` through the gateway. Every discount-promotion write uses it, so a promotion change cannot leave cached prices, search pages or the handler registry stale. Reindexing the discounted-price rows remains the caller's job.
 - **CreateDiscountPromotionAction** (`app/Actions/Admin/Discounts/CreateDiscountPromotionAction.php`)
-  - `handle(DiscountPromotionCreateData $data): DiscountPromotion`: Creates new discount promotions with complex rules
+  - `execute(DiscountPromotionCreateData $data): DiscountPromotion`: Creates a promotion with its rules and coupons, dispatches `RegeneratePromotionDiscountPricesJob` for product-specific promotions, then calls `InvalidateDiscountCachesAction`
 - **UpdateDiscountPromotionAction** (`app/Actions/Admin/Discounts/UpdateDiscountPromotionAction.php`)
-  - `handle(DiscountPromotionUpdateData $data, DiscountPromotion $promotion): DiscountPromotion`: Updates discount promotion rules and conditions
+  - `execute(DiscountPromotion $promotion, DiscountPromotionCreateData $data): DiscountPromotion`: Replaces rules and coupons, reindexes product-specific promotions, then calls `InvalidateDiscountCachesAction`
 - **DeleteDiscountPromotionAction** (`app/Actions/Admin/Discounts/DeleteDiscountPromotionAction.php`)
-  - `handle(DiscountPromotion $promotion): void`: Removes discount promotions and related rules
+  - `execute(DiscountPromotion $promotion): void`: Removes the promotion with its rules and coupons, then calls `InvalidateDiscountCachesAction`
 - **UpdateDiscountPromotionStatusAction** (`app/Actions/Admin/Discounts/UpdateDiscountPromotionStatusAction.php`)
-  - `handle(DiscountPromotion $promotion): DiscountPromotion`: Toggles `is_active`, dispatches `RegeneratePromotionDiscountPricesJob` for product-specific promotions so the indexed prices are corrected, and bumps `CacheTag::Catalog`, `CacheTag::Search` and `CacheTag::Discounts` through the gateway so displayed prices change without waiting for the hourly reindex.
+  - `handle(DiscountPromotion $promotion): DiscountPromotion`: Toggles `is_active`, dispatches `RegeneratePromotionDiscountPricesJob` synchronously for product-specific promotions so the indexed prices are corrected before the caches are dropped, then calls `InvalidateDiscountCachesAction` so displayed prices change without waiting for the hourly reindex.
 
 #### Category Actions (`app/Actions/Admin/Category/`)
 - **CreateCategoryAction**: Creates new product categories with media attachments; bumps `CacheTag::HomePage` so student stories filtered by category slug are not served stale and `CacheTag::Catalog` so the good-for-start listing refreshes
@@ -266,14 +268,16 @@
 #### Staff Actions (`app/Actions/Admin/Staff/`)
 - **CreateStaffAction**: Creates new admin user accounts
 - **UpdateStaffAction**: Updates staff details and permissions
-- **DeleteStaffAction**: Removes staff access and archives records
+- **BanStaffAction**: Sets the ban flag, snapshots the staff member's tokens, deletes them, and only after the transaction commits forgets each token's lookup and user snapshot through `PersonalAccessToken::forgetCachedIdentifiers()`, so a concurrent request cannot re-cache a still-live token
+- **DeleteStaffAction**: Removes staff access and archives records; likewise forgets the deleted tokens' cache entries after the transaction commits
 
 #### User Actions (`app/Actions/Admin/User/`)
 - **CreateUserAction** (`app/Actions/Admin/User/CreateUserAction.php`)
   - `handle(UserCreateData $data): User`: Creates new customer accounts; supports avatar media attachment.
 - **UpdateUserAction** (`app/Actions/Admin/User/UpdateUserAction.php`)
   - `handle(UserUpdateData $data, User $user): User`: Updates customer profile information; supports avatar media attachment.
-- **DeleteUserAction**: Handles customer account deactivation
+- **BanUserAction**: Sets the ban flag, snapshots and deletes the customer's tokens, and forgets their cache entries only after the transaction commits
+- **DeleteUserAction**: Handles customer account deactivation; likewise snapshots the tokens inside the transaction and forgets their cache entries after it commits
 
 #### Teacher Actions (`app/Actions/Admin/Teacher/`)
 - **CreateTeacherAction** (`app/Actions/Admin/Teacher/CreateTeacherAction.php`)
@@ -431,6 +435,8 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `handle(Enrollment $enrollment): JoinUrlData`: Lazy-generates a join URL for an enrollment from its delivery method, on demand rather than pre-computed. `LIVE_SESSION_SKYROOM` reads `room_id` from the enrollment's `provisioning_data` and returns `type: skyroom`; `LIVE_SESSION_NILIROOM` is served by Niliroom alone (ADR 0013) and returns `type: niliroom` with a null `expires_at`, because a meeting join grant carries no panel lifetime. The Niliroom path reads only `nili_room_id` from the delivery option's `details_json` — a staff-entered opaque public ID, so anything but a non-empty string is `ResourceNotProvisionedException` (`messages.provisioning.niliroom_room_id_missing`) — then gates on `NiliroomClientContract::isReady()` (`messages.enrollments.niliroom_not_configured`) before delegating the sync/enroll/meeting-resolve/join-grant flow to `NiliroomService::issueStudentMeetingJoinGrant()`. There is no `BbbService` branch and no BBB provisioning state on this path. Both failures surface as 503 through the controller's `ResourceNotProvisionedException` arm; any other delivery method raises `InvalidArgumentException` (`messages.enrollment.delivery_no_join_url`).
 - **CancelOrderByCustomerAction** (`app/Actions/Shop/Student/CancelOrderByCustomerAction.php`)
   - `execute(Order $order, int $userId): Order`: Allows customers to cancel their own pending orders. Validates: order belongs to user, order is PENDING, no completed payments exist. Transactionally cancels order and associated enrollments.
+- **ForgetStudentQuizCacheAction** (`app/Actions/Shop/Student/ForgetStudentQuizCacheAction.php`)
+  - `handle(int $userId): void`: Drops one student's cached Moodle quiz list (`CacheKey::StudentQuizzes`) through the gateway. Provisioning, revocation and progress sync all change what that list should show, so they share this action instead of repeating the `forget()` call.
 
 #### Teacher Dashboard Actions (`app/Actions/Shop/Teacher/`)
 - **GetTeacherJoinUrlAction** (`app/Actions/Shop/Teacher/GetTeacherJoinUrlAction.php`)
@@ -513,7 +519,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 ### DigipayAuthenticator (`app/Services/Payment/Digipay/DigipayAuthenticator.php`)
 - **Purpose:** Mints and caches the Digipay OAuth access token used by `DigipayClient`.
-- **Caching:** `getAccessToken(): string` reads `CacheKey::DigipayAccessToken` through the `CacheStore` gateway and, on a miss, requests a token from the OAuth endpoint (`grant_type=password`, Basic `client_id:client_secret`) and stores it under the registry lifetime (3300 s, which preserves the previous five-minute pre-expiry buffer). A valid token is reused until that lifetime elapses. `SettingsService::set()` forgets the key when `SettingKeyEnum::DIGIPAY` is written, so rotating gateway credentials mints a new token on the next call instead of reusing one built from the old credentials.
+- **Caching:** `getAccessToken(): string` reads `CacheKey::DigipayAccessToken` through the `CacheStore` gateway. The stored payload is `['token' => string, 'expires_at' => int]`, where `expires_at` is the OAuth response's `expires_in` minus `payments.digipay.token_cache.buffer` (300 s), so a token is never served after the gateway stops honouring it. The registry lifetime (3300 s) is only an upper bound on how long the payload may sit in the store. `SettingsService::set()` forgets the key when `SettingKeyEnum::DIGIPAY` is written, so rotating gateway credentials mints a new token on the next call instead of reusing one built from the old credentials.
 
 ### DigipayPaymentProcessor (`app/Services/Payment/DigipayPaymentProcessor.php`)
 - **Purpose:** Implements the multi-step Digipay (دیجی‌پی) REST gateway with token-based authentication, callback verification, delivery confirmation, and refund operations
@@ -613,7 +619,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 #### ProductDiscountIndexer (`app/Services/Discounts/ProductDiscountIndexer.php`)
 - **Purpose:** Indexes product discount prices for efficient price projection
 - **Public Methods:**
-  - `reIndexComplete(): void`: Truncates `product_delivery_option_discount_prices` and rebuilds it from the active product-specific promotions; bumps `CacheTag::Catalog` and `CacheTag::Search` through the `CacheStore` gateway after commit, including when there is nothing to rebuild.
+  - `reIndexComplete(): void`: Truncates `product_delivery_option_discount_prices` and rebuilds it from the active product-specific promotions; bumps `CacheTag::Catalog`, `CacheTag::Search` and `CacheTag::Discounts` through the `CacheStore` gateway after commit, including when there is nothing to rebuild.
   - `reIndexPromotion(DiscountPromotion $promotion): void`: Rebuilds the indices for one promotion and re-lays the active promotions. The dispatched `ProductCacheInvalidated` events drive the pricing job's catalog/search invalidation.
   - `reIndexProductsByDeliveryOptionIds(Collection $deliveryOptionIds): void`: Rebuilds the given delivery options against the active promotions.
   - `getActivePromotions(): Collection`: Returns promotions whose `starts_at`/`ends_at` window is active.
@@ -754,12 +760,12 @@ Administrative status and access-date changes reconcile deliberately with applic
 ### Provisioning Jobs (`app/Jobs/Provisioning/`)
 
 #### ProvisionEnrollmentProviderJob (`app/Jobs/Provisioning/ProvisionEnrollmentProviderJob.php`)
-- **Purpose:** Generic canonical provisioning worker. Starts a `ProvisioningAttempt`, resolves the provider adapter via `ProvisioningProviderRegistry`, runs `provision()` (or `reconcileAccess()` for attempts tagged `kind = access_reconciliation`), then records success, schedules a retry, or fails the attempt. On success it forgets the customer's cached `CacheKey::StudentQuizzes`. Tries: 3, backoff: [60, 180, 600]s, unique per attempt.
+- **Purpose:** Generic canonical provisioning worker. Starts a `ProvisioningAttempt`, resolves the provider adapter via `ProvisioningProviderRegistry`, runs `provision()` (or `reconcileAccess()` for attempts tagged `kind = access_reconciliation`), then records success, schedules a retry, or fails the attempt. On success it drops the customer's cached quiz list through `ForgetStudentQuizCacheAction`. Tries: 3, backoff: [60, 180, 600]s, unique per attempt.
 
 #### RevokeEnrollmentProviderJob (`app/Jobs/Provisioning/RevokeEnrollmentProviderJob.php`)
-- **Purpose:** Asynchronous per-Enrollment external access revocation. Starts a revocation `ProvisioningAttempt`, resolves the adapter, and calls `RevokeEnrollmentProvider::revoke()` when supported. Adapters without a revocation API become explicit `manual_action_required` work. Records its outcome through `EnrollmentRevocationService` rather than `ProvisioningAttemptService`, and forgets the customer's cached `CacheKey::StudentQuizzes` on success. Tries: 3, backoff: [60, 180, 600]s, unique per attempt (`revocation:<id>`).
+- **Purpose:** Asynchronous per-Enrollment external access revocation. Starts a revocation `ProvisioningAttempt`, resolves the adapter, and calls `RevocationProvider::revoke()` when supported. Adapters without a revocation API become explicit `manual_action_required` work. Records its outcome through `EnrollmentRevocationService` rather than `ProvisioningAttemptService`, and drops the customer's cached quiz list through `ForgetStudentQuizCacheAction` on success. Tries: 3, backoff: [60, 180, 600]s, unique per attempt (`revocation:<id>`).
 
-#### SyncMoodleProgressJob (`app/Jobs/Provisioning/SyncMoodleProgressJob.php`)- **Purpose:** Syncs Moodle course completion, activity statuses, and grades into enrollment `provisioning_data.providers.<key>.sync`. Triggered on enrollment detail view (rate-limited to 5-min throttle per enrollment). This is a background sync task, not a provisioning task. It is also where a Moodle-side quiz submission becomes visible, so it forgets the customer's cached `CacheKey::StudentQuizzes`.
+#### SyncMoodleProgressJob (`app/Jobs/Provisioning/SyncMoodleProgressJob.php`)- **Purpose:** Syncs Moodle course completion, activity statuses, and grades into enrollment `provisioning_data.providers.<key>.sync`. Triggered on enrollment detail view (rate-limited to 5-min throttle per enrollment). This is a background sync task, not a provisioning task. It is also where a Moodle-side quiz submission becomes visible, so it drops the customer's cached quiz list through `ForgetStudentQuizCacheAction`.
 
 #### Provisioning Provider Adapters (`app/Services/Provisioning/Providers/`)
 - **MoodleProvisioningProvider:** Finds/creates the Moodle user, validates the course, and enrolls them; returns safe canonical references (`moodle_user_id`, `moodle_user_name`, `moodle_course_id`, `course_url`, `login_path`, `provisioned_at`). Supports access reconciliation (re-enroll on `active`, un-enroll on `suspended`/`expired`/`cancelled`) and implements `RevocationProvider`; reconciliation and revocation share one `unenroll()` primitive.
@@ -933,18 +939,18 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Implementation Notes:** Automatically builds faceted filters from `ProductFilterData`, respects `result_types`, and streams results through DTO transformers in controllers. The Typesense search path caches through `CacheStore::flexible()` under `CacheKey::Search`; the database fallback is uncached.
 
 ### CacheStore Gateway (`app/Contracts/Cache/CacheStore.php`, `app/Services/Cache/LaravelCacheStore.php`)
-- **Purpose:** Single entry point every cache read and write goes through; its one implementation is the only class permitted to touch Laravel's cache. Introduced in phase 1 of the cache consolidation (ADR 0014); after the migration completed, every caller — settings/config, discount handlers, PGroonga, OTP, access tokens, home page content, good-for-start, search, quizzes and the catalog write pipeline — reads and writes through it, and the legacy `SmartCache` stack is gone.
+- **Purpose:** Single entry point every cache read and write goes through; its one implementation is the only class permitted to touch Laravel's cache. Introduced in phase 1 of the cache consolidation (ADR 0014); after the migration completed, every caller — settings/config, discount handlers, discount promotions, PGroonga, OTP, access tokens, home page sliders/partners/student stories, good-for-start, search, quizzes and the catalog write pipeline — reads and writes through it, and the legacy `SmartCache` stack is gone.
 - **Interface:**
-  - `get(CacheKey $key, array $params = [], mixed $default = null): mixed`: Reads the value stored under the registry key.
+  - `get(CacheKey $key, array $params = []): mixed`: Reads the value stored under the registry key; a miss is always null.
   - `put(CacheKey $key, array $params, mixed $value): void`: Writes using the key's registered lifetime; a null value is ignored.
   - `remember(CacheKey $key, array $params, Closure $callback): mixed`: Generates and stores the value on a miss.
   - `rememberForever(CacheKey $key, array $params, Closure $callback): mixed`: Generates and stores the value with no expiry.
   - `flexible(CacheKey $key, array $params, Closure $callback): mixed`: Native stale-while-revalidate read; serves the fresh value, then the stale value while refreshing after the response under a single-flight lock the caller cannot omit.
   - `forget(CacheKey $key, array $params = []): void`: Deletes one exact key.
   - `version(CacheTag $tag): int`: Current invalidation generation of a tag, starting at zero and increasing on every bump; this is what the operator commands read to prove an invalidation fired.
-  - `invalidate(CacheTag ...$tags): void`: Bumps each tag's version counter, making that tag's previous generation unreachable.
+  - `invalidate(CacheTag ...$tags): void`: Seeds and increments each tag's version counter, making that tag's previous generation unreachable.
 - **Key registry (`app/Enums/System/CacheKey.php`):** Each case owns its key template, `ttl()`, `staleTtl()` and `group()`; `resolve()` substitutes named parameters and throws when one is missing. A null `ttl()` means no expiry; a null `staleTtl()` means the key must not be read through `flexible()`. `staleTtl()` is the window *after* the fresh lifetime, so `flexible()` stores for `ttl() + staleTtl()`.
-- **Tag vocabulary (`app/Enums/System/CacheTag.php`):** `HomePage`, `Content`, `Catalog`, `Search`, `Discounts`, `Settings`, `Auth`.
+- **Tag vocabulary (`app/Enums/System/CacheTag.php`):** `HomePage`, `Content`, `Catalog`, `Search`, `Discounts`, `Settings`, `Auth`. Deliberately not an `AdvanceEnum` adopter — the tag has no translated label, only `values()` for the operator commands.
 - **Storage keys:** Values are stored at `cache:{tag}:v{version}:{template}`; version counters live at `cache.version:{tag}` and only `invalidate()` bumps them. Invalidation behaves identically on the array, database and Redis stores.
 - **Binding:** `AppServiceProvider` binds `CacheStore` to `LaravelCacheStore`.
 - **Enforcement (`tests/Architecture/CacheGatewayTest.php`):** An architecture test scans application source outside `app/Contracts/Cache` and `app/Services/Cache` and fails on any ad-hoc cache storage access — `Cache::` (every method except `lock()`), the `cache()` helper, or `SmartCache::`. A second test derives the writers from literal `invalidate(CacheTag::X)` and `forget(CacheKey::Y)` calls and fails when a tag in the vocabulary has no writer clearing it.
@@ -1029,6 +1035,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `sendAndRetryCheck(...)`: Sends only when the stored marker is older than `config('otp.waiting_time')`, otherwise throws a throttle `ValidationException`
   - `verify(string $identifier, string $guard, int $otp, string $trackingCode, ?OtpTypeInterface $type = null): bool`: One-time check of code and tracking code, run inside a native `Cache::lock()`
   - `getVerifyCode()`, `deleteVerifyCode()`, `getSentAt()`, `isVerifyCodeHasBeenSent()`: Read, delete and inspect the stored code and its send marker
+  - `cacheParams(string $identifier, string $guard, ?OtpTypeInterface $type = null): array`: The named-parameter triple every OTP registry key resolves against — the single home for it, shared by the service, the model factories and the test helper
 - **Storage:** Codes, send markers and verify-attempt counters go through the `CacheStore` gateway under `CacheKey::OtpValue`, `CacheKey::OtpMarker` and `CacheKey::OtpAttempts`, keyed by identifier, guard and OTP type. The registry declares their lifetimes, sourcing the business-tunable values from `config('otp.ttl_seconds')`, `config('otp.marker_ttl_seconds')` and `config('otp.verify_attempt_window_seconds')`. Locks are deliberately not wrapped — they stay on Laravel's native `Cache::lock()`.
 - **Hardening:**
   - Resend throttled per identifier by the send marker (`config('otp.waiting_time')`, default 10 seconds)
