@@ -8,12 +8,8 @@ use App\Enums\System\OtpType;
 use App\Models\Staff;
 use App\Models\User;
 use App\Services\OtpManagerService;
-use Database\Factories\StaffFactory;
-use Database\Factories\UserFactory;
 use Illuminate\Support\Facades\Notification;
 use Tests\Support\Fakes\FakeOtpGenerator;
-
-covers(UserFactory::class, StaffFactory::class);
 
 beforeEach(function (): void {
     // The OtpPrepared listener would deliver the code; only the stored value is under test.
