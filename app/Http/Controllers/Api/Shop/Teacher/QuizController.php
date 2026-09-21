@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Teacher;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Cache\CacheStore;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Enums\System\CacheKey;
 use App\Http\Controllers\Controller;
-use App\Services\SWRCacheService;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Auth;
  */
 final class QuizController extends Controller
 {
+    public function __construct(private readonly CacheStore $cache) {}
+
     /**
      * List of Quizzes
      *
@@ -28,12 +31,15 @@ final class QuizController extends Controller
     {
         $user = Auth::user();
         abort_unless(Auth::user()?->is_teacher, 403);
-        $quizzes = SWRCacheService::remember('teacher_quizzes:'.$user->id, function () use ($moodleService, $user): array {
-            [$moodleUserId] = $moodleService->findOrCreateUser($user);
-            $quizzes        = $moodleService->getTeacherQuizzes($moodleUserId);
 
-            return $quizzes;
-        });
+        $quizzes = $this->cache->flexible(
+            CacheKey::TeacherQuizzes,
+            ['userId' => $user->id],
+            function () use ($moodleService, $user): array {
+                [$moodleUserId] = $moodleService->findOrCreateUser($user);
+
+                return $moodleService->getTeacherQuizzes($moodleUserId);
+            });
 
         return apiResponse()->success($quizzes);
     }

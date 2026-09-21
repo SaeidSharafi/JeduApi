@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Shop\Student\GetJoinUrlAction;
+use App\Contracts\Cache\CacheStore;
 use App\Contracts\Integrations\ImsClientContract;
 use App\Contracts\Integrations\MoodleClientContract;
 use App\Contracts\Integrations\NiliroomClientContract;
@@ -15,6 +16,7 @@ use App\Enums\ProvisioningAttemptStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
 use App\Enums\ProvisioningStatusEnum;
 use App\Enums\ProvisioningTriggerEnum;
+use App\Enums\System\CacheKey;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Models\Enrollment;
 use App\Models\OrderItem;
@@ -498,4 +500,34 @@ it('keeps local access authoritative when reconciliation fails', function (): vo
 
     expect($enrollment->fresh()->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE)
         ->and(data_get($enrollment->fresh()->provisioning_data, 'reconciliation.status'))->toBe('failed');
+});
+
+it('drops the customer quiz list after a successful provision without touching the teacher list', function (): void {
+    $enrollment = Enrollment::factory()->create([
+        'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
+    ]);
+    $enrollment->update([
+        'provisioning_plan' => [
+            'version'   => 1,
+            'providers' => [['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready']],
+            'status'    => ProvisioningStatusEnum::READY->value,
+        ],
+    ]);
+
+    $provider = $this->mock(MoodleProvisioningProvider::class);
+    $provider->shouldReceive('provision')->once()->andReturn([
+        'moodle_user_id'   => 42,
+        'moodle_course_id' => 99,
+    ]);
+
+    $cache = app(CacheStore::class);
+    $cache->put(CacheKey::StudentQuizzes, ['userId' => $enrollment->customer_id], ['stale']);
+    $cache->put(CacheKey::TeacherQuizzes, ['userId' => $enrollment->customer_id], ['stale']);
+
+    $attempts = app(ProvisioningAttemptService::class);
+    $attempt  = $attempts->queue($enrollment, ProvisioningTriggerEnum::PAYMENT);
+    (new ProvisionEnrollmentProviderJob($attempt->id))->handle($attempts, app(ProvisioningProviderRegistry::class));
+
+    expect($cache->get(CacheKey::StudentQuizzes, ['userId' => $enrollment->customer_id]))->toBeNull()
+        ->and($cache->get(CacheKey::TeacherQuizzes, ['userId' => $enrollment->customer_id]))->not->toBeNull();
 });

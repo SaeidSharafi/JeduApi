@@ -749,12 +749,12 @@ Administrative status and access-date changes reconcile deliberately with applic
 ### Provisioning Jobs (`app/Jobs/Provisioning/`)
 
 #### ProvisionEnrollmentProviderJob (`app/Jobs/Provisioning/ProvisionEnrollmentProviderJob.php`)
-- **Purpose:** Generic canonical provisioning worker. Starts a `ProvisioningAttempt`, resolves the provider adapter via `ProvisioningProviderRegistry`, runs `provision()` (or `reconcileAccess()` for attempts tagged `kind = access_reconciliation`), then records success, schedules a retry, or fails the attempt. Tries: 3, backoff: [60, 180, 600]s, unique per attempt.
+- **Purpose:** Generic canonical provisioning worker. Starts a `ProvisioningAttempt`, resolves the provider adapter via `ProvisioningProviderRegistry`, runs `provision()` (or `reconcileAccess()` for attempts tagged `kind = access_reconciliation`), then records success, schedules a retry, or fails the attempt. On success it forgets the customer's cached `CacheKey::StudentQuizzes`. Tries: 3, backoff: [60, 180, 600]s, unique per attempt.
 
 #### RevokeEnrollmentProviderJob (`app/Jobs/Provisioning/RevokeEnrollmentProviderJob.php`)
-- **Purpose:** Asynchronous per-Enrollment external access revocation. Starts a revocation `ProvisioningAttempt`, resolves the adapter, and calls `RevokeEnrollmentProvider::revoke()` when supported. Adapters without a revocation API become explicit `manual_action_required` work. Records its outcome through `EnrollmentRevocationService` rather than `ProvisioningAttemptService`. Tries: 3, backoff: [60, 180, 600]s, unique per attempt (`revocation:<id>`).
+- **Purpose:** Asynchronous per-Enrollment external access revocation. Starts a revocation `ProvisioningAttempt`, resolves the adapter, and calls `RevokeEnrollmentProvider::revoke()` when supported. Adapters without a revocation API become explicit `manual_action_required` work. Records its outcome through `EnrollmentRevocationService` rather than `ProvisioningAttemptService`, and forgets the customer's cached `CacheKey::StudentQuizzes` on success. Tries: 3, backoff: [60, 180, 600]s, unique per attempt (`revocation:<id>`).
 
-#### SyncMoodleProgressJob (`app/Jobs/Provisioning/SyncMoodleProgressJob.php`)- **Purpose:** Syncs Moodle course completion, activity statuses, and grades into enrollment `provisioning_data.providers.<key>.sync`. Triggered on enrollment detail view (rate-limited to 5-min throttle per enrollment). This is a background sync task, not a provisioning task.
+#### SyncMoodleProgressJob (`app/Jobs/Provisioning/SyncMoodleProgressJob.php`)- **Purpose:** Syncs Moodle course completion, activity statuses, and grades into enrollment `provisioning_data.providers.<key>.sync`. Triggered on enrollment detail view (rate-limited to 5-min throttle per enrollment). This is a background sync task, not a provisioning task. It is also where a Moodle-side quiz submission becomes visible, so it forgets the customer's cached `CacheKey::StudentQuizzes`.
 
 #### Provisioning Provider Adapters (`app/Services/Provisioning/Providers/`)
 - **MoodleProvisioningProvider:** Finds/creates the Moodle user, validates the course, and enrolls them; returns safe canonical references (`moodle_user_id`, `moodle_user_name`, `moodle_course_id`, `course_url`, `login_path`, `provisioned_at`). Supports access reconciliation (re-enroll on `active`, un-enroll on `suspended`/`expired`/`cancelled`) and implements `RevocationProvider`; reconciliation and revocation share one `unenroll()` primitive.
@@ -951,7 +951,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale); keys encode filter hashes (e.g., student story course/category slug combos) with wildcard invalidation support to keep variant caches consistent. The shop slider, partner and student-story endpoints no longer use it — they read through `CacheStore::flexible()` on their `CacheKey` cases.
   - `rememberSearchSuggestions(string $key, Closure $callback)`: Preset for search autocomplete (1 hour fresh / 4 hours stale); `GlobalSearchService::suggest()` no longer calls it.
   - `rememberTrendingContent(string $key, Closure $callback)`: Preset for trending widgets (10 min fresh / 30 min stale)
-- **Usage:** The student/teacher quiz listings still call `remember()`; search results and suggestions have moved to the `CacheStore` gateway and the homepage preset has no production caller.
+- **Usage:** No production caller remains: the student/teacher quiz listings, search results and suggestions all read through the `CacheStore` gateway, and the homepage preset has no caller.
 
 ### CacheInvalidationService (`app/Services/CacheInvalidationService.php`)
 - **Purpose:** Central cache eviction utility invoked by `InvalidationObserver`
