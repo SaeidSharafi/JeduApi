@@ -13,8 +13,8 @@ use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
 use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use SmartCache\Facades\SmartCache;
 
 final readonly class CreateProductAction
 {
@@ -28,7 +28,7 @@ final readonly class CreateProductAction
         // hard DB backstop; the lock prevents the 23505 error in the happy path.
         $lockKey = "publish_productable_{$data->productable_type}_{$data->productable_id}";
 
-        [$product, $archivedProductIds] = SmartCache::lock($lockKey, 15)->block(5, function () use ($data): array {
+        [$product, $archivedProductIds] = Cache::lock($lockKey, 15)->block(5, function () use ($data): array {
             return DB::transaction(function () use ($data): array {
                 $forceCreate      = $data->force_create ?? false;
                 $productableClass = ProductableEnum::from($data->productable_type)->getModelClass();

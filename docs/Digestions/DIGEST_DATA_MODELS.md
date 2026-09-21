@@ -219,7 +219,7 @@
   - `belongsTo(OrderItem::class)` - orderItem
   - `belongsTo(Payment::class)` - payment
   - `belongsTo(User::class, 'customer_id')` - customer
-- **Special Features:** SmartCache locking prevents concurrent refund processing; amount validation caps cumulative refunds against payment amount; gateway-specific refund processors via `RefundProcessorFactory` (Digipay, Manual, Wallet). Uses `HasAuditor` trait for staff attribution, `HasFactory` for test seeding.
+- **Special Features:** Native `Cache::lock()` locking prevents concurrent refund processing; amount validation caps cumulative refunds against payment amount; gateway-specific refund processors via `RefundProcessorFactory` (Digipay, Manual, Wallet). Uses `HasAuditor` trait for staff attribution, `HasFactory` for test seeding.
 
 ### Review (`app/Models/Review.php`)
 - **Purpose:** Customer review system for products and courses

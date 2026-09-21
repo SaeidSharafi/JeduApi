@@ -66,7 +66,7 @@ final class ResetE2eEnvironmentAction
             $state->clearWorkerHeartbeats();
             $this->terminateWorkers();
             Redis::connection('default')->flushdb();
-            Cache::store('e2e')->flush();
+            $this->runCommand('cache:clear', ['store' => 'e2e'], 'The E2E cache store could not be cleared.');
             $this->clearMedia();
 
             $data = $this->reset($resetId);

@@ -13,10 +13,10 @@ use App\Models\Payment;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Digipay\DigipayAdminService;
 use App\Services\ProductReservationService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use SmartCache\Facades\SmartCache;
 
 final readonly class ApproveOrderAction
 {
@@ -40,7 +40,7 @@ final readonly class ApproveOrderAction
     {
         $lockKey = "approve_order_{$order->id}";
 
-        return SmartCache::lock($lockKey, 15)->block(5, function () use ($order): Order {
+        return Cache::lock($lockKey, 15)->block(5, function () use ($order): Order {
             $order = Order::query()->whereKey($order->id)->with(['items', 'payments'])->firstOrFail();
             $this->validateOrderEligibility($order);
 

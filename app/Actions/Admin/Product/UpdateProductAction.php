@@ -14,8 +14,8 @@ use App\Events\ProductCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
 use App\Models\Product;
 use App\Services\BundleAvailabilityPropagationService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use SmartCache\Facades\SmartCache;
 
 final readonly class UpdateProductAction
 {
@@ -32,7 +32,7 @@ final readonly class UpdateProductAction
         // remains the hard DB backstop.
         $lockKey = "publish_productable_{$product->productable_type}_{$product->productable_id}";
 
-        $product = SmartCache::lock($lockKey, 15)->block(5, function () use ($data, $product): Product {
+        $product = Cache::lock($lockKey, 15)->block(5, function () use ($data, $product): Product {
             return DB::transaction(function () use ($data, $product): Product {
                 $product->update($data->except('categories')->toArray());
                 $product->categories()->sync($data->categories);

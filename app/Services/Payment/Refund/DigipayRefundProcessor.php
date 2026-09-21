@@ -11,8 +11,8 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\Payment\Digipay\DigipayAdminService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use SmartCache\Facades\SmartCache;
 
 final readonly class DigipayRefundProcessor implements RefundProcessorInterface
 {
@@ -34,7 +34,7 @@ final readonly class DigipayRefundProcessor implements RefundProcessorInterface
 
         $lockKey = "digipay_refund_payment_{$payment->id}";
 
-        return SmartCache::lock($lockKey, 15)->block(5, function () use ($payment, $order, $amount): ?string {
+        return Cache::lock($lockKey, 15)->block(5, function () use ($payment, $order, $amount): ?string {
             // Cumulative cap check (serialized per payment to avoid concurrent over-refund race)
             $alreadyRefunded = Refund::query()
                 ->where('payment_id', $payment->id)
