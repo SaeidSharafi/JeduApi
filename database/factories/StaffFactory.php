@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Contracts\Cache\CacheStore;
-use App\Data\OtpManager\OtpDto;
-use App\Enums\System\CacheKey;
-use App\Enums\System\OtpType;
 use App\Models\Staff;
-use App\Services\OtpManagerService;
+use Database\Factories\Concerns\SeedsSigninOtp;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 final class StaffFactory extends Factory
 {
+    use SeedsSigninOtp;
+
     protected $model = Staff::class;
 
     public function definition(): array
@@ -46,17 +44,7 @@ final class StaffFactory extends Factory
     public function withOtp(int $code = 1234): self
     {
         return $this->afterCreating(function (Staff $staff) use ($code): void {
-            $sentOtp = app(OtpManagerService::class)->send($staff->phone, 'staff', OtpType::SIGNIN);
-
-            app(CacheStore::class)->put(
-                CacheKey::OtpValue,
-                [
-                    'identifier' => $staff->phone,
-                    'guard'      => 'staff',
-                    'type'       => OtpType::SIGNIN->identifier(),
-                ],
-                new OtpDto($code, $sentOtp->trackingCode),
-            );
+            $this->seedSigninOtp($staff->phone, 'staff', $code);
         });
     }
 

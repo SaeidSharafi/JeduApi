@@ -43,6 +43,23 @@ final class OtpManagerService
     }
 
     /**
+     * Named parameters shared by every OTP registry key.
+     *
+     * The single home for the OTP cache identity, so the service, the factories
+     * and the test helpers cannot drift apart on the placeholder names.
+     *
+     * @return array{identifier: string, guard: string, type: string|null}
+     */
+    public static function cacheParams(string $identifier, string $guard, ?OtpTypeInterface $type = null): array
+    {
+        return [
+            'identifier' => $identifier,
+            'guard'      => $guard,
+            'type'       => $type?->identifier(),
+        ];
+    }
+
+    /**
      * @template TK
      * @template TV
      *
@@ -272,16 +289,10 @@ final class OtpManagerService
     }
 
     /**
-     * Named parameters shared by every OTP registry key.
-     *
      * @return array{identifier: string, guard: string, type: string|null}
      */
     private function params(string $identifier, string $guard): array
     {
-        return [
-            'identifier' => $identifier,
-            'guard'      => $guard,
-            'type'       => $this->type?->identifier(),
-        ];
+        return self::cacheParams($identifier, $guard, $this->type);
     }
 }

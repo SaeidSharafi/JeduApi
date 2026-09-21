@@ -6,6 +6,7 @@ use App\Contracts\Cache\CacheStore;
 use App\Data\OtpManager\OtpDto;
 use App\Enums\System\CacheKey;
 use App\Enums\System\OtpType;
+use App\Services\OtpManagerService;
 
 if (! function_exists('putCachedOtp')) {
     /**
@@ -22,11 +23,7 @@ if (! function_exists('putCachedOtp')) {
         ?int $sentAt = null,
     ): void {
         $cache  = app(CacheStore::class);
-        $params = [
-            'identifier' => $identifier,
-            'guard'      => $guard,
-            'type'       => $type->identifier(),
-        ];
+        $params = OtpManagerService::cacheParams($identifier, $guard, $type);
 
         $cache->put(CacheKey::OtpValue, $params, new OtpDto($code, $trackingCode));
 
