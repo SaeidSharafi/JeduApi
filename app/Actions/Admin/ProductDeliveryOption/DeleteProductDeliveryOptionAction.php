@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\ProductDeliveryOption;
 
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheTag;
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
@@ -13,6 +15,8 @@ use Illuminate\Validation\ValidationException;
 
 final readonly class DeleteProductDeliveryOptionAction
 {
+    public function __construct(private CacheStore $cache) {}
+
     /**
      * Execute the action.
      */
@@ -39,5 +43,7 @@ final readonly class DeleteProductDeliveryOptionAction
         ProductCacheInvalidated::dispatch($deliveryOption->product_id);
         ProductAvailabilityCacheInvalidated::dispatch([$deliveryOption->product_id]);
         ProductSearchIndexInvalidated::dispatch([$deliveryOption->product_id]);
+
+        $this->cache->invalidate(CacheTag::Catalog);
     }
 }

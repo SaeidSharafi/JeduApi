@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\Content\ReviewStatusEnum;
+use App\Enums\System\CacheTag;
 use App\Enums\System\MorphTypeEnum;
 use App\Events\ReviewableAggregatesChanged;
 use App\Models\Review;
@@ -16,13 +18,7 @@ final class RecalculateReviewableAggregates implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(private readonly CacheStore $cache) {}
 
     /**
      * Handle the event.
@@ -46,5 +42,8 @@ final class RecalculateReviewableAggregates implements ShouldQueue
             'review_count'   => $stats->count      ?? 0,
             'average_rating' => $stats->avg_rating ?? 0.00,
         ]);
+
+        // Search result pages cache the review aggregates of the products they return.
+        $this->cache->invalidate(CacheTag::Search);
     }
 }

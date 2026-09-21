@@ -55,7 +55,7 @@ describe('UpdateBlogPostAction', function (): void {
             ]
         );
 
-        $action      = new UpdateBlogPostAction();
+        $action      = app(UpdateBlogPostAction::class);
         $updatedPost = $action->handle($this->post, $data);
         $updatedPost->loadRelatedproductables();
         expect($updatedPost)->toBeInstanceOf(App\Models\Blog\BlogPost::class)
@@ -94,7 +94,7 @@ describe('UpdateBlogPostAction', function (): void {
             ]
         );
 
-        $action      = new UpdateBlogPostAction();
+        $action      = app(UpdateBlogPostAction::class);
         $updatedPost = $action->handle($this->post, $data);
         $updatedPost->loadRelatedproductables();
         expect($updatedPost)->toBeInstanceOf(App\Models\Blog\BlogPost::class)

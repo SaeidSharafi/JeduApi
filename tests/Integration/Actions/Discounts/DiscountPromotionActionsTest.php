@@ -5,12 +5,47 @@ declare(strict_types=1);
 use App\Actions\Admin\Discounts\CreateDiscountPromotionAction;
 use App\Actions\Admin\Discounts\DeleteDiscountPromotionAction;
 use App\Actions\Admin\Discounts\UpdateDiscountPromotionAction;
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Discounts\DiscountPromotionCreateData;
 use App\Enums\Order\DiscountTypeEnum;
+use App\Enums\System\CacheKey;
 use App\Models\DiscountPromotion;
+
+covers(
+    CreateDiscountPromotionAction::class,
+    UpdateDiscountPromotionAction::class,
+    DeleteDiscountPromotionAction::class,
+);
 
 describe('Discount Promotion Actions', function (): void {
     uses()->group('unit', 'actions', 'discounts');
+
+    $warmDiscountCaches = function (): void {
+        $cache = app(CacheStore::class);
+        $cache->put(CacheKey::GoodForStart, ['slug' => 'programming', 'limit' => 10], ['stale']);
+        $cache->put(CacheKey::Search, ['hash' => 'query-hash'], ['stale']);
+        $cache->put(CacheKey::DiscountHandlers, [], ['stale']);
+    };
+
+    $assertDiscountCachesCleared = function (): void {
+        $cache = app(CacheStore::class);
+        expect($cache->get(CacheKey::GoodForStart, ['slug' => 'programming', 'limit' => 10]))->toBeNull()
+            ->and($cache->get(CacheKey::Search, ['hash' => 'query-hash']))->toBeNull()
+            ->and($cache->get(CacheKey::DiscountHandlers))->toBeNull();
+    };
+
+    $promotionData = fn (): DiscountPromotionCreateData => DiscountPromotionCreateData::from([
+        'name'                             => 'Cache Test',
+        'description'                      => 'Cache invalidation fixture',
+        'type'                             => DiscountTypeEnum::CART_CHECKOUT->value,
+        'is_active'                        => true,
+        'priority'                         => 1,
+        'stop_processing_subsequent_rules' => false,
+        'usage_limit_total'                => null,
+        'usage_limit_per_customer'         => null,
+        'rules'                            => [],
+        'coupons'                          => [],
+    ]);
 
     test('CreateDiscountPromotionAction creates promotion with rules and coupons', function (): void {
         // Arrange
@@ -293,5 +328,33 @@ describe('Discount Promotion Actions', function (): void {
         $this->assertDatabaseMissing('discount_promotions', [
             'name' => 'Test Promotion',
         ]);
+    });
+
+    test('CreateDiscountPromotionAction clears the discount caches', function () use ($warmDiscountCaches, $assertDiscountCachesCleared, $promotionData): void {
+        $warmDiscountCaches();
+
+        app(CreateDiscountPromotionAction::class)->execute($promotionData());
+
+        $assertDiscountCachesCleared();
+    });
+
+    test('UpdateDiscountPromotionAction clears the discount caches', function () use ($warmDiscountCaches, $assertDiscountCachesCleared, $promotionData): void {
+        $promotion = DiscountPromotion::factory()->create(['type' => DiscountTypeEnum::CART_CHECKOUT->value]);
+
+        $warmDiscountCaches();
+
+        app(UpdateDiscountPromotionAction::class)->execute($promotion, $promotionData());
+
+        $assertDiscountCachesCleared();
+    });
+
+    test('DeleteDiscountPromotionAction clears the discount caches', function () use ($warmDiscountCaches, $assertDiscountCachesCleared): void {
+        $promotion = DiscountPromotion::factory()->create(['type' => DiscountTypeEnum::CART_CHECKOUT->value]);
+
+        $warmDiscountCaches();
+
+        app(DeleteDiscountPromotionAction::class)->execute($promotion);
+
+        $assertDiscountCachesCleared();
     });
 });

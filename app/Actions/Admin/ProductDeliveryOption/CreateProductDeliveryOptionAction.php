@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\ProductDeliveryOption;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionCreateData;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\System\CacheTag;
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
@@ -18,7 +20,11 @@ use Illuminate\Support\Str;
 
 final readonly class CreateProductDeliveryOptionAction
 {
-    public function __construct(private SkuGeneratorService $skuGenerator, private SyncBundleCompositionAction $composition) {}
+    public function __construct(
+        private SkuGeneratorService $skuGenerator,
+        private SyncBundleCompositionAction $composition,
+        private CacheStore $cache,
+    ) {}
 
     /**
      * Execute the action.
@@ -57,6 +63,8 @@ final readonly class CreateProductDeliveryOptionAction
         ProductCacheInvalidated::dispatch($pdo->product_id);
         ProductAvailabilityCacheInvalidated::dispatch([$pdo->product_id]);
         ProductSearchIndexInvalidated::dispatch([$pdo->product_id]);
+
+        $this->cache->invalidate(CacheTag::Catalog);
 
         return $pdo;
     }

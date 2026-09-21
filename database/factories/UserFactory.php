@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Data\OtpManager\OtpDto;
-use App\Enums\System\OtpType;
 use App\Enums\User\CivilIdTypeEnum;
 use App\Enums\User\EducationLevelEnum;
 use App\Enums\User\EducationStatusEnum;
 use App\Enums\User\GenderEnum;
 use App\Models\User;
-use App\Services\OtpManagerService;
+use Database\Factories\Concerns\SeedsSigninOtp;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 
 final class UserFactory extends Factory
 {
+    use SeedsSigninOtp;
+
     protected $model = User::class;
 
     public function definition(): array
@@ -86,14 +86,10 @@ final class UserFactory extends Factory
         ]);
     }
 
-    public function withOtp(int $code = 123456): self
+    public function withOtp(int $code = 1234): self
     {
-        return $this->afterCreating(function (User $user) use ($code) {
-            $otpService = app(OtpManagerService::class);
-            $otpService->send($user->email, 'user', OtpType::SIGNIN);
-            $otpDto   = new OtpDto($code, $this->trackingCode);
-            $cacheKey = sprintf('otp_%s_%s_%s_%s', $user->email, 'user', 'value', OtpType::SIGNIN->value);
-            cache()->put($cacheKey, $otpDto);
+        return $this->afterCreating(function (User $user) use ($code): void {
+            $this->seedSigninOtp($user->phone, 'user', $code);
         });
     }
 }

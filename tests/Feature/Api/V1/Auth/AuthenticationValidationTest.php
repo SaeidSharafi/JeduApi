@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Data\OtpManager\OtpDto;
 use App\Enums\System\OtpType;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
+use App\Services\OtpManagerService;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function (): void {
@@ -50,7 +49,7 @@ test('otp request requires valid otp_type', function (): void {
 
 test('otp verification requires valid otp_type', function (): void {
     $user = User::factory()->create();
-    Cache::put('otp_test@example.com_user_value_SIGNIN', new OtpDto($this->otpCode, $this->trackingCode), 300);
+    putCachedOtp($user->phone, 'user', OtpType::SIGNIN, $this->otpCode, $this->trackingCode);
 
     $response = $this->postJson('/api/v1/auth/otp/verify', [
         'identifier' => 'test@example.com',
@@ -65,7 +64,7 @@ test('otp verification requires valid otp_type', function (): void {
 
 test('otp verification fails with wrong otp', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
-    Cache::put('otp_test@example.com_user_value_SIGNIN', new OtpDto($this->otpCode, $this->trackingCode), 300);
+    putCachedOtp($user->phone, 'user', OtpType::SIGNIN, $this->otpCode, $this->trackingCode);
 
     $response = $this->postJson('/api/v1/auth/otp/verify', [
         'identifier'    => 'test@example.com',
@@ -80,7 +79,7 @@ test('otp verification fails with wrong otp', function (): void {
 
 test('otp verification fails after max attempts', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
-    Cache::put("otp_{$user->phone}_user_value_SIGNIN", new OtpDto($this->otpCode, $this->trackingCode), 300);
+    putCachedOtp($user->phone, 'user', OtpType::SIGNIN, $this->otpCode, $this->trackingCode);
 
     // Try multiple times
     for ($i = 0; $i < 4; $i++) {
@@ -96,7 +95,7 @@ test('otp verification fails after max attempts', function (): void {
     $response->assertStatus(422);
 
     // Verify OTP has been deleted after max attempts
-    expect(Cache::get("otp_{$user->phone}_user_value_SIGNIN"))->toBeNull();
+    expect(app(OtpManagerService::class)->getVerifyCode($user->phone, 'user', OtpType::SIGNIN))->toBeNull();
 });
 
 test('password login requires valid credentials', function (): void {

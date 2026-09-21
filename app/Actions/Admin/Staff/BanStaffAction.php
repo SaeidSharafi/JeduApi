@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Staff;
 
+use App\Models\PersonalAccessToken;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 
@@ -14,15 +15,22 @@ final readonly class BanStaffAction
      */
     public function handle(Staff $staff): Staff
     {
-        return DB::transaction(function () use ($staff): Staff {
+        $identifiers = DB::transaction(function () use ($staff): array {
             $staff->update([
                 'is_banned' => true,
                 'banned_at' => now(),
             ]);
 
+            $identifiers = PersonalAccessToken::cacheIdentifiersFor($staff);
+
             $staff->tokens()->delete();
 
-            return $staff->fresh();
+            return $identifiers;
         });
+
+        // Only once the ban and the revoke are committed; see forgetCacheFor().
+        PersonalAccessToken::forgetCachedIdentifiers($identifiers);
+
+        return $staff->fresh();
     }
 }

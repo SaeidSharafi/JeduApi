@@ -18,10 +18,10 @@ use App\Models\Refund;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
 use App\Services\Provisioning\EnrollmentRevocationService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use SmartCache\Facades\SmartCache;
 use Throwable;
 
 final class CreateRefundAction
@@ -37,7 +37,7 @@ final class CreateRefundAction
     {
         $lockKey = "refund_order_item_{$data->order_item_id}";
 
-        return SmartCache::lock($lockKey, 15)->block(5, function () use ($data) {
+        return Cache::lock($lockKey, 15)->block(5, function () use ($data) {
             $orderItem = OrderItem::with(['order.payments', 'enrollment'])->findOrFail($data->order_item_id);
             $order     = $orderItem->order;
 

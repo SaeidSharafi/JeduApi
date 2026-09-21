@@ -32,7 +32,6 @@
             <file>app/Attributes/DiscountHandler.php</file>
             <file>app/Attributes/ProductDiscountHandler.php</file>
             <file>app/Console/Commands/RegenerateDiscountPrices.php</file>
-            <file>app/Console/Commands/Discounts/ClearHandlerCache.php</file>
             <file>app/Data/Casts/AdvancedDateTimeInterfaceCast.php</file>
             <file>app/Services/Payment/SimulatorPaymentProcessor.php</file>
             <file>app/Services/Testing/E2eResetState.php</file>

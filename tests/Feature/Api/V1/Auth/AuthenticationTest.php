@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Data\OtpManager\OtpDto;
 use App\Enums\System\OtpType;
 use App\Models\User;
 use App\Notifications\Auth\OtpEmailNotification;
 use App\Notifications\Auth\OtpSmsNotification;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -222,7 +220,7 @@ test('user can verify otp and login with phone', function (): void {
     $user         = User::factory()->create(['phone' => '09301234567']);
     $trackingCode = 'test-tracking';
 
-    Cache::put('otp_09301234567_user_value_SIGNIN', new OtpDto($this->otpCode, $trackingCode), 300);
+    putCachedOtp('09301234567', 'user', OtpType::SIGNIN, $this->otpCode, $trackingCode);
 
     $response = $this->postJson(route('api.v1.auth.otp-verify'), [
         'identifier'    => '09301234567',

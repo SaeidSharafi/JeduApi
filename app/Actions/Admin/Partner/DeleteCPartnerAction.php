@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 final class DeleteCPartnerAction
 {
+    public function __construct(private readonly ForgetPartnerCachesAction $forgetCaches) {}
+
     public function handle(Partner $partner): void
     {
         DB::transaction(function () use ($partner): void {
@@ -16,5 +18,7 @@ final class DeleteCPartnerAction
             $partner->delete();
             $image?->delete();
         });
+
+        $this->forgetCaches->handle();
     }
 }

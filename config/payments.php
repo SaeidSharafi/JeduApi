@@ -25,11 +25,11 @@ return [
     */
 
     'mellat' => [
-        'enabled'                 => true,
-        'shop_enabled'            => true,
-        'label'                   => 'درگاه ملت',
-        'description'             => null,
-        'icon'                    => null,
+        'enabled'      => true,
+        'shop_enabled' => true,
+        'label'        => 'درگاه ملت',
+        'description'  => null,
+        'icon'         => null,
 
         'ims_bank_account_number' => env('MELLAT_IMS_BANK_ACCOUNT_NUMBER'),
         'server_url'              => env('MELLAT_SERVER_URL', 'https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl'),
@@ -40,10 +40,10 @@ return [
         'test_gateway_url' => env('MELLAT_TEST_GATEWAY_URL',
             'https://sandbox.banktest.ir/mellat/bpm.shaparak.ir/pgwchannel/startpay.mellat'),
         'config' => [
-            'terminal_id'             => env('MELLAT_TERMINAL_ID'),
-            'username'                => env('MELLAT_USERNAME'),
-            'password'                => env('MELLAT_PASSWORD'),
-            'test_mode'               => env('MELLAT_TEST_MODE', false),
+            'terminal_id' => env('MELLAT_TERMINAL_ID'),
+            'username'    => env('MELLAT_USERNAME'),
+            'password'    => env('MELLAT_PASSWORD'),
+            'test_mode'   => env('MELLAT_TEST_MODE', false),
         ],
     ],
 
@@ -79,7 +79,7 @@ return [
             'password'      => env('DIGIPAY_PASSWORD'),
             'sandbox_mode'  => (bool) env('DIGIPAY_SANDBOX_MODE', false),
         ],
-        'endpoints'            => [
+        'endpoints' => [
             'production' => [
                 'base_url' => 'https://api.mydigipay.com',
                 'web_url'  => 'https://app.mydigipay.ir',
@@ -154,9 +154,13 @@ return [
         |--------------------------------------------------------------------------
         | Token Cache Configuration
         |--------------------------------------------------------------------------
+        |
+        | The access token is treated as expired `buffer` seconds before the
+        | `expires_in` the OAuth endpoint reports, so a token is never reused
+        | after the gateway has stopped honouring it.
+        |
         */
         'token_cache' => [
-            'key'    => 'digipay_access_token',
             'buffer' => 300, // Refresh token 5 minutes before expiry
         ],
     ],
@@ -181,7 +185,7 @@ return [
 
     'redirect' => [
         'shopdomain' => env('FRONTEND_SHOP_DOMAIN', 'http://localhost:3000'),
-        'order' => env('FRONTEND_ORDER_PAYMENT_URL', '/profile/student/financial-reports/transaction-details'),
-        'topup' => env('FRONTEND_TOPUP_PAYMENT_URL', '/profile/student/financial-reports/payment-details'),
+        'order'      => env('FRONTEND_ORDER_PAYMENT_URL', '/profile/student/financial-reports/transaction-details'),
+        'topup'      => env('FRONTEND_TOPUP_PAYMENT_URL', '/profile/student/financial-reports/payment-details'),
     ],
 ];

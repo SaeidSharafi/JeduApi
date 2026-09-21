@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Product;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Product\ProductUpdateData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\BundleReviewReasonEnum;
+use App\Enums\System\CacheTag;
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
 use App\Models\Product;
 use App\Services\BundleAvailabilityPropagationService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use SmartCache\Facades\SmartCache;
 
 final readonly class UpdateProductAction
 {
     public function __construct(
         private BundleAvailabilityPropagationService $bundlePropagation,
+        private CacheStore $cache,
     ) {}
 
     public function handle(ProductUpdateData $data, Product $product): Product
@@ -29,7 +32,7 @@ final readonly class UpdateProductAction
         // remains the hard DB backstop.
         $lockKey = "publish_productable_{$product->productable_type}_{$product->productable_id}";
 
-        $product = SmartCache::lock($lockKey, 15)->block(5, function () use ($data, $product): Product {
+        $product = Cache::lock($lockKey, 15)->block(5, function () use ($data, $product): Product {
             return DB::transaction(function () use ($data, $product): Product {
                 $product->update($data->except('categories')->toArray());
                 $product->categories()->sync($data->categories);
@@ -42,6 +45,8 @@ final readonly class UpdateProductAction
         ProductCacheInvalidated::dispatch($product->id);
         ProductAvailabilityCacheInvalidated::dispatch([$product->id]);
         ProductSearchIndexInvalidated::dispatch([$product->id]);
+
+        $this->cache->invalidate(CacheTag::Catalog);
 
         $reasons = [];
         if ($before->term_id !== $product->term_id) {

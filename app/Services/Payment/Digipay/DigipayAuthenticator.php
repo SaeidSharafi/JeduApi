@@ -4,30 +4,32 @@ declare(strict_types=1);
 
 namespace App\Services\Payment\Digipay;
 
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheKey;
 use App\Exceptions\Gateway\DigipayException;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 final class DigipayAuthenticator
 {
-    private const CACHE_KEY = 'digipay_access_token';
-
     public function __construct(
         private DigipayConfigRepository $config,
+        private CacheStore $cache,
     ) {}
 
     public function getAccessToken(): string
     {
-        if ($token = Cache::get(self::CACHE_KEY)) {
-            return $token;
+        $cached = $this->cache->get(CacheKey::DigipayAccessToken);
+
+        // The payload carries its own expiry: the registry lifetime is only an upper
+        // bound, and a token must never be served after the gateway expires it.
+        if (is_array($cached)
+            && is_string($cached['token'] ?? null)
+            && $cached['token'] !== ''
+            && (int) ($cached['expires_at'] ?? 0) > time()) {
+            return $cached['token'];
         }
 
         return $this->fetchAndCacheToken();
-    }
-
-    public function clearToken(): void
-    {
-        Cache::forget(self::CACHE_KEY);
     }
 
     private function fetchAndCacheToken(): string
@@ -49,11 +51,14 @@ final class DigipayAuthenticator
             throw new DigipayException(__('payment_gateways.digipay.errors.authentication_failed'), $response->status());
         }
 
-        $buffer = config('payments.digipay.token_cache.buffer', 300);
-        $ttl    = max(1, ((int) ($response['expires_in'] ?? 3600)) - $buffer);
+        $expiresIn = (int) ($response['expires_in'] ?? 3600);
+        $buffer    = (int) config('payments.digipay.token_cache.buffer', 300);
 
-        Cache::put(self::CACHE_KEY, $response['access_token'], $ttl);
+        $this->cache->put(CacheKey::DigipayAccessToken, [], [
+            'token'      => (string) $response['access_token'],
+            'expires_at' => time() + max(1, $expiresIn - $buffer),
+        ]);
 
-        return $response['access_token'];
+        return (string) $response['access_token'];
     }
 }

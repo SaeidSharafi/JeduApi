@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 final class CreateDiscountPromotionAction
 {
+    public function __construct(private readonly InvalidateDiscountCachesAction $invalidateCaches) {}
+
     public function execute(DiscountPromotionCreateData $data): DiscountPromotion
     {
         $promotion = DB::transaction(function () use ($data): DiscountPromotion {
@@ -59,6 +61,8 @@ final class CreateDiscountPromotionAction
         if ($promotion->type === DiscountTypeEnum::PRODUCT_SPECIFIC) {
             RegeneratePromotionDiscountPricesJob::dispatch($promotion);
         }
+
+        $this->invalidateCaches->handle();
 
         return $promotion;
     }

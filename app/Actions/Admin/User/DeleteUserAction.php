@@ -8,6 +8,7 @@ use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PersonalAccessToken;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Models\WalletTransaction;
@@ -23,7 +24,7 @@ final readonly class DeleteUserAction
      */
     public function handle(User $user): void
     {
-        DB::transaction(function () use ($user): void {
+        $identifiers = DB::transaction(function () use ($user): array {
             if ($user->teacherData()->exists()) {
                 throw new ModelHasRelationshipDataException(relatedModel: Teacher::class);
             }
@@ -47,9 +48,17 @@ final readonly class DeleteUserAction
             // Mediable pivot rows and Sanctum tokens have no DB-level cascade and
             // would otherwise linger after the user is gone.
             $user->media()->detach();
+
+            $identifiers = PersonalAccessToken::cacheIdentifiersFor($user);
+
             $user->tokens()->delete();
             $user->wallet?->delete();
             $user->delete();
+
+            return $identifiers;
         });
+
+        // Only once the delete is committed; see forgetCacheFor().
+        PersonalAccessToken::forgetCachedIdentifiers($identifiers);
     }
 }

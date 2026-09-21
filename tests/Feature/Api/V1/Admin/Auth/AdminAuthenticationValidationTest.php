@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Data\OtpManager\OtpDto;
 use App\Enums\System\OtpType;
 use App\Models\Staff;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function (): void {
@@ -50,10 +48,7 @@ test('staff otp request requires valid otp_type', function (): void {
 
 test('staff otp verification requires valid otp_type', function (): void {
     $staff = Staff::factory()->create();
-    Cache::put('otp_staff@example.com_staff_value_SIGNIN', [
-        'code'          => $this->OtpCode,
-        'tracking_code' => 'test-tracking',
-    ], 300);
+    putCachedOtp($staff->phone, 'staff', OtpType::SIGNIN, $this->OtpCode, 'test-tracking');
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => 'staff@example.com',
@@ -81,8 +76,7 @@ test('staff otp verification requires valid identifier', function (): void {
 
 test('staff otp verification fails with wrong otp', function (): void {
     $staff = Staff::factory()->create(['email' => 'staff@example.com']);
-    Cache::put('otp_staff@example.com_staff_value_SIGNIN',
-        new OtpDto($this->OtpCode, $this->trackingCode), 300);
+    putCachedOtp($staff->phone, 'staff', OtpType::SIGNIN, $this->OtpCode, $this->trackingCode);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier'    => 'staff@example.com',
@@ -97,11 +91,16 @@ test('staff otp verification fails with wrong otp', function (): void {
 
 test('staff otp verification fails with expired otp', function (): void {
     $staff = Staff::factory()->create(['email' => 'staff@example.com']);
-    // Put expired OTP in cache
-    Cache::put('otp_staff@example.com_staff_value_SIGNIN', [
-        'code'          => $this->OtpCode,
-        'tracking_code' => 'test-tracking',
-    ], -1); // Expired
+
+    // A code that is still stored but whose send marker is far in the past.
+    putCachedOtp(
+        $staff->phone,
+        'staff',
+        OtpType::SIGNIN,
+        $this->OtpCode,
+        'test-tracking',
+        now()->subDay()->timestamp,
+    );
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier'    => 'staff@example.com',

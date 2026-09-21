@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\Promotion;
 
+use App\Actions\Admin\Discounts\UpdateDiscountPromotionStatusAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Discounts\DiscountPromotionData;
 use App\Http\Controllers\Controller;
@@ -26,14 +27,10 @@ final class DiscountPromotionStatusUpdateController extends Controller
      * @responseFile 403 resources/responses/403.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function __invoke(DiscountPromotion $discountPromotion): ApiResponseInterface
+    public function __invoke(DiscountPromotion $discountPromotion, UpdateDiscountPromotionStatusAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $discountPromotion);
-        $discountPromotion->update([
-            'is_active' => ! $discountPromotion->is_active,
-        ]);
-        $discountPromotion->load('rules', 'coupons');
 
-        return apiResponse()->success(DiscountPromotionData::from($discountPromotion->fresh()));
+        return apiResponse()->success(DiscountPromotionData::from($action->handle($discountPromotion)));
     }
 }

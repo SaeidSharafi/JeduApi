@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Product;
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\BundleReviewReasonEnum;
+use App\Enums\System\CacheTag;
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
@@ -15,7 +17,10 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class ArchiveProductAction
 {
-    public function __construct(private BundleAvailabilityPropagationService $bundlePropagation) {}
+    public function __construct(
+        private BundleAvailabilityPropagationService $bundlePropagation,
+        private CacheStore $cache,
+    ) {}
 
     /**
      * Archive the product, invalidate its caches, and require review of any
@@ -32,6 +37,8 @@ final readonly class ArchiveProductAction
         ProductCacheInvalidated::dispatch($product->id);
         ProductAvailabilityCacheInvalidated::dispatch([$product->id]);
         ProductSearchIndexInvalidated::dispatch([$product->id]);
+
+        $this->cache->invalidate(CacheTag::Catalog);
 
         $this->bundlePropagation->requireReviewForComponentProducts(
             [$product->id],

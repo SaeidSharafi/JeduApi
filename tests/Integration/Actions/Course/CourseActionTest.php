@@ -147,7 +147,7 @@ describe('CourseActionTest', function (): void {
                 'slug'       => 'course-to-be-deleted',
             ]);
 
-        $action = new DeleteCourseAction();
+        $action = app(DeleteCourseAction::class);
         $action->handle($course);
 
         $deletedCourse = Course::where('slug', 'course-to-be-deleted')->first();

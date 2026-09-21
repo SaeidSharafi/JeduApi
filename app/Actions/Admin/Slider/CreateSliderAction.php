@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Slider;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Slider\SliderCreateData;
+use App\Enums\System\CacheKey;
 use App\Models\Slider;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Media;
 
 final class CreateSliderAction
 {
+    public function __construct(private readonly CacheStore $cache) {}
+
     public function handle(SliderCreateData $data): Slider
     {
-        return DB::transaction(function () use ($data): Slider {
+        $slider = DB::transaction(function () use ($data): Slider {
             $image = null;
             if ($data->image) {
                 $image = Media::find($data->image);
@@ -26,9 +30,11 @@ final class CreateSliderAction
             $slider = Slider::query()->create($sliderData)->fresh();
             $slider->syncMedia($image, 'image');
 
-            $slider->refresh();
-
-            return $slider;
+            return $slider->refresh();
         });
+
+        $this->cache->forget(CacheKey::Slider);
+
+        return $slider;
     }
 }

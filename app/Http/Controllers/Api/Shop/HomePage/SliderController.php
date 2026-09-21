@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\HomePage;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\HomePage\SliderData;
-use App\Enums\System\CacheKeysEnum;
+use App\Enums\System\CacheKey;
 use App\Http\Controllers\Controller;
 use App\Models\Slider;
-use App\Services\SWRCacheService;
 use Illuminate\Support\Collection;
 
 /**
@@ -19,6 +19,8 @@ use Illuminate\Support\Collection;
  */
 final class SliderController extends Controller
 {
+    public function __construct(private readonly CacheStore $cache) {}
+
     /**
      * List Sliders
      *
@@ -28,7 +30,7 @@ final class SliderController extends Controller
      */
     public function __invoke(): ApiResponseInterface
     {
-        $sliders = SWRCacheService::rememberHomepageContent(CacheKeysEnum::Slider->value,
+        $sliders = $this->cache->flexible(CacheKey::Slider, [],
             fn (): Collection => SliderData::collect(
                 Slider::query()->active()->orderBy('order')->get()
             )

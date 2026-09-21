@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\System\CacheTag;
 use App\Models\Blog\BlogPost;
 use Illuminate\Console\Command;
 
@@ -13,6 +15,11 @@ final class PublishPostCommand extends Command
     protected $signature = 'post:publish';
 
     protected $description = 'publish posts that has publish_at in the past and status is draft';
+
+    public function __construct(private readonly CacheStore $cache)
+    {
+        parent::__construct();
+    }
 
     public function handle(): void
     {
@@ -32,6 +39,10 @@ final class PublishPostCommand extends Command
         }
 
         $updatedCount = $postsToPublish->update(['status' => PublicationStatusEnum::PUBLISHED]);
+
+        // The mass update bypasses the model events and blog post actions, so the
+        // search results cached for the old status are cleared here explicitly.
+        $this->cache->invalidate(CacheTag::Search);
 
         $this->info("Successfully published {$updatedCount} post(s).");
     }

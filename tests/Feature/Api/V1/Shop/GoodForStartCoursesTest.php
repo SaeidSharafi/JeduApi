@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Actions\Admin\Product\ArchiveProductAction;
+use App\Http\Controllers\Api\Shop\Product\GoodForStartCoursesController;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\Product;
 use App\Models\Seminar;
+
+covers(GoodForStartCoursesController::class);
 
 describe('GoodForStartCoursesController', function (): void {
     it('returns a list of good-for-start courses for a given category', function (): void {
@@ -75,5 +79,28 @@ describe('GoodForStartCoursesController', function (): void {
 
         $responseData = $response->json('data');
         expect(count($responseData))->toBe(3);
+    });
+
+    it('reflects a product change on the next request instead of serving the stale listing', function (): void {
+        $category = Category::factory()->create(['slug' => 'freshness']);
+        $course   = Course::factory()->create();
+        $product  = Product::factory()
+            ->withCourse($course)
+            ->withDeliveryOptions(1)
+            ->create();
+        $course->categories()->syncWithPivotValues([$category], ['good_for_start' => true]);
+
+        $url = "/api/v1/shop/good-for-start/categories/{$category->slug}/courses";
+
+        $this->getJson($url)->assertStatus(200)->assertJsonCount(1, 'data');
+
+        Event::fake([
+            App\Events\ProductCacheInvalidated::class,
+            App\Events\ProductAvailabilityCacheInvalidated::class,
+            App\Events\ProductSearchIndexInvalidated::class,
+        ]);
+        app(ArchiveProductAction::class)->handle($product);
+
+        $this->getJson($url)->assertStatus(200)->assertJsonCount(0, 'data');
     });
 });

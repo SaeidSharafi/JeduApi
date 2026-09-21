@@ -204,8 +204,8 @@
 - `update(DiscountPromotionUpdateData $request, DiscountPromotion $discountPromotion)`: **Route:** `PUT /api/v1/admin/discount-promotion/{discount_promotion}` - **Response DTO:** DiscountPromotionData
 - `destroy(DiscountPromotion $discountPromotion)`: **Route:** `DELETE /api/v1/admin/discount-promotion/{discount_promotion}` - **Delegates to:** Discount promotion deletion
 
-### DiscountPromotionStatusUpdateController (`app/Http/Controllers/Api/Admin/DiscountPromotionStatusUpdateController.php`)
-- `__invoke(DiscountPromotionStatusData $request, DiscountPromotion $discountPromotion)`: **Route:** `PUT /api/v1/admin/discount-promotion/{discount_promotion}/status` - **Request DTO:** DiscountPromotionStatusData - **Response DTO:** DiscountPromotionData
+### DiscountPromotionStatusUpdateController (`app/Http/Controllers/Api/Admin/Promotion/DiscountPromotionStatusUpdateController.php`)
+- `__invoke(DiscountPromotion $discountPromotion, UpdateDiscountPromotionStatusAction $action)`: **Route:** `PUT /api/v1/admin/discount-promotions/{discountPromotion}/status` - Toggles the promotion's active flag through `UpdateDiscountPromotionStatusAction` (which reindexes product-specific prices and bumps `CacheTag::Catalog`, `CacheTag::Search` and `CacheTag::Discounts`) - **Response DTO:** DiscountPromotionData
 
 ### DiscountPromotionStatisticsController (`app/Http/Controllers/Api/Admin/DiscountPromotionStatisticsController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/admin/discount-promotion-statistics` - **Response DTO:** DiscountPromotionStatisticsData
@@ -263,7 +263,7 @@
 - **Response DTO:** `SettingData` collection post-update (with secrets redacted).
 
 #### ContactInfoController (`app/Http/Controllers/Api/Admin/Content/ContactInfoController.php`)
-- `show()`: **Route:** `GET /api/v1/admin/settings/contact-info` - **Response DTO:** ContactInfoData sourced from SmartCache-backed SettingsService
+- `show()`: **Route:** `GET /api/v1/admin/settings/contact-info` - **Response DTO:** ContactInfoData sourced from the cache-gateway-backed SettingsService
 - `update(ContactInfoUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/contact-info` - **Request DTO:** ContactInfoUpdateData - **Response DTO:** ContactInfoData after cache invalidation
 
 #### AboutUsInfoController (`app/Http/Controllers/Api/Admin/Content/AboutUsInfoController.php`)
@@ -546,7 +546,7 @@ Every DB-backed select-option endpoint is paginated with Laravel's `paginate()`:
 - `__invoke(Enrollment $enrollment)`: **Route:** `GET /api/v1/shop/student/courses/{enrollment:uuid}/join` - Lazy-generates and returns the join URL for the enrollment's delivery method, and 404s when the enrollment belongs to another customer. **Delegates to:** GetJoinUrlAction. **Response DTO:** `JoinUrlData` — `type: skyroom` (login URL built from the enrollment's `skyroom` provisioning data) or `type: niliroom` for a `live_session_niliroom` seminar, whose meeting join URL is issued by the panel per request and carries a null `expires_at`. A `live_session_niliroom` seminar returns 503 when `nili_room_id` is missing or not a non-empty string (`messages.provisioning.niliroom_room_id_missing`) or when the panel is disabled/unconfigured (`messages.enrollments.niliroom_not_configured`); there is no BBB fallback (ADR 0013). A delivery method with no join flow returns 422 (`messages.enrollment.delivery_no_join_url`).
 
 ##### QuizController (`app/Http/Controllers/Api/Shop/Student/QuizController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/shop/student/quizzes` - Returns list of user's quizzes with completion states, sourced from Moodle integration via `provisioning_data`.
+- `__invoke()`: **Route:** `GET /api/v1/shop/student/quizzes` - Returns list of user's quizzes with completion states, sourced from Moodle integration. Cached per user through the `CacheStore` gateway under `CacheKey::StudentQuizzes` (`CacheTag::Content`); the key is forgotten by Moodle progress sync and by provisioning/revocation for that user.
 
 ##### DigitalAssetEnrollmentController (`app/Http/Controllers/Api/Shop/Student/DigitalAssetEnrollmentController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/shop/student/digital-assets` - Lists user's enrolled digital assets with download availability.
@@ -616,13 +616,13 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - `show(HomePageBlock $homePageBlock, GetHomePageBlockAction $action)`: **Route:** `GET /api/v1/shop/home-page-blocks/{home_page_block}` - **Response DTO:** HomePageBlockData for the requested block, including curated and dynamic list payloads
 
 #### SliderController (`app/Http/Controllers/Api/Shop/HomePage/SliderController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/shop/sliders` - **Response DTO:** SliderData collection cached via SmartCache using `CacheKeysEnum::Slider`
+- `__invoke()`: **Route:** `GET /api/v1/shop/sliders` - **Response DTO:** SliderData collection cached through the `CacheStore` gateway under `CacheKey::Slider`
 
 #### PartnerController (`app/Http/Controllers/Api/Shop/HomePage/PartnerController.php`)
 - `__invoke(Request $request)`: **Route:** `GET /api/v1/shop/partners` - **Query Params:** `show_in=home|course` - **Response DTO:** PartnerData collection filtered by display location and cached per `PartnerShowInEnum`
 
 #### StudentStoryController (`app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php`)
-- `__invoke(StudentStoryRequestData $request)`: **Route:** `GET /api/v1/shop/student-stories` - **Query Params:** `course_slug`, `category_slug`, `featured_only`, optional `limit`. Filters visible stories by requested course/category (matching both direct course relations and linked products) and falls back to featured stories when a requested slug yields no records. **Response DTO:** `StudentStoryData` collection ordered by `display_order` and cached per-parameter via `SWRCacheService` with wildcard invalidation support.
+- `__invoke(StudentStoryRequestData $request)`: **Route:** `GET /api/v1/shop/student-stories` - **Query Params:** `course_slug`, `category_slug`, `featured_only`, optional `limit`. Filters visible stories by requested course/category (matching both direct course relations and linked products) and falls back to featured stories when a requested slug yields no records. **Response DTO:** `StudentStoryData` collection ordered by `display_order` and cached per parameter hash through `CacheStore::flexible()` under `CacheKey::StudentStory` (`CacheTag::HomePage`).
 
 #### GatewayCallbackController (`app/Http/Controllers/Api/Shop/Payment/GatewayCallbackController.php`)
 - `handle(Request $request, Payment $payment, GatewayCallbackData $data, VerifyPaymentAction $action)`: **Route:** `GET|POST /api/v1/shop/payment/gateway/callback/{payment}` - Accepts gateway callbacks via route-bound Payment UUID. Logs payloads, delegates to `VerifyPaymentAction` with Payment model + raw request data. Redirects customers to the shop details page for the payment purpose: `{payments.redirect.shopdomain}/{payments.redirect.order}/{order.increment_id}` for `ORDER`, `{payments.redirect.shopdomain}/{payments.redirect.topup}/{payment.uuid}` for `WALLET_TOPUP`. Both verified and failed-status callbacks target the same details page; `PaymentExceptionContract` and `Throwable` exceptions append `payment` + `error` query params to that URL instead of redirecting to a separate failure page.
@@ -646,7 +646,7 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - `show(Product $product)`: **Route:** `GET /api/v1/shop/bundles/{product:slug}` - Resolves the Product slug and returns only eligible Bundle Products. `BundleDetailData` exposes every available composite option, component Productable/Product/PDO identity, sanitized fulfillment presentation, allocations, availability, and server-calculated Bundle pricing. Bundles are intentionally absent from global search and category result contracts.
 
 #### GoodForStartCoursesController (`app/Http/Controllers/Api/Shop/Product/GoodForStartCoursesController.php`)
-- `__invoke(Category $category, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/good-for-start/category/{category:slug}/courses` - **Query Param:** `limit` (default 10) - **Delegates to:** Cached `ProductQueryService::goodForStart()` lookup within SmartCache using `CacheKeysEnum::GoodForStart` - **Response DTO:** `ProductCardData` collection
+- `__invoke(Category $category, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/good-for-start/category/{category:slug}/courses` - **Query Param:** `limit` (default 10) - **Delegates to:** Cached `ProductQueryService::goodForStart()` lookup through the `CacheStore` gateway under `CacheKey::GoodForStart` (`CacheTag::Catalog`) - **Response DTO:** `ProductCardData` collection
 
 #### ProductDeliveryOptionController (`app/Http/Controllers/Api/Shop/Product/ProductDeliveryOptionController.php`)
 - `__invoke(ProductDeliveryOption $productDeliveryOption, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/product-delivery-option/{productDeliveryOption:uuid}` - Loads the delivery option with its product/productable/media and returns its card DTO for direct SKU display (used by checkout confirmation and shared delivery-option links), including `price_data`, `prepayment_amount`, and `is_prepayment_available`. **Response DTO:** `ProductDeliveryOptionCardData` in the standard API envelope.
@@ -655,7 +655,7 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - `__invoke(SearchData $request, GlobalSearchService $service, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/search` - **Request DTO:** SearchData (query, per_page, result_types, productable_type, filter.*) - **Delegates to:** `GlobalSearchService::search()` with Typesense/PGroonga fallback; maps products to `ProductCardData` and blog posts to `BlogPostCardData` (each tagged with `type`)
 
 #### SuggestSearchController (`app/Http/Controllers/Api/Shop/SuggestSearchController.php`)
-- `__invoke(SearchSuggestRequestData $request, GlobalSearchService $service)`: **Route:** `GET /api/v1/shop/search/suggest` - **Request DTO:** SearchSuggestRequestData (`q`, optional `limit`) - **Delegates to:** `GlobalSearchService::suggest()` using SWR cache & Typesense autocomplete - **Response:** Array of suggestion strings
+- `__invoke(SearchSuggestRequestData $request, GlobalSearchService $service)`: **Route:** `GET /api/v1/shop/search/suggest` - **Request DTO:** SearchSuggestRequestData (`q`, optional `limit`) - **Delegates to:** `GlobalSearchService::suggest()` caching through the `CacheStore` gateway under `CacheKey::SearchSuggest` with Typesense autocomplete - **Response:** Array of suggestion strings
 
 #### BlogPostController (`app/Http/Controllers/Api/Shop/Blog/BlogPostController.php`)
 - `index(BlogPostListRequestData $request)`: **Route:** `GET /api/v1/shop/blog/posts` - **Request DTO:** BlogPostListRequestData (supports `is_featured`, `category_slug`, `sortBy=published_at|created_at|popularity`, `sortOrder`, pagination controls) - **Response DTO:** Paginated `BlogPostCardData` containing author summary, rating aggregates, Jalali `published_at`, thumbnail URL (scoped to tag `cover` via `getAllMedia(urlOnly: true, onlyTags: ['cover'])`), featured flag, and attached categories. Only posts with `status=PUBLISHED` and `published_at <= now()` surface and the endpoint supports category slug filtering through `whereHas`. `sortBy=popularity` orders by `average_rating DESC` with nulls last.

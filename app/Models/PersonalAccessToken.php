@@ -4,11 +4,20 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheKey;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
 final class PersonalAccessToken extends SanctumPersonalAccessToken
 {
+    /**
+     * Cached in place of a token that resolves to nothing, so a rejected bearer
+     * token is answered from the cache instead of the database. The gateway
+     * never stores null, so a miss needs an explicit sentinel.
+     */
+    private const string MISS = '_null_';
+
     protected bool $isDataCached = true;
 
     /**
@@ -21,9 +30,13 @@ final class PersonalAccessToken extends SanctumPersonalAccessToken
         $plainToken  = str_contains($token, '|') ? explode('|', $token, 2)[1] : $token;
         $hashedToken = hash('sha256', $plainToken);
 
-        $tokenInstance = cache()->remember("AccessToken::{$hashedToken}", 360, function () use ($token) {
-            return parent::findToken($token) ?: '_null_';
-        });
+        $tokenInstance = self::cacheStore()->remember(
+            CacheKey::AccessToken,
+            ['hash' => $hashedToken],
+            function () use ($token): SanctumPersonalAccessToken|string {
+                return parent::findToken($token) ?? self::MISS;
+            },
+        );
 
         if ($tokenInstance instanceof SanctumPersonalAccessToken) {
             return $tokenInstance;
@@ -32,13 +45,70 @@ final class PersonalAccessToken extends SanctumPersonalAccessToken
         return null;
     }
 
+    /**
+     * Drop the cached lookup and user snapshot of every token a model owns.
+     *
+     * Banning or deleting an account revokes its tokens with a bulk delete,
+     * which fires no model events. Callers that run inside a transaction must
+     * snapshot with {@see self::cacheIdentifiersFor()} first and call
+     * {@see self::forgetCachedIdentifiers()} only after the commit: forgetting
+     * before it lets a concurrent request re-cache a token that is still live
+     * in the other connection, and the ban then never clears it.
+     */
+    public static function forgetCacheFor(User|Staff $tokenable): void
+    {
+        self::forgetCachedIdentifiers(self::cacheIdentifiersFor($tokenable));
+    }
+
+    /**
+     * Snapshot the cache identifiers of every token a model owns, before a bulk delete.
+     *
+     * @return list<array{id: int|string, token: string}>
+     */
+    public static function cacheIdentifiersFor(User|Staff $tokenable): array
+    {
+        return $tokenable->tokens()->get(['id', 'token'])
+            ->map(static fn (SanctumPersonalAccessToken $token): array => [
+                'id'    => $token->id,
+                'token' => $token->token,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Drop both cached entries of every token in a snapshot taken before its bulk delete.
+     *
+     * @param  list<array{id: int|string, token: string}>  $identifiers
+     */
+    public static function forgetCachedIdentifiers(array $identifiers): void
+    {
+        foreach ($identifiers as $identifier) {
+            self::forgetKeys($identifier['token'], $identifier['id']);
+        }
+    }
+
     public function getTokenableAttribute(mixed $value): ?Model
     {
-        return cache()->remember("token_{$this->id}::id_".app()->environment(), 360, function (): ?Model {
-            $this->isDataCached = false;
+        return self::cacheStore()->remember(
+            CacheKey::Tokenable,
+            ['id' => $this->id, 'env' => app()->environment()],
+            function (): ?Model {
+                $this->isDataCached = false;
 
-            return parent::tokenable()->first();
-        });
+                return parent::tokenable()->first();
+            },
+        );
+    }
+
+    /**
+     * Drop both cached entries owned by this token.
+     *
+     * A single model delete (logout) reaches this through the `deleted` event.
+     */
+    public function forgetCache(): void
+    {
+        self::forgetKeys($this->token, $this->id);
     }
 
     /**
@@ -63,10 +133,24 @@ final class PersonalAccessToken extends SanctumPersonalAccessToken
      */
     protected static function booted(): void
     {
-        self::deleted(function ($token): void {
-            // "token" attribute holds the SHA-256 hash in the database
-            cache()->forget('AccessToken::'.$token->token);
-            cache()->forget("token_{$token->id}::id_".app()->environment());
+        self::deleted(function (self $token): void {
+            $token->forgetCache();
         });
+    }
+
+    private static function forgetKeys(string $token, int|string $id): void
+    {
+        $cache = self::cacheStore();
+
+        $cache->forget(CacheKey::AccessToken, ['hash' => $token]);
+        $cache->forget(CacheKey::Tokenable, [
+            'id'  => $id,
+            'env' => app()->environment(),
+        ]);
+    }
+
+    private static function cacheStore(): CacheStore
+    {
+        return app(CacheStore::class);
     }
 }

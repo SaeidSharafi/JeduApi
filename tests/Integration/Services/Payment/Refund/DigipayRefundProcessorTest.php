@@ -13,7 +13,7 @@ use App\Models\Refund;
 use App\Services\Payment\Digipay\Data\RefundResponse;
 use App\Services\Payment\Digipay\DigipayAdminService;
 use App\Services\Payment\Refund\DigipayRefundProcessor;
-use SmartCache\Facades\SmartCache;
+use Illuminate\Support\Facades\Cache;
 
 // ─── Success Cases ────────────────────────────────────────────────────
 
@@ -280,7 +280,7 @@ it('serializes cumulative cap check with payment-level lock', function (): void 
         ->with(5, Mockery::type(Closure::class))
         ->andReturnUsing(fn (int $_timeout, Closure $callback) => $callback());
 
-    SmartCache::shouldReceive('lock')
+    Cache::shouldReceive('lock')
         ->once()
         ->with("digipay_refund_payment_{$payment->id}", 15)
         ->andReturn($lockMock);

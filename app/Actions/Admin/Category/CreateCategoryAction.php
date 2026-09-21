@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Category;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Category\CreateCategoryData;
+use App\Enums\System\CacheTag;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreateCategoryAction
 {
+    public function __construct(private CacheStore $cache) {}
+
     /**
      * Execute the action.
      */
@@ -32,5 +36,7 @@ final readonly class CreateCategoryAction
             }
             $category->save();
         });
+
+        $this->cache->invalidate(CacheTag::HomePage, CacheTag::Catalog, CacheTag::Search);
     }
 }

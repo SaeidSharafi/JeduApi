@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Blog\Post;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Blog\Post\BlogPostCreateData;
 use App\Enums\MediaTagEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\System\CacheTag;
 use App\Models\Blog\BlogPost;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +17,11 @@ use Plank\Mediable\Media;
 
 final readonly class CreateBlogPostAction
 {
+    public function __construct(private CacheStore $cache) {}
+
     public function handle(BlogPostCreateData $data, ?Staff $staff = null): BlogPost
     {
-        return DB::transaction(function () use ($data, $staff): BlogPost {
+        $post = DB::transaction(function () use ($data, $staff): BlogPost {
             // retry Slug to get unique slug if exists
             $slug = $data->slug ?? Str::slug($data->title);
             while (BlogPost::where('slug', $slug)->exists()) {
@@ -69,6 +73,9 @@ final readonly class CreateBlogPostAction
             return $post;
         });
 
+        $this->cache->invalidate(CacheTag::Search);
+
+        return $post;
     }
 
     private function calculateReadTime(string $body): int

@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\Product\Course\ProductFilterData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\System\CacheKey;
 use App\Enums\TermStatusEnum;
 use App\Events\ProductSearchIndexInvalidated;
 use App\Jobs\SynchronizeProductSearchIndexJob;
@@ -235,8 +237,32 @@ it('batch-upserts eligible Products and removes ineligible Products', function (
     $manager->extend('typesense', fn (): RecordingProductScoutEngine => $engine);
     config()->set('scout.driver', 'typesense');
 
-    (new SynchronizeProductSearchIndexJob([$eligible->id, $ineligible->id]))->handle();
+    (new SynchronizeProductSearchIndexJob([$eligible->id, $ineligible->id]))->handle(app(CacheStore::class));
 
     expect($engine->updatedProductIds)->toBe([$eligible->id])
         ->and($engine->deletedProductIds)->toBe([$ineligible->id]);
+});
+
+it('clears cached search pages once the index is synchronized', function (): void {
+    config()->set('scout.driver', 'null');
+
+    $product = Product::withoutSyncingToSearch(fn (): Product => Product::factory()->create([
+        'productable_status'            => PublicationStatusEnum::PUBLISHED->value,
+        'has_published_delivery_option' => true,
+        'is_term_active'                => true,
+    ]));
+
+    $manager = app(EngineManager::class);
+    $manager->forgetDrivers();
+    $manager->extend('typesense', fn (): RecordingProductScoutEngine => new RecordingProductScoutEngine());
+    config()->set('scout.driver', 'typesense');
+
+    $cache = app(CacheStore::class);
+    $cache->put(CacheKey::Search, ['hash' => 'query-hash'], ['stale']);
+    $cache->put(CacheKey::SearchSuggest, ['hash' => 'suggest-hash'], ['stale']);
+
+    (new SynchronizeProductSearchIndexJob([$product->id]))->handle($cache);
+
+    expect($cache->get(CacheKey::Search, ['hash' => 'query-hash']))->toBeNull()
+        ->and($cache->get(CacheKey::SearchSuggest, ['hash' => 'suggest-hash']))->toBeNull();
 });

@@ -58,7 +58,7 @@ final class FullTextSearchProvider extends ServiceProvider
             $columns          = (array) $columns;
 
             // PostgreSQL with PGroonga
-            if ($dbDriver === 'pgsql' && PgroongaService::isPgroongaEnabled()) {
+            if ($dbDriver === 'pgsql' && app(PgroongaService::class)->isPgroongaEnabled()) {
                 if (count($columns) === 1) {
                     $this->whereRaw("\"{$columns[0]}\" &@~ ?", [$value]);
                 } else {
@@ -144,7 +144,7 @@ final class FullTextSearchProvider extends ServiceProvider
             $connectionConfig = config("database.connections.{$driver}");
             $dbDriver         = $connectionConfig['driver'] ?? 'mysql';
 
-            if ($dbDriver === 'pgsql' && PgroongaService::isPgroongaEnabled()) {
+            if ($dbDriver === 'pgsql' && app(PgroongaService::class)->isPgroongaEnabled()) {
                 return $this->orderBy($scoreColumn, $direction);
             }
 
@@ -156,7 +156,7 @@ final class FullTextSearchProvider extends ServiceProvider
             $connectionConfig = config("database.connections.{$driver}");
             $dbDriver         = $connectionConfig['driver'] ?? 'mysql';
 
-            if ($dbDriver === 'pgsql' && PgroongaService::isPgroongaEnabled()) {
+            if ($dbDriver === 'pgsql' && app(PgroongaService::class)->isPgroongaEnabled()) {
                 $table = $table ? "{$table}." : '';
 
                 return $this->addSelect(DB::raw("pgroonga_score({$table}tableoid, {$table}ctid) as {$scoreColumn}"));

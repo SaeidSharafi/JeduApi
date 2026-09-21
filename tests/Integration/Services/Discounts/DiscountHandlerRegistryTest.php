@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\Order\DiscountTypeEnum;
+use App\Enums\System\CacheKey;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Cache;
 use Mockery\MockInterface;
 
-describe('DiscountHandlerRegistry', function (): void {
-    beforeEach(function (): void {
-        Cache::flush();
-    });
+covers(DiscountHandlerRegistry::class);
 
+describe('DiscountHandlerRegistry', function (): void {
     it('loads handlers from cache when not in debug mode and cache exists', function (): void {
         config()->set('app.debug', false);
 
@@ -24,12 +23,9 @@ describe('DiscountHandlerRegistry', function (): void {
             'configMap'         => ['Class1' => 'Config1'],
         ];
 
-        Cache::shouldReceive('get')
-            ->once()
-            ->with(DiscountHandlerRegistry::CACHE_KEY)
-            ->andReturn($cachedData);
+        app(CacheStore::class)->put(CacheKey::DiscountHandlers, [], $cachedData);
 
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         expect($registry->getCartConditionHandlers())->toBe(['key1' => 'Class1']);
         expect($registry->getCartActionHandlers())->toBe(['key2' => 'Class2']);
@@ -42,45 +38,28 @@ describe('DiscountHandlerRegistry', function (): void {
         config()->set('app.debug', false);
         config()->set('discounts.discovery_paths', []);
 
-        Cache::shouldReceive('get')
-            ->once()
-            ->with(DiscountHandlerRegistry::CACHE_KEY)
-            ->andReturn(null);
-
-        Cache::shouldReceive('forever')
-            ->once()
-            ->with(DiscountHandlerRegistry::CACHE_KEY, [
-                'cartConditions'    => [],
-                'cartActions'       => [],
-                'productConditions' => [],
-                'productActions'    => [],
-                'configMap'         => [],
-            ]);
-
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         expect($registry->getCartConditionHandlers())->toBe([]);
         expect($registry->getCartActionHandlers())->toBe([]);
         expect($registry->getProductConditionHandlers())->toBe([]);
         expect($registry->getProductActionHandlers())->toBe([]);
         expect($registry->getHandlerConfigMap())->toBe([]);
+
+        expect(app(CacheStore::class)->get(CacheKey::DiscountHandlers))->toBe([
+            'cartConditions'    => [],
+            'cartActions'       => [],
+            'productConditions' => [],
+            'productActions'    => [],
+            'configMap'         => [],
+        ]);
     });
 
     it('discovers and caches handlers in debug mode', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
-        Cache::shouldReceive('forever')
-            ->once()
-            ->with(DiscountHandlerRegistry::CACHE_KEY, [
-                'cartConditions'    => [],
-                'cartActions'       => [],
-                'productConditions' => [],
-                'productActions'    => [],
-                'configMap'         => [],
-            ]);
-
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
@@ -97,9 +76,7 @@ describe('DiscountHandlerRegistry', function (): void {
                 ->andReturn(false);
         });
 
-        Cache::shouldReceive('forever')->once();
-
-        $registry = new DiscountHandlerRegistry($mockFilesystem);
+        $registry = new DiscountHandlerRegistry($mockFilesystem, app(CacheStore::class));
 
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
@@ -108,9 +85,7 @@ describe('DiscountHandlerRegistry', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
-        Cache::shouldReceive('forever')->once();
-
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         // Since no discovery paths are configured, it should be empty
         expect($registry->getCartConditionHandlers())->toBe([]);
@@ -120,9 +95,7 @@ describe('DiscountHandlerRegistry', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
-        Cache::shouldReceive('forever')->once();
-
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
@@ -131,9 +104,7 @@ describe('DiscountHandlerRegistry', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
-        Cache::shouldReceive('forever')->once();
-
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
@@ -142,9 +113,7 @@ describe('DiscountHandlerRegistry', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []); // Empty to avoid discovering real handlers
 
-        Cache::shouldReceive('forever')->once();
-
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         // With empty discovery paths, no handlers should be found
         expect($registry->getCartConditionHandlers())->toBe([]);
@@ -154,9 +123,7 @@ describe('DiscountHandlerRegistry', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []); // Empty to avoid discovering real handlers
 
-        Cache::shouldReceive('forever')->once();
-
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
@@ -165,9 +132,7 @@ describe('DiscountHandlerRegistry', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
-        Cache::shouldReceive('forever')->once();
-
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
@@ -176,16 +141,14 @@ describe('DiscountHandlerRegistry', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []); // Empty to avoid discovering real handlers
 
-        Cache::shouldReceive('forever')->once();
-
-        $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+        $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
         expect($registry->getHandlerConfigMap())->toBe([]);
     });
 
     describe('getHandlerClassByKey', function (): void {
         beforeEach(function (): void {
-            $this->registry = new DiscountHandlerRegistry(app(Filesystem::class));
+            $this->registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
             // Use reflection to set the handlers for testing
             $reflection = new ReflectionClass($this->registry);
@@ -248,7 +211,7 @@ describe('DiscountHandlerRegistry', function (): void {
 
     describe('individual getter methods', function (): void {
         beforeEach(function (): void {
-            $this->registry = new DiscountHandlerRegistry(app(Filesystem::class));
+            $this->registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
             // Use reflection to set the handlers for testing
             $reflection = new ReflectionClass($this->registry);
@@ -302,7 +265,7 @@ describe('DiscountHandlerRegistry', function (): void {
 
     describe('getClassNameFromFile', function (): void {
         it('generates correct class name from file path', function (): void {
-            $registry   = new DiscountHandlerRegistry(app(Filesystem::class));
+            $registry   = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
             $reflection = new ReflectionClass($registry);
             $method     = $reflection->getMethod('getClassNameFromFile');
             $method->setAccessible(true);
@@ -317,7 +280,7 @@ describe('DiscountHandlerRegistry', function (): void {
         });
 
         it('handles Windows path separators correctly', function (): void {
-            $registry   = new DiscountHandlerRegistry(app(Filesystem::class));
+            $registry   = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
             $reflection = new ReflectionClass($registry);
             $method     = $reflection->getMethod('getClassNameFromFile');
             $method->setAccessible(true);
@@ -339,11 +302,6 @@ describe('DiscountHandlerRegistry', function (): void {
             config()->set('app.debug', false);
             config()->set('discounts.discovery_paths', []);
 
-            Cache::shouldReceive('get')
-                ->once()
-                ->with(DiscountHandlerRegistry::CACHE_KEY)
-                ->andReturn(null);
-
             $expectedCacheData = [
                 'cartConditions'    => [],
                 'cartActions'       => [],
@@ -352,11 +310,9 @@ describe('DiscountHandlerRegistry', function (): void {
                 'configMap'         => [],
             ];
 
-            Cache::shouldReceive('forever')
-                ->once()
-                ->with(DiscountHandlerRegistry::CACHE_KEY, $expectedCacheData);
+            new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
-            new DiscountHandlerRegistry(app(Filesystem::class));
+            expect(app(CacheStore::class)->get(CacheKey::DiscountHandlers))->toBe($expectedCacheData);
         });
 
         it('loads from cache with partial data', function (): void {
@@ -367,12 +323,9 @@ describe('DiscountHandlerRegistry', function (): void {
                 // Missing other keys to test default empty arrays
             ];
 
-            Cache::shouldReceive('get')
-                ->once()
-                ->with(DiscountHandlerRegistry::CACHE_KEY)
-                ->andReturn($cachedData);
+            app(CacheStore::class)->put(CacheKey::DiscountHandlers, [], $cachedData);
 
-            $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+            $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
             expect($registry->getCartConditionHandlers())->toBe(['key1' => 'Class1']);
             expect($registry->getCartActionHandlers())->toBe([]);
@@ -387,9 +340,7 @@ describe('DiscountHandlerRegistry', function (): void {
             config()->set('app.debug', true);
             config()->set('discounts.discovery_paths', []);
 
-            Cache::shouldReceive('forever')->once();
-
-            $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+            $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
             expect($registry->getCartConditionHandlers())->toBe([]);
             expect($registry->getCartActionHandlers())->toBe([]);
@@ -413,9 +364,7 @@ describe('DiscountHandlerRegistry', function (): void {
                     ->andReturn(false);
             });
 
-            Cache::shouldReceive('forever')->once();
-
-            $registry = new DiscountHandlerRegistry($mockFilesystem);
+            $registry = new DiscountHandlerRegistry($mockFilesystem, app(CacheStore::class));
 
             expect($registry->getCartConditionHandlers())->toBe([]);
         });
@@ -426,9 +375,7 @@ describe('DiscountHandlerRegistry', function (): void {
                 'App\\Services\\Discounts\\' => 'Services/Discounts',
             ]);
 
-            Cache::shouldReceive('forever')->once();
-
-            $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+            $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
             // If real handlers are discovered, they should be in the registry
             $cartConditions    = $registry->getCartConditionHandlers();
@@ -451,9 +398,7 @@ describe('DiscountHandlerRegistry', function (): void {
                 'App\\Services\\Discounts\\' => 'Services/Discounts',
             ]);
 
-            Cache::shouldReceive('forever')->once();
-
-            $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+            $registry = new DiscountHandlerRegistry(app(Filesystem::class), app(CacheStore::class));
 
             // Verify that the registry can work with real classes
             $configMap = $registry->getHandlerConfigMap();

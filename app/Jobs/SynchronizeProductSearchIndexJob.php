@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheTag;
 use App\Models\Product;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,7 +20,7 @@ final class SynchronizeProductSearchIndexJob implements ShouldQueue
      */
     public function __construct(public array $productIds) {}
 
-    public function handle(): void
+    public function handle(CacheStore $cache): void
     {
         if ($this->productIds === []) {
             return;
@@ -58,5 +60,9 @@ final class SynchronizeProductSearchIndexJob implements ShouldQueue
         if ($unsearchableProducts->isNotEmpty()) {
             $engine->delete($unsearchableProducts);
         }
+
+        // Cached result pages were built from the previous index generation, so
+        // they are cleared once the index reflects the change.
+        $cache->invalidate(CacheTag::Search);
     }
 }

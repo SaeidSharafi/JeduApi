@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
+use App\Actions\Shop\Student\ForgetStudentQuizCacheAction;
 use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\ProvisioningAttempt;
@@ -46,6 +47,10 @@ final class ProvisionEnrollmentProviderJob implements ShouldBeUnique, ShouldQueu
             $provider   = $providers->resolve($attempt->provider);
             $references = $this->reconcileOrProvision($attempt, $provider);
             $attempts->succeed($attempt, $references);
+
+            // A provisioning change flips the user's Moodle enrollments, so their
+            // cached quiz list is stale until it is dropped.
+            app(ForgetStudentQuizCacheAction::class)->handle($attempt->enrollment->customer_id);
         } catch (UnrecoverableProvisioningException $exception) {
             $attempts->fail($attempt, $exception, true, $exception->metaData);
             $this->fail($exception);

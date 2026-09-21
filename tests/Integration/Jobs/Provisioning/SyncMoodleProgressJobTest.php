@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
 use App\Data\Shop\Student\Blocks\MoodleActivityData;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\MoodleActivityStateEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\System\CacheKey;
 use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Enrollment;
 use App\Models\Order;
@@ -16,6 +18,8 @@ use App\Models\User;
 use App\Services\Integrations\MoodleService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+
+covers(SyncMoodleProgressJob::class);
 
 it('returns when enrollment does not exist', function (): void {
     $service = $this->mock(MoodleService::class);
@@ -180,6 +184,31 @@ it('logs error and clears rate limiter on failure', function (): void {
 
     $job = new SyncMoodleProgressJob(42, 100, 200);
     $job->failed(new RuntimeException('sync failed'));
+});
+
+it('drops the student quiz list after a quiz submission sync without dropping the teacher list', function (): void {
+    $enrollment = createEnrollmentForSync();
+    $cache      = app(CacheStore::class);
+    $cache->put(CacheKey::StudentQuizzes, ['userId' => $enrollment->customer_id], ['stale']);
+    $cache->put(CacheKey::TeacherQuizzes, ['userId' => $enrollment->customer_id], ['stale']);
+
+    $moodleService = $this->mock(MoodleService::class);
+    $moodleService->shouldReceive('isReady')->once()->andReturn(true);
+    $moodleService->shouldReceive('getCourse')->once()->andReturn(LmsMoodleBlockData::from([
+        'visible'    => true,
+        'name'       => 'Test Course',
+        'course_url' => 'https://moodle.test/course/view.php?id=100',
+        'completed'  => false,
+        'activities' => [],
+    ]));
+    $moodleService->shouldReceive('isCourseCompleted')->once()->andReturn(false);
+    $moodleService->shouldReceive('getActivityCompletionStatus')->once()->andReturn([]);
+    $moodleService->shouldReceive('getGrades')->once()->andReturn([]);
+
+    (new SyncMoodleProgressJob($enrollment->id, 100, 200))->handle(app(MoodleService::class));
+
+    expect($cache->get(CacheKey::StudentQuizzes, ['userId' => $enrollment->customer_id]))->toBeNull()
+        ->and($cache->get(CacheKey::TeacherQuizzes, ['userId' => $enrollment->customer_id]))->not->toBeNull();
 });
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
