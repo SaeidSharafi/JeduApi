@@ -10,12 +10,12 @@ use App\Models\Staff;
 use App\Services\SettingSecretRedactor;
 use App\Services\SettingsService;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Plank\Mediable\Facades\MediaUploader;
-use SmartCache\Facades\SmartCache;
+
+covers(SettingsService::class);
 
 test('it retrieves an existing setting from the database', function (): void {
     // Arrange: Create a setting in our fresh, empty database.
@@ -23,7 +23,7 @@ test('it retrieves an existing setting from the database', function (): void {
         'key'   => SettingKeyEnum::HEADER->value,
         'value' => ['name' => 'Jedu Platform'],
     ]);
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     // Act: Call the service.
     $value = $service->get(SettingKeyEnum::HEADER);
@@ -34,7 +34,7 @@ test('it retrieves an existing setting from the database', function (): void {
 
 test('it returns a default value when a setting does not exist', function (): void {
     // Arrange: The database is empty.
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     // Act: Ask for a key that doesn't exist in the database, providing a default.
     $value = $service->get(SettingKeyEnum::HEADER, ['default' => 'value']);
@@ -45,13 +45,10 @@ test('it returns a default value when a setting does not exist', function (): vo
 
 test('it hits the database only once and then uses the cache', function (): void {
     Setting::factory()->create(['key' => SettingKeyEnum::HEADER->value, 'value' => 'value1']);
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
     DB::enableQueryLog();
 
     $service->get(SettingKeyEnum::HEADER);
-
-    expect(Cache::has('settings.all'))->toBeTrue();
-
     $service->get(SettingKeyEnum::HEADER);
 
     $queryCount = collect(DB::getQueryLog())->filter(
@@ -63,18 +60,13 @@ test('it hits the database only once and then uses the cache', function (): void
 
 test('the forget method clears the cache and forces a new database read', function (): void {
     Setting::factory()->create(['key' => SettingKeyEnum::HEADER->value, 'value' => 'Jedu']);
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $service->get(SettingKeyEnum::HEADER);
-
-    expect(Cache::has('settings.all'))->toBeTrue();
 
     DB::enableQueryLog(); // Start counting queries now.
 
     $service->forget();
-
-    expect(SmartCache::has('settings.all'))->toBeFalse();
-
     $service->get(SettingKeyEnum::HEADER);
 
     $queryCount = collect(DB::getQueryLog())->filter(
@@ -86,21 +78,28 @@ test('the forget method clears the cache and forces a new database read', functi
 
 test('set() persists value and invalidates cache', function (): void {
     Setting::factory()->create(['key' => SettingKeyEnum::HEADER->value, 'value' => ['name' => 'Old']]);
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     // Warm the cache.
     $service->get(SettingKeyEnum::HEADER);
-    expect(Cache::has('settings.all'))->toBeTrue();
 
     // Act: set() should persist and bust cache.
     $service->set(SettingKeyEnum::HEADER, ['name' => 'New']);
 
-    expect(Cache::has('settings.all'))->toBeFalse();
+    DB::enableQueryLog();
+
+    expect($service->get(SettingKeyEnum::HEADER))->toBe(['name' => 'New']);
+
+    $queryCount = collect(DB::getQueryLog())->filter(
+        fn ($query): bool => str_contains($query['query'], 'select * from "settings"')
+    )->count();
+
+    expect($queryCount)->toBe(1);
 });
 
 test('get() returns updated value after set() invalidates cache', function (): void {
     Setting::factory()->create(['key' => SettingKeyEnum::HEADER->value, 'value' => ['name' => 'Old']]);
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     // Warm cache with old value.
     $first = $service->get(SettingKeyEnum::HEADER);
@@ -120,7 +119,7 @@ test('integration keys skip witImages media lookup', function (): void {
         'key'   => SettingKeyEnum::IMS->value,
         'value' => ['url' => 'https://ims.example.com', 'token' => 'secret123', 'course_id' => 42],
     ]);
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $value = $service->get(SettingKeyEnum::IMS);
 
@@ -137,7 +136,7 @@ test('skyroom credentials are not passed through the media resolver', function (
         'key'   => SettingKeyEnum::SKYROOM->value,
         'value' => ['enabled' => true, 'base_url' => 'https://www.skyroom.online/skyroom/api', 'api_key' => 'skyroom-key', 'image' => 7],
     ]);
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $value = $service->get(SettingKeyEnum::SKYROOM);
 
@@ -148,7 +147,7 @@ test('skyroom credentials are not passed through the media resolver', function (
 
 test('payment gateway settings still resolve their icon through the media resolver', function (string $key, array $value): void {
     Setting::factory()->create(['key' => $key, 'value' => $value]);
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     // getValue() resolves media unconditionally — the stored setting must hydrate the
     // icon for the payment-gateway endpoints, which wrap it as a MediaData DTO.
@@ -171,7 +170,7 @@ test('it calls the Setting::witImages method for array values', function (): voi
         'value' => ['logo' => $logo->id, 'links' => []],
     ]);
     $setting->attachMedia($logo, 'logo');
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     // Act: Call the get method.
     $value = $service->get(SettingKeyEnum::FOOTER);
@@ -194,7 +193,7 @@ test('it calls the Setting::witImages method for array values', function (): voi
 // ─── Encryption tests ────────────────────────────────────────────────────────
 
 test('set() encrypts secret fields for MOODLE before storing in DB', function (): void {
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $service->set(SettingKeyEnum::MOODLE, [
         'enabled'            => false,
@@ -228,7 +227,7 @@ test('get() decrypts secret fields for MOODLE transparently', function (): void 
         ],
     ]);
 
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
     $value   = $service->get(SettingKeyEnum::MOODLE);
 
     expect($value['token'])->toBe('my-secret-token')
@@ -248,7 +247,7 @@ test('get() returns plaintext legacy secret fields without error (backward compa
         ],
     ]);
 
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
     $value   = $service->get(SettingKeyEnum::MOODLE);
 
     expect($value['token'])->toBe('legacy-plain-token')
@@ -256,7 +255,7 @@ test('get() returns plaintext legacy secret fields without error (backward compa
 });
 
 test('set() encrypts all secret fields for SKYROOM', function (): void {
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $service->set(SettingKeyEnum::SKYROOM, [
         'enabled'  => false,
@@ -273,7 +272,7 @@ test('set() encrypts all secret fields for SKYROOM', function (): void {
 });
 
 test('set() does not encrypt empty secret fields', function (): void {
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $service->set(SettingKeyEnum::MOODLE, [
         'enabled'            => false,
@@ -291,7 +290,7 @@ test('set() does not encrypt empty secret fields', function (): void {
 });
 
 test('set() and get() round-trip encrypts and decrypts IMS api_key', function (): void {
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $service->set(SettingKeyEnum::IMS, [
         'enabled'  => true,
@@ -309,7 +308,7 @@ test('set() and get() round-trip encrypts and decrypts IMS api_key', function ()
 
 test('set() creates an audit log entry when an integration key is written', function (): void {
     $staff   = Staff::factory()->create();
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $this->actingAs($staff, 'staff');
 
@@ -324,7 +323,7 @@ test('set() creates an audit log entry when an integration key is written', func
 
 test('set() audit log does not contain secret values for integration keys', function (): void {
     $staff   = Staff::factory()->create();
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $this->actingAs($staff, 'staff');
 
@@ -345,7 +344,7 @@ test('set() audit log does not contain secret values for integration keys', func
 
 test('set() audit log records the acting staff id', function (): void {
     $staff   = Staff::factory()->create();
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $this->actingAs($staff, 'staff');
 
@@ -363,7 +362,7 @@ test('set() audit log records the acting staff id', function (): void {
 
 test('set() audit log redacts every SKYROOM secret field', function (): void {
     $staff   = Staff::factory()->create();
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $this->actingAs($staff, 'staff');
 
@@ -383,7 +382,7 @@ test('set() audit log redacts every SKYROOM secret field', function (): void {
 
 test('set() does NOT create audit log for non-integration keys', function (): void {
     $staff   = Staff::factory()->create();
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $this->actingAs($staff, 'staff');
 
@@ -395,7 +394,7 @@ test('set() does NOT create audit log for non-integration keys', function (): vo
 // ─── Redaction placeholder tests ─────────────────────────────────────────────
 
 test('set() with explicit secret value encrypts and stores it', function (): void {
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     $service->set(SettingKeyEnum::IMS, [
         'enabled'  => true,
@@ -410,7 +409,7 @@ test('set() with explicit secret value encrypts and stores it', function (): voi
 });
 
 test('set() with placeholder value preserves existing stored secret', function (): void {
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     // First: store a real secret.
     $service->set(SettingKeyEnum::IMS, [
@@ -436,7 +435,7 @@ test('set() with placeholder value preserves existing stored secret', function (
 });
 
 test('get() returns original secret after placeholder submission', function (): void {
-    $service = new SettingsService();
+    $service = app(SettingsService::class);
 
     // Store real secret.
     $service->set(SettingKeyEnum::IMS, [

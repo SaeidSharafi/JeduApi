@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Discounts;
 
-use App\Services\Discounts\DiscountHandlerRegistry;
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheKey;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 
 final class ClearHandlerCache extends Command
 {
@@ -24,6 +24,11 @@ final class ClearHandlerCache extends Command
      */
     protected $description = 'Clear the cached discount handler registry';
 
+    public function __construct(private readonly CacheStore $cache)
+    {
+        parent::__construct();
+    }
+
     /**
      * Execute the console command.
      */
@@ -31,7 +36,7 @@ final class ClearHandlerCache extends Command
     {
         $this->info('Clearing discount handler cache...');
 
-        Cache::forget(DiscountHandlerRegistry::CACHE_KEY);
+        $this->cache->forget(CacheKey::DiscountHandlers);
 
         $this->info('Discount handler cache cleared successfully.');
     }

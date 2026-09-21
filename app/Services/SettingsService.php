@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\System\CacheKeysEnum;
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheKey;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\AdminActionLog;
 use App\Models\Setting;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
-use SmartCache\Facades\SmartCache;
 
 final class SettingsService
 {
@@ -29,6 +29,8 @@ final class SettingsService
         SettingKeyEnum::NILIROOM,
         SettingKeyEnum::SMS_IPPANEL,
     ];
+
+    public function __construct(private readonly CacheStore $cache) {}
 
     public function get(SettingKeyEnum $key, mixed $default = null): mixed
     {
@@ -113,7 +115,7 @@ final class SettingsService
      */
     public function forget(): void
     {
-        SmartCache::forget(CacheKeysEnum::Settings->value);
+        $this->cache->forget(CacheKey::Settings);
     }
 
     /**
@@ -162,7 +164,7 @@ final class SettingsService
      */
     private function getAll(): Collection
     {
-        return SmartCache::rememberForever(CacheKeysEnum::Settings->value, function () {
+        return $this->cache->rememberForever(CacheKey::Settings, [], function (): Collection {
             // This closure only runs if the cache is empty.
             // It hits the database ONCE and then stores the result.
             return Setting::all()->keyBy('key');

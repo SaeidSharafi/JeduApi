@@ -100,9 +100,6 @@ return [
             CacheKeysEnum::PartnersInCourse,
             CacheKeysEnum::Partners,
         ],
-        App\Models\Setting::class => [
-            CacheKeysEnum::Settings,
-        ],
         App\Models\Categorizable::class => [
             CacheKeysEnum::HomePageContent,
             ['type' => 'pattern', 'value' => 'shop.category.*.good-for-start.courses*'],

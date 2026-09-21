@@ -49,7 +49,7 @@ it('redacts every field an integration setting declares as a secret', function (
 it('redacts every declared secret of a stored setting through the read path', function (SettingKeyEnum $key, string $field, string $plaintext): void {
     Setting::factory()->create(['key' => $key->value, 'value' => ['enabled' => true, $field => $plaintext]]);
 
-    $stored   = (new SettingsService())->get($key);
+    $stored   = app(SettingsService::class)->get($key);
     $redacted = app(SettingSecretRedactor::class)->redact($key->value, $stored);
 
     expect($redacted[$field])->toBe(SettingSecretRedactor::REDACTED);
@@ -60,7 +60,7 @@ it('audit logs a skyroom write with its secrets redacted', function (): void {
 
     $this->actingAs($staff, 'staff');
 
-    (new SettingsService())->set(SettingKeyEnum::SKYROOM, [
+    app(SettingsService::class)->set(SettingKeyEnum::SKYROOM, [
         'enabled'  => true,
         'base_url' => 'https://www.skyroom.online/skyroom/api',
         'api_key'  => 'skyroom-real-key',

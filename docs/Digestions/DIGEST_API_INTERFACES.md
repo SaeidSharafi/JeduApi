@@ -263,7 +263,7 @@
 - **Response DTO:** `SettingData` collection post-update (with secrets redacted).
 
 #### ContactInfoController (`app/Http/Controllers/Api/Admin/Content/ContactInfoController.php`)
-- `show()`: **Route:** `GET /api/v1/admin/settings/contact-info` - **Response DTO:** ContactInfoData sourced from SmartCache-backed SettingsService
+- `show()`: **Route:** `GET /api/v1/admin/settings/contact-info` - **Response DTO:** ContactInfoData sourced from the cache-gateway-backed SettingsService
 - `update(ContactInfoUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/contact-info` - **Request DTO:** ContactInfoUpdateData - **Response DTO:** ContactInfoData after cache invalidation
 
 #### AboutUsInfoController (`app/Http/Controllers/Api/Admin/Content/AboutUsInfoController.php`)

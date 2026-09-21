@@ -590,7 +590,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### DiscountHandlerRegistry (`app/Services/Discounts/DiscountHandlerRegistry.php`)
 - **Purpose:** Registry that auto-discovers discount condition/action handlers by contract
-- **Mechanism:** Scans registered handlers grouped by interface — `DiscountConditionContract` (cart conditions), `DiscountActionContract` (cart actions), `ProductDiscountConditionContract` (product conditions), `ProductDiscountActionContract` (product actions). Resolves handlers by rule `key` from each group; results cached under `discounts.handler_registry.cache` via the `CACHE_KEY` constant.
+- **Mechanism:** Scans registered handlers grouped by interface — `DiscountConditionContract` (cart conditions), `DiscountActionContract` (cart actions), `ProductDiscountConditionContract` (product conditions), `ProductDiscountActionContract` (product actions). Resolves handlers by rule `key` from each group; results are cached forever through the `CacheStore` gateway under `CacheKey::DiscountHandlers`. `discounts:clear-cache` retargets the same gateway key so the next use re-discovers handlers.
 - **Consumers:** `OrderCalculationService`, `ProductDiscountIndexer`, `DiscountMetadataService`
 
 #### DiscountMetadataService (`app/Services/Discounts/DiscountMetadataService.php`)
@@ -958,31 +958,27 @@ Administrative status and access-date changes reconcile deliberately with applic
 ### PgroongaService (`app/Services/PgroongaService.php`)
 - **Purpose:** Lightweight helper to detect PGroonga availability on PostgreSQL connections
 - **Public Method:**
-  - `isPgroongaEnabled(): bool`: Cached probe that inspects `pg_extension` and gracefully handles connection failures, allowing search macros to choose the correct strategy
+  - `isPgroongaEnabled(): bool`: Cached probe that inspects `pg_extension` and gracefully handles connection failures, allowing search macros to choose the correct strategy. The result is stored forever through the `CacheStore` gateway under `CacheKey::PgroongaEnabled` (`CacheTag::Search`).
 
 ### SettingsService (`app/Services/SettingsService.php`)
-- **Purpose:** SmartCache-backed facade over `Setting` models powering CMS content payloads and integration credentials
+- **Purpose:** `CacheStore` gateway-backed facade over `Setting` models powering CMS content payloads and integration credentials
 - **Public Methods:**
   - `get(SettingKeyEnum $key, mixed $default = null): mixed`: Reads a single setting from cached collection. Skips `witImages()` for the integration keys (listed in `INTEGRATION_KEYS`) to avoid unnecessary media queries — payment gateways are excluded so their `icon` still hydrates into `MediaData`. Automatically tries decryption of registered secret fields via `Crypt::decryptString()` on read.
-  - `set(SettingKeyEnum $key, mixed $value, string $type = 'json', ?string $group = null): Setting`: Persists value. Encrypts registered secret fields via `Crypt::encryptString()` before write. Preserves existing secrets when `***REDACTED***` placeholder is sent. Creates audit log entries for secret-bearing key writes via `SettingSecretRedactor`.
-  - `forget(): void`: Exposes cache invalidation hook used by observers/actions to refresh settings payloads
+  - `set(SettingKeyEnum $key, mixed $value, string $type = 'json', ?string $group = null): Setting`: Persists value. Encrypts registered secret fields via `Crypt::encryptString()` before write. Preserves existing secrets when `***REDACTED***` placeholder is sent. Creates audit log entries for secret-bearing key writes via `SettingSecretRedactor`. Forgets the settings key through the gateway after the write.
+  - `forget(): void`: Forgets `CacheKey::Settings` through the gateway. Every write path calls it explicitly — `set()`, the header/footer actions (`UpdateHeaderSettingAction`, `UpdateFooterSettingAction`) and `settings:encrypt-secrets` — because no model observer clears settings any more.
 - **INTEGRATION_KEYS:** IMS, Moodle, SpotPlayer, Skyroom, Niliroom and the SMS IPPanel gateway skip `witImages()` media hydration, because they store credentials rather than content with media references. The list is explicit: deriving it from the secret registry would also skip media for Mellat/Digipay, whose top-level `icon` the payment-gateway endpoints still hydrate.
 - **Encryption on Write:** Secret fields defined by `SettingKeyEnum::secretFields()` are encrypted at rest using Laravel's `Crypt::encryptString()`
 - **Decryption on Read:** Encrypted values are transparently decrypted when retrieved via `get()`, with graceful fallback for legacy plaintext
 - **Audit Logging:** Writes to any secret-bearing key are logged via `AdminActionLog` with secrets redacted, risk level "high" (staff-guard only — unauthenticated writes are not logged)
 - **Known gap:** Mellat/Digipay declare flat secret fields, but the gateway writes them nested under a `config` object and neither `set()`'s encryption nor `SettingSecretRedactor` reaches inside it. Aligning the payment-gateway settings surface with the integration conventions is a separate cleanup.
-- **Implementation Notes:** Caches the full settings collection forever using `SmartCache` keyed by `CacheKeysEnum::Settings`, ensuring single query hydration per deploy cycle
+- **Implementation Notes:** Caches the full settings collection forever through the gateway under `CacheKey::Settings`, ensuring single query hydration per deploy cycle. The `SettingObserver` that used to clear it is deleted; explicit `forget()` calls carry the invalidation.
 
 ## Observers, Events & Async Processing
 
-### SettingObserver (`app/Observers/SettingObserver.php`)
-- **Purpose:** Clears settings cache on Setting model save/delete events.
-- **Mechanism:** Calls `SettingsService::forget()` on `saved` and `deleted` events to keep cached setting payloads consistent.
-
 ### InvalidationObserver (`app/Observers/InvalidationObserver.php`)
 - **Purpose:** Global Eloquent observer that translates model save/delete events into cache invalidations.
-- **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Slider, Partner, HomePageBlock, Setting, etc.) to lists of `CacheKeysEnum`, literal keys, or wildcard patterns and delegates eviction to `CacheInvalidationService` (`SmartCache::forget` + `flushPatterns`).
-- **Usage:** Registered for multiple CMS/content models to keep SmartCache payloads (home page content, partner lists, settings, good-for-start lists) fresh without manual cache calls.
+- **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Slider, Partner, HomePageBlock, etc.) to lists of `CacheKeysEnum`, literal keys, or wildcard patterns and delegates eviction to `CacheInvalidationService` (`SmartCache::forget` + `flushPatterns`). `Setting` is deliberately absent: settings are cleared explicitly on their write paths.
+- **Usage:** Registered for multiple CMS/content models to keep SmartCache payloads (home page content, partner lists, good-for-start lists) fresh without manual cache calls.
 
 ### ProductableAvailabilityObserver (`app/Observers/ProductableAvailabilityObserver.php`)
 - **Purpose:** Keeps availability snapshots and search index in sync when productable (Course/Seminar/DigitalAsset) content changes
@@ -1021,7 +1017,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `orFullTextSearch(...)`: Convenience wrapper for grouped OR full-text clauses
   - `orderByScore(string $column = 'score', string $direction = 'desc')`: Adds score ordering when PGroonga is active
   - `selectScore(string $column = 'score', string $table = '')`: Appends score selection for PGroonga-powered queries
-- **Dependency:** Uses `PgroongaService::isPgroongaEnabled()` to determine when advanced scoring is available; defaults to no-op ordering otherwise.
+- **Dependency:** Resolves `PgroongaService` and uses `isPgroongaEnabled()` to determine when advanced scoring is available; defaults to no-op ordering otherwise.
 
 ### Payment Services (`app/Services/Payment/`)
 

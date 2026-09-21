@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Services\Discounts;
 
 use App\Attributes\DiscountHandlerKey;
+use App\Contracts\Cache\CacheStore;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Contracts\Discounts\ProductDiscountActionContract;
 use App\Contracts\Discounts\ProductDiscountConditionContract;
 use App\Enums\Order\DiscountTypeEnum;
+use App\Enums\System\CacheKey;
 use Exception;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -24,8 +25,6 @@ use ReflectionException;
  */
 final class DiscountHandlerRegistry
 {
-    public const CACHE_KEY = 'discounts.handler_registry.cache';
-
     /** @var array<class-string, string> */
     private array $discoveryMap = [
         DiscountConditionContract::class        => 'cartConditionHandlers',
@@ -51,6 +50,7 @@ final class DiscountHandlerRegistry
 
     public function __construct(
         private readonly Filesystem $filesystem,
+        private readonly CacheStore $cache,
     ) {
         if (config()->get('app.debug')) {
             $this->discoverAndCacheHandlers();
@@ -58,7 +58,7 @@ final class DiscountHandlerRegistry
             return;
         }
 
-        $cachedHandlers = Cache::get(self::CACHE_KEY);
+        $cachedHandlers = $this->cache->get(CacheKey::DiscountHandlers);
 
         if ($cachedHandlers) {
             $this->loadHandlersFromCache($cachedHandlers);
@@ -187,7 +187,7 @@ final class DiscountHandlerRegistry
             'configMap'         => $this->handlerConfigMap,
         ];
 
-        Cache::forever(self::CACHE_KEY, $dataToCache);
+        $this->cache->put(CacheKey::DiscountHandlers, [], $dataToCache);
     }
 
     /**

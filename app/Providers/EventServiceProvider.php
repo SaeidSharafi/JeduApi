@@ -9,13 +9,11 @@ use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Enrollment;
 use App\Models\Seminar;
-use App\Models\Setting;
 use App\Models\Term;
 use App\Observers\CategorySearchIndexObserver;
 use App\Observers\EnrollmentObserver;
 use App\Observers\InvalidationObserver;
 use App\Observers\ProductableAvailabilityObserver;
-use App\Observers\SettingObserver;
 use App\Observers\TermAvailabilityObserver;
 use App\Subscribers\CampaignEventSubscriber;
 use Illuminate\Support\Facades\Event;
@@ -37,7 +35,6 @@ final class EventServiceProvider extends ServiceProvider
             $modelClass::observe(InvalidationObserver::class);
         }
 
-        Setting::observe(SettingObserver::class);
         Category::observe(CategorySearchIndexObserver::class);
         Course::observe(ProductableAvailabilityObserver::class);
         Seminar::observe(ProductableAvailabilityObserver::class);

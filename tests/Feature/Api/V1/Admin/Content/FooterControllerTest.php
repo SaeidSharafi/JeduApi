@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
+covers(
+    App\Http\Controllers\Api\Admin\Content\FooterController::class,
+    App\Actions\Admin\Settings\UpdateFooterSettingAction::class,
+);
+
 it('can get footer settings', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SETTING_VIEW_ANY->value]);
     $response = $this->getJson(route('api.v1.admin.settings.footer.show'));
@@ -73,6 +78,43 @@ it('can update footer settings', function (): void {
         ->and($setting->value['logo'])->toBe($logo->id)
         ->and($setting->value['logo_url'])->toBe($logo->getUrl())
         ->and($setting->value['logo_alt'])->toBe($logo->alt);
+});
+
+it('serves an updated footer on the next shop read', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::SETTING_UPDATE->value]);
+    Storage::fake('public');
+
+    $category = App\Models\Category::factory()->create(['name' => 'Cat1']);
+
+    // Warm the settings collection cache before the write.
+    app(App\Services\SettingsService::class)->get(App\Enums\System\SettingKeyEnum::FOOTER);
+
+    $response = $this->putJson(route('api.v1.admin.settings.footer.update'), [
+        'logo'                  => null,
+        'caption'               => 'Updated caption',
+        'support_email_address' => 'support@jedu.ir',
+        'addresses'             => ['Address 1'],
+        'categories'            => [$category->id],
+        'social_media_links'    => [
+            [
+                'platform' => 'instagram',
+                'link'     => 'https://instagram.com/jedushop',
+            ],
+        ],
+        'certifications' => [
+            [
+                'name'  => 'Enamad',
+                'image' => null,
+                'html'  => "<img src='enamad.jpg' alt='Enamad' />",
+            ],
+        ],
+    ]);
+
+    $response->assertStatus(200);
+
+    $this->getJson(route('api.v1.shop.footer.index'))
+        ->assertStatus(200)
+        ->assertJsonFragment(['caption' => 'Updated caption']);
 });
 
 it('validates footer data - missing required fields', function (): void {
