@@ -149,6 +149,20 @@ return [
             'channel'          => env('DIGIPAY_LOG_CHANNEL', 'digipay'),
             'sensitive_fields' => ['client_secret', 'password', 'access_token', 'refresh_token'],
         ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Token Cache Configuration
+        |--------------------------------------------------------------------------
+        |
+        | The access token is treated as expired `buffer` seconds before the
+        | `expires_in` the OAuth endpoint reports, so a token is never reused
+        | after the gateway has stopped honouring it.
+        |
+        */
+        'token_cache' => [
+            'buffer' => 300, // Refresh token 5 minutes before expiry
+        ],
     ],
 
     /*

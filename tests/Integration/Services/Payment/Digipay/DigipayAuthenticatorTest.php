@@ -55,13 +55,20 @@ it('fetches and caches a new token when cache is empty', function (): void {
             && $request['grant_type'] === 'password';
     });
 
-    expect($this->cache->get(CacheKey::DigipayAccessToken))->toBe('fresh-test-token');
+    $cached = $this->cache->get(CacheKey::DigipayAccessToken);
+
+    expect($cached)->toBeArray()
+        ->and($cached['token'])->toBe('fresh-test-token')
+        ->and($cached['expires_at'])->toBeGreaterThan(time() + 3200);
 });
 
 // ─── Cache hit — returns cached token ──────────────────────────────────
 
 it('returns cached token without HTTP call when token exists in cache', function (): void {
-    $this->cache->put(CacheKey::DigipayAccessToken, [], 'cached-token-value');
+    $this->cache->put(CacheKey::DigipayAccessToken, [], [
+        'token'      => 'cached-token-value',
+        'expires_at' => time() + 600,
+    ]);
 
     Http::fake();
 
@@ -72,6 +79,60 @@ it('returns cached token without HTTP call when token exists in cache', function
     expect($token)->toBe('cached-token-value');
 
     Http::assertNothingSent();
+});
+
+// ─── Expiry — a token is never served past its reported lifetime ───────
+
+it('refetches once the token reaches its reported expiry', function (): void {
+    $this->cache->put(CacheKey::DigipayAccessToken, [], [
+        'token'      => 'expired-token',
+        'expires_at' => time() - 1,
+    ]);
+
+    Http::fake([
+        'api.digipay.test/digipay/api/oauth/token' => Http::response([
+            'access_token' => 'renewed-token',
+            'expires_in'   => 3600,
+        ], 200),
+    ]);
+
+    $authenticator = app(DigipayAuthenticator::class);
+
+    expect($authenticator->getAccessToken())->toBe('renewed-token');
+    Http::assertSentCount(1);
+});
+
+it('treats a legacy plain-string payload as a miss instead of a valid token', function (): void {
+    $this->cache->put(CacheKey::DigipayAccessToken, [], 'legacy-token');
+
+    Http::fake([
+        'api.digipay.test/digipay/api/oauth/token' => Http::response([
+            'access_token' => 'renewed-token',
+            'expires_in'   => 3600,
+        ], 200),
+    ]);
+
+    $authenticator = app(DigipayAuthenticator::class);
+
+    expect($authenticator->getAccessToken())->toBe('renewed-token');
+    Http::assertSentCount(1);
+});
+
+it('expires the cached payload a configured buffer before the reported expiry', function (): void {
+    config()->set('payments.digipay.token_cache.buffer', 600);
+
+    Http::fake([
+        'api.digipay.test/digipay/api/oauth/token' => Http::response([
+            'access_token' => 'buffered-token',
+            'expires_in'   => 3600,
+        ], 200),
+    ]);
+
+    app(DigipayAuthenticator::class)->getAccessToken();
+
+    $cached = $this->cache->get(CacheKey::DigipayAccessToken);
+
+    expect($cached['expires_at'] - time())->toBeGreaterThan(2990)->toBeLessThanOrEqual(3000);
 });
 
 // ─── Credential rotation — cached token is dropped ─────────────────────

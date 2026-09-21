@@ -18,10 +18,15 @@ final class DigipayAuthenticator
 
     public function getAccessToken(): string
     {
-        $token = $this->cache->get(CacheKey::DigipayAccessToken);
+        $cached = $this->cache->get(CacheKey::DigipayAccessToken);
 
-        if (is_string($token) && $token !== '') {
-            return $token;
+        // The payload carries its own expiry: the registry lifetime is only an upper
+        // bound, and a token must never be served after the gateway expires it.
+        if (is_array($cached)
+            && is_string($cached['token'] ?? null)
+            && $cached['token'] !== ''
+            && (int) ($cached['expires_at'] ?? 0) > time()) {
+            return $cached['token'];
         }
 
         return $this->fetchAndCacheToken();
@@ -46,8 +51,14 @@ final class DigipayAuthenticator
             throw new DigipayException(__('payment_gateways.digipay.errors.authentication_failed'), $response->status());
         }
 
-        $this->cache->put(CacheKey::DigipayAccessToken, [], $response['access_token']);
+        $expiresIn = (int) ($response['expires_in'] ?? 3600);
+        $buffer    = (int) config('payments.digipay.token_cache.buffer', 300);
 
-        return $response['access_token'];
+        $this->cache->put(CacheKey::DigipayAccessToken, [], [
+            'token'      => (string) $response['access_token'],
+            'expires_at' => time() + max(1, $expiresIn - $buffer),
+        ]);
+
+        return (string) $response['access_token'];
     }
 }
