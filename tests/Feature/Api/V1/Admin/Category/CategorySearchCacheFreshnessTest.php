@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actions\Admin\Category\UpdateCategoryAction;
 use App\Contracts\Cache\CacheStore;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\PermissionEnum;
@@ -9,6 +10,8 @@ use App\Enums\System\CacheKey;
 use App\Models\Category;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+covers(UpdateCategoryAction::class);
 
 it('clears cached search results and suggestions when a category slug changes', function (): void {
     $this->authorized_user([PermissionEnum::CATEGORY_UPDATE->value]);

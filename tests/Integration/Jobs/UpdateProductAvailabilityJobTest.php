@@ -14,6 +14,8 @@ use App\Models\Term;
 use App\Services\BundleAvailabilityService;
 use Illuminate\Support\Facades\Event;
 
+covers(UpdateProductAvailabilityJob::class);
+
 function runUpdateProductAvailabilityJob(array $productIds): void
 {
     (new UpdateProductAvailabilityJob($productIds))->handle(

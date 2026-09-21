@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Product\ArchiveProductAction;
+use App\Http\Controllers\Api\Shop\Product\GoodForStartCoursesController;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\Product;
 use App\Models\Seminar;
+
+covers(GoodForStartCoursesController::class);
 
 describe('GoodForStartCoursesController', function (): void {
     it('returns a list of good-for-start courses for a given category', function (): void {

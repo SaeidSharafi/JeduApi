@@ -37,6 +37,8 @@ use App\Services\Provisioning\ProvisioningProviderRegistry;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Queue;
 
+covers(ProvisionEnrollmentProviderJob::class);
+
 function reconciliationEnrollment(string $provider, array $data = []): Enrollment
 {
     $enrollment = Enrollment::factory()->create([

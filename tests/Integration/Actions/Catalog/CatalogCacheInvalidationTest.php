@@ -8,6 +8,7 @@ use App\Actions\Admin\Category\SetGoodForStartAction;
 use App\Actions\Admin\Category\UpdateCategoryAction;
 use App\Actions\Admin\Course\DeleteCourseAction;
 use App\Actions\Admin\Product\ArchiveProductAction;
+use App\Actions\Admin\Product\DeleteProductAction;
 use App\Actions\Admin\ProductDeliveryOption\DeleteProductDeliveryOptionAction;
 use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Category\CreateCategoryData;
@@ -21,6 +22,7 @@ use App\Models\ProductDeliveryOption;
 
 covers(
     ArchiveProductAction::class,
+    DeleteProductAction::class,
     DeleteProductDeliveryOptionAction::class,
     CreateCategoryAction::class,
     UpdateCategoryAction::class,
@@ -47,6 +49,15 @@ test('archiving a product clears the good-for-start listing', function () use ($
 
     $warmListing();
     app(ArchiveProductAction::class)->handle($product);
+
+    $assertListingCleared();
+});
+
+test('deleting a product clears the good-for-start listing', function () use ($warmListing, $assertListingCleared): void {
+    $product = Product::factory()->create();
+
+    $warmListing();
+    app(DeleteProductAction::class)->handle($product);
 
     $assertListingCleared();
 });

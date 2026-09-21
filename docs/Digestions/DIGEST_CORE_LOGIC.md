@@ -164,6 +164,8 @@
   - `handle(ProductUpdateData $data, Product $product): Product`: Updates product details and delivery options; bumps `CacheTag::Catalog` for the good-for-start listing
 - **ArchiveProductAction** (`app/Actions/Admin/Product/ArchiveProductAction.php`)
   - `handle(Product $product): Product`: Archives a product and bumps `CacheTag::Catalog` for the good-for-start listing
+- **DeleteProductAction** (`app/Actions/Admin/Product/DeleteProductAction.php`)
+  - `handle(Product $product): void`: Deletes a product with no order history and bumps `CacheTag::Catalog` and `CacheTag::Search`
 
 #### RelatedProduct Actions (`app/Actions/Admin/RelatedProduct/`)
 - **CreateRelatedProductAction** (`app/Actions/Admin/RelatedProduct/CreateRelatedProductAction.php`)
