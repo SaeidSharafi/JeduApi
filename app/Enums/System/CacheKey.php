@@ -13,6 +13,10 @@ use InvalidArgumentException;
  * and the invalidation tag it belongs to. Callers never build a cache key
  * string themselves; they name a case and pass its named parameters.
  *
+ * The OTP lifetimes are the business-tunable `config('otp.*')` values; the
+ * registry is where they are declared as the cached durations, so operators
+ * still tune them without touching call sites.
+ *
  * A null ttl means the entry never expires; a null staleTtl means the key must
  * not be read through CacheStore::flexible().
  */
@@ -77,9 +81,10 @@ enum CacheKey: string
             self::UserProfile     => 86400,
             self::Slider, self::PartnersInHome, self::PartnersInCourse,
             self::Partners, self::StudentStory, self::StudentQuizzes,
-            self::TeacherQuizzes, self::Search, self::OtpValue,
-            self::OtpAttempts                  => 300,
-            self::OtpMarker                    => 900,
+            self::TeacherQuizzes, self::Search => 300,
+            self::OtpValue                     => (int) config('otp.ttl_seconds', 300),
+            self::OtpMarker                    => (int) config('otp.marker_ttl_seconds', 900),
+            self::OtpAttempts                  => (int) config('otp.verify_attempt_window_seconds', 300),
             self::SearchSuggest                => 3600,
             self::GoodForStart                 => 1800,
             self::DigipayAccessToken           => 3300,

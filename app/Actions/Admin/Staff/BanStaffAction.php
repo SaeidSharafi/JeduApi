@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Staff;
 
+use App\Models\PersonalAccessToken;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +20,8 @@ final readonly class BanStaffAction
                 'is_banned' => true,
                 'banned_at' => now(),
             ]);
+
+            PersonalAccessToken::forgetCacheFor($staff);
 
             $staff->tokens()->delete();
 

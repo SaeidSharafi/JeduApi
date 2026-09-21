@@ -21,7 +21,8 @@ return [
     | OTP Time To Live (seconds)
     |--------------------------------------------------------------------------
     |
-    | The actual validity lifetime of the generated OTP code.
+    | The actual validity lifetime of the generated OTP code. CacheKey::OtpValue
+    | declares this value as the cached duration, so tuning it here is enough.
     |
     */
     'ttl_seconds' => 300,
@@ -33,6 +34,7 @@ return [
     |
     | Lifetime for send-marker metadata used for resend throttling and
     | expired-code detection. Should be greater than or equal to otp ttl.
+    | CacheKey::OtpMarker declares this value as the cached duration.
     |
     */
     'marker_ttl_seconds' => 900,
@@ -90,6 +92,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Controls how long failed verification attempts are tracked per OTP key.
+    | CacheKey::OtpAttempts declares this value as the cached duration.
     |
     */
     'verify_attempt_window_seconds' => 300,

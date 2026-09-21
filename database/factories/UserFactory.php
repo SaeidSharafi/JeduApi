@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\OtpManager\OtpDto;
+use App\Enums\System\CacheKey;
 use App\Enums\System\OtpType;
 use App\Enums\User\CivilIdTypeEnum;
 use App\Enums\User\EducationLevelEnum;
@@ -86,14 +88,20 @@ final class UserFactory extends Factory
         ]);
     }
 
-    public function withOtp(int $code = 123456): self
+    public function withOtp(int $code = 1234): self
     {
-        return $this->afterCreating(function (User $user) use ($code) {
-            $otpService = app(OtpManagerService::class);
-            $otpService->send($user->email, 'user', OtpType::SIGNIN);
-            $otpDto   = new OtpDto($code, $this->trackingCode);
-            $cacheKey = sprintf('otp_%s_%s_%s_%s', $user->email, 'user', 'value', OtpType::SIGNIN->value);
-            cache()->put($cacheKey, $otpDto);
+        return $this->afterCreating(function (User $user) use ($code): void {
+            $sentOtp = app(OtpManagerService::class)->send($user->phone, 'user', OtpType::SIGNIN);
+
+            app(CacheStore::class)->put(
+                CacheKey::OtpValue,
+                [
+                    'identifier' => $user->phone,
+                    'guard'      => 'user',
+                    'type'       => OtpType::SIGNIN->identifier(),
+                ],
+                new OtpDto($code, $sentOtp->trackingCode),
+            );
         });
     }
 }

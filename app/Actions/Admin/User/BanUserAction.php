@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\User;
 
+use App\Models\PersonalAccessToken;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +20,8 @@ final readonly class BanUserAction
                 'is_banned' => true,
                 'banned_at' => now(),
             ]);
+
+            PersonalAccessToken::forgetCacheFor($user);
 
             $user->tokens()->delete();
 

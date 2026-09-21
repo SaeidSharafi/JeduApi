@@ -923,7 +923,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Implementation Notes:** Automatically builds faceted filters from `ProductFilterData`, respects `result_types`, and streams results through DTO transformers in controllers
 
 ### CacheStore Gateway (`app/Contracts/Cache/CacheStore.php`, `app/Services/Cache/LaravelCacheStore.php`)
-- **Purpose:** Single entry point every cache read and write will go through; its one implementation is the only class permitted to touch Laravel's cache. Introduced in phase 1 of the cache consolidation (ADR 0014) and not yet consumed by call sites.
+- **Purpose:** Single entry point every cache read and write goes through; its one implementation is the only class permitted to touch Laravel's cache. Introduced in phase 1 of the cache consolidation (ADR 0014); settings/config, discount-handler, PGroonga, OTP and access-token caches are migrated onto it, and the remaining call sites follow as the phases land.
 - **Interface:**
   - `get(CacheKey $key, array $params = [], mixed $default = null): mixed`: Reads the value stored under the registry key.
   - `put(CacheKey $key, array $params, mixed $value): void`: Writes using the key's registered lifetime; a null value is ignored.
@@ -1032,16 +1032,18 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **`verify(Payment $payment, array $callbackData): Payment`**: Verifies payment after gateway callback.
 
 ### OtpManagerService (`app/Services/OtpManagerService.php`)
-- **Purpose:** Manages OTP generation, validation, and delivery
+- **Purpose:** Manages OTP generation, validation, attempt limiting and delivery
 - **Public Methods:**
-  - `generateOtp(string $identifier): string`: Creates time-limited OTP codes
-  - `validateOtp(string $identifier, string $otp): bool`: Validates submitted OTP codes
-  - `resendOtp(string $identifier): void`: Handles OTP resending with rate limiting
+  - `send(string $identifier, string $guard, ?OtpTypeInterface $type = null, array $params = []): SentOtpDto`: Generates a code, stores it and dispatches `OtpPrepared`
+  - `sendAndRetryCheck(...)`: Sends only when the stored marker is older than `config('otp.waiting_time')`, otherwise throws a throttle `ValidationException`
+  - `verify(string $identifier, string $guard, int $otp, string $trackingCode, ?OtpTypeInterface $type = null): bool`: One-time check of code and tracking code, run inside a native `Cache::lock()`
+  - `getVerifyCode()`, `deleteVerifyCode()`, `getSentAt()`, `isVerifyCodeHasBeenSent()`: Read, delete and inspect the stored code and its send marker
+- **Storage:** Codes, send markers and verify-attempt counters go through the `CacheStore` gateway under `CacheKey::OtpValue`, `CacheKey::OtpMarker` and `CacheKey::OtpAttempts`, keyed by identifier, guard and OTP type. The registry declares their lifetimes, sourcing the business-tunable values from `config('otp.ttl_seconds')`, `config('otp.marker_ttl_seconds')` and `config('otp.verify_attempt_window_seconds')`. Locks are deliberately not wrapped — they stay on Laravel's native `Cache::lock()`.
 - **Hardening:**
-  - Rate limiting per identifier (resend wait time from `config('otp.waiting_time')`, default 10 seconds)
-  - OTP validity window (`ttl_seconds`, default 300) and successful-use marker TTL (`marker_ttl_seconds`, default 900)
-  - OTP codes are one-time-use; successful validation invalidates the code and records a marker preventing immediate regeneration
-  - Resend limits enforced via `Illuminate\Support\RateLimiter`
+  - Resend throttled per identifier by the send marker (`config('otp.waiting_time')`, default 10 seconds)
+  - Codes are one-time-use; a failed verify increments the attempt counter, and exceeding `config('otp.max_verify_attempts')` deletes the code and throws
+  - Expiry is decided from the marker timestamp plus the `CacheKey::OtpValue` lifetime, so the read window and the stored duration cannot drift apart
+  - Verify-attempt counting is a read-then-write through the gateway rather than an atomic `Cache::increment()`, which is safe because `verify()` holds the per-key `Cache::lock()` for the whole read-modify-write
 
 ### InsufficientWalletBalanceException (`app/Exceptions/Payment/InsufficientWalletBalanceException.php`)
 - **Purpose:** Domain exception for wallet balance validation failures

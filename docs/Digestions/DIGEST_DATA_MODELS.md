@@ -26,7 +26,8 @@
 ### PersonalAccessToken (`app/Models/PersonalAccessToken.php`)
 - **Purpose:** Sanctum token model override with lookup caching
 - **Key Fields:** inherits Sanctum `personal_access_tokens` columns; token stored hashed
-- **Special Features:** `findToken()` caches token lookups under `AccessToken::{sha256(plainToken)}` (360s, `_null_` sentinel for misses); `getTokenableAttribute()` caches the polymorphic User/Staff resolution per environment under `token_{id}::id_{env}` (360s); `save()` skips the database write when the only dirty attributes are `last_used_at`/`updated_at` (activity heartbeat does not hit storage).
+- **Special Features:** `findToken()` caches token lookups through the `CacheStore` gateway under `CacheKey::AccessToken` (`{sha256(plainToken)}`, 360s, `_null_` sentinel for misses); `getTokenableAttribute()` caches the polymorphic User/Staff resolution per environment under `CacheKey::Tokenable` (`{id}`, `{env}`, 360s); `save()` skips the database write when the only dirty attributes are `last_used_at`/`updated_at` (activity heartbeat does not hit storage).
+- **Revocation:** `forgetCache()` drops both entries for one token and runs from the `deleted` event (logout). `forgetCacheFor(User|Staff $tokenable)` drops them for every token a model owns and is called by `BanUserAction`, `BanStaffAction`, `DeleteUserAction` and `DeleteStaffAction` before their bulk token delete, which fires no model events.
 - **Registration:** Bound in `AuthServiceProvider` so Sanctum resolves this class instead of the default token model.
 
 ### AdminActionLog (`app/Models/AdminActionLog.php`)

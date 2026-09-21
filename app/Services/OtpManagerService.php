@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\Cache\CacheStore;
 use App\Contracts\OtpGeneratorInterface;
 use App\Contracts\OtpTypeInterface;
 use App\Data\OtpManager\OtpDto;
 use App\Data\OtpManager\SentOtpDto;
+use App\Enums\System\CacheKey;
 use App\Events\OtpPrepared;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Carbon;
@@ -22,27 +24,21 @@ final class OtpManagerService
 
     private int $waitingTime;
 
-    private int $ttlSeconds;
-
-    private int $markerTtlSeconds;
-
-    private int $verifyAttemptWindowSeconds;
-
     private int $lockSeconds;
 
     private int $lockBlockSeconds;
 
     private OtpGeneratorInterface $otpGenerator;
 
-    public function __construct(OtpGeneratorInterface $otpGenerator)
+    private CacheStore $cache;
+
+    public function __construct(OtpGeneratorInterface $otpGenerator, CacheStore $cache)
     {
-        $this->otpGenerator               = $otpGenerator;
-        $this->waitingTime                = config('otp.waiting_time');
-        $this->ttlSeconds                 = config('otp.ttl_seconds', 300);
-        $this->markerTtlSeconds           = config('otp.marker_ttl_seconds', 900);
-        $this->verifyAttemptWindowSeconds = config('otp.verify_attempt_window_seconds', 300);
-        $this->lockSeconds                = config('otp.lock_seconds', 5);
-        $this->lockBlockSeconds           = config('otp.lock_block_seconds', 1);
+        $this->otpGenerator     = $otpGenerator;
+        $this->cache            = $cache;
+        $this->waitingTime      = config('otp.waiting_time');
+        $this->lockSeconds      = config('otp.lock_seconds', 5);
+        $this->lockBlockSeconds = config('otp.lock_block_seconds', 1);
 
     }
 
@@ -160,16 +156,19 @@ final class OtpManagerService
     {
         $this->type = $type;
 
-        return Cache::get($this->getCacheKey($identifier, $guard, 'value'));
+        return $this->cache->get(CacheKey::OtpValue, $this->params($identifier, $guard));
     }
 
     public function deleteVerifyCode(string $identifier, string $guard, ?OtpTypeInterface $type = null): bool
     {
         $this->type = $type;
 
-        $valueDeleted = Cache::delete($this->getCacheKey($identifier, $guard, 'value'));
+        $params  = $this->params($identifier, $guard);
+        $existed = $this->cache->get(CacheKey::OtpValue, $params) !== null;
 
-        return $valueDeleted;
+        $this->cache->forget(CacheKey::OtpValue, $params);
+
+        return $existed;
     }
 
     public function getSentAt(string $identifier, string $guard, ?OtpTypeInterface $type = null): ?Carbon
@@ -180,7 +179,7 @@ final class OtpManagerService
             return null;
         }
 
-        $created = Cache::get($this->getCacheKey($identifier, $guard, 'created'));
+        $created = $this->cache->get(CacheKey::OtpMarker, $this->params($identifier, $guard));
         if (! $created) {
             return null;
         }
@@ -196,38 +195,31 @@ final class OtpManagerService
             return false;
         }
 
-        return Cache::get($this->getCacheKey($identifier, $guard, 'value')) !== null;
+        return $this->cache->get(CacheKey::OtpValue, $this->params($identifier, $guard)) !== null;
     }
 
     private function handleVerificationAttempt(string $identifier, string $guard): void
     {
-        $attemptsKey = $this->getCacheKey($identifier, $guard, 'verify_attempts');
+        $params = $this->params($identifier, $guard);
 
         $maxAttempts = config('otp.max_verify_attempts', 5);
 
-        if (! Cache::has($attemptsKey)) {
-            Cache::put($attemptsKey, 0, $this->verifyAttemptWindowSeconds);
-        }
-
-        $attempts = (int) Cache::increment($attemptsKey);
-
-        Cache::put($attemptsKey, $attempts, $this->verifyAttemptWindowSeconds);
+        $attempts = (int) ($this->cache->get(CacheKey::OtpAttempts, $params) ?? 0) + 1;
+        $this->cache->put(CacheKey::OtpAttempts, $params, $attempts);
 
         if ($attempts > $maxAttempts) {
             $this->deleteVerifyCode($identifier, $guard, $this->type);
-            Cache::forget($attemptsKey);
+            $this->cache->forget(CacheKey::OtpAttempts, $params);
 
             throw ValidationException::withMessages([
-                'otp' => [__('messages.auth.otp.throttle', ['seconds' => $this->verifyAttemptWindowSeconds])],
+                'otp' => [__('messages.auth.otp.throttle', ['seconds' => CacheKey::OtpAttempts->ttl()])],
             ]);
         }
     }
 
     private function resetSendAttempts(string $identifier, string $guard): void
     {
-        $attemptsKey = $this->getCacheKey($identifier, $guard, 'verify_attempts');
-
-        Cache::forget($attemptsKey);
+        $this->cache->forget(CacheKey::OtpAttempts, $this->params($identifier, $guard));
     }
 
     private function getNewCode(string $identifier, string $guard): int
@@ -236,8 +228,10 @@ final class OtpManagerService
 
         $otpDto = new OtpDto($otp, $this->trackingCode);
 
-        Cache::put($this->getCacheKey($identifier, $guard, 'value'), $otpDto, $this->ttlSeconds);
-        Cache::put($this->getCacheKey($identifier, $guard, 'created'), time(), $this->markerTtlSeconds);
+        $params = $this->params($identifier, $guard);
+
+        $this->cache->put(CacheKey::OtpValue, $params, $otpDto);
+        $this->cache->put(CacheKey::OtpMarker, $params, time());
 
         return $otp;
     }
@@ -247,10 +241,10 @@ final class OtpManagerService
         $sentAt = $this->getSentAt($identifier, $guard, $type);
 
         if (! $sentAt) {
-            return Cache::get($this->getCacheKey($identifier, $guard, 'value')) === null;
+            return $this->cache->get(CacheKey::OtpValue, $this->params($identifier, $guard)) === null;
         }
 
-        return Carbon::now()->greaterThan($sentAt->copy()->addSeconds($this->ttlSeconds));
+        return Carbon::now()->greaterThan($sentAt->copy()->addSeconds((int) CacheKey::OtpValue->ttl()));
     }
 
     /**
@@ -277,14 +271,17 @@ final class OtpManagerService
         return sprintf('otp_lock_%s_%s_%s', $identifier, $guard, $type?->identifier() ?? 'none');
     }
 
-    private function getCacheKey(string $identifier, string $guard, string $for): string
+    /**
+     * Named parameters shared by every OTP registry key.
+     *
+     * @return array{identifier: string, guard: string, type: string|null}
+     */
+    private function params(string $identifier, string $guard): array
     {
-        return sprintf(
-            'otp_%s_%s_%s_%s',
-            $identifier,
-            $guard,
-            $for,
-            $this->type?->identifier()
-        );
+        return [
+            'identifier' => $identifier,
+            'guard'      => $guard,
+            'type'       => $this->type?->identifier(),
+        ];
     }
 }
