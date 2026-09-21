@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ab233920010c078c42376b624bad443e",
+    "content-hash": "cb3e5b85dd762a8c462fc5db62857429",
     "packages": [
         {
             "name": "brick/math",
@@ -1488,101 +1488,6 @@
                 }
             ],
             "time": "2025-03-09T13:03:20+00:00"
-        },
-        {
-            "name": "iazaran/smart-cache",
-            "version": "1.13.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/iazaran/smart-cache.git",
-                "reference": "b1cf9a4985bc85a66416b6f13070596b4c33f934"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/iazaran/smart-cache/zipball/b1cf9a4985bc85a66416b6f13070596b4c33f934",
-                "reference": "b1cf9a4985bc85a66416b6f13070596b4c33f934",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/cache": "^8.0||^9.0||^10.0||^11.0||^12.0||^13.0",
-                "illuminate/console": "^8.0||^9.0||^10.0||^11.0||^12.0||^13.0",
-                "illuminate/contracts": "^8.0||^9.0||^10.0||^11.0||^12.0||^13.0",
-                "illuminate/support": "^8.0||^9.0||^10.0||^11.0||^12.0||^13.0",
-                "php": "^8.1"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1.5",
-                "orchestra/testbench": "^6.0||^7.0||^8.0||^9.0||^10.0||^11.0",
-                "phpunit/phpunit": "^9.6.33||^10.5.62||^11.5.50||^12.5.22||^13.1.6",
-                "symfony/var-dumper": "^5.4|^6.0|^7.0|^8.0"
-            },
-            "suggest": {
-                "ext-memcached": "Recommended when using the Memcached cache driver for distributed caching",
-                "ext-redis": "Recommended when utilizing the Redis cache driver for better performance",
-                "ext-zlib": "Required for compressing cached data using gzip (strongly recommended)"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "SmartCache": "SmartCache\\Facades\\SmartCache"
-                    },
-                    "providers": [
-                        "SmartCache\\Providers\\SmartCacheServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "files": [
-                    "src/helpers.php"
-                ],
-                "psr-4": {
-                    "SmartCache\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Ismael Azaran",
-                    "email": "eazaran@gmail.com"
-                }
-            ],
-            "description": "Smart Cache is a caching optimization package designed to enhance the way your Laravel application handles data caching. It intelligently manages large data sets by compressing, chunking, or applying other optimization strategies to keep your application performant and efficient.",
-            "homepage": "https://github.com/iazaran/smart-cache",
-            "keywords": [
-                "cache chunking",
-                "cache management",
-                "cache optimization",
-                "cache serialization",
-                "cache stampede prevention",
-                "cache strategies",
-                "cost-aware eviction",
-                "data compression",
-                "file cache",
-                "laravel cache driver",
-                "laravel cache replacement",
-                "laravel caching",
-                "laravel optimization",
-                "laravel package",
-                "laravel performance",
-                "php caching",
-                "psr-16",
-                "redis cache",
-                "self-healing cache",
-                "smart cache laravel",
-                "smart-cache",
-                "stale-while-revalidate",
-                "swr",
-                "write deduplication"
-            ],
-            "support": {
-                "issues": "https://github.com/iazaran/smart-cache/issues",
-                "source": "https://github.com/iazaran/smart-cache"
-            },
-            "time": "2026-08-04T19:09:36+00:00"
         },
         {
             "name": "intervention/gif",

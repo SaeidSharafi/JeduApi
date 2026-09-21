@@ -616,13 +616,13 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - `show(HomePageBlock $homePageBlock, GetHomePageBlockAction $action)`: **Route:** `GET /api/v1/shop/home-page-blocks/{home_page_block}` - **Response DTO:** HomePageBlockData for the requested block, including curated and dynamic list payloads
 
 #### SliderController (`app/Http/Controllers/Api/Shop/HomePage/SliderController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/shop/sliders` - **Response DTO:** SliderData collection cached via SmartCache using `CacheKeysEnum::Slider`
+- `__invoke()`: **Route:** `GET /api/v1/shop/sliders` - **Response DTO:** SliderData collection cached through the `CacheStore` gateway under `CacheKey::Slider`
 
 #### PartnerController (`app/Http/Controllers/Api/Shop/HomePage/PartnerController.php`)
 - `__invoke(Request $request)`: **Route:** `GET /api/v1/shop/partners` - **Query Params:** `show_in=home|course` - **Response DTO:** PartnerData collection filtered by display location and cached per `PartnerShowInEnum`
 
 #### StudentStoryController (`app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php`)
-- `__invoke(StudentStoryRequestData $request)`: **Route:** `GET /api/v1/shop/student-stories` - **Query Params:** `course_slug`, `category_slug`, `featured_only`, optional `limit`. Filters visible stories by requested course/category (matching both direct course relations and linked products) and falls back to featured stories when a requested slug yields no records. **Response DTO:** `StudentStoryData` collection ordered by `display_order` and cached per-parameter via `SWRCacheService` with wildcard invalidation support.
+- `__invoke(StudentStoryRequestData $request)`: **Route:** `GET /api/v1/shop/student-stories` - **Query Params:** `course_slug`, `category_slug`, `featured_only`, optional `limit`. Filters visible stories by requested course/category (matching both direct course relations and linked products) and falls back to featured stories when a requested slug yields no records. **Response DTO:** `StudentStoryData` collection ordered by `display_order` and cached per parameter hash through `CacheStore::flexible()` under `CacheKey::StudentStory` (`CacheTag::HomePage`).
 
 #### GatewayCallbackController (`app/Http/Controllers/Api/Shop/Payment/GatewayCallbackController.php`)
 - `handle(Request $request, Payment $payment, GatewayCallbackData $data, VerifyPaymentAction $action)`: **Route:** `GET|POST /api/v1/shop/payment/gateway/callback/{payment}` - Accepts gateway callbacks via route-bound Payment UUID. Logs payloads, delegates to `VerifyPaymentAction` with Payment model + raw request data. Redirects customers to the shop details page for the payment purpose: `{payments.redirect.shopdomain}/{payments.redirect.order}/{order.increment_id}` for `ORDER`, `{payments.redirect.shopdomain}/{payments.redirect.topup}/{payment.uuid}` for `WALLET_TOPUP`. Both verified and failed-status callbacks target the same details page; `PaymentExceptionContract` and `Throwable` exceptions append `payment` + `error` query params to that URL instead of redirecting to a separate failure page.

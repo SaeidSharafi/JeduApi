@@ -14,7 +14,6 @@
   - `spatie/laravel-permission`: Role-based access control for admin operations (v6.18)
   - `spatie/laravel-query-builder`: Advanced API filtering and querying (v6.3)
   - `plank/laravel-mediable`: Media management and file handling (v6.3)
-  - `iazaran/smart-cache`: Smart cache facade with configurable invalidation map powering SettingsService and content cache refreshes
   - `spatie/laravel-webhook-client`: External integrations and webhooks (v3.4)
   - `laravel/sanctum`: Dual-guard authentication system (v4.0)
 - **Service Layer Architecture:**
@@ -37,7 +36,7 @@
 - **Order System:** Complete order lifecycle with items, payments, refunds, and status tracking. Supports configurable provisioning triggers: `any_payment` (auto-provision), `full_payment` (provision when fully paid), `manual_approval` (staff must approve). Customers can cancel pending orders.
 - **Discount System:** Advanced promotion engine with complex rules, conditions, and coupon management. Enforces `usage_limit_total` on promotions.
 - **Payment Processing:** Multi-gateway support (wallet, bank transfer, Mellat, Digipay) with factory pattern implementation. All processors create per-attempt `PaymentTransaction` records for full audit trail. `PaymentTransactionReferenceService` for unique sequential reference generation with concurrency safety. Digipay: full REST integration with token-based auth, callback verification, admin refund/deliver/reverse operations. Hidden gateway credentials managed via `PaymentGatewaySettingsController`.
-- **Refund System:** SmartCache-locked refund processing with gateway-specific processors (`DigipayRefundProcessor`, `ManualRefundProcessor`, `WalletRefundProcessor`). Order-level refund endpoint, cumulative amount validation, `UpdateOrderRefundedAmountAction` for parent order status recalculation.
+- **Refund System:** Cache-locked refund processing with gateway-specific processors (`DigipayRefundProcessor`, `ManualRefundProcessor`, `WalletRefundProcessor`). Order-level refund endpoint, cumulative amount validation, `UpdateOrderRefundedAmountAction` for parent order status recalculation.
 - **Enrollment System:** Student access management for purchased content with lifecycle tracking. **Admin Enrollment Management** endpoints for CRUD, status transitions (with allowed transition matrix), and retry provisioning. Enrollments fire model events on status changes for `enrolled_count` synchronization.
 
 ### Admin Platform Features
@@ -82,7 +81,7 @@
 - **API Documentation:** Comprehensive endpoint coverage with DTOs
 - **Select Options:** Dropdown data provision for admin interface
 - **Content Automation:** Scheduled blog post publication with automated workflow management
-- **Smart Cache Invalidation:** Event-driven cache invalidation map with `InvalidationObserver`, `CacheInvalidationService`, `CacheKeysEnum`, and `SettingsService` to keep storefront content fresh
+- **Cache Invalidation:** Explicit, tag-based invalidation through the `CacheStore` gateway — mutating actions and jobs call `invalidate(CacheTag::…)` in plain sight, `CacheKey` owns every key template/TTL/group, and `SettingsService` clears `CacheKey::Settings` on write. No observer or config map clears caches implicitly
 - **Unified Search & Discovery:** Typesense-powered search with PGroonga-backed database fallback, multi-model result hydration, and SWR-cached autosuggest responses
 - **Review Aggregation:** Background listener recomputes `review_count` and `average_rating` whenever reviews change for reviewable models
 - **Price Indexing System:** Denormalized product_prices table for fast price queries with discount and featured price calculations
@@ -118,7 +117,7 @@
 - **SKU Generation:** Automatic SKU generation via `SkuGeneratorService` with pattern-based formatting
 - **Product Querying:** `ProductQueryService` provides fluent interface for complex product filtering with discount, price range, category, and availability filters; enhanced search matching across product names (name, short_name) and productable fields using `whereLike()` for optimized pattern matching
 - **Category Querying:** `CategoryQueryService` handles category-based product retrieval with type filtering
-- **Content Management:** Dynamic home page content assembly with performance optimization and SmartCache-aware invalidation
+- **Content Management:** Dynamic home page content assembly with performance optimization and gateway-backed explicit invalidation
 - **Settings:** `SettingsService` centralizes cached reads/writes for site-wide configuration through the cache gateway (`CacheKey::Settings`), SKIP_MEDIA optimization for integration keys, auto-encryption of secrets on write, auto-decryption on read, and redaction in API responses via `SettingSecretRedactor`
 - **Integration Services:** `ImsService` (REST student/enrollment CRUD with PII redaction), `MoodleService` (Web Services user/enrollment/grades/completion/SSO), `SpotPlayerService` (video license provisioning), `SkyroomService` (video conferencing SSO and user/room management), `NiliroomService` (live-session panel login and meeting join grants). All extend `AbstractIntegrationService` base class with shared config resolution, HTTP error handling, and lifecycle guards (`isEnabled()`, `assertConfigured()`, `isReady()`). All use `SettingsService` for credential resolution with dual-mode config (direct/settings).
 - **Provisioning:** Canonical `ProvisionEnrollmentProviderJob` (3 retries [60s, 180s, 600s], unique per attempt) resolves provider adapters through `ProvisioningProviderRegistry` and persists outcomes via `ProvisioningAttemptService`. `OrderStatusUpdateListener` dispatches it per planned provider after order completion. `ProvisioningPlanResolver` builds the canonical provider plan; `ProvisioningDiagnosticsService` exposes safe diagnostics; `SyncMoodleProgressJob` updates enrollment provisioning_data with Moodle completion/grades. Skyroom join URLs generated lazily via `GetJoinUrlAction` at request time (not async provisioning).

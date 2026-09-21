@@ -949,21 +949,6 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Binding:** `AppServiceProvider` binds `CacheStore` to `LaravelCacheStore`.
 - **Notes:** Locks are deliberately not wrapped — call sites use Laravel's `Cache::lock()` directly. Null values are never stored through the gateway.
 
-### SWRCacheService (`app/Services/SWRCacheService.php`)
-- **Purpose:** Provides Stale-While-Revalidate caching helpers on top of SmartCache
-- **Public Methods:**
-  - `remember(string $key, Closure $callback, int $freshSeconds = 300, int $staleSeconds = 900)`: Core SWR wrapper returning fresh or stale payloads while refreshing asynchronously
-  - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale); keys encode filter hashes (e.g., student story course/category slug combos) with wildcard invalidation support to keep variant caches consistent. The shop slider, partner and student-story endpoints no longer use it — they read through `CacheStore::flexible()` on their `CacheKey` cases.
-  - `rememberSearchSuggestions(string $key, Closure $callback)`: Preset for search autocomplete (1 hour fresh / 4 hours stale); `GlobalSearchService::suggest()` no longer calls it.
-  - `rememberTrendingContent(string $key, Closure $callback)`: Preset for trending widgets (10 min fresh / 30 min stale)
-- **Usage:** No production caller remains: the student/teacher quiz listings, search results and suggestions all read through the `CacheStore` gateway, and the homepage preset has no caller.
-
-### CacheInvalidationService (`app/Services/CacheInvalidationService.php`)
-- **Purpose:** Central cache eviction utility invoked by `InvalidationObserver`
-- **Public Method:**
-  - `invalidateForModel(string|Model $model, array $invalidationConfig): void`: Iterates configured keys/patterns, calling `SmartCache::forget()` and `SmartCache::flushPatterns()` with exception-safe logging
-- **Configuration:** Consumes `config/cache_invalidation.php` entries of wildcard patterns; after the home-page move the map only carries search and good-for-start patterns and no entry uses `CacheKeysEnum` any more.
-
 ### PgroongaService (`app/Services/PgroongaService.php`)
 - **Purpose:** Lightweight helper to detect PGroonga availability on PostgreSQL connections
 - **Public Method:**
@@ -983,11 +968,6 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Implementation Notes:** Caches the full settings collection forever through the gateway under `CacheKey::Settings`, ensuring single query hydration per deploy cycle. The `SettingObserver` that used to clear it is deleted; explicit `forget()` calls carry the invalidation.
 
 ## Observers, Events & Async Processing
-
-### InvalidationObserver (`app/Observers/InvalidationObserver.php`)
-- **Purpose:** Global Eloquent observer that translates model save/delete events into cache invalidations.
-- **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Course, Category, BlogPost, …) to wildcard patterns and delegates eviction to `CacheInvalidationService` (`SmartCache::flushPatterns`). `Setting`, `Slider`, `Partner` and `StudentStory` are deliberately absent: their caches are cleared explicitly by the actions that write them. The dead `shop.homepage.content` key was removed from the map, from `CacheKey` and from the legacy `CacheKeysEnum` because nothing read or wrote it.
-- **Usage:** Keeps SmartCache good-for-start and search payloads fresh without manual cache calls.
 
 ### ProductableAvailabilityObserver (`app/Observers/ProductableAvailabilityObserver.php`)
 - **Purpose:** Keeps availability snapshots and search index in sync when productable (Course/Seminar/DigitalAsset) content changes
@@ -1015,8 +995,8 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 ### Product Price Cache Refresh
 - **Event:** `ProductCacheInvalidated` (`app/Events/ProductCacheInvalidated.php`) is dispatched when pricing-sensitive data mutates.
-- **Listener:** `QueueProductPriceCacheUpdate` (`app/Listeners/QueueProductPriceCacheUpdate.php`) asynchronously dispatches `UpdateProductPriceCacheJob` with the affected product ID.
-- **Job:** `UpdateProductPriceCacheJob` (`app/Jobs/UpdateProductPriceCacheJob.php`) recalculates price data via `ProductPriceService`, persists it to `price_data_cache`, and clears related SmartCache keys per the invalidation map.
+- **Listener:** `QueueProductPriceCacheUpdate` (`app/Listeners/QueueProductPriceCacheUpdate.php`) asynchronously dispatches `UpdateProductPricingJob` for the affected product.
+- **Job:** `UpdateProductPricingJob` (`app/Jobs/UpdateProductPricingJob.php`) recalculates price data via `ProductPriceService`, persists it to `price_data_cache`, and invalidates `CacheTag::Catalog` and `CacheTag::Search` through the gateway.
 - **Result:** Ensures shop endpoints read precomputed pricing snapshots while remaining consistent after admin edits.
 
 ### FullTextSearchProvider (`app/Providers/FullTextSearchProvider.php`)

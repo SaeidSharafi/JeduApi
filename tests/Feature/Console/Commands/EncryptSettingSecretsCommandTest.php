@@ -112,7 +112,7 @@ it('integration settings are readable via SettingsService::get() after migration
 
     artisan('settings:encrypt-secrets')->assertExitCode(0);
 
-    // Bust the SmartCache so SettingsService reads fresh DB data.
+    // Bust the settings cache so SettingsService reads fresh DB data.
     app(SettingsService::class)->forget();
 
     $value = app(SettingsService::class)->get(SettingKeyEnum::NILIROOM);
