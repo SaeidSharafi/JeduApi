@@ -127,8 +127,8 @@
                     "data": {
                         "moodle_user_id": 101,
                         "moodle_user_name": "m.rezaei",
-                        "moodle_course_id": 231,
-                        "login_path": "/moodle/login/index.php?username=m.rezaei&course=231"
+                        "moodle_course_id": 408,
+                        "login_path": "/moodle/login/index.php?username=m.rezaei&course=408"
                     },
                     "attempt_sequence": 1
                 }
@@ -202,8 +202,8 @@
                     "data": {
                         "moodle_user_id": 101,
                         "moodle_user_name": "m.rezaei",
-                        "moodle_course_id": 235,
-                        "login_path": "/moodle/login/index.php?username=m.rezaei&course=235"
+                        "moodle_course_id": 408,
+                        "login_path": "/moodle/login/index.php?username=m.rezaei&course=408"
                     },
                     "attempt_sequence": 1
                 }
