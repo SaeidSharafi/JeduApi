@@ -24,7 +24,7 @@ final readonly class DeleteUserAction
      */
     public function handle(User $user): void
     {
-        DB::transaction(function () use ($user): void {
+        $identifiers = DB::transaction(function () use ($user): array {
             if ($user->teacherData()->exists()) {
                 throw new ModelHasRelationshipDataException(relatedModel: Teacher::class);
             }
@@ -49,11 +49,16 @@ final readonly class DeleteUserAction
             // would otherwise linger after the user is gone.
             $user->media()->detach();
 
-            PersonalAccessToken::forgetCacheFor($user);
+            $identifiers = PersonalAccessToken::cacheIdentifiersFor($user);
 
             $user->tokens()->delete();
             $user->wallet?->delete();
             $user->delete();
+
+            return $identifiers;
         });
+
+        // Only once the delete is committed; see forgetCacheFor().
+        PersonalAccessToken::forgetCachedIdentifiers($identifiers);
     }
 }

@@ -15,17 +15,22 @@ final readonly class BanStaffAction
      */
     public function handle(Staff $staff): Staff
     {
-        return DB::transaction(function () use ($staff): Staff {
+        $identifiers = DB::transaction(function () use ($staff): array {
             $staff->update([
                 'is_banned' => true,
                 'banned_at' => now(),
             ]);
 
-            PersonalAccessToken::forgetCacheFor($staff);
+            $identifiers = PersonalAccessToken::cacheIdentifiersFor($staff);
 
             $staff->tokens()->delete();
 
-            return $staff->fresh();
+            return $identifiers;
         });
+
+        // Only once the ban and the revoke are committed; see forgetCacheFor().
+        PersonalAccessToken::forgetCachedIdentifiers($identifiers);
+
+        return $staff->fresh();
     }
 }

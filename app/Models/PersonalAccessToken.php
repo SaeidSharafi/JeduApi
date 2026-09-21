@@ -49,14 +49,43 @@ final class PersonalAccessToken extends SanctumPersonalAccessToken
      * Drop the cached lookup and user snapshot of every token a model owns.
      *
      * Banning or deleting an account revokes its tokens with a bulk delete,
-     * which fires no model events, so those actions call this first; otherwise
-     * a revoked token keeps authenticating until its cached entry expires.
+     * which fires no model events. Callers that run inside a transaction must
+     * snapshot with {@see self::cacheIdentifiersFor()} first and call
+     * {@see self::forgetCachedIdentifiers()} only after the commit: forgetting
+     * before it lets a concurrent request re-cache a token that is still live
+     * in the other connection, and the ban then never clears it.
      */
     public static function forgetCacheFor(User|Staff $tokenable): void
     {
-        $tokenable->tokens()->get(['id', 'token'])->each(function (SanctumPersonalAccessToken $token): void {
-            self::forgetKeys($token->token, $token->id);
-        });
+        self::forgetCachedIdentifiers(self::cacheIdentifiersFor($tokenable));
+    }
+
+    /**
+     * Snapshot the cache identifiers of every token a model owns, before a bulk delete.
+     *
+     * @return list<array{id: int|string, token: string}>
+     */
+    public static function cacheIdentifiersFor(User|Staff $tokenable): array
+    {
+        return $tokenable->tokens()->get(['id', 'token'])
+            ->map(static fn (SanctumPersonalAccessToken $token): array => [
+                'id'    => $token->id,
+                'token' => $token->token,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Drop both cached entries of every token in a snapshot taken before its bulk delete.
+     *
+     * @param  list<array{id: int|string, token: string}>  $identifiers
+     */
+    public static function forgetCachedIdentifiers(array $identifiers): void
+    {
+        foreach ($identifiers as $identifier) {
+            self::forgetKeys($identifier['token'], $identifier['id']);
+        }
     }
 
     public function getTokenableAttribute(mixed $value): ?Model
