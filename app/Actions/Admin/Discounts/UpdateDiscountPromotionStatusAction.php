@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Discounts;
 
-use App\Contracts\Cache\CacheStore;
 use App\Enums\Order\DiscountTypeEnum;
-use App\Enums\System\CacheTag;
 use App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob;
 use App\Models\DiscountPromotion;
 
@@ -19,7 +17,7 @@ use App\Models\DiscountPromotion;
  */
 final readonly class UpdateDiscountPromotionStatusAction
 {
-    public function __construct(private CacheStore $cache) {}
+    public function __construct(private InvalidateDiscountCachesAction $invalidateCaches) {}
 
     public function handle(DiscountPromotion $promotion): DiscountPromotion
     {
@@ -29,7 +27,7 @@ final readonly class UpdateDiscountPromotionStatusAction
             RegeneratePromotionDiscountPricesJob::dispatchSync($promotion);
         }
 
-        $this->cache->invalidate(CacheTag::Catalog, CacheTag::Search, CacheTag::Discounts);
+        $this->invalidateCaches->handle();
 
         return $promotion->fresh();
     }

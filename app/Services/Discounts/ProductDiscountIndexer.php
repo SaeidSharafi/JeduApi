@@ -58,9 +58,10 @@ final class ProductDiscountIndexer
         }
         // @codeCoverageIgnoreEnd
 
-        // Truncating the index changes every product's discounted price, so the catalog
-        // and search caches must drop even when no active promotion rebuilds a price.
-        $this->cache->invalidate(CacheTag::Catalog, CacheTag::Search);
+        // Truncating the index changes every product's discounted price, so the catalog,
+        // search and handler-registry caches must drop even when no active promotion
+        // rebuilds a price.
+        $this->cache->invalidate(CacheTag::Catalog, CacheTag::Search, CacheTag::Discounts);
     }
 
     /**

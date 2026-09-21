@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 final class DeleteDiscountPromotionAction
 {
+    public function __construct(private readonly InvalidateDiscountCachesAction $invalidateCaches) {}
+
     public function execute(DiscountPromotion $promotion): void
     {
         DB::transaction(function () use ($promotion): void {
@@ -19,5 +21,7 @@ final class DeleteDiscountPromotionAction
             // Delete the promotion
             $promotion->delete();
         });
+
+        $this->invalidateCaches->handle();
     }
 }

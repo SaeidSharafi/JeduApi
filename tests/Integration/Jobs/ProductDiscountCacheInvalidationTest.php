@@ -71,10 +71,14 @@ test('the availability job clears the catalog and search groups when a snapshot 
 test('a full reindex with no active promotions still clears cached discounted prices', function () use ($warmCatalogAndSearch, $assertCatalogAndSearchCleared): void {
     expect(DiscountPromotion::query()->where('is_active', true)->exists())->toBeFalse();
 
+    $cache = app(CacheStore::class);
+    $cache->put(CacheKey::DiscountHandlers, [], ['stale']);
+
     $warmCatalogAndSearch();
     app(ProductDiscountIndexer::class)->reIndexComplete();
 
     $assertCatalogAndSearchCleared();
+    expect($cache->get(CacheKey::DiscountHandlers))->toBeNull();
 });
 
 test('toggling a promotion off reindexes the price immediately and clears the catalog, search and discount groups', function () use ($warmCatalogAndSearch, $assertCatalogAndSearchCleared): void {
