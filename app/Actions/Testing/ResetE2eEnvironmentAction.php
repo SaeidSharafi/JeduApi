@@ -8,7 +8,6 @@ use App\Exceptions\Testing\E2eResetFailedException;
 use App\Models\Staff;
 use App\Models\User;
 use App\Services\Testing\E2eResetState;
-use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -34,13 +33,10 @@ final class ResetE2eEnvironmentAction
     {
         $resetId = (string) Str::uuid7();
         try {
-            $store = Cache::store('e2e')->getStore();
-
-            if (! $store instanceof LockProvider) {
-                throw new RuntimeException('The E2E cache store does not support distributed locks.');
-            }
-
-            $lock = $store->lock(self::LOCK_KEY, (int) config('e2e.reset_lock_seconds', 300));
+            // The E2E environment is disposable: this lock lives on the default cache
+            // store's lock connection, which the reset's own Redis flush also clears,
+            // so the lock may be released before the reset finishes.
+            $lock = Cache::lock(self::LOCK_KEY, (int) config('e2e.reset_lock_seconds', 300));
         } catch (Throwable $exception) {
             Log::error('E2E reset lock acquisition failed.', [
                 'reset_id'  => $resetId,

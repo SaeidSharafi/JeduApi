@@ -81,7 +81,7 @@
 - **API Documentation:** Comprehensive endpoint coverage with DTOs
 - **Select Options:** Dropdown data provision for admin interface
 - **Content Automation:** Scheduled blog post publication with automated workflow management
-- **Cache Invalidation:** Explicit, tag-based invalidation through the `CacheStore` gateway — mutating actions and jobs call `invalidate(CacheTag::…)` in plain sight, `CacheKey` owns every key template/TTL/group, and `SettingsService` clears `CacheKey::Settings` on write. No observer or config map clears caches implicitly
+- **Cache Invalidation:** Explicit, tag-based invalidation through the `CacheStore` gateway — mutating actions and jobs call `invalidate(CacheTag::…)` in plain sight, `CacheKey` owns every key template/TTL/group, and `SettingsService` clears `CacheKey::Settings` on write. No observer or config map clears caches implicitly. Enforced by the architecture and tag-coverage tests in `tests/Architecture/CacheGatewayTest.php`
 - **Unified Search & Discovery:** Typesense-powered search with PGroonga-backed database fallback, multi-model result hydration, and SWR-cached autosuggest responses
 - **Review Aggregation:** Background listener recomputes `review_count` and `average_rating` whenever reviews change for reviewable models
 - **Price Indexing System:** Denormalized product_prices table for fast price queries with discount and featured price calculations

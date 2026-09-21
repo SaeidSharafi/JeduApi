@@ -6,7 +6,7 @@
 
 #### ResetE2eEnvironmentAction (`app/Actions/Testing/ResetE2eEnvironmentAction.php`)
 - **Purpose:** Rebuilds the isolated E2E database and returns fresh bootstrap identities for black-box tests.
-- **Concurrency:** Acquires the distributed `e2e:database-reset` cache lock for five minutes, marks the E2E application as resetting, drains active jobs, and prevents new HTTP/queue work until cleanup is complete; returns `null` when another reset already owns the lock.
+- **Concurrency:** Acquires the distributed `e2e:database-reset` lock for five minutes through Laravel's native `Cache::lock()` on the default cache store's lock connection. That connection is cleared by the reset's own `Redis::connection('default')->flushdb()`, so the lock may be released before the reset finishes — accepted because the environment is a throwaway CI/CD one. It marks the E2E application as resetting, drains active jobs, and prevents new HTTP/queue work until cleanup is complete; returns `null` when another reset already owns the lock.
 - **Functionality:** Terminates E2E Horizon workers, flushes the dedicated E2E Redis queue database plus the E2E cache store via the framework's `cache:clear e2e` command, clears the dedicated E2E media disk, runs `migrate:fresh`, synchronizes staff/user permissions, creates one super-admin staff identity and one complete customer identity, issues Sanctum tokens for both, and waits for a worker heartbeat before returning.
 - **Failures:** Cleanup and worker readiness failures are logged with the reset ID and raised as `E2eResetFailedException`; the API exposes only the stable `E2E_RESET_FAILED` code and correlation ID.
 - **Output:** Returns a unique `reset_id`, `readiness: ready`, and each bootstrap identity's ID, email, phone, password, and token.
@@ -933,7 +933,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Implementation Notes:** Automatically builds faceted filters from `ProductFilterData`, respects `result_types`, and streams results through DTO transformers in controllers. The Typesense search path caches through `CacheStore::flexible()` under `CacheKey::Search`; the database fallback is uncached.
 
 ### CacheStore Gateway (`app/Contracts/Cache/CacheStore.php`, `app/Services/Cache/LaravelCacheStore.php`)
-- **Purpose:** Single entry point every cache read and write goes through; its one implementation is the only class permitted to touch Laravel's cache. Introduced in phase 1 of the cache consolidation (ADR 0014); settings/config, discount-handler, PGroonga, OTP and access-token caches are migrated onto it, and the remaining call sites follow as the phases land.
+- **Purpose:** Single entry point every cache read and write goes through; its one implementation is the only class permitted to touch Laravel's cache. Introduced in phase 1 of the cache consolidation (ADR 0014); after the migration completed, every caller — settings/config, discount handlers, PGroonga, OTP, access tokens, home page content, good-for-start, search, quizzes and the catalog write pipeline — reads and writes through it, and the legacy `SmartCache` stack is gone.
 - **Interface:**
   - `get(CacheKey $key, array $params = [], mixed $default = null): mixed`: Reads the value stored under the registry key.
   - `put(CacheKey $key, array $params, mixed $value): void`: Writes using the key's registered lifetime; a null value is ignored.
@@ -947,7 +947,8 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Tag vocabulary (`app/Enums/System/CacheTag.php`):** `HomePage`, `Content`, `Catalog`, `Search`, `Discounts`, `Settings`, `Auth`.
 - **Storage keys:** Values are stored at `cache:{tag}:v{version}:{template}`; version counters live at `cache.version:{tag}` and only `invalidate()` bumps them. Invalidation behaves identically on the array, database and Redis stores.
 - **Binding:** `AppServiceProvider` binds `CacheStore` to `LaravelCacheStore`.
-- **Notes:** Locks are deliberately not wrapped — call sites use Laravel's `Cache::lock()` directly. Null values are never stored through the gateway.
+- **Enforcement (`tests/Architecture/CacheGatewayTest.php`):** An architecture test scans application source outside `app/Contracts/Cache` and `app/Services/Cache` and fails on any ad-hoc cache storage access — `Cache::` (every method except `lock()`), the `cache()` helper, or `SmartCache::`. A second test derives the writers from literal `invalidate(CacheTag::X)` and `forget(CacheKey::Y)` calls and fails when a tag in the vocabulary has no writer clearing it.
+- **Notes:** Locks are deliberately not wrapped — call sites use Laravel's `Cache::lock()` directly, which the architecture rule allows as coordination rather than storage. Null values are never stored through the gateway.
 
 ### PgroongaService (`app/Services/PgroongaService.php`)
 - **Purpose:** Lightweight helper to detect PGroonga availability on PostgreSQL connections
