@@ -136,6 +136,18 @@ it('forgets only the exact key it is given', function (): void {
         ->and($cache->get(CacheKey::AccessToken, ['hash' => 'def']))->toBe('second');
 });
 
+it('reports each tag version and increases only the invalidated tag', function (): void {
+    $cache = cacheGateway();
+
+    expect($cache->version(CacheTag::Search))->toBe(0);
+
+    $cache->invalidate(CacheTag::Search);
+    $cache->invalidate(CacheTag::Search);
+
+    expect($cache->version(CacheTag::Search))->toBe(2)
+        ->and($cache->version(CacheTag::HomePage))->toBe(0);
+});
+
 it('makes the previous generation unreadable and regenerates it on the next read', function (): void {
     $cache = cacheGateway();
 
@@ -260,10 +272,12 @@ it('bumps the version counters on the database store across generations', functi
 
     $this->travel(1)->hour();
 
-    expect($cache->get(CacheKey::UserProfile, ['id' => 7]))->toBeNull();
+    expect($cache->get(CacheKey::UserProfile, ['id' => 7]))->toBeNull()
+        ->and($cache->version(CacheTag::Auth))->toBe(1);
 
     $cache->put(CacheKey::UserProfile, ['id' => 7], 'second');
     $cache->invalidate(CacheTag::Auth);
 
-    expect($cache->get(CacheKey::UserProfile, ['id' => 7]))->toBeNull();
+    expect($cache->get(CacheKey::UserProfile, ['id' => 7]))->toBeNull()
+        ->and($cache->version(CacheTag::Auth))->toBe(2);
 });

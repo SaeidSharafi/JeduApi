@@ -127,7 +127,7 @@
 - **Order Provisioning:** Configurable trigger system (`any_payment`, `full_payment`, `manual_approval`) with `ApproveOrderAction` for staff approval flow
 - **OTP Management:** Secure verification code handling
 - **SMS Service:** Integration with external SMS provider
-- **Console Commands:** Automated blog post publication, price indexing with `prices:index-all` (--missing-only, --sync, --queue options), featured price expiry checks with `prices:check-expired-featured` (--dry-run, --queue options), `payments:check-stuck` for detecting abandoned gateway payments, and `settings:encrypt-secrets` (--dry-run) for migrating legacy plaintext integration secrets to encrypted at rest
+- **Console Commands:** Automated blog post publication, price indexing with `prices:index-all` (--missing-only, --sync, --queue options), featured price expiry checks with `prices:check-expired-featured` (--dry-run, --queue options), `payments:check-stuck` for detecting abandoned gateway payments, `settings:encrypt-secrets` (--dry-run) for migrating legacy plaintext integration secrets to encrypted at rest, and the cache operator commands `cache:keys` (registry audit), `cache:versions` (current version per group) and `cache:invalidate {group}` (bump one group's version counter)
 - **Performance Optimization:** Request-scoped caching service to prevent N+1 queries and duplicate calculations
 
 ## 8. API Interface Completeness

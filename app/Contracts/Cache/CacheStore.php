@@ -78,6 +78,14 @@ interface CacheStore
     public function forget(CacheKey $key, array $params = []): void;
 
     /**
+     * Current invalidation generation of the tag.
+     *
+     * Starts at zero and increases by one on every invalidation, so an operator
+     * can prove a group was bumped without reading cache internals.
+     */
+    public function version(CacheTag $tag): int;
+
+    /**
      * Make every key of each tag unreachable by bumping that tag's version counter.
      */
     public function invalidate(CacheTag ...$tags): void;

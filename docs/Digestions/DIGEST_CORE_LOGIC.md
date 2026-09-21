@@ -125,6 +125,21 @@
 - **Locking:** Uses same distributed lock as index command to prevent conflicts
 - **Usage:** Intended for scheduled task (e.g., daily at midnight) to automatically update pricing when featured prices expireses that need lightweight thumbnail references without hydrating full media relations.
 
+#### ListCacheKeysCommand (`app/Console/Commands/Cache/ListCacheKeysCommand.php`)
+- **Purpose:** Operator audit of the cache key registry without reading code
+- **Signature:** `cache:keys`
+- **Functionality:** Walks `CacheKey::cases()` and prints a table of every registry case with its name, key template, `ttl()` (`forever` when null), `staleTtl()` (`none` when null) and invalidation group. Generated from the enum, so the listing cannot drift from the registry.
+
+#### ShowCacheVersionsCommand (`app/Console/Commands/Cache/ShowCacheVersionsCommand.php`)
+- **Purpose:** Prove an invalidation actually fired by showing the current generation of each group
+- **Signature:** `cache:versions`
+- **Functionality:** Prints a `Group`/`Version` table for every `CacheTag` case, reading each counter through `CacheStore::version()`.
+
+#### InvalidateCacheGroupCommand (`app/Console/Commands/Cache/InvalidateCacheGroupCommand.php`)
+- **Purpose:** Recover from a bad deploy by invalidating one cache group without flushing the whole cache
+- **Signature:** `cache:invalidate {group}`
+- **Functionality:** Resolves `{group}` against `CacheTag` and calls `CacheStore::invalidate()` on exactly that tag, then prints the bumped version. An unknown group prints the available groups and exits with `Command::FAILURE`, leaving every counter untouched.
+
 #### Order Actions (`app/Actions/Admin/Order/`)
   - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count + reserved_count`), **validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`)**, reserves capacity via `ProductReservationService::reserve()` for each item, snapshots product data per item, increments promotion usage counts when coupon-driven contexts are present, and populates `pricing_metadata` JSON on each order item via `ProductPriceService::getPriceDataForOption()`. The `pricing_metadata` stores `{original_price, discount_type, discount_amount, discount_percentage}` — with zero discount values for `PRE_PAYMENT` items. The `price` field on order items is always set to `product_delivery_option.price` (base price) without any discounts applied. Enrollments are not created by this action — they are created by `OrderStatusService` after payment completion.
   - `handle(OrderUpdateData $data, Order $order): Order`: Updates existing order details and status
@@ -916,6 +931,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `rememberForever(CacheKey $key, array $params, Closure $callback): mixed`: Generates and stores the value with no expiry.
   - `flexible(CacheKey $key, array $params, Closure $callback): mixed`: Native stale-while-revalidate read; serves the fresh value, then the stale value while refreshing after the response under a single-flight lock the caller cannot omit.
   - `forget(CacheKey $key, array $params = []): void`: Deletes one exact key.
+  - `version(CacheTag $tag): int`: Current invalidation generation of a tag, starting at zero and increasing on every bump; this is what the operator commands read to prove an invalidation fired.
   - `invalidate(CacheTag ...$tags): void`: Bumps each tag's version counter, making that tag's previous generation unreachable.
 - **Key registry (`app/Enums/System/CacheKey.php`):** Each case owns its key template, `ttl()`, `staleTtl()` and `group()`; `resolve()` substitutes named parameters and throws when one is missing. A null `ttl()` means no expiry; a null `staleTtl()` means the key must not be read through `flexible()`. `staleTtl()` is the window *after* the fresh lifetime, so `flexible()` stores for `ttl() + staleTtl()`.
 - **Tag vocabulary (`app/Enums/System/CacheTag.php`):** `HomePage`, `Content`, `Catalog`, `Search`, `Discounts`, `Settings`, `Auth`.

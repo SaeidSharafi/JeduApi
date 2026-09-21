@@ -82,6 +82,11 @@ final class LaravelCacheStore implements CacheStore
         $this->repository()->forget($this->key($key, $params));
     }
 
+    public function version(CacheTag $tag): int
+    {
+        return (int) $this->repository()->get($this->versionKey($tag), 0);
+    }
+
     /**
      * Make every key of each tag unreachable by bumping that tag's version counter.
      *
@@ -136,11 +141,6 @@ final class LaravelCacheStore implements CacheStore
             $this->version($key->group()),
             $key->resolve($params),
         );
-    }
-
-    private function version(CacheTag $tag): int
-    {
-        return (int) $this->repository()->get($this->versionKey($tag), 0);
     }
 
     private function versionKey(CacheTag $tag): string
