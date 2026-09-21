@@ -4,30 +4,27 @@ declare(strict_types=1);
 
 namespace App\Services\Payment\Digipay;
 
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheKey;
 use App\Exceptions\Gateway\DigipayException;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 final class DigipayAuthenticator
 {
-    private const CACHE_KEY = 'digipay_access_token';
-
     public function __construct(
         private DigipayConfigRepository $config,
+        private CacheStore $cache,
     ) {}
 
     public function getAccessToken(): string
     {
-        if ($token = Cache::get(self::CACHE_KEY)) {
+        $token = $this->cache->get(CacheKey::DigipayAccessToken);
+
+        if (is_string($token) && $token !== '') {
             return $token;
         }
 
         return $this->fetchAndCacheToken();
-    }
-
-    public function clearToken(): void
-    {
-        Cache::forget(self::CACHE_KEY);
     }
 
     private function fetchAndCacheToken(): string
@@ -49,10 +46,7 @@ final class DigipayAuthenticator
             throw new DigipayException(__('payment_gateways.digipay.errors.authentication_failed'), $response->status());
         }
 
-        $buffer = config('payments.digipay.token_cache.buffer', 300);
-        $ttl    = max(1, ((int) ($response['expires_in'] ?? 3600)) - $buffer);
-
-        Cache::put(self::CACHE_KEY, $response['access_token'], $ttl);
+        $this->cache->put(CacheKey::DigipayAccessToken, [], $response['access_token']);
 
         return $response['access_token'];
     }

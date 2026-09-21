@@ -105,6 +105,12 @@ final class SettingsService
 
         $setting = Setting::setValue($key, $value, $type, $group);
         $this->forget();
+
+        if ($key === SettingKeyEnum::DIGIPAY) {
+            // A rotated credential must not keep authenticating with a token minted from the old one.
+            $this->cache->forget(CacheKey::DigipayAccessToken);
+        }
+
         $this->auditIntegrationWrite($key, $value);
 
         return $setting;

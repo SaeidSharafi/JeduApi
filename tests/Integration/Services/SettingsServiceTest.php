@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\MediaData;
+use App\Enums\System\CacheKey;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\AdminActionLog;
 use App\Models\Setting;
@@ -111,6 +113,24 @@ test('get() returns updated value after set() invalidates cache', function (): v
     // Subsequent get() must return new value.
     $second = $service->get(SettingKeyEnum::HEADER);
     expect($second)->toBe(['name' => 'New']);
+});
+
+test('set() clears the cached Digipay access token when Digipay settings are written', function (): void {
+    $cache = app(CacheStore::class);
+    $cache->put(CacheKey::DigipayAccessToken, [], 'token-minted-with-old-credentials');
+
+    app(SettingsService::class)->set(SettingKeyEnum::DIGIPAY, ['client_id' => 'rotated-client']);
+
+    expect($cache->get(CacheKey::DigipayAccessToken))->toBeNull();
+});
+
+test('set() keeps the cached Digipay access token when unrelated settings are written', function (): void {
+    $cache = app(CacheStore::class);
+    $cache->put(CacheKey::DigipayAccessToken, [], 'still-valid-token');
+
+    app(SettingsService::class)->set(SettingKeyEnum::HEADER, ['name' => 'New']);
+
+    expect($cache->get(CacheKey::DigipayAccessToken))->toBe('still-valid-token');
 });
 
 test('integration keys skip witImages media lookup', function (): void {
