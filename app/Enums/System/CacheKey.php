@@ -22,7 +22,6 @@ use InvalidArgumentException;
  */
 enum CacheKey: string
 {
-    case HomePageContent    = 'shop.homepage.content';
     case Slider             = 'shop.homepage.sliders';
     case PartnersInHome     = 'shop.homepage.partners';
     case StudentStory       = 'shop.homepage.student-stories:{hash}';
@@ -76,8 +75,7 @@ enum CacheKey: string
     public function ttl(): ?int
     {
         return match ($this) {
-            self::HomePageContent => 3600,
-            self::UserProfile     => 86400,
+            self::UserProfile => 86400,
             self::Slider, self::PartnersInHome, self::PartnersInCourse,
             self::Partners, self::StudentStory, self::StudentQuizzes,
             self::TeacherQuizzes, self::Search => 300,
@@ -114,7 +112,7 @@ enum CacheKey: string
     public function group(): CacheTag
     {
         return match ($this) {
-            self::HomePageContent, self::Slider, self::PartnersInHome,
+            self::Slider, self::PartnersInHome,
             self::StudentStory => CacheTag::HomePage,
             self::PartnersInCourse, self::Partners, self::StudentQuizzes,
             self::TeacherQuizzes                                     => CacheTag::Content,

@@ -11,7 +11,6 @@ it('lists every registry case with its template, durations and group', function 
         ->expectsTable(
             ['Key', 'Template', 'TTL', 'Stale TTL', 'Group'],
             [
-                ['HomePageContent', 'shop.homepage.content', '3600', 'none', 'home_page'],
                 ['Slider', 'shop.homepage.sliders', '300', '900', 'home_page'],
                 ['PartnersInHome', 'shop.homepage.partners', '300', '900', 'home_page'],
                 ['StudentStory', 'shop.homepage.student-stories:{hash}', '300', '900', 'home_page'],

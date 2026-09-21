@@ -172,9 +172,9 @@
   - `handle(Product $product, RelationTypeEnum $relationType, ?Product $relatedProduct = null): void`: Removes related product relationships filtered by relation type; optionally removes a specific related product or all products of the given type
 
 #### Course Actions (`app/Actions/Admin/Course/`)
-- **CreateCourseAction**: Creates new course instances with content structure
-- **UpdateCourseAction**: Updates course metadata and structure
-- **DeleteCourseAction**: Handles course archival and cleanup
+- **CreateCourseAction**: Creates new course instances with content structure; bumps the `CacheTag::HomePage` generation so student stories filtered by courses are not served stale
+- **UpdateCourseAction**: Updates course metadata and structure; bumps `CacheTag::HomePage` because the story query filters on course slug
+- **DeleteCourseAction**: Handles course archival and cleanup; bumps `CacheTag::HomePage`
 
 #### DigitalAsset Actions (`app/Actions/Admin/DigitalAsset/`)
 - **CreateDigitalAssetAction**: Creates new digital asset products
@@ -228,9 +228,9 @@
   - `handle(DiscountPromotion $promotion): void`: Removes discount promotions and related rules
 
 #### Category Actions (`app/Actions/Admin/Category/`)
-- **CreateCategoryAction**: Creates new product categories with media attachments
-- **UpdateCategoryAction**: Updates category details and hierarchy
-- **DeleteCategoryAction**: Handles category removal and reassignment
+- **CreateCategoryAction**: Creates new product categories with media attachments; bumps `CacheTag::HomePage` so student stories filtered by category slug are not served stale
+- **UpdateCategoryAction**: Updates category details and hierarchy; bumps `CacheTag::HomePage` because the story query filters on category slug
+- **DeleteCategoryAction**: Handles category removal and reassignment; bumps `CacheTag::HomePage`
 - **SetGoodForStartAction**: Flags categories as "good for start" recommendations
 
 #### Wallet Actions (`app/Actions/Admin/Wallet/`)
@@ -344,17 +344,17 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### Student Story Actions (`app/Actions/Admin/Setting/StudentStory/`)
 - **CreateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/CreateStudentStoryAction.php`)
-  - `handle(StudentStoryCreateData $data): StudentStory`: Creates new student success stories
+  - `handle(StudentStoryCreateData $data): StudentStory`: Creates new student success stories and bumps the `CacheTag::HomePage` generation, because the shop story endpoint caches one entry per filter hash and cannot forget them by key
 - **UpdateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/UpdateStudentStoryAction.php`)
-  - `handle(StudentStoryUpdateData $data, StudentStory $story): StudentStory`: Updates student story content and media
+  - `handle(StudentStoryUpdateData $data, StudentStory $story): StudentStory`: Updates student story content and media, then bumps `CacheTag::HomePage`
 - **DeleteStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/DeleteStudentStoryAction.php`)
-  - `handle(StudentStory $story): void`: Removes student stories
+  - `handle(StudentStory $story): void`: Removes student stories and bumps `CacheTag::HomePage`
 
 #### Slider Actions (`app/Actions/Admin/Slider/`)
-- **CreateSliderAction**: Wraps slider creation with media synchronization for hero imagery
-- **UpdateSliderAction**: Updates slider copy, media, and ordering metadata
-- **UpdateSliderStatusAction**: Applies publication state changes using `ChangeStatusData`, ensuring enum-safe transitions
-- **DeleteSliderAction**: Removes sliders and detaches associated media assets
+- **CreateSliderAction**: Wraps slider creation with media synchronization for hero imagery, then forgets `CacheKey::Slider`
+- **UpdateSliderAction**: Updates slider copy, media, and ordering metadata, then forgets `CacheKey::Slider`
+- **UpdateSliderStatusAction**: Applies publication state changes using `ChangeStatusData`, ensuring enum-safe transitions, then forgets `CacheKey::Slider`
+- **DeleteSliderAction**: Removes sliders and detaches associated media assets, then forgets `CacheKey::Slider`
 
 #### Review Actions (`app/Actions/Admin/Review/`)
 - **ApproveReviewAction**: Approves customer reviews for publication
@@ -389,6 +389,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **CreatePartnerAction**: Persists partner showcase cards, linking uploaded media and deriving alt text automatically
 - **UpdatePartnerAction**: Updates partner metadata and resyncs media while handling nullified assets
 - **DeleteCPartnerAction**: Performs transactional deletion and cleans up linked media assets
+- **ForgetPartnerCachesAction**: Forgets `CacheKey::PartnersInHome`, `CacheKey::PartnersInCourse` and `CacheKey::Partners`; the three write actions above call it after their transaction so every shop partner listing is regenerated on the next request
 
 #### AdviceRequest Actions (`app/Actions/Admin/AdviceRequest/`)
 - **UpdateAdviceRequestAction**: Records staff notes and marks handlers while keeping existing status intact
@@ -947,17 +948,16 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Purpose:** Provides Stale-While-Revalidate caching helpers on top of SmartCache
 - **Public Methods:**
   - `remember(string $key, Closure $callback, int $freshSeconds = 300, int $staleSeconds = 900)`: Core SWR wrapper returning fresh or stale payloads while refreshing asynchronously
-  - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale)
-  - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale); keys encode filter hashes (e.g., student story course/category slug combos) with wildcard invalidation support to keep variant caches consistent.
+  - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale); keys encode filter hashes (e.g., student story course/category slug combos) with wildcard invalidation support to keep variant caches consistent. The shop slider, partner and student-story endpoints no longer use it — they read through `CacheStore::flexible()` on their `CacheKey` cases.
   - `rememberSearchSuggestions(string $key, Closure $callback)`: Preset for search autocomplete (1 hour fresh / 4 hours stale)
   - `rememberTrendingContent(string $key, Closure $callback)`: Preset for trending widgets (10 min fresh / 30 min stale)
-- **Usage:** Powers search suggestions and homepage listings to balance freshness with perceived performance
+- **Usage:** Powers search suggestions and the student/teacher quiz listings through `remember()`; the homepage preset has no production caller after sliders, partners and student stories moved to the gateway.
 
 ### CacheInvalidationService (`app/Services/CacheInvalidationService.php`)
 - **Purpose:** Central cache eviction utility invoked by `InvalidationObserver`
 - **Public Method:**
   - `invalidateForModel(string|Model $model, array $invalidationConfig): void`: Iterates configured keys/patterns, calling `SmartCache::forget()` and `SmartCache::flushPatterns()` with exception-safe logging
-- **Configuration:** Consumes `config/cache_invalidation.php` entries that mix `CacheKeysEnum` values, literal keys, and wildcard patterns (e.g., StudentStory flushes `student_stories:*` variants whenever testimonials change)
+- **Configuration:** Consumes `config/cache_invalidation.php` entries of wildcard patterns; after the home-page move the map only carries search and good-for-start patterns and no entry uses `CacheKeysEnum` any more.
 
 ### PgroongaService (`app/Services/PgroongaService.php`)
 - **Purpose:** Lightweight helper to detect PGroonga availability on PostgreSQL connections
@@ -981,8 +981,8 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 ### InvalidationObserver (`app/Observers/InvalidationObserver.php`)
 - **Purpose:** Global Eloquent observer that translates model save/delete events into cache invalidations.
-- **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Slider, Partner, HomePageBlock, etc.) to lists of `CacheKeysEnum`, literal keys, or wildcard patterns and delegates eviction to `CacheInvalidationService` (`SmartCache::forget` + `flushPatterns`). `Setting` is deliberately absent: settings are cleared explicitly on their write paths.
-- **Usage:** Registered for multiple CMS/content models to keep SmartCache payloads (home page content, partner lists, good-for-start lists) fresh without manual cache calls.
+- **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Course, Category, BlogPost, …) to wildcard patterns and delegates eviction to `CacheInvalidationService` (`SmartCache::flushPatterns`). `Setting`, `Slider`, `Partner` and `StudentStory` are deliberately absent: their caches are cleared explicitly by the actions that write them. The dead `shop.homepage.content` key was removed from the map, from `CacheKey` and from the legacy `CacheKeysEnum` because nothing read or wrote it.
+- **Usage:** Keeps SmartCache good-for-start and search payloads fresh without manual cache calls.
 
 ### ProductableAvailabilityObserver (`app/Observers/ProductableAvailabilityObserver.php`)
 - **Purpose:** Keeps availability snapshots and search index in sync when productable (Course/Seminar/DigitalAsset) content changes

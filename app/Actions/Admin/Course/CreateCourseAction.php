@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Course;
 
 use App\Actions\Admin\GetThumbnailUrlAction;
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Course\CreateCourseData;
+use App\Enums\System\CacheTag;
 use App\Models\Course;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreateCourseAction
 {
     public function __construct(
-        private GetThumbnailUrlAction $thumbnailUrlAction
+        private GetThumbnailUrlAction $thumbnailUrlAction,
+        private CacheStore $cache,
     ) {}
 
     /**
@@ -39,5 +42,7 @@ final readonly class CreateCourseAction
                 }
             }
         });
+
+        $this->cache->invalidate(CacheTag::HomePage);
     }
 }

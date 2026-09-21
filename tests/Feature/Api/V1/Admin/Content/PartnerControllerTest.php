@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use App\Enums\Content\PartnerShowInEnum;
 use App\Enums\PermissionEnum;
+use App\Http\Controllers\Api\Admin\Content\PartnerController;
 use App\Models\Partner;
 use Plank\Mediable\Media;
+
+covers(PartnerController::class);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
@@ -171,4 +174,27 @@ it('validates required fields on update', function (): void {
     $response = $this->putJson(route('api.v1.admin.settings.partner.update', $partner), $data);
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['title', 'image', 'order', 'show_in']);
+});
+
+it('reflects a partner create on the next shop request', function (): void {
+    $this->authorized_user([PermissionEnum::PARTNER_CREATE]);
+
+    $this->getJson(route('api.v1.shop.partners.index', ['show_in' => PartnerShowInEnum::HOME->value]))
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+
+    $this->postJson(route('api.v1.admin.settings.partner.store'), [
+        'title'     => 'New Partner',
+        'caption'   => 'New Caption',
+        'image'     => $this->image1->id,
+        'url'       => '/new',
+        'show_in'   => PartnerShowInEnum::HOME->value,
+        'order'     => 1,
+        'is_active' => true,
+    ])->assertStatus(201);
+
+    $this->getJson(route('api.v1.shop.partners.index', ['show_in' => PartnerShowInEnum::HOME->value]))
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.title', 'New Partner');
 });

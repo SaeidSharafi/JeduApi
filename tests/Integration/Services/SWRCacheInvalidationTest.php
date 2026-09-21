@@ -60,18 +60,18 @@ describe('SWR Cache Invalidation', function (): void {
 
     it('preserves unrelated SWR caches during invalidation', function (): void {
         // Arrange - Create multiple SWR caches
-        // Note: Product changes clear: shop.homepage.content, shop.category.*.good-for-start.*, search:*
-        $homepageContentKey = 'shop.homepage.content'; // Cleared by Product observer (HomePageContent enum)
-        $searchSuggestKey   = 'search:suggest:'.md5('test'); // Cleared by search:suggest:* pattern
-        $slidersCacheKey    = 'shop.homepage.sliders'; // NOT cleared by Product (only by Slider updates)
-        $userProfileKey     = 'user.123.profile'; // Not managed by any observer
+        // Note: Product changes clear: shop.category.*.good-for-start.*, search:*, search:suggest:*
+        $goodForStartKey  = 'shop.category.programming.good-for-start.courses.limit-5'; // Cleared by product pattern
+        $searchSuggestKey = 'search:suggest:'.md5('test'); // Cleared by search:suggest:* pattern
+        $slidersCacheKey  = 'shop.homepage.sliders'; // Cleared by its own action, not by Product
+        $userProfileKey   = 'user.123.profile'; // Not managed by any observer
 
-        SWRCacheService::rememberHomepageContent($homepageContentKey, fn (): array => ['content']);
+        SWRCacheService::rememberTrendingContent($goodForStartKey, fn (): array => ['courses' => [1]]);
         SWRCacheService::rememberSearchSuggestions($searchSuggestKey, fn (): array => ['test1']);
         SWRCacheService::rememberHomepageContent($slidersCacheKey, fn (): array => ['slider1']);
         SmartCache::put($userProfileKey, ['name' => 'John'], 3600); // Direct put, not SWR
 
-        expect(SmartCache::has($homepageContentKey))->toBeTrue();
+        expect(SmartCache::has($goodForStartKey))->toBeTrue();
         expect(SmartCache::has($searchSuggestKey))->toBeTrue();
         expect(SmartCache::has($slidersCacheKey))->toBeTrue();
         expect(SmartCache::has($userProfileKey))->toBeTrue();
@@ -80,10 +80,10 @@ describe('SWR Cache Invalidation', function (): void {
         $product = Product::factory()->create();
 
         // Assert
-        expect(SmartCache::has($homepageContentKey))->toBeFalse();  // Cleared: HomePageContent pattern
-        expect(SmartCache::has($searchSuggestKey))->toBeFalse();    // Cleared: search:suggest:* pattern
-        expect(SmartCache::has($slidersCacheKey))->toBeTrue();      // NOT cleared: only Slider updates clear this
-        expect(SmartCache::has($userProfileKey))->toBeTrue();       // NOT cleared: not in any observer map
+        expect(SmartCache::has($goodForStartKey))->toBeFalse();   // Cleared: good-for-start pattern
+        expect(SmartCache::has($searchSuggestKey))->toBeFalse();  // Cleared: search:suggest:* pattern
+        expect(SmartCache::has($slidersCacheKey))->toBeTrue();    // NOT cleared: only Slider writes clear this
+        expect(SmartCache::has($userProfileKey))->toBeTrue();     // NOT cleared: not in any observer map
     });
 
     it('handles concurrent SWR cache invalidation for multiple products', function (): void {

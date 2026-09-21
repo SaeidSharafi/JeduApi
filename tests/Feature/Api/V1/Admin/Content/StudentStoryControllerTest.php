@@ -3,7 +3,10 @@
 declare(strict_types=1);
 use App\Enums\PermissionEnum;
 use App\Enums\System\MorphTypeEnum;
+use App\Http\Controllers\Api\Admin\Content\StudentStoryController;
 use App\Models\StudentStory;
+
+covers(StudentStoryController::class);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
@@ -320,6 +323,41 @@ describe('StudentStoryController', function (): void {
 
         $response = $this->putJson("/api/v1/admin/settings/student-stories/{$story->id}", $updateData);
         $response->assertStatus(403);
+    });
+
+    it('reflects a category slug change on the next student-story request', function (): void {
+        $this->authorized_user([PermissionEnum::CATEGORY_UPDATE]);
+
+        $category = App\Models\Category::factory()->create(['slug' => 'old-slug']);
+        $story    = StudentStory::factory()->create(['is_visible' => true, 'is_featured' => false]);
+        $story->categories()->attach($category->id);
+
+        $this->getJson(route('api.v1.shop.student-stories.index', ['category_slug' => 'old-slug']))
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        $this->putJson(route('api.v1.admin.categories.update', ['category' => $category->id]), [
+            'name'             => 'Renamed Category',
+            'slug'             => 'new-slug',
+            'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+            'parent_id'        => null,
+            'description'      => null,
+            'color_scheme'     => null,
+            'meta_title'       => 'Renamed category meta title',
+            'meta_description' => 'Renamed category meta description that is long enough to satisfy the validation rule.',
+            'meta_keywords'    => 'renamed,category',
+            'properties'       => null,
+            'additional_info'  => null,
+            'media'            => [],
+        ])->assertOk();
+
+        $this->getJson(route('api.v1.shop.student-stories.index', ['category_slug' => 'old-slug']))
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson(route('api.v1.shop.student-stories.index', ['category_slug' => 'new-slug']))
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     });
 
 });

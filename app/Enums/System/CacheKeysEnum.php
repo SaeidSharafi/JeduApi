@@ -6,7 +6,6 @@ namespace App\Enums\System;
 
 enum CacheKeysEnum: string
 {
-    case HomePageContent  = 'shop.homepage.content';
     case UserProfile      = 'user.{id}.profile';
     case StudentStory     = 'shop.homepage.student-stories';
     case Slider           = 'shop.homepage.sliders';
@@ -45,8 +44,7 @@ enum CacheKeysEnum: string
     public function ttl(): int
     {
         return match ($this) {
-            self::HomePageContent => 3600,
-            self::UserProfile     => 86400,
+            self::UserProfile => 86400,
             self::StudentStory, self::Slider,
             self::PartnersInHome, self::PartnersInCourse, self::Partners => 7200,
             self::GoodForStart                                           => 1800,

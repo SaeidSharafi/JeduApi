@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\HomePage;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\HomePage\PartnerData;
 use App\Enums\Content\PartnerShowInEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
-use App\Services\SWRCacheService;
 use Illuminate\Http\Request;
 
 /**
@@ -19,6 +19,8 @@ use Illuminate\Http\Request;
  */
 final class PartnerController extends Controller
 {
+    public function __construct(private readonly CacheStore $cache) {}
+
     /**
      * List Partners
      *
@@ -35,7 +37,7 @@ final class PartnerController extends Controller
     {
         $showIn   = $request->query('show_in');
         $cacheKey = PartnerShowInEnum::getCacheKey($showIn);
-        $partners = SWRCacheService::rememberHomepageContent($cacheKey->value,
+        $partners = $this->cache->flexible($cacheKey, [],
             function () use ($showIn) {
                 $partners = Partner::query()
                     ->active()

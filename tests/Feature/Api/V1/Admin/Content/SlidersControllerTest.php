@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Admin\Content\Slider\SliderController;
+use App\Http\Controllers\Api\Admin\Content\Slider\UpdateSliderStatusController;
 use App\Models\Slider;
 use Plank\Mediable\Media;
+
+covers(SliderController::class, UpdateSliderStatusController::class);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
@@ -200,4 +204,32 @@ it('update slider status', function (): void {
         ]);
     $slider->refresh();
     expect($slider->status)->toBe(App\Enums\Content\PublicationStatusEnum::DRAFT);
+});
+
+it('reflects a slider update on the next shop request', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::SLIDER_UPDATE->value]);
+
+    $slider = Slider::factory()->create([
+        'title'  => 'Before',
+        'status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+        'order'  => 1,
+    ]);
+    $slider->attachMedia($this->image1, 'image');
+
+    $this->getJson(route('api.v1.shop.sliders.index'))
+        ->assertOk()
+        ->assertJsonPath('data.0.title', 'Before');
+
+    $this->putJson(route('api.v1.admin.settings.slider.update', $slider), [
+        'title'   => 'After',
+        'caption' => 'After Caption',
+        'status'  => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+        'image'   => $this->image2->id,
+        'link'    => '/after',
+        'order'   => 1,
+    ])->assertOk();
+
+    $this->getJson(route('api.v1.shop.sliders.index'))
+        ->assertOk()
+        ->assertJsonPath('data.0.title', 'After');
 });

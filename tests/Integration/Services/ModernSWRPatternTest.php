@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\Shop\HomePage\SliderController;
 use App\Models\Slider;
 use App\Services\SWRCacheService;
 use SmartCache\Facades\SmartCache;
@@ -90,14 +89,11 @@ describe('Modern SWR Pattern - Homepage Content', function (): void {
         expect(SmartCache::has($cacheKey))->toBeTrue();
     });
 
-    it('benefits from SWR pattern for homepage sliders', function (): void {
+    it('caches homepage content through the SWR helper', function (): void {
         // Arrange
         $slider = Slider::factory()->create(['status' => 'published']);
 
-        // Act - Trigger the caching mechanism
-        $controller = new SliderController();
-
-        // Since __invoke requires request context, we test the cache pattern directly
+        // Act - the slider endpoint itself reads through CacheStore; this covers the SWR helper it shares
         $result = SWRCacheService::rememberHomepageContent('shop.sliders', function () use ($slider): Illuminate\Support\Collection {
             return collect([$slider]); // Simulating SliderData collection
         });

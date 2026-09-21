@@ -11,9 +11,11 @@ use Plank\Mediable\Media;
 
 final class CreatePartnerAction
 {
+    public function __construct(private readonly ForgetPartnerCachesAction $forgetCaches) {}
+
     public function handle(PartnerCreateData $data): Partner
     {
-        return DB::transaction(function () use ($data): Partner {
+        $partner = DB::transaction(function () use ($data): Partner {
             $image = null;
             if ($data->image) {
                 $image = Media::find($data->image);
@@ -25,9 +27,12 @@ final class CreatePartnerAction
             ];
             $partner = Partner::query()->create($partnerData)->fresh();
             $partner->syncMedia($image, 'image');
-            $partner->refresh();
 
-            return $partner;
+            return $partner->refresh();
         });
+
+        $this->forgetCaches->handle();
+
+        return $partner;
     }
 }

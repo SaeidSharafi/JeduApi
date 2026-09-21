@@ -31,8 +31,8 @@ final class CacheInvalidationService
      * Example config:
      * ```
      * [
-     *     CacheKeysEnum::HomePageContent,                                   // Enum: converted to string value
-     *     'shop.homepage.content',                                          // Direct key
+     *     CacheKeysEnum::Slider,                                            // Enum: converted to string value
+     *     'exact_cache_key',                                                // Direct key
      *     ['type' => 'pattern', 'value' => 'shop.category.*.good-for-start.*'], // Pattern
      * ]
      * ```

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Category;
 
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheTag;
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\Categorizable;
 use App\Models\Category;
@@ -11,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DeleteCategoryAction
 {
+    public function __construct(private CacheStore $cache) {}
+
     /**
      * Execute the action.
      */
@@ -26,5 +30,7 @@ final readonly class DeleteCategoryAction
             $category->media()->delete();
             $category->delete();
         });
+
+        $this->cache->invalidate(CacheTag::HomePage);
     }
 }

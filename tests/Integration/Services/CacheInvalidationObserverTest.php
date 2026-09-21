@@ -12,20 +12,35 @@ beforeEach(function (): void {
 });
 
 describe('InvalidationObserver - Cache Invalidation', function (): void {
-    it('clears simple cache keys when product is updated', function (): void {
+    it('clears mapped pattern caches when product is updated', function (): void {
         // Arrange
-        SmartCache::put('shop.homepage.content', ['data' => 'test'], 3600);
-        expect(SmartCache::has('shop.homepage.content'))->toBeTrue();
+        $suggestionKey = 'search:suggest:'.md5('django');
+        SmartCache::put($suggestionKey, ['data' => 'test'], 3600);
+        expect(SmartCache::has($suggestionKey))->toBeTrue();
 
         // Act
         $product = Product::factory()->create();
 
         // Assert
-        expect(SmartCache::has('shop.homepage.content'))->toBeFalse();
+        expect(SmartCache::has($suggestionKey))->toBeFalse();
     });
 
-    it('clears cache when slider is updated', function (): void {
+    it('clears mapped pattern caches when category is deleted', function (): void {
         // Arrange
+        $goodForStartKey = 'shop.category.programming.good-for-start.courses';
+        SmartCache::put($goodForStartKey, ['courses' => [1]], 3600);
+        expect(SmartCache::has($goodForStartKey))->toBeTrue();
+
+        // Act
+        $category = Category::factory()->create(['slug' => 'programming']);
+        $category->delete();
+
+        // Assert
+        expect(SmartCache::has($goodForStartKey))->toBeFalse();
+    });
+
+    it('leaves caches of models that moved to explicit invalidation untouched', function (): void {
+        // Arrange - Slider is no longer in the observer map; its action clears the gateway key.
         SmartCache::put('shop.homepage.sliders', [['id' => 1]], 7200);
         expect(SmartCache::has('shop.homepage.sliders'))->toBeTrue();
 
@@ -34,62 +49,45 @@ describe('InvalidationObserver - Cache Invalidation', function (): void {
         $slider->update(['title' => 'Updated Slider']);
 
         // Assert
-        expect(SmartCache::has('shop.homepage.sliders'))->toBeFalse();
-    });
-
-    it('clears cache when category is deleted', function (): void {
-        // Arrange
-        SmartCache::put('shop.homepage.content', ['categories' => [1, 2, 3]], 3600);
-
-        expect(SmartCache::has('shop.homepage.content'))->toBeTrue();
-
-        // Act
-        $category = Category::factory()->create(['slug' => 'tech']);
-        $category->delete();
-
-        // Assert
-        expect(SmartCache::has('shop.homepage.content'))->toBeFalse();
-    });
-
-    it('handles cache invalidation for models not in config map', function (): void {
-        // Arrange - Create a cache key that will be cleared
-        SmartCache::put('test_key', 'test_value', 3600);
-
-        // Act & Assert - Should not throw exception when model not in map
-        $slider = Slider::factory()->create();
-        SmartCache::put('unique_slider_key', 'data', 3600);
-        $slider->update(['title' => 'New Title']);
-
-        // If we reach here, no exception was thrown
-        expect(true)->toBeTrue();
+        expect(SmartCache::has('shop.homepage.sliders'))->toBeTrue();
     });
 
     it('preserves unrelated cache keys during invalidation', function (): void {
         // Arrange
-        SmartCache::put('shop.homepage.content', ['homepage' => 'data'], 3600);
+        $suggestionKey = 'search:suggest:'.md5('laravel');
+        SmartCache::put($suggestionKey, ['data' => 'test'], 3600);
         SmartCache::put('user.123.profile', ['name' => 'John'], 86400);
 
-        expect(SmartCache::has('shop.homepage.content'))->toBeTrue();
+        expect(SmartCache::has($suggestionKey))->toBeTrue();
         expect(SmartCache::has('user.123.profile'))->toBeTrue();
 
-        // Act - Update product (only affects shop.homepage.content)
+        // Act - Update product (only affects product-related patterns)
         $product = Product::factory()->create();
 
         // Assert - Only product-related keys are cleared
-        expect(SmartCache::has('shop.homepage.content'))->toBeFalse();
+        expect(SmartCache::has($suggestionKey))->toBeFalse();
         expect(SmartCache::has('user.123.profile'))->toBeTrue();
     });
 
     it('handles multiple cache invalidation patterns for a single model', function (): void {
         // Arrange - Store multiple types of caches
-        SmartCache::put('shop.homepage.content', ['data' => 'homepage'], 3600);
+        $searchKey     = 'search:'.md5('laravel');
+        $suggestionKey = 'search:suggest:'.md5('laravel');
+        $goodForStart  = 'shop.category.programming.good-for-start.courses';
+        SmartCache::put($searchKey, ['data' => 'search'], 3600);
+        SmartCache::put($suggestionKey, ['data' => 'suggest'], 3600);
+        SmartCache::put($goodForStart, ['courses' => [1]], 3600);
 
-        expect(SmartCache::has('shop.homepage.content'))->toBeTrue();
+        expect(SmartCache::has($searchKey))->toBeTrue();
+        expect(SmartCache::has($suggestionKey))->toBeTrue();
+        expect(SmartCache::has($goodForStart))->toBeTrue();
 
         // Act
         $product = Product::factory()->create();
 
-        // Assert - Configured cache key should be cleared
-        expect(SmartCache::has('shop.homepage.content'))->toBeFalse();
+        // Assert - Every configured pattern is cleared
+        expect(SmartCache::has($searchKey))->toBeFalse();
+        expect(SmartCache::has($suggestionKey))->toBeFalse();
+        expect(SmartCache::has($goodForStart))->toBeFalse();
     });
 });

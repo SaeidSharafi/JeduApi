@@ -36,9 +36,9 @@ it('invalidates patterns', function (): void {
 
 it('invalidates enum keys', function (): void {
     $model              = new class() extends Model {};
-    $invalidationConfig = [CacheKeysEnum::HomePageContent];
+    $invalidationConfig = [CacheKeysEnum::Slider];
 
-    SmartCache::shouldReceive('forget')->with(CacheKeysEnum::HomePageContent->value)->once();
+    SmartCache::shouldReceive('forget')->with(CacheKeysEnum::Slider->value)->once();
 
     $this->service->invalidateForModel($model, $invalidationConfig);
 });
@@ -46,12 +46,12 @@ it('invalidates enum keys', function (): void {
 it('handles mixed configuration', function (): void {
     $model              = new class() extends Model {};
     $invalidationConfig = [
-        CacheKeysEnum::HomePageContent,
+        CacheKeysEnum::Slider,
         'direct.key',
         ['type' => 'pattern', 'value' => 'shop.category.*'],
     ];
 
-    SmartCache::shouldReceive('forget')->with(CacheKeysEnum::HomePageContent->value)->once();
+    SmartCache::shouldReceive('forget')->with(CacheKeysEnum::Slider->value)->once();
     SmartCache::shouldReceive('forget')->with('direct.key')->once();
     SmartCache::shouldReceive('flushPatterns')->with(['shop.category.*'])->once();
 

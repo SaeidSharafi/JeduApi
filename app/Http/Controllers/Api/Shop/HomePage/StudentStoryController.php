@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\HomePage;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\HomePage\StudentStoryData;
 use App\Data\Shop\StudentStoryRequestData;
-use App\Enums\System\CacheKeysEnum;
+use App\Enums\System\CacheKey;
 use App\Http\Controllers\Controller;
 use App\Models\StudentStory;
-use App\Services\SWRCacheService;
 
 /**
  * @group Shop - Home Page
@@ -19,6 +19,8 @@ use App\Services\SWRCacheService;
  */
 final class StudentStoryController extends Controller
 {
+    public function __construct(private readonly CacheStore $cache) {}
+
     /**
      * Student Stories
      *
@@ -28,9 +30,9 @@ final class StudentStoryController extends Controller
      */
     public function __invoke(StudentStoryRequestData $data): ApiResponseInterface
     {
-        $cacheKey = CacheKeysEnum::StudentStory->value.':'.md5(serialize($data->toArray()));
+        $hash = md5(serialize($data->toArray()));
 
-        $stories = SWRCacheService::rememberHomepageContent($cacheKey,
+        $stories = $this->cache->flexible(CacheKey::StudentStory, ['hash' => $hash],
             function () use ($data) {
                 $stories = StudentStory::query()
                     ->visible()
