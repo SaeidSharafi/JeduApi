@@ -245,7 +245,9 @@ function cacheGatewayClearedTags(): array
 
 it('allows Cache::lock() outside the cache module', function (): void {
     expect(cacheGatewayStorageViolations('<?php Cache::lock("name", 5);'))->toBe([])
-        ->and(cacheGatewayStorageViolations('<?php Illuminate\Support\Facades\Cache::lock("name", 5);'))->toBe([]);
+        ->and(cacheGatewayStorageViolations('<?php Illuminate\Support\Facades\Cache::lock("name", 5);'))->toBe([])
+        ->and(cacheGatewayStorageViolations('<?php \Cache::lock("name", 5);'))->toBe([])
+        ->and(cacheGatewayStorageViolations('<?php \Illuminate\Support\Facades\Cache::lock("name", 5);'))->toBe([]);
 });
 
 it('flags every other cache facade, helper and package facade call', function (): void {
@@ -253,12 +255,17 @@ it('flags every other cache facade, helper and package facade call', function ()
         ->toBe(['line 1: Illuminate\Support\Facades\Cache::get()'])
         ->and(cacheGatewayStorageViolations('<?php Illuminate\Support\Facades\Cache::put("k", 1, 5);'))
         ->toBe(['line 1: Illuminate\Support\Facades\Cache::put()'])
+        ->and(cacheGatewayStorageViolations('<?php use Illuminate\Support\Facades\Cache as Alias; Alias::get("key");'))
+        ->toBe(['line 1: Illuminate\Support\Facades\Cache::get()'])
         ->and(cacheGatewayStorageViolations('<?php cache("key");'))->toBe(['line 1: cache()'])
+        ->and(cacheGatewayStorageViolations('<?php \cache("key");'))->toBe(['line 1: cache()'])
         ->and(cacheGatewayStorageViolations('<?php SmartCache::forget("key");'))->toBe(['line 1: SmartCache::forget()']);
 });
 
 it('ignores cache-named methods and functions that are not the cache facade', function (): void {
     expect(cacheGatewayStorageViolations('<?php $model->cache("key"); $other?->cache("key"); Foo::cache("key"); function cache($k) {}'))
+        ->toBe([])
+        ->and(cacheGatewayStorageViolations('<?php App\Support\ResponseCache::get("key");'))
         ->toBe([]);
 });
 
