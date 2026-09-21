@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Product;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Product\ProductCreateData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\System\CacheTag;
 use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
 use App\Events\ProductSearchIndexInvalidated;
@@ -16,6 +18,8 @@ use SmartCache\Facades\SmartCache;
 
 final readonly class CreateProductAction
 {
+    public function __construct(private CacheStore $cache) {}
+
     public function handle(ProductCreateData $data): Product
     {
         // Serialize publish mutations per productable so two concurrent requests
@@ -59,6 +63,8 @@ final readonly class CreateProductAction
         ProductCacheInvalidated::dispatch($product->id);
         ProductAvailabilityCacheInvalidated::dispatch($affectedProductIds);
         ProductSearchIndexInvalidated::dispatch($affectedProductIds);
+
+        $this->cache->invalidate(CacheTag::Catalog);
 
         return $product;
     }

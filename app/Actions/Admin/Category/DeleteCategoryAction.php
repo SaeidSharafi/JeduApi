@@ -31,6 +31,6 @@ final readonly class DeleteCategoryAction
             $category->delete();
         });
 
-        $this->cache->invalidate(CacheTag::HomePage);
+        $this->cache->invalidate(CacheTag::HomePage, CacheTag::Catalog);
     }
 }

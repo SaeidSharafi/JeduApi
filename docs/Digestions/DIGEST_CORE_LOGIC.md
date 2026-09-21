@@ -159,11 +159,11 @@
 
 #### Product Actions (`app/Actions/Admin/Product/`)
 - **CreateProductAction** (`app/Actions/Admin/Product/CreateProductAction.php`)
-  - `handle(ProductCreateData $data): Product`: Creates new sellable products with polymorphic relationships
+  - `handle(ProductCreateData $data): Product`: Creates new sellable products with polymorphic relationships; bumps `CacheTag::Catalog` so good-for-start listings refresh
 - **UpdateProductAction** (`app/Actions/Admin/Product/UpdateProductAction.php`)
-  - `handle(ProductUpdateData $data, Product $product): Product`: Updates product details and delivery options
-- **DeleteProductAction** (`app/Actions/Admin/Product/DeleteProductAction.php`)
-  - `handle(Product $product): void`: Handles product deletion and archival
+  - `handle(ProductUpdateData $data, Product $product): Product`: Updates product details and delivery options; bumps `CacheTag::Catalog` for the good-for-start listing
+- **ArchiveProductAction** (`app/Actions/Admin/Product/ArchiveProductAction.php`)
+  - `handle(Product $product): Product`: Archives a product and bumps `CacheTag::Catalog` for the good-for-start listing
 
 #### RelatedProduct Actions (`app/Actions/Admin/RelatedProduct/`)
 - **CreateRelatedProductAction** (`app/Actions/Admin/RelatedProduct/CreateRelatedProductAction.php`)
@@ -172,9 +172,9 @@
   - `handle(Product $product, RelationTypeEnum $relationType, ?Product $relatedProduct = null): void`: Removes related product relationships filtered by relation type; optionally removes a specific related product or all products of the given type
 
 #### Course Actions (`app/Actions/Admin/Course/`)
-- **CreateCourseAction**: Creates new course instances with content structure; bumps the `CacheTag::HomePage` generation so student stories filtered by courses are not served stale
-- **UpdateCourseAction**: Updates course metadata and structure; bumps `CacheTag::HomePage` because the story query filters on course slug
-- **DeleteCourseAction**: Handles course archival and cleanup; bumps `CacheTag::HomePage`
+- **CreateCourseAction**: Creates new course instances with content structure; bumps the `CacheTag::HomePage` and `CacheTag::Catalog` generations so student stories and good-for-start listings are not served stale
+- **UpdateCourseAction**: Updates course metadata and structure; bumps `CacheTag::HomePage` and `CacheTag::Catalog` because the story and good-for-start queries filter on course slug
+- **DeleteCourseAction**: Handles course archival and cleanup; bumps `CacheTag::HomePage` and `CacheTag::Catalog`
 
 #### DigitalAsset Actions (`app/Actions/Admin/DigitalAsset/`)
 - **CreateDigitalAssetAction**: Creates new digital asset products
@@ -188,11 +188,11 @@
 
 #### ProductDeliveryOption Actions (`app/Actions/Admin/ProductDeliveryOption/`)
 - **CreateProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/CreateProductDeliveryOptionAction.php`)
-  - `handle(ProductDeliveryOptionCreateData $data, Product $product): ProductDeliveryOption`: Creates new delivery methods for products with automatic SKU generation via `SkuGeneratorService` when SKU not provided in request data. Bundle PDOs are normalized to structural `composite + bundle` delivery with empty details and prepayment disabled (`is_prepayment_available=false`, `prepayment_amount=null`).
+  - `handle(ProductDeliveryOptionCreateData $data, Product $product): ProductDeliveryOption`: Creates new delivery methods for products with automatic SKU generation via `SkuGeneratorService` when SKU not provided in request data. Bundle PDOs are normalized to structural `composite + bundle` delivery with empty details and prepayment disabled (`is_prepayment_available=false`, `prepayment_amount=null`). Bumps `CacheTag::Catalog`.
 - **UpdateProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/UpdateProductDeliveryOptionAction.php`)
-  - `handle(ProductDeliveryOptionUpdateData $data, ProductDeliveryOption $option): ProductDeliveryOption`: Updates delivery option pricing and terms while reasserting the same Bundle structural and no-prepayment invariants.
+  - `handle(ProductDeliveryOptionUpdateData $data, ProductDeliveryOption $option): ProductDeliveryOption`: Updates delivery option pricing and terms while reasserting the same Bundle structural and no-prepayment invariants. Bumps `CacheTag::Catalog`.
 - **DeleteProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/DeleteProductDeliveryOptionAction.php`)
-  - `handle(ProductDeliveryOption $option): void`: Removes delivery options
+  - `handle(ProductDeliveryOption $option): void`: Removes delivery options and bumps `CacheTag::Catalog`.
 - **GetDeliveryDetailsValidationRulesAction** (`app/Actions/Admin/ProductDeliveryOption/GetDeliveryDetailsValidationRulesAction.php`)
   - `handle(string $deliveryType): array`: Provides validation rules for different delivery option types
 - **SyncBundleCompositionAction** (`app/Actions/Admin/ProductDeliveryOption/SyncBundleCompositionAction.php`)
@@ -228,10 +228,10 @@
   - `handle(DiscountPromotion $promotion): void`: Removes discount promotions and related rules
 
 #### Category Actions (`app/Actions/Admin/Category/`)
-- **CreateCategoryAction**: Creates new product categories with media attachments; bumps `CacheTag::HomePage` so student stories filtered by category slug are not served stale
-- **UpdateCategoryAction**: Updates category details and hierarchy; bumps `CacheTag::HomePage` because the story query filters on category slug
-- **DeleteCategoryAction**: Handles category removal and reassignment; bumps `CacheTag::HomePage`
-- **SetGoodForStartAction**: Flags categories as "good for start" recommendations
+- **CreateCategoryAction**: Creates new product categories with media attachments; bumps `CacheTag::HomePage` so student stories filtered by category slug are not served stale and `CacheTag::Catalog` so the good-for-start listing refreshes
+- **UpdateCategoryAction**: Updates category details and hierarchy; bumps `CacheTag::HomePage` because the story query filters on category slug and `CacheTag::Catalog` for the good-for-start listing
+- **DeleteCategoryAction**: Handles category removal and reassignment; bumps `CacheTag::HomePage` and `CacheTag::Catalog`
+- **SetGoodForStartAction**: Flags categories as "good for start" recommendations; bumps `CacheTag::Catalog` through the gateway so the cached listing refreshes
 
 #### Wallet Actions (`app/Actions/Admin/Wallet/`)
 - **CreateWalletAction** (`app/Actions/Admin/Wallet/CreateWalletAction.php`)

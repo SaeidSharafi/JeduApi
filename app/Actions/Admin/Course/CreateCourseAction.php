@@ -43,6 +43,6 @@ final readonly class CreateCourseAction
             }
         });
 
-        $this->cache->invalidate(CacheTag::HomePage);
+        $this->cache->invalidate(CacheTag::HomePage, CacheTag::Catalog);
     }
 }

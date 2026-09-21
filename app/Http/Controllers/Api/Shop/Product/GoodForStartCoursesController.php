@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Product\ProductableEnum;
-use App\Enums\System\CacheKeysEnum;
+use App\Enums\System\CacheKey;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
-use SmartCache\Facades\SmartCache;
 
 /**
  * @group Shop - Products - Categories
@@ -21,6 +21,8 @@ use SmartCache\Facades\SmartCache;
  */
 final class GoodForStartCoursesController extends Controller
 {
+    public function __construct(private readonly CacheStore $cache) {}
+
     /**
      * Good For Start Courses
      *
@@ -32,17 +34,18 @@ final class GoodForStartCoursesController extends Controller
      */
     public function __invoke(Category $category, ProductPriceService $priceService): \App\Contracts\ApiResponseInterface
     {
+        $limit = request()->integer('limit', 10);
 
-        $courses = SmartCache::remember(
-            CacheKeysEnum::GoodForStart->key(['slug' => $category->slug]).'-'.request()->integer('limit', 10),
-            CacheKeysEnum::GoodForStart->ttl(),
-            function () use ($category, $priceService) {
+        $courses = $this->cache->remember(
+            CacheKey::GoodForStart,
+            ['slug' => $category->slug, 'limit' => $limit],
+            function () use ($category, $priceService, $limit) {
                 return ProductQueryService::make()
                     ->ofType(ProductableEnum::COURSE)
                     ->availableProducts()
                     ->goodForStart([$category->slug])
                     ->forListing()
-                    ->limit(request()->integer('limit', 10))
+                    ->limit($limit)
                     ->get()
                     ->map(function (Product $product) use ($priceService): ProductCardData {
                         $priceData = $priceService->getPriceDataForProduct($product);

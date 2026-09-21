@@ -30,6 +30,6 @@ final readonly class DeleteCourseAction
             $course->delete();
         });
 
-        $this->cache->invalidate(CacheTag::HomePage);
+        $this->cache->invalidate(CacheTag::HomePage, CacheTag::Catalog);
     }
 }
