@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions\Admin\Discounts;
+
+use App\Contracts\Cache\CacheStore;
+use App\Enums\Order\DiscountTypeEnum;
+use App\Enums\System\CacheTag;
+use App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob;
+use App\Models\DiscountPromotion;
+
+/**
+ * Toggles a promotion's active flag and makes the price change visible immediately.
+ *
+ * Clearing the caches alone is not enough: the indexed discount-price rows still hold
+ * the old promotion, so every product-specific promotion is reindexed right away and
+ * the catalog, search and discount-handler caches are dropped.
+ */
+final readonly class UpdateDiscountPromotionStatusAction
+{
+    public function __construct(private CacheStore $cache) {}
+
+    public function handle(DiscountPromotion $promotion): DiscountPromotion
+    {
+        $promotion->update(['is_active' => ! $promotion->is_active]);
+        $promotion->load('rules', 'coupons');
+
+        if ($promotion->type === DiscountTypeEnum::PRODUCT_SPECIFIC) {
+            RegeneratePromotionDiscountPricesJob::dispatch($promotion);
+        }
+
+        $this->cache->invalidate(CacheTag::Catalog, CacheTag::Search, CacheTag::Discounts);
+
+        return $promotion->fresh();
+    }
+}

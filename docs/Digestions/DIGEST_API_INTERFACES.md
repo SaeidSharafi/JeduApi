@@ -204,8 +204,8 @@
 - `update(DiscountPromotionUpdateData $request, DiscountPromotion $discountPromotion)`: **Route:** `PUT /api/v1/admin/discount-promotion/{discount_promotion}` - **Response DTO:** DiscountPromotionData
 - `destroy(DiscountPromotion $discountPromotion)`: **Route:** `DELETE /api/v1/admin/discount-promotion/{discount_promotion}` - **Delegates to:** Discount promotion deletion
 
-### DiscountPromotionStatusUpdateController (`app/Http/Controllers/Api/Admin/DiscountPromotionStatusUpdateController.php`)
-- `__invoke(DiscountPromotionStatusData $request, DiscountPromotion $discountPromotion)`: **Route:** `PUT /api/v1/admin/discount-promotion/{discount_promotion}/status` - **Request DTO:** DiscountPromotionStatusData - **Response DTO:** DiscountPromotionData
+### DiscountPromotionStatusUpdateController (`app/Http/Controllers/Api/Admin/Promotion/DiscountPromotionStatusUpdateController.php`)
+- `__invoke(DiscountPromotion $discountPromotion, UpdateDiscountPromotionStatusAction $action)`: **Route:** `PUT /api/v1/admin/discount-promotions/{discountPromotion}/status` - Toggles the promotion's active flag through `UpdateDiscountPromotionStatusAction` (which reindexes product-specific prices and bumps `CacheTag::Catalog`, `CacheTag::Search` and `CacheTag::Discounts`) - **Response DTO:** DiscountPromotionData
 
 ### DiscountPromotionStatisticsController (`app/Http/Controllers/Api/Admin/DiscountPromotionStatisticsController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/admin/discount-promotion-statistics` - **Response DTO:** DiscountPromotionStatisticsData

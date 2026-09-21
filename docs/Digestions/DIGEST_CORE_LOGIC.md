@@ -47,15 +47,15 @@
 #### UpdateProductPricingJob (`app/Jobs/UpdateProductPricingJob.php`)
 - **Purpose:** Asynchronous batch pricing index update for products
 - **Signature:** `handle(ProductPriceService $priceService): void`
-- **Functionality:** Accepts array of product IDs, recalculates pricing data via `ProductPriceService`, upserts to `product_prices` table, updates `price_data_cache` JSON column on products
+- **Functionality:** Accepts array of product IDs, recalculates pricing data via `ProductPriceService`, upserts to `product_prices` table, updates `price_data_cache` JSON column on products, then bumps `CacheTag::Catalog` and `CacheTag::Search` through the `CacheStore` gateway
 - **Dispatch:** Triggered by `ProductCacheInvalidated` event listener, admin pricing changes, and scheduled commands
 - **Performance:** Processes products in batches to avoid memory exhaustion
 
 #### UpdateProductAvailabilityJob (`app/Jobs/UpdateProductAvailabilityJob.php`)
 - **Purpose:** Recomputes denormalized availability snapshots for a batch of products
-- **Signature:** `handle(?CacheInvalidationService $cacheInvalidationService): void`
+- **Signature:** `handle(CacheStore $cache, BundleAvailabilityService $bundleAvailabilityService): void`
 - **Functionality:** Loads products with published delivery options, productable, and term; computes the snapshot columns (`has_published_delivery_option`, `productable_status`, `is_term_active`, `earliest/latest` registration & availability window boundaries, `near_capacity`, `max_capacity_utilization`) where capacity utilization counts committed seats (`enrolled_count + reserved_count`) against `config('products.availability.capacity_threshold', 0.8)`; persists only changed rows via `saveQuietly()`
-- **Side effects:** Invalidates product cache patterns and dispatches `ProductSearchIndexInvalidated` for products whose snapshot changed
+- **Side effects:** Bumps `CacheTag::Catalog` and `CacheTag::Search` through the gateway and dispatches `ProductSearchIndexInvalidated` for products whose snapshot changed
 - **Dispatch:** From `IndexAllProductAvailabilityCommand`, and triggered by availability-affecting mutations (term/productable status flips)
 
 #### SynchronizeProductSearchIndexJob (`app/Jobs/SynchronizeProductSearchIndexJob.php`)
@@ -226,6 +226,8 @@
   - `handle(DiscountPromotionUpdateData $data, DiscountPromotion $promotion): DiscountPromotion`: Updates discount promotion rules and conditions
 - **DeleteDiscountPromotionAction** (`app/Actions/Admin/Discounts/DeleteDiscountPromotionAction.php`)
   - `handle(DiscountPromotion $promotion): void`: Removes discount promotions and related rules
+- **UpdateDiscountPromotionStatusAction** (`app/Actions/Admin/Discounts/UpdateDiscountPromotionStatusAction.php`)
+  - `handle(DiscountPromotion $promotion): DiscountPromotion`: Toggles `is_active`, dispatches `RegeneratePromotionDiscountPricesJob` for product-specific promotions so the indexed prices are corrected, and bumps `CacheTag::Catalog`, `CacheTag::Search` and `CacheTag::Discounts` through the gateway so displayed prices change without waiting for the hourly reindex.
 
 #### Category Actions (`app/Actions/Admin/Category/`)
 - **CreateCategoryAction**: Creates new product categories with media attachments; bumps `CacheTag::HomePage` so student stories filtered by category slug are not served stale and `CacheTag::Catalog` so the good-for-start listing refreshes
@@ -607,11 +609,12 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **i18n:** Label/description strings resolve through the `discount.php` language file (en/fa) via an auto-resolver, so handler labels localize without code changes.
 
 #### ProductDiscountIndexer (`app/Services/Discounts/ProductDiscountIndexer.php`)
-- **Purpose:** Indexes products for efficient discount application
+- **Purpose:** Indexes product discount prices for efficient price projection
 - **Public Methods:**
-  - `indexProduct(Product $product): void`: Adds product to discount index
-  - `reindexAll(): void`: Rebuilds complete discount index
-  - `getActivePromotions(Product $product, ?User $user = null): Collection`: Returns promotions whose `starts_at`/`ends_at` window is active (window enforcement lives in the indexer)
+  - `reIndexComplete(): void`: Truncates `product_delivery_option_discount_prices` and rebuilds it from the active product-specific promotions; bumps `CacheTag::Catalog` and `CacheTag::Search` through the `CacheStore` gateway after commit, including when there is nothing to rebuild.
+  - `reIndexPromotion(DiscountPromotion $promotion): void`: Rebuilds the indices for one promotion and re-lays the active promotions. The dispatched `ProductCacheInvalidated` events drive the pricing job's catalog/search invalidation.
+  - `reIndexProductsByDeliveryOptionIds(Collection $deliveryOptionIds): void`: Rebuilds the given delivery options against the active promotions.
+  - `getActivePromotions(): Collection`: Returns promotions whose `starts_at`/`ends_at` window is active.
 
 #### ProductDiscountPriceCalculator (`app/Services/Discounts/ProductDiscountPriceCalculator.php`)
 - **Purpose:** Calculates discounted prices for individual products

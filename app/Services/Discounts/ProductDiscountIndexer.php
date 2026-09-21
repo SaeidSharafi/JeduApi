@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\System\CacheTag;
 use App\Events\ProductCacheInvalidated;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
@@ -23,7 +25,8 @@ final class ProductDiscountIndexer
 {
     public function __construct(
         private readonly DiscountHandlerRegistry $handlerRegistry,
-        private readonly ProductDiscountPriceCalculator $priceCalculator
+        private readonly ProductDiscountPriceCalculator $priceCalculator,
+        private readonly CacheStore $cache,
     ) {}
 
     /**
@@ -38,13 +41,9 @@ final class ProductDiscountIndexer
             $this->cleanAllDiscountPrices();
             $promotions = $this->getActivePromotions();
 
-            if ($promotions->isEmpty()) {
-                DB::commit();
-
-                return;
+            if ($promotions->isNotEmpty()) {
+                $this->indexProductDiscountPrices($promotions);
             }
-
-            $this->indexProductDiscountPrices($promotions);
 
             DB::commit(); // Commit on success
 
@@ -59,6 +58,9 @@ final class ProductDiscountIndexer
         }
         // @codeCoverageIgnoreEnd
 
+        // Truncating the index changes every product's discounted price, so the catalog
+        // and search caches must drop even when no active promotion rebuilds a price.
+        $this->cache->invalidate(CacheTag::Catalog, CacheTag::Search);
     }
 
     /**

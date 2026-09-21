@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\TermStatusEnum;
 use App\Events\ProductSearchIndexInvalidated;
@@ -11,13 +12,12 @@ use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Term;
 use App\Services\BundleAvailabilityService;
-use App\Services\CacheInvalidationService;
 use Illuminate\Support\Facades\Event;
 
 function runUpdateProductAvailabilityJob(array $productIds): void
 {
     (new UpdateProductAvailabilityJob($productIds))->handle(
-        app(CacheInvalidationService::class),
+        app(CacheStore::class),
         app(BundleAvailabilityService::class),
     );
 }

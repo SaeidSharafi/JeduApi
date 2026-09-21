@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\System\CacheTag;
 use App\Enums\TermStatusEnum;
 use App\Events\ProductSearchIndexInvalidated;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Services\BundleAvailabilityService;
-use App\Services\CacheInvalidationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -25,7 +26,7 @@ final class UpdateProductAvailabilityJob implements ShouldQueue
     public function __construct(public array $productIds) {}
 
     public function handle(
-        CacheInvalidationService $cacheInvalidationService,
+        CacheStore $cache,
         BundleAvailabilityService $bundleAvailabilityService,
     ): void {
         if ($this->productIds === []) {
@@ -92,10 +93,7 @@ final class UpdateProductAvailabilityJob implements ShouldQueue
         }
 
         if ($changedProductIds !== []) {
-            $cacheInvalidationService->invalidateForModel(
-                Product::class,
-                config('cache_invalidation.map.'.Product::class, []),
-            );
+            $cache->invalidate(CacheTag::Catalog, CacheTag::Search);
 
             ProductSearchIndexInvalidated::dispatch($changedProductIds);
         }

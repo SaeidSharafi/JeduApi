@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheTag;
 use App\Events\ProductSearchIndexInvalidated;
 use App\Models\Product;
-use App\Services\CacheInvalidationService;
 use App\Services\ProductPriceService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
@@ -70,10 +71,6 @@ final class UpdateProductPricingJob implements ShouldQueue
 
     private function clearCachesForProducts(): void
     {
-        $invalidationService = app(CacheInvalidationService::class);
-
-        $invalidationConfig = config('cache_invalidation.map.'.Product::class, []);
-        $invalidationService->invalidateForModel(Product::class, $invalidationConfig);
-
+        app(CacheStore::class)->invalidate(CacheTag::Catalog, CacheTag::Search);
     }
 }

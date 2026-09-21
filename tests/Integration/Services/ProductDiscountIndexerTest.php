@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
 use App\Models\Category;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
@@ -16,7 +17,7 @@ describe('ProductDiscountIndexer', function (): void {
     beforeEach(function (): void {
         $this->registry   = app(DiscountHandlerRegistry::class);
         $this->calculator = new ProductDiscountPriceCalculator($this->registry);
-        $this->indexer    = new ProductDiscountIndexer($this->registry, $this->calculator);
+        $this->indexer    = new ProductDiscountIndexer($this->registry, $this->calculator, app(CacheStore::class));
     });
 
     it('performs a full reindex and creates correct discount price records', function (): void {
