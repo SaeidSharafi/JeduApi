@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
-use App\Contracts\Cache\CacheStore;
+use App\Actions\Shop\Student\ForgetStudentQuizCacheAction;
 use App\Contracts\Integrations\MoodleClientContract;
-use App\Enums\System\CacheKey;
 use App\Models\Enrollment;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
@@ -82,7 +81,7 @@ final class SyncMoodleProgressJob implements ShouldQueue
 
         // The sync is how a Moodle-side quiz submission becomes visible here, so the
         // student's cached quiz list must drop or it keeps the pre-submission state.
-        app(CacheStore::class)->forget(CacheKey::StudentQuizzes, ['userId' => $enrollment->customer_id]);
+        app(ForgetStudentQuizCacheAction::class)->handle($enrollment->customer_id);
     }
 
     /**
