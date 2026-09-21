@@ -177,9 +177,9 @@
 - **DeleteCourseAction**: Handles course archival and cleanup; bumps `CacheTag::HomePage` and `CacheTag::Catalog`
 
 #### DigitalAsset Actions (`app/Actions/Admin/DigitalAsset/`)
-- **CreateDigitalAssetAction**: Creates new digital asset products
-- **UpdateDigitalAssetAction**: Updates digital asset metadata and files
-- **DeleteDigitalAssetAction**: Handles digital asset removal
+- **CreateDigitalAssetAction**: Creates new digital asset products; bumps `CacheTag::Search` so search results and suggestions drop the new asset's stale absence
+- **UpdateDigitalAssetAction**: Updates digital asset metadata and files; bumps `CacheTag::Search`
+- **DeleteDigitalAssetAction**: Handles digital asset removal; bumps `CacheTag::Search`
 
 #### Seminar Actions (`app/Actions/Admin/Seminar/`)
 - **CreateSeminarAction**: Creates new seminar events
@@ -199,8 +199,8 @@
   - Validates and atomically replaces Bundle PDO components, rejecting nested bundles, self-reference, duplicate PDOs, invalid quantities, invalid allocations, unpublished components on publication, and allocations whose sum differs from the Bundle price.
 
 #### Bundle Actions (`app/Actions/Admin/Bundle/`)
-- **CreateBundleAction** and **UpdateBundleAction**: Persist Bundle metadata transactionally.
-- **DeleteBundleAction**: Deletes unused Bundle products/PDOs and archives identity when orders exist; enrollment-linked bundles cannot be deleted.
+- **CreateBundleAction** and **UpdateBundleAction**: Persist Bundle metadata transactionally; bump `CacheTag::Search` so search results and suggestions reflect the change.
+- **DeleteBundleAction**: Deletes unused Bundle products/PDOs and archives identity when orders exist; enrollment-linked bundles cannot be deleted. Bumps `CacheTag::Search` on both paths.
 
 #### Refund Actions (`app/Actions/Admin/Refund/`)
 - **RefundBundlePurchaseAction** (`app/Actions/Admin/Refund/RefundBundlePurchaseAction.php`)
@@ -924,8 +924,8 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Purpose:** Multi-model search façade that unifies products and blog posts with Scout, Typesense, and SQL fallbacks
 - **Public Methods:**
   - `search(SearchData $searchData): LengthAwarePaginator`: Performs union searches with optional Typesense multi-search, hydrates models in the returned order, and logs analytics
-  - `suggest(string $query, int $limit = 5): array`: Returns SWR-cached autosuggest strings leveraging Typesense when available
-- **Implementation Notes:** Automatically builds faceted filters from `ProductFilterData`, respects `result_types`, and streams results through DTO transformers in controllers
+  - `suggest(string $query, int $limit = 5): array`: Returns autosuggest strings cached through `CacheStore::flexible()` under `CacheKey::SearchSuggest`, leveraging Typesense when available
+- **Implementation Notes:** Automatically builds faceted filters from `ProductFilterData`, respects `result_types`, and streams results through DTO transformers in controllers. The Typesense search path caches through `CacheStore::flexible()` under `CacheKey::Search`; the database fallback is uncached.
 
 ### CacheStore Gateway (`app/Contracts/Cache/CacheStore.php`, `app/Services/Cache/LaravelCacheStore.php`)
 - **Purpose:** Single entry point every cache read and write goes through; its one implementation is the only class permitted to touch Laravel's cache. Introduced in phase 1 of the cache consolidation (ADR 0014); settings/config, discount-handler, PGroonga, OTP and access-token caches are migrated onto it, and the remaining call sites follow as the phases land.
@@ -949,9 +949,9 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Public Methods:**
   - `remember(string $key, Closure $callback, int $freshSeconds = 300, int $staleSeconds = 900)`: Core SWR wrapper returning fresh or stale payloads while refreshing asynchronously
   - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale); keys encode filter hashes (e.g., student story course/category slug combos) with wildcard invalidation support to keep variant caches consistent. The shop slider, partner and student-story endpoints no longer use it — they read through `CacheStore::flexible()` on their `CacheKey` cases.
-  - `rememberSearchSuggestions(string $key, Closure $callback)`: Preset for search autocomplete (1 hour fresh / 4 hours stale)
+  - `rememberSearchSuggestions(string $key, Closure $callback)`: Preset for search autocomplete (1 hour fresh / 4 hours stale); `GlobalSearchService::suggest()` no longer calls it.
   - `rememberTrendingContent(string $key, Closure $callback)`: Preset for trending widgets (10 min fresh / 30 min stale)
-- **Usage:** Powers search suggestions and the student/teacher quiz listings through `remember()`; the homepage preset has no production caller after sliders, partners and student stories moved to the gateway.
+- **Usage:** The student/teacher quiz listings still call `remember()`; search results and suggestions have moved to the `CacheStore` gateway and the homepage preset has no production caller.
 
 ### CacheInvalidationService (`app/Services/CacheInvalidationService.php`)
 - **Purpose:** Central cache eviction utility invoked by `InvalidationObserver`

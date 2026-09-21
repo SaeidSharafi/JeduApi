@@ -1,13 +1,13 @@
 <?php
 
 declare(strict_types=1);
+use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\Search\SearchData;
 use App\Services\GlobalSearchService;
-use Laravel\Scout\EngineManager;
 
 describe('Filter Building', function (): void {
     it('builds complete product filters with all parameters', function (): void {
-        $service    = new GlobalSearchService(app(EngineManager::class));
+        $service    = new GlobalSearchService(app(CacheStore::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
         $method->setAccessible(true);
@@ -39,7 +39,7 @@ describe('Filter Building', function (): void {
     });
 
     it('builds filters with has_discount=false', function (): void {
-        $service    = new GlobalSearchService(app(EngineManager::class));
+        $service    = new GlobalSearchService(app(CacheStore::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
         $method->setAccessible(true);
@@ -50,7 +50,7 @@ describe('Filter Building', function (): void {
     });
 
     it('builds filters with price_min only', function (): void {
-        $service    = new GlobalSearchService(app(EngineManager::class));
+        $service    = new GlobalSearchService(app(CacheStore::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
         $method->setAccessible(true);
@@ -61,7 +61,7 @@ describe('Filter Building', function (): void {
     });
 
     it('builds filters with price_max only', function (): void {
-        $service    = new GlobalSearchService(app(EngineManager::class));
+        $service    = new GlobalSearchService(app(CacheStore::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
         $method->setAccessible(true);
@@ -72,7 +72,7 @@ describe('Filter Building', function (): void {
     });
 
     it('excludes fulfillment_types when empty', function (): void {
-        $service    = new GlobalSearchService(app(EngineManager::class));
+        $service    = new GlobalSearchService(app(CacheStore::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
         $method->setAccessible(true);
@@ -83,7 +83,7 @@ describe('Filter Building', function (): void {
     });
 
     it('builds blog filters correctly', function (): void {
-        $service    = new GlobalSearchService(app(EngineManager::class));
+        $service    = new GlobalSearchService(app(CacheStore::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildBlogFilters');
         $method->setAccessible(true);

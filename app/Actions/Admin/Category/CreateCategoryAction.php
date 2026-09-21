@@ -37,6 +37,6 @@ final readonly class CreateCategoryAction
             $category->save();
         });
 
-        $this->cache->invalidate(CacheTag::HomePage, CacheTag::Catalog);
+        $this->cache->invalidate(CacheTag::HomePage, CacheTag::Catalog, CacheTag::Search);
     }
 }

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\Product\Course\ProductFilterData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Data\Shop\Search\SearchData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\System\CacheKey;
 use App\Exceptions\CustomValidationException;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
@@ -24,7 +26,7 @@ final class GlobalSearchService
 {
     private Client $typesenseClient;
 
-    public function __construct()
+    public function __construct(private readonly CacheStore $cache)
     {
         $this->typesenseClient = new Client(config('scout.typesense.client-settings'));
     }
@@ -75,9 +77,7 @@ final class GlobalSearchService
             return [];
         }
 
-        $cacheKey = 'search:suggest:'.md5($query.$limit);
-
-        return SWRCacheService::rememberSearchSuggestions($cacheKey, function () use ($query, $limit) {
+        return $this->cache->flexible(CacheKey::SearchSuggest, ['hash' => md5($query.$limit)], function () use ($query, $limit) {
             try {
                 $results = Product::search($query)
                     ->where('status', PublicationStatusEnum::PUBLISHED->value)
@@ -114,10 +114,10 @@ final class GlobalSearchService
      */
     private function searchWithTypesense(SearchData $searchData): LengthAwarePaginator
     {
-        $page     = LengthAwarePaginator::resolveCurrentPage();
-        $cacheKey = 'search:'.md5($searchData->q.json_encode($searchData->toArray()).$searchData->per_page.$page);
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $hash = md5($searchData->q.json_encode($searchData->toArray()).$searchData->per_page.$page);
 
-        return SWRCacheService::remember($cacheKey, function () use ($searchData, $page): LengthAwarePaginator {
+        return $this->cache->flexible(CacheKey::Search, ['hash' => $hash], function () use ($searchData, $page): LengthAwarePaginator {
             $productFilters = $this->buildProductFilters($searchData);
             $blogFilters    = $this->buildBlogFilters($searchData);
 
