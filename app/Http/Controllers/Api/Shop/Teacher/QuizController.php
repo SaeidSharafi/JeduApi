@@ -25,6 +25,9 @@ final class QuizController extends Controller
      *
      * Return list of Quizzes on Moodle with Teacher Access for the authenticated user.
      *
+     * For each quiz activity, `cid` is Moodle's course-module ID (cmid). Pass that
+     * value as `courseModuleId` to the quiz Moodle SSO endpoint.
+     *
      * @responseFile 200 resources/responses/shop/student/quizzes.json
      */
     public function __invoke(MoodleClientContract $moodleService): ApiResponseInterface

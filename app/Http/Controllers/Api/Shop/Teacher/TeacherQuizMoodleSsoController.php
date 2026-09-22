@@ -16,6 +16,11 @@ use Illuminate\Http\Request;
  */
 final class TeacherQuizMoodleSsoController extends Controller
 {
+    /**
+     * Generate a Moodle SSO URL for a quiz.
+     *
+     * @urlParam courseModuleId integer required The Moodle course-module ID (`cmid`), taken from the quiz activity's `cid` field in the quiz list response. Example: 841
+     */
     public function __invoke(Request $request, int $courseModuleId, GenerateQuizMoodleSsoUrlAction $generateSsoUrl): ApiResponseInterface
     {
         abort_unless((bool) $request->user()?->teacherData, 403);
