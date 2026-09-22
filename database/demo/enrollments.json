@@ -126,9 +126,9 @@
                     "status": "success",
                     "data": {
                         "moodle_user_id": 15021,
-                        "moodle_user_name": "m.rezaei",
+                        "moodle_user_name": "0000000002",
                         "moodle_course_id": 408,
-                        "login_path": "/moodle/login/index.php?username=m.rezaei&course=408"
+                        "login_path": "/moodle/login/index.php?username=0000000002&course=408"
                     },
                     "attempt_sequence": 1
                 }
@@ -201,9 +201,9 @@
                     "status": "success",
                     "data": {
                         "moodle_user_id": 15021,
-                        "moodle_user_name": "m.rezaei",
+                        "moodle_user_name": "0000000002",
                         "moodle_course_id": 408,
-                        "login_path": "/moodle/login/index.php?username=m.rezaei&course=408"
+                        "login_path": "/moodle/login/index.php?username=0000000002&course=408"
                     },
                     "attempt_sequence": 1
                 }
