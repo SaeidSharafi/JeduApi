@@ -1,6 +1,6 @@
 {
     "data": {
-        "url": "https://moodle.example.com/auth/userkey/login.php?key=abc123xyz",
-        "wantsurl": "https://moodle.example.com/course/view.php?id=42"
+        "url": "https://moodle.example.com/auth/userkey/login.php?key=abc123xyz&wantsurl=https%3A%2F%2Fmoodle.example.com%2Fcourse%2Fview.php%3Fid%3D42",
+        "wantsurl": "/course/view.php?id=42"
     }
 }

@@ -720,6 +720,10 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### MoodleClientContract (`app/Contracts/Integrations/MoodleClientContract.php`)
 - **Purpose:** Narrow client boundary shared by the real Moodle Web Services client and the deterministic E2E simulated client. Provisioning, read-side consumers, SSO, quizzes, progress sync, and access reconciliation depend on this contract.
+- `canAccessQuiz(moodleUserId, courseModuleId, asTeacher)` checks current Moodle enrollment, student visibility or teacher course capability, and the specific quiz before issuing quiz SSO. It never trusts the cached Shop quiz list.
+
+#### GenerateMoodleSsoUrlAction and GenerateQuizMoodleSsoUrlAction (`app/Actions/Shop/`)
+- `GenerateMoodleSsoUrlAction` shares login URL generation across the student and teacher course and quiz controllers. `GenerateQuizMoodleSsoUrlAction` resolves the Shop account's Moodle identity, verifies current role-specific quiz access, and derives `/mod/quiz/view.php?id={courseModuleId}`. The course controllers derive `/course/view.php?id={moodle_course_id}` from their authorized Shop records.
 
 #### MoodleService (`app/Services/Integrations/MoodleService.php`)
 - **Purpose:** Real Moodle Web Services API client implementing `MoodleClientContract` for user management, enrollment, grades, and SSO
@@ -732,6 +736,7 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `getCourse(int $moodleCourseId): LmsMoodleBlockData`: Fetches course content structure
   - `enrollUser(int $moodleUserId, int $moodleCourseId, ?int $startTime, ?int $endTime, int $roleId = 5): void`: Manual enrollment
   - `createUserKey(string $username, ?string $token = null): string`: Generates SSO login URL key; `auth_userkey_request_login_url` always carries the login token, never the service token
+  - `generateSsoUrl(username, wantsUrl)`: Appends an encoded `wantsurl` to the returned login URL; relative Moodle paths are expanded using configured `base_url`, so the URL itself redirects to the destination after login.
 
 #### FakeMoodleService (`app/Services/Fakes/FakeMoodleService.php`)
 - **Purpose:** Deterministic, credential-free Moodle client used only when `APP_ENV=e2e`; returns stable user/course/login references and implements the same `MoodleClientContract` without outbound requests.

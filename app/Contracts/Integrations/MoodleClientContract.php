@@ -30,6 +30,8 @@ interface MoodleClientContract
     /** @return array<int, LmsMoodleBlockData> */
     public function getTeacherQuizzes(int $moodleUserId): array;
 
+    public function canAccessQuiz(int $moodleUserId, int $courseModuleId, bool $asTeacher): bool;
+
     public function enrollUser(
         int $moodleUserId,
         int $moodleCourseId,

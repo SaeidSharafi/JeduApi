@@ -202,6 +202,53 @@ final class MoodleService extends AbstractIntegrationService implements MoodleCl
         return $this->fetchUserQuizzes($moodleUserId, asTeacher: true);
     }
 
+    public function canAccessQuiz(int $moodleUserId, int $courseModuleId, bool $asTeacher): bool
+    {
+        if ($courseModuleId <= 0) {
+            return false;
+        }
+
+        $courses = $this->call('core_enrol_get_users_courses', ['userid' => $moodleUserId]);
+        if (! is_array($courses)) {
+            return false;
+        }
+
+        $courseIds = [];
+        foreach ($courses as $course) {
+            if (is_array($course) && isset($course['id']) && ($asTeacher || ! empty($course['visible']))) {
+                $courseIds[] = (int) $course['id'];
+            }
+        }
+
+        if ($asTeacher) {
+            $courseIds = $this->filterTeacherCourseIds($courseIds, $moodleUserId);
+        }
+
+        if ($courseIds === []) {
+            return false;
+        }
+
+        $response = $this->call('mod_quiz_get_quizzes_by_courses', [
+            'courseids' => array_values(array_unique($courseIds)),
+        ]);
+
+        $quizzes = data_get($response, 'quizzes', []);
+        if (! is_array($quizzes)) {
+            return false;
+        }
+
+        foreach ($quizzes as $quiz) {
+            if (is_array($quiz)
+                && (int) data_get($quiz, 'coursemodule') === $courseModuleId
+                && in_array((int) data_get($quiz, 'course'), $courseIds, true)
+                && ($asTeacher || (bool) data_get($quiz, 'visible', true))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function enrollUser(
         int $moodleUserId,
         int $moodleCourseId,
@@ -257,6 +304,13 @@ final class MoodleService extends AbstractIntegrationService implements MoodleCl
     {
         try {
             $url = $this->createUserKey($username);
+
+            if ($wantsUrl !== null) {
+                $destination = str_starts_with($wantsUrl, '/')
+                    ? mb_rtrim((string) $this->config['base_url'], '/').$wantsUrl
+                    : $wantsUrl;
+                $url .= (str_contains($url, '?') ? '&' : '?').'wantsurl='.rawurlencode($destination);
+            }
 
             return new MoodleSsoUrlData(url: $url, wantsurl: $wantsUrl);
         } catch (Throwable $e) {

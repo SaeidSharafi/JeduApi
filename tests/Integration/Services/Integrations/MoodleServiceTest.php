@@ -125,6 +125,74 @@ it('creates moodle user key', function (): void {
     });
 });
 
+it('puts the Moodle destination on the single-use login URL', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([
+            'loginurl' => 'https://moodle.test/auth/userkey/login.php?key=testkey',
+        ]),
+    ]);
+
+    $ssoData = $this->moodleService->generateSsoUrl('1122334', '/mod/quiz/view.php?id=42');
+
+    expect($ssoData?->url)->toBe(
+        'https://moodle.test/auth/userkey/login.php?key=testkey&wantsurl=https%3A%2F%2Fmoodle.test%2Fmod%2Fquiz%2Fview.php%3Fid%3D42'
+    );
+});
+
+it('checks a current visible student quiz without loading grades', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::sequence()
+            ->push([['id' => 101, 'visible' => true]])
+            ->push(['quizzes' => [['course' => 101, 'coursemodule' => 42, 'visible' => true]]]),
+    ]);
+
+    expect($this->moodleService->canAccessQuiz(55, 42, false))->toBeTrue();
+    Http::assertSentCount(2);
+});
+
+it('rejects a hidden student quiz', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::sequence()
+            ->push([['id' => 101, 'visible' => true]])
+            ->push(['quizzes' => [['course' => 101, 'coursemodule' => 42, 'visible' => false]]]),
+    ]);
+
+    expect($this->moodleService->canAccessQuiz(55, 42, false))->toBeFalse();
+});
+
+it('checks teacher capability before granting quiz access', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::sequence()
+            ->push([['id' => 101, 'visible' => true]])
+            ->push([['courseid' => 101, 'users' => [['id' => 55]]]])
+            ->push(['quizzes' => [['course' => 101, 'coursemodule' => 42, 'visible' => false]]]),
+    ]);
+
+    expect($this->moodleService->canAccessQuiz(55, 42, true))->toBeTrue();
+    Http::assertSentCount(3);
+});
+
+it('denies teacher quiz access when Moodle does not grant teaching capability', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::sequence()
+            ->push([['id' => 101, 'visible' => true]])
+            ->push([['courseid' => 101, 'users' => [['id' => 99]]]]),
+    ]);
+
+    expect($this->moodleService->canAccessQuiz(55, 42, true))->toBeFalse();
+    Http::assertSentCount(2);
+});
+
+it('denies a quiz outside the enrolled Moodle course', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::sequence()
+            ->push([['id' => 101, 'visible' => true]])
+            ->push(['quizzes' => [['course' => 999, 'coursemodule' => 42, 'visible' => true]]]),
+    ]);
+
+    expect($this->moodleService->canAccessQuiz(55, 42, false))->toBeFalse();
+});
+
 it('uses the stored auth_userkey_token when no token is given', function (): void {
     Http::fake([
         'https://moodle.test/*' => Http::response([

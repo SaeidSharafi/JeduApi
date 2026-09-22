@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Student;
 
+use App\Actions\Shop\GenerateMoodleSsoUrlAction;
 use App\Contracts\ApiResponseInterface;
-use App\Contracts\Integrations\MoodleClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
  *
  * @authenticated user
  */
-final class MoodleSsoController extends Controller
+final class StudentCourseMoodleSsoController extends Controller
 {
     /**
      * Generate a Moodle SSO URL for an enrollment.
@@ -25,16 +25,13 @@ final class MoodleSsoController extends Controller
      *
      * @responseFile resources/responses/shop/enrollments/moodle-sso.json
      *
-     * @queryParam wantsurl string Optional URL to redirect to after Moodle SSO login. Example:
-     *     "https://lms.example.com/course/view.php?id=2"
-     *
      * @response 404 {"message": "Enrollment not found."}
      * @response 422 {"message": "This enrollment is not a Moodle LMS enrollment."}
      * @response 422 {"message": "Moodle provisioning is incomplete for this enrollment."}
      * @response 422 {"message": "Moodle is not configured."}
      * @response 422 {"message": "Moodle auth_userkey token is not configured."}
      */
-    public function __invoke(Request $request, Enrollment $enrollment, MoodleClientContract $moodleService): ApiResponseInterface
+    public function __invoke(Request $request, Enrollment $enrollment, GenerateMoodleSsoUrlAction $generateSsoUrl): ApiResponseInterface
     {
         if ($enrollment->customer_id !== $request->user()?->id) {
             return apiResponse()->notFound(__('messages.enrollments.not_found'));
@@ -53,12 +50,13 @@ final class MoodleSsoController extends Controller
             return apiResponse()->validationError(__('messages.enrollments.moodle_provisioning_incomplete'));
         }
 
-        // 4. Resolve wantsurl (custom or fallback to course page)
         $courseId = data_get($enrollment->productDeliveryOption->details_json, 'moodle_course_id');
-        $wantsUrl = $request->query('wantsurl') ?? ($courseId ? "/course/view.php?id={$courseId}" : null);
+        $courseId = filter_var($courseId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($courseId === false) {
+            return apiResponse()->validationError(__('messages.enrollments.moodle_provisioning_incomplete'));
+        }
 
-        // 5. Generate SSO via service
-        $ssoData = $moodleService->generateSsoUrl($moodleUsername, $wantsUrl);
+        $ssoData = $generateSsoUrl->handle($moodleUsername, '/course/view.php?id='.$courseId);
 
         if (! $ssoData) {
             return apiResponse()->validationError(__('messages.enrollments.moodle_service_error'));

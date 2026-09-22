@@ -543,14 +543,17 @@ Every DB-backed select-option endpoint is paginated with Laravel's `paginate()`:
 ##### SubmitReviewController (`app/Http/Controllers/Api/Shop/Student/SubmitReviewController.php`)
 - `__invoke(Enrollment $enrollment, SubmitReviewData $data)`: **Route:** `POST /api/v1/shop/student/courses/{enrollment:uuid}/review` - Submits the authenticated student's review and rating for the productable behind an active enrollment. **Delegates to:** `SubmitReviewAction`. **Request DTO:** `SubmitReviewData` (`rating` integer 1–5, `title`, `comment` — all required). **Response DTO:** `ReviewData` (201). Errors: `404` when the enrollment belongs to another customer (`messages.enrollments.not_found`); `422` with an `enrollment` error for a non-active or non-reviewable enrollment, or a `review` error when the student already has a `pending`/`approved` review. New reviews are always `pending`; a `rejected` review may be resubmitted (a new row — there is no update endpoint).
 
-##### MoodleSsoController (`app/Http/Controllers/Api/Shop/Student/MoodleSsoController.php`)
-- `__invoke(Enrollment $enrollment)`: **Route:** `POST /api/v1/shop/student/courses/{enrollment:uuid}/moodle/sso` - Generates Moodle SSO login URL for the enrolled course. **Response DTO:** `MoodleSsoUrlData`.
+##### StudentCourseMoodleSsoController (`app/Http/Controllers/Api/Shop/Student/StudentCourseMoodleSsoController.php`)
+- `__invoke(Enrollment $enrollment)`: **Route:** `POST /api/v1/shop/student/courses/{enrollment:uuid}/moodle/sso` - Generates a Moodle login URL with a server-derived course destination. The enrollment must belong to the student, use Moodle delivery, have a provisioned Moodle username, and contain a positive `moodle_course_id`. Client `wantsurl` is ignored. **Response DTO:** `MoodleSsoUrlData`.
 
 ##### JoinUrlController (`app/Http/Controllers/Api/Shop/Student/JoinUrlController.php`)
 - `__invoke(Enrollment $enrollment)`: **Route:** `GET /api/v1/shop/student/seminars/{enrollment:uuid}/join` - Lazy-generates and returns the join URL for the enrollment's delivery method, and 404s when the enrollment belongs to another customer. **Delegates to:** GetJoinUrlAction. **Response DTO:** `JoinUrlData` — `type: skyroom` (login URL built from the enrollment's `skyroom` provisioning data) or `type: niliroom` for a `live_session_niliroom` seminar, whose meeting join URL is issued by the panel per request and carries a null `expires_at`. A `live_session_niliroom` seminar returns 503 when `nili_room_id` is missing or not a non-empty string (`messages.provisioning.niliroom_room_id_missing`) or when the panel is disabled/unconfigured (`messages.enrollments.niliroom_not_configured`); there is no BBB fallback (ADR 0013). A delivery method with no join flow returns 422 (`messages.enrollment.delivery_no_join_url`).
 
 ##### QuizController (`app/Http/Controllers/Api/Shop/Student/QuizController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/shop/student/quizzes` - Returns list of user's quizzes with completion states, sourced from Moodle integration. Cached per user through the `CacheStore` gateway under `CacheKey::StudentQuizzes` (`CacheTag::Content`); the key is forgotten by Moodle progress sync and by provisioning/revocation for that user.
+
+##### StudentQuizMoodleSsoController (`app/Http/Controllers/Api/Shop/Student/StudentQuizMoodleSsoController.php`)
+- `__invoke(int $courseModuleId)`: **Route:** `POST /api/v1/shop/student/quizzes/{courseModuleId}/moodle/sso` - Uses the activity `cid` from the quiz list. Checks the authenticated student's current Moodle course and visible quiz access without relying on the cached list or a Shop enrollment. Returns 404 when access is absent. Derives `/mod/quiz/view.php?id={courseModuleId}` on the server and ignores client `wantsurl`. **Response DTO:** `MoodleSsoUrlData`.
 
 ##### DigitalAssetEnrollmentController (`app/Http/Controllers/Api/Shop/Student/DigitalAssetEnrollmentController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/shop/student/digital-assets` - Lists user's enrolled digital assets with download availability.
@@ -579,8 +582,11 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 ##### CourseController (`app/Http/Controllers/Api/Shop/Teacher/CourseController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/teacher/courses` - **Query Param:** `period` (current|past) - Fetches the teacher's courses from IMS via `ImsService::getTeacherCourses()`, enriches each with local product cover image and `product_delivery_option_uuid` when a matching `ProductDeliveryOption` (keyed by `details_json->ims_course_code`) exists. **Response DTO:** `TeacherCourseItemData` collection (code, name, start/end date, is_current, has_grades_enabled, has_attendance_enabled, product_image, product_delivery_option_uuid)
 
-##### TeacherMoodleSsoController (`app/Http/Controllers/Api/Shop/Teacher/TeacherMoodleSsoController.php`)
-- `__invoke(ProductDeliveryOption $deliveryOption)`: **Route:** `POST /api/v1/shop/teacher/courses/{deliveryOption:uuid}/moodle/sso` - Generates a Moodle SSO login URL for the teacher in the course's Moodle-linked delivery option. **Response DTO:** `MoodleSsoUrlData`.
+##### TeacherCourseMoodleSsoController (`app/Http/Controllers/Api/Shop/Teacher/TeacherCourseMoodleSsoController.php`)
+- `__invoke(ProductDeliveryOption $deliveryOption)`: **Route:** `POST /api/v1/shop/teacher/courses/{deliveryOption:uuid}/moodle/sso` - Requires a linked Teacher assigned to the Moodle delivery option and a positive `moodle_course_id`. Generates a login URL with a server-derived course destination; client `wantsurl` is ignored. **Response DTO:** `MoodleSsoUrlData`.
+
+##### TeacherQuizMoodleSsoController (`app/Http/Controllers/Api/Shop/Teacher/TeacherQuizMoodleSsoController.php`)
+- `__invoke(int $courseModuleId)`: **Route:** `POST /api/v1/shop/teacher/quizzes/{courseModuleId}/moodle/sso` - Requires a linked Teacher profile and current Moodle course teaching capability for the quiz. Does not require a Shop delivery option. Returns 404 when Moodle access is absent. Derives the quiz destination on the server and ignores client `wantsurl`. **Response DTO:** `MoodleSsoUrlData`.
 
 ##### TeacherJoinUrlController (`app/Http/Controllers/Api/Shop/Teacher/TeacherJoinUrlController.php`)
 - `__invoke(ProductDeliveryOption $deliveryOption)`: **Route:** `GET /api/v1/shop/teacher/courses/{deliveryOption:uuid}/join` - Returns the authenticated teacher's own session login URL for a live seminar. **Delegates to:** GetTeacherJoinUrlAction. Requires a linked `Teacher` profile (403) and assignment to the delivery option (403); a non-seminar delivery method is 422 (`messages.enrollments.not_seminar`). A Skyroom seminar without a usable `room_id` returns 503 (`messages.provisioning.skyroom_room_id_missing`). A `live_session_niliroom` seminar is served by Niliroom only (ADR 0013) and returns 503 when `nili_room_id` is missing or not a non-empty string (`messages.provisioning.niliroom_room_id_missing`) or when the panel is disabled/unconfigured (`messages.enrollments.niliroom_not_configured`); there is no BBB fallback. **Response DTO:** `JoinUrlData` — `type: skyroom` with an `expires_at` derived from the Skyroom TTL, or `type: niliroom` with the grant's own provider expiry; both are Jalali `Verta`.
@@ -718,9 +724,8 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 #### CollaborationPageController (`app/Http/Controllers/Api/Shop/CMS/CollaborationPageController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/collaboration` - **Response DTO:** CollaborationPageData providing collaboration content sections
 
-### Moodle SSO Endpoint
-#### MoodleSsoController (`app/Http/Controllers/Api/Shop/Student/MoodleSsoController.php`)
-- `__invoke(Enrollment $enrollment, MoodleService $moodleService)`: **Route:** `POST /api/v1/shop/student/courses/{enrollment:uuid}/moodle/sso` - **Auth:** `auth:user` - **Delegates to:** MoodleService SSO URL generation via GetEnrollmentDetailAction - **Response DTO:** `MoodleSsoUrlData` with auto-login URL. Requires Moodle integration enabled and user enrolled in the course's Moodle-linked delivery option. Generates a `createUserKey` token valid for single-use login.
+### Moodle SSO Endpoints
+- Course SSO retains the existing student and teacher route paths and derives the destination from the authorized Shop enrollment or delivery option. Quiz SSO uses the Moodle course-module ID (`cid`) and checks current Moodle access. All four routes return `MoodleSsoUrlData`; its `url` contains the encoded `wantsurl` login parameter for the server-selected course or quiz destination.
 
 ## CORS Configuration (`config/cors.php`)
 - **Paths:** `api/*` + `sanctum/csrf-cookie`

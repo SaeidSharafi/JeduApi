@@ -80,6 +80,11 @@ final class FakeMoodleService implements MoodleClientContract
         return [];
     }
 
+    public function canAccessQuiz(int $moodleUserId, int $courseModuleId, bool $asTeacher): bool
+    {
+        return false;
+    }
+
     /**
      * @return array{course_grade: string|null, activities: array<int, string>}
      */
@@ -151,7 +156,16 @@ final class FakeMoodleService implements MoodleClientContract
 
     public function generateSsoUrl(string $username, ?string $wantsUrl = null): ?MoodleSsoUrlData
     {
-        return new MoodleSsoUrlData(url: $this->createUserKey($username), wantsurl: $wantsUrl);
+        $url = $this->createUserKey($username);
+
+        if ($wantsUrl !== null) {
+            $destination = str_starts_with($wantsUrl, '/')
+                ? mb_rtrim($this->baseUrl, '/').$wantsUrl
+                : $wantsUrl;
+            $url .= '&wantsurl='.rawurlencode($destination);
+        }
+
+        return new MoodleSsoUrlData(url: $url, wantsurl: $wantsUrl);
     }
 
     public function getCourseWantsUrl(Enrollment $enrollment): ?string

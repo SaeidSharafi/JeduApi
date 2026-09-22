@@ -10,20 +10,22 @@ use App\Http\Controllers\Api\Shop\Student\CourseController as StudentCourseContr
 use App\Http\Controllers\Api\Shop\Student\DigitalAssetDownloadController;
 use App\Http\Controllers\Api\Shop\Student\DigitalAssetEnrollmentController;
 use App\Http\Controllers\Api\Shop\Student\JoinUrlController;
-use App\Http\Controllers\Api\Shop\Student\MoodleSsoController;
 use App\Http\Controllers\Api\Shop\Student\OrderController;
 use App\Http\Controllers\Api\Shop\Student\QuizController;
 use App\Http\Controllers\Api\Shop\Student\RetryPaymentController;
 use App\Http\Controllers\Api\Shop\Student\SeminarController as StudentSeminarController;
 use App\Http\Controllers\Api\Shop\Student\ShowPaymentController;
+use App\Http\Controllers\Api\Shop\Student\StudentCourseMoodleSsoController;
+use App\Http\Controllers\Api\Shop\Student\StudentQuizMoodleSsoController;
 use App\Http\Controllers\Api\Shop\Student\SubmitReviewController;
 use App\Http\Controllers\Api\Shop\Teacher\AttendanceController;
 use App\Http\Controllers\Api\Shop\Teacher\CourseController as TeacherCourseController;
 use App\Http\Controllers\Api\Shop\Teacher\GradeController;
 use App\Http\Controllers\Api\Shop\Teacher\QuizController as TeacherQuizController;
 use App\Http\Controllers\Api\Shop\Teacher\SeminarController as TeacherSeminarController;
+use App\Http\Controllers\Api\Shop\Teacher\TeacherCourseMoodleSsoController;
 use App\Http\Controllers\Api\Shop\Teacher\TeacherJoinUrlController;
-use App\Http\Controllers\Api\Shop\Teacher\TeacherMoodleSsoController;
+use App\Http\Controllers\Api\Shop\Teacher\TeacherQuizMoodleSsoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletInfoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletTopupController;
 
@@ -54,7 +56,7 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
                 Route::post('/{enrollment:uuid}/review', SubmitReviewController::class)
                     ->name('review');
 
-                Route::post('/{enrollment:uuid}/moodle/sso', MoodleSsoController::class)
+                Route::post('/{enrollment:uuid}/moodle/sso', StudentCourseMoodleSsoController::class)
                     ->name('moodle.sso');
             });
 
@@ -71,6 +73,8 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
             });
 
             Route::get('quizzes', QuizController::class)->name('quizzes');
+            Route::post('quizzes/{courseModuleId}/moodle/sso', StudentQuizMoodleSsoController::class)
+                ->whereNumber('courseModuleId')->name('quizzes.moodle.sso');
 
             // Enrolled Digital Assets
             Route::prefix('digital-assets')->name('digital-assets.')->group(function (): void {
@@ -114,7 +118,7 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
                 Route::get('/', [TeacherCourseController::class, 'index'])
                     ->name('index');
 
-                Route::post('/{deliveryOption:uuid}/moodle/sso', TeacherMoodleSsoController::class)
+                Route::post('/{deliveryOption:uuid}/moodle/sso', TeacherCourseMoodleSsoController::class)
                     ->name('moodle.sso');
 
                 Route::apiResource('/{courseCode}/attendances', AttendanceController::class)->except('destroy');
@@ -124,6 +128,8 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
 
             });
             Route::get('/quizzes', TeacherQuizController::class)->name('quizzes');
+            Route::post('/quizzes/{courseModuleId}/moodle/sso', TeacherQuizMoodleSsoController::class)
+                ->whereNumber('courseModuleId')->name('quizzes.moodle.sso');
             Route::prefix('seminars')->name('seminars.')->group(function (): void {
                 Route::get('/', TeacherSeminarController::class)->name('seminars');
                 Route::get('/{deliveryOption:uuid}/join', TeacherJoinUrlController::class)
