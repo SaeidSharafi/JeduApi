@@ -97,7 +97,8 @@ final class GradeController extends Controller
             $response = $this->imsService->storeBulkGrades($courseCode, $teacherCivilId, $civilIdTypeEnum, $data->toArray());
         } catch (UnrecoverableProvisioningException $e) {
             return apiResponse()->validationErrors(
-                $e->getValidationErrors()
+                $e->getValidationErrors(),
+                metadata: $e->debugContext()
             );
         }
 

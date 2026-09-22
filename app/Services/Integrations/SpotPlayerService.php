@@ -42,7 +42,7 @@ final class SpotPlayerService extends AbstractIntegrationService implements Spot
         // Application-level error (bad spot_id, etc.) — retrying won't fix it
         if ((isset($data['status']) && $data['status'] === false) || isset($data['error'])) {
             $message = (string) ($data['message'] ?? $data['error'] ?? __('messages.integration.spot_player.service_error'));
-            throw new UnrecoverableProvisioningException($message, 0, null, ['raw_response' => $data]);
+            throw new UnrecoverableProvisioningException($message, 0, null, ['raw_body_snippet' => $data]);
         }
 
         return [

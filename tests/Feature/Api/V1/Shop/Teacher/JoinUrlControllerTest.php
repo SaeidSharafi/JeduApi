@@ -19,6 +19,9 @@ covers(GetTeacherJoinUrlAction::class, TeacherJoinUrlController::class);
 
 beforeEach(function (): void {
     $this->customer();
+
+    // The test environment runs with APP_DEBUG on, so "debug off" has to be explicit.
+    config(['app.debug' => false]);
 });
 
 it('returns 403 when the authenticated user has no teacher profile', function (): void {
@@ -114,7 +117,8 @@ it('returns 503 when the niliroom room id is missing or malformed', function (mi
 
     $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
         ->assertStatus(503)
-        ->assertJsonFragment(['message' => __('messages.provisioning.niliroom_room_id_missing')]);
+        ->assertJsonFragment(['message' => __('messages.provisioning.niliroom_room_id_missing')])
+        ->assertJsonPath('errors', []);
 })->with([
     'absent'          => null,
     'empty string'    => '',
@@ -122,6 +126,23 @@ it('returns 503 when the niliroom room id is missing or malformed', function (mi
     'integer'         => 456,
     'array'           => [['room']],
 ]);
+
+it('includes scrubbed upstream context on provisioning failures only when debug is on', function (): void {
+    $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);
+
+    $deliveryOption = seminarOption($teacher, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, ['nili_room_id' => 'room-public-456']);
+
+    $this->mock(NiliroomClientContract::class, function ($mock): void {
+        $mock->shouldReceive('isReady')->once()->andReturnFalse();
+        $mock->shouldNotReceive('issueTeacherLoginGrant');
+    });
+
+    config(['app.debug' => true]);
+
+    $this->getJson(route('api.v1.shop.teacher.seminars.join', ['deliveryOption' => $deliveryOption->uuid]))
+        ->assertStatus(503)
+        ->assertJsonPath('errors.debug', []);
+});
 
 it('returns 503 when the delivery option has no skyroom room id', function (): void {
     $teacher = Teacher::factory()->create(['user_id' => $this->user->id]);

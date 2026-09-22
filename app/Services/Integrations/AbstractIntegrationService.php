@@ -7,6 +7,7 @@ namespace App\Services\Integrations;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
+use App\Helpers\ProvisioningErrorContext;
 use App\Services\SettingsService;
 use Illuminate\Http\Client\Response;
 
@@ -97,12 +98,6 @@ abstract class AbstractIntegrationService
 
     protected function sanitizeBody(string $body): string
     {
-        $sanitized = preg_replace(
-            ['/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/', '/\b09\d{9}\b/', '/\b\d{10}\b/'],
-            '[REDACTED]',
-            $body
-        );
-
-        return mb_substr($sanitized ?? $body, 0, 500);
+        return ProvisioningErrorContext::sanitizeBody($body);
     }
 }

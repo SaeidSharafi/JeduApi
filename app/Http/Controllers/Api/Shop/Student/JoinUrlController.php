@@ -43,7 +43,7 @@ final class JoinUrlController extends Controller
         try {
             $joinUrlData = $action->handle($enrollment);
         } catch (ResourceNotProvisionedException $e) {
-            return apiResponse()->error($e->getMessage(), 503);
+            return apiResponse()->error($e->getMessage(), $e->status(), $e->debugContext());
         } catch (InvalidArgumentException $e) {
             return apiResponse()->validationError($e->getMessage());
         } catch (Exception $e) {

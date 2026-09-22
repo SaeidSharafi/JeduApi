@@ -69,7 +69,8 @@ final class AttendanceController extends Controller
             $response = $this->imsService->storeAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $data->toArray());
         } catch (UnrecoverableProvisioningException $e) {
             return apiResponse()->validationErrors(
-                $e->getValidationErrors()
+                $e->getValidationErrors(),
+                metadata: $e->debugContext()
             );
         }
 
@@ -98,7 +99,8 @@ final class AttendanceController extends Controller
             $response = $this->imsService->updateAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $data->toArray());
         } catch (UnrecoverableProvisioningException $e) {
             return apiResponse()->validationErrors(
-                $e->getValidationErrors()
+                $e->getValidationErrors(),
+                metadata: $e->debugContext()
             );
         }
 

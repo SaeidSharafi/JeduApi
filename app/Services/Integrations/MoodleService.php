@@ -11,6 +11,7 @@ use App\Data\Shop\Student\MoodleSsoUrlData;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
+use App\Helpers\ProvisioningErrorContext;
 use App\Models\Enrollment;
 use App\Models\User;
 use Illuminate\Http\Client\PendingRequest;
@@ -490,7 +491,9 @@ final class MoodleService extends AbstractIntegrationService implements MoodleCl
     {
         $this->assertConfigured();
 
-        $response = $this->request($this->config['base_url'])->post('/webservice/rest/server.php', array_merge(
+        $endpoint = '/webservice/rest/server.php';
+
+        $response = $this->request($this->config['base_url'])->post($endpoint, array_merge(
             [
                 'wstoken'            => $token ?: $this->config['token'],
                 'wsfunction'         => $function,
@@ -499,22 +502,41 @@ final class MoodleService extends AbstractIntegrationService implements MoodleCl
             $params,
         ));
 
+        // Every failure branch carries the same shape so a log line is comparable
+        // across failures. The outbound body is never captured: it holds `wstoken`.
+        $context = [
+            'function'    => $function,
+            'http_status' => $response->status(),
+            'endpoint'    => $endpoint,
+        ];
+
         if ($response->failed()) {
-            $status = $response->status();
+            $status                      = $response->status();
+            $context['raw_body_snippet'] = ProvisioningErrorContext::sanitizeBody($response->body());
+
             if ($status >= 500) {
                 throw new RecoverableProvisioningException(__('messages.integration.moodle.server_error',
-                    ['function' => $function]), $status);
+                    ['function' => $function]), $status, null, $context);
             }
+
             throw new UnrecoverableProvisioningException(__('messages.integration.moodle.request_failed',
-                ['function' => $function]), $status);
+                ['function' => $function]), $status, null, $context);
         }
 
         $json = $response->json();
         if (is_array($json) && isset($json['exception'])) {
             $message = __('messages.integration.moodle.exception_response',
                 ['message' => ((string) $json['message'] ?? 'Unknown error')]);
-            // metaData['errorcode'] is what getMoodleErrorCode() reads — must be preserved
-            throw new UnrecoverableProvisioningException($message, 0, null, $json);
+
+            // metaData['errorcode'] is what getMoodleErrorCode() reads — must be preserved.
+            // The upstream debuginfo is per-endpoint and often the only clue, so keep it.
+            $context['errorcode'] = $json['errorcode'] ?? null;
+            $context['message']   = $json['message']   ?? null;
+            if (isset($json['debuginfo'])) {
+                $context['debuginfo'] = $json['debuginfo'];
+            }
+
+            throw new UnrecoverableProvisioningException($message, 0, null, $context);
         }
 
         return $json;

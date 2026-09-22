@@ -66,6 +66,13 @@ return [
             'level'  => env('LOG_LEVEL', 'debug'),
         ],
 
+        'provisioning' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/provisioning.log'),
+            'level'  => env('LOG_LEVEL', 'debug'),
+            'days'   => 14,
+        ],
+
         'stack' => [
             'driver'            => 'stack',
             'channels'          => explode(',', env('LOG_STACK', 'single')),

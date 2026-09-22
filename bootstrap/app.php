@@ -5,10 +5,6 @@ declare(strict_types=1);
 use App\Contracts\ApiResponseInterface;
 use App\Exceptions\CustomValidationException;
 use App\Exceptions\Gateway\MellatException;
-use App\Exceptions\Integrations\ExternalProvisioningException;
-use App\Exceptions\Integrations\RecoverableProvisioningException;
-use App\Exceptions\Integrations\ResourceNotProvisionedException;
-use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Exceptions\RefundGatewayException;
 use App\Exceptions\RefundValidationException;
 use App\Http\Middleware\AdminAuditMiddleware;
@@ -144,13 +140,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         Integration::handles($exceptions);
 
-        // Suppress expected/retryable exceptions from Sentry to reduce noise.
         $exceptions->dontReport([
             MellatException::class,
-            RecoverableProvisioningException::class,
-            UnrecoverableProvisioningException::class,
         ]);
-
         $isApiRequest = function (Request $request): bool {
             return $request->expectsJson()
                 || $request->is('api/*')
@@ -245,18 +237,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->renderable(function (CustomValidationException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 return apiResponse()->validationError($e->getMessage());
-            }
-
-            return null;
-        });
-
-        // 6.9. ExternalProvisioningException hierarchy (provisioning integration errors)
-        // Covers: ResourceNotProvisioned(404), RecoverableProvisioning(503), UnrecoverableProvisioning(500)
-        $exceptions->renderable(function (ExternalProvisioningException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
-            if ($isApiRequest($request)) {
-                $status = $e instanceof ResourceNotProvisionedException ? 404 : 503;
-
-                return apiResponse()->error($e->getMessage(), $status);
             }
 
             return null;

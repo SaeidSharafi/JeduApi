@@ -547,6 +547,28 @@ it('throws UnrecoverableProvisioningException on 4xx response', function (): voi
         ->toThrow(UnrecoverableProvisioningException::class, 'Moodle request failed for enrol_manual_enrol_users.');
 });
 
+it('attaches call context to http failures so the log line is actionable', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response('contact admin@example.com or 09121234567', 500),
+    ]);
+
+    try {
+        $this->moodleService->enrollUser(1, 2);
+        $this->fail('Expected RecoverableProvisioningException was not thrown.');
+    } catch (RecoverableProvisioningException $exception) {
+        expect($exception->metaData)
+            ->toMatchArray([
+                'function'    => 'enrol_manual_enrol_users',
+                'http_status' => 500,
+                'endpoint'    => '/webservice/rest/server.php',
+            ])
+            ->and($exception->metaData['raw_body_snippet'])
+            ->toContain('[REDACTED]')
+            ->not->toContain('admin@example.com')
+            ->not->toContain('09121234567');
+    }
+});
+
 it('throws with errorcode metadata when moodle returns exception response', function (): void {
     Http::fake([
         'https://moodle.test/*' => Http::response([
@@ -556,8 +578,17 @@ it('throws with errorcode metadata when moodle returns exception response', func
         ], 200),
     ]);
 
-    expect(fn () => $this->moodleService->enrollUser(1, 2))
-        ->toThrow(UnrecoverableProvisioningException::class);
+    try {
+        $this->moodleService->enrollUser(1, 2);
+        $this->fail('Expected UnrecoverableProvisioningException was not thrown.');
+    } catch (UnrecoverableProvisioningException $exception) {
+        expect($exception->getMoodleErrorCode())->toBe('invalidparameter')
+            ->and($exception->metaData)->toMatchArray([
+                'function'    => 'enrol_manual_enrol_users',
+                'http_status' => 200,
+                'errorcode'   => 'invalidparameter',
+            ]);
+    }
 });
 
 // ─── getTeacherQuizzes ─────────────────────────────────────────────
