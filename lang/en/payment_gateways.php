@@ -7,6 +7,7 @@ return [
         'label'                   => 'Label',
         'description'             => 'Description',
         'icon'                    => 'Icon',
+        'wallet_topup_enabled'    => 'Enabled for wallet top-up',
         'ims_bank_account_number' => 'IMS Bank Account Number',
         'terminal_id'             => 'Terminal ID',
         'username'                => 'Username',

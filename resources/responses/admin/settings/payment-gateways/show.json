@@ -3,6 +3,7 @@
   "data": {
     "enabled": true,
     "shop_enabled": false,
+    "wallet_topup_enabled": false,
     "label": "انتقال بانکی",
     "description": "پرداخت حضوری",
     "icon": {

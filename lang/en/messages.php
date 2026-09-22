@@ -358,7 +358,6 @@ return [
         'withdrawal_success'           => 'Wallet withdrawal completed successfully.',
         'adjustment_success'           => 'Wallet adjustment completed successfully.',
         'balance_retrieved'            => 'Wallet balance retrieved successfully.',
-        'cannot_use_wallet_for_topup'  => 'Cannot use wallet to top up wallet balance.',
         'redirecting_to_gateway'       => 'Redirecting to payment gateway...',
         'payment_pending_verification' => 'Payment is pending verification.',
     ],
@@ -476,9 +475,10 @@ return [
     ],
 
     'wallet' => [
-        'not_topup_payment' => 'Payment :uuid is not a wallet topup payment.',
-        'not_completed'     => 'Payment :uuid is not completed.',
-        'topup_via'         => 'Wallet top-up via :method',
+        'not_topup_payment'             => 'Payment :uuid is not a wallet topup payment.',
+        'not_completed'                 => 'Payment :uuid is not completed.',
+        'topup_via'                     => 'Wallet top-up via :method',
+        'gateway_not_allowed_for_topup' => 'Cannot top up a wallet with the :gateway payment method.',
     ],
 
     'admin' => [

@@ -521,13 +521,13 @@ Every DB-backed select-option endpoint is paginated with Laravel's `paginate()`:
 - `destroy(Request $request)`: **Route:** `DELETE /api/v1/shop/customer/avatar` - Removes the customer's avatar
 
 #### GatewayListController (`app/Http/Controllers/Api/Shop/Sale/GatewayListController.php`)
-- `__invoke(GatewayService $service)`: **Route:** `GET /api/v1/shop/payment/gateways` - Returns available payment gateway options with labels and icons for checkout UI. Delegates to `GatewayService::getShopActiveGatewaysDetials()` which resolves gateway settings via `SettingsService` with `config/payments.php` defaults as fallback.
+- `__invoke(GatewayListRequestData $data, GatewayService $service)`: **Route:** `GET /api/v1/shop/payment/gateways` - Returns available payment gateway options with labels and icons for the UI. **Query DTO:** `GatewayListRequestData` (`purpose`, optional, enum `order`|`wallet_topup`, invalid values rejected with 422). Default/`order` returns the checkout list (`enabled && shop_enabled`); `wallet_topup` returns the wallet top-up list (`enabled && wallet_topup_enabled`). The two lists are independent, so the frontend must request the list matching the flow it is rendering. Delegates to `GatewayService::getShopActiveGatewaysDetails($purpose)`, which resolves gateway settings via `SettingsService` with `config/payments.php` defaults as fallback. Each entry exposes `wallet_topup_enabled` alongside the existing flags.
 
 #### WalletInfoController (`app/Http/Controllers/Api/Shop/Wallet/WalletInfoController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/shop/wallet` - Returns the authenticated customer's wallet info (balance, gift balance, status)
 
 #### WalletTopupController (`app/Http/Controllers/Api/Shop/Wallet/WalletTopupController.php`)
-- `topup(WalletTopupRequestData $data)`: **Route:** `POST /api/v1/shop/wallet/topup` (throttled: 5/1min, requires `auth:user`) - Allows authenticated user to add funds to their wallet. Blocks WALLET as payment method for top-ups. Creates PENDING payment via `PreparePendingPaymentAction` with `WALLET_TOPUP` purpose, then processes via gateway. **Request DTO:** WalletTopupRequestData (amount min 10000, payment_method: mellat_gateway|digipay). **Response DTO:** Payment process result with redirect info.
+- `topup(WalletTopupRequestData $data)`: **Route:** `POST /api/v1/shop/wallet/topup` (throttled: 5/1min, requires `auth:user`) - Allows authenticated user to add funds to their wallet. `WalletTopupRequestData` restricts `payment_method` to `GatewayService::getShopActiveGateways(PaymentPurposeEnum::WALLET_TOPUP)` (active gateways with `wallet_topup_enabled`), so the wallet itself, bank transfer, and any admin-disabled gateway fail validation (`messages.wallet.gateway_not_allowed_for_topup`) before a `Payment` row is created — no gateway allow-list is hard-coded. Creates PENDING payment via `PreparePendingPaymentAction` with `WALLET_TOPUP` purpose, then processes via gateway. **Request DTO:** WalletTopupRequestData (amount min 10000, payment_method: see above). **Response DTO:** Payment process result with redirect info.
 
 #### Student Dashboard (`/api/v1/shop/student/*`)
 

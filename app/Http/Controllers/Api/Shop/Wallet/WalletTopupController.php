@@ -11,7 +11,6 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Http\Controllers\Controller;
 use App\Services\Payment\PaymentProcessorFactory;
-use Illuminate\Validation\ValidationException;
 
 /**
  * @group Shop - Wallet
@@ -34,14 +33,10 @@ final class WalletTopupController extends Controller
     ): ApiResponseInterface {
         $user = auth()->user();
 
-        // Block wallet as a payment method for wallet top-up
+        // `WalletTopupRequestData` already restricted payment_method to gateways whose
+        // settings mark them `wallet_topup_enabled`, so an ineligible method (wallet
+        // itself, bank transfer, a disabled gateway) never reaches this point.
         $method = PaymentMethodEnum::from($data->payment_method);
-
-        if ($method === PaymentMethodEnum::WALLET) {
-            throw ValidationException::withMessages([
-                'payment_method' => [__('messages.wallet.cannot_use_wallet_for_topup')],
-            ]);
-        }
 
         // Prepare the pending payment record (order_id = null for wallet top-up)
         $payment = $prepareAction->handle(

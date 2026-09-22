@@ -192,10 +192,11 @@
   },
   {
     "id": 13,
-    "key": "payment.mellat",
+    "key": "payments.mellat",
     "value": {
       "enabled": true,
       "shop_enabled": true,
+      "wallet_topup_enabled": true,
       "label": "درگاه بانک ملت",
       "description":  "درگاه بانک ملت",
       "icon": "bank-mellat.svg",
@@ -211,10 +212,11 @@
   },
   {
     "id": 14,
-    "key": "payment.digipay",
+    "key": "payments.digipay",
     "value": {
       "enabled": true,
       "shop_enabled": true,
+      "wallet_topup_enabled": true,
       "label": "درگاه دیجی‌پی",
       "description":  "درگاه دیجی‌پی",
       "icon": "digipay.svg",

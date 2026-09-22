@@ -330,6 +330,7 @@
 - **Relationships:** Self-contained configuration system with media attachments via Mediable
 - **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService, which caches the collection through the gateway and forgets it explicitly on every write path (no model observer); `SettingKeyEnum::secretFields()` is the single registry of secret-bearing keys, driving encryption on write, decryption on read, redaction in API responses/audit logs via `SettingSecretRedactor`, and the `INTEGRATION_KEYS` media-skip (IMS, Moodle, SpotPlayer, Skyroom, Niliroom, SMS IPPanel, SMS notifications). Payment gateways (Mellat, Digipay) are registered for redaction but keep media hydration and store their credentials nested under `config`.
 - **Setting Key Values:** Integration and provider keys: `IMS` (`ims`, secret `api_key`, group `integrations`, defaults from `config/provisioning.php`), `MOODLE`, `SPOT_PLAYER`, `SKYROOM` (`skyroom`, secrets `api_key`/`secret`), `NILIROOM` (`niliroom`, secret `api_token`), `SMS_IPPANEL` (`sms.ippanel`, secret `api_key`, group `sms`, defaults from `config/sms.php`), `SMS_NOTIFICATIONS` (`sms_notifications`, group `sms`, no secret fields, per-option defaults from `config/sms.php`). Payment keys: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`). Each key declaring secret fields exposes them through `secretFields()`. There is no `BIG_BLUE_BUTTON` key: the BigBlueButton integration is retired (ADR 0013).
+- **Payment Gateway Setting Shape:** Every `payments.*` payload carries three independent context flags — `enabled` (master switch), `shop_enabled` (offered at checkout), and `wallet_topup_enabled` (may fund a wallet). `config/payments.php` seeds the defaults: `mellat`/`digipay` true for top-up, `wallet`/`bank_transfer` false. `GatewaySettingCreateData` treats `wallet_topup_enabled` as an optional boolean defaulting to `false`, and exposes it as a `boolean` field in the `general` schema group so admins toggle it per gateway; `GatewayData` carries it back to the shop-facing list. No schema change is involved — the flag lives inside the existing JSON `value`.
 
 ### HomePageBlock (`app/Models/HomePageBlock.php`)
 - **Purpose:** Dynamic homepage block definitions rendered on the shop front
@@ -393,7 +394,7 @@
 - **Purpose:** Derived delivery type in `ProductCardData` based on fulfillment types across delivery options
 
 #### PaymentMethodEnum (`app/Enums/Payment/PaymentMethodEnum.php`)
-- **`defaultConfig(): array`** — returns the default configuration array from `config/payments.php` for each gateway, used as fallback when no stored settings exist in the database.
+- **`defaultConfig(): array`** — returns the default configuration array from `config/payments.php` for each gateway, used as fallback when no stored settings exist in the database. Includes `wallet_topup_enabled`, so top-up eligibility has a default even before an admin saves the gateway.
 - **`settingKey(): ?SettingKeyEnum`** — maps each gateway to its `SettingKeyEnum` for persisted configuration.
 
 #### SmsGatewayEnum (`app/Enums/Sms/SmsGatewayEnum.php`)

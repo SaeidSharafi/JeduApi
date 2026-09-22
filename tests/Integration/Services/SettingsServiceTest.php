@@ -175,8 +175,8 @@ test('payment gateway settings still resolve their icon through the media resolv
 
     expect($service->get(SettingKeyEnum::from($key)))->toBe($expected);
 })->with([
-    'mellat'  => ['payment.mellat', ['enabled' => true, 'password' => 'mellat-pass', 'icon' => 7]],
-    'digipay' => ['payment.digipay', ['enabled' => true, 'client_secret' => 'digipay-secret', 'password' => 'digipay-pass', 'icon' => 9]],
+    'mellat'  => ['payments.mellat', ['enabled' => true, 'password' => 'mellat-pass', 'icon' => 7]],
+    'digipay' => ['payments.digipay', ['enabled' => true, 'client_secret' => 'digipay-secret', 'password' => 'digipay-pass', 'icon' => 9]],
 ]);
 
 test('it calls the Setting::witImages method for array values', function (): void {

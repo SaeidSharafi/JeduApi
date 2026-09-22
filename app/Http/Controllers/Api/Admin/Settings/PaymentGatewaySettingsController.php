@@ -51,7 +51,7 @@ final class PaymentGatewaySettingsController extends Controller
         $gateways = collect(PaymentMethodEnum::cases())
             ->filter(fn (PaymentMethodEnum $gateway): bool => $gateway->settingKey() !== null)
             ->map(function (PaymentMethodEnum $gateway): array {
-                $stored = $this->settingsService->get($gateway->settingKey(), config('payments.'.$gateway->settingKey()->value));
+                $stored = $this->settingsService->get($gateway->settingKey(), config($gateway->settingKey()->value));
 
                 if (isset($stored['icon']) && is_array($stored['icon'])) {
                     $stored['icon'] = MediaData::from($stored['icon']);
@@ -80,7 +80,7 @@ final class PaymentGatewaySettingsController extends Controller
     {
         Gate::authorize('view-payment', Setting::class);
 
-        $gatewayData = $this->settingsService->get($gateway->settingKey(), config('payments.'.$gateway->settingKey()->value));
+        $gatewayData = $this->settingsService->get($gateway->settingKey(), config($gateway->settingKey()->value));
 
         return apiResponse()->success($gatewayData);
     }
@@ -96,6 +96,7 @@ final class PaymentGatewaySettingsController extends Controller
      * ### Top-level fields (all gateways):
      * - `enabled` (boolean, required): Whether the gateway is active and available for use.
      * - `shop_enabled` (boolean, required): Whether the gateway is offered to customers at checkout.
+     * - `wallet_topup_enabled` (boolean, optional): Whether the gateway may be used for wallet top-up. Defaults to `false`. Independent of `shop_enabled`; `enabled` must be true for the gateway to be eligible.
      * - `label` (string, required): Display name shown to customers.
      * - `description` (string, optional): Description shown at checkout.
      * - `icon` (integer, optional): Media ID of the gateway icon image.

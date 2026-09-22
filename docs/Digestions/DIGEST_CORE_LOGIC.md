@@ -660,11 +660,13 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Dependencies:** `RequestDataCacheService` for performance optimization
 
 ### GatewayService (`app/Services/Payment/GatewayService.php`)
-- **Purpose:** Centralized gateway settings resolution with config fallback for shop-facing and admin-facing endpoints
+- **Purpose:** Centralized gateway settings resolution with config fallback for shop-facing and admin-facing endpoints, scoped to a payment purpose
 - **Public Methods:**
-  - `getShopActiveGateways(): array`: Returns array of active gateway method values (e.g., `['mellat', 'wallet', 'bank_transfer']`) for checkout validation.
-  - `getShopActiveGatewaysDetials(): array`: Returns array of `GatewayData` DTOs for shop gateway listing (enabled + shop_enabled).
-- **Mechanism:** Resolves each `PaymentMethodEnum` with a `settingKey()` against `SettingsService`, falling back to `PaymentMethodEnum::defaultConfig()` (reads from `config/payments.php`) when no stored settings exist.
+  - `getShopActiveGateways(PaymentPurposeEnum $purpose = PaymentPurposeEnum::ORDER): array`: Returns array of active gateway method values (e.g., `['mellat', 'wallet', 'bank_transfer']`) for checkout validation.
+  - `getShopActiveGatewaysDetails(PaymentPurposeEnum $purpose = PaymentPurposeEnum::ORDER): array`: Returns array of `GatewayData` DTOs for shop gateway listing.
+- **Eligibility:** Both methods share one private `isEligible(array $gatewayData, PaymentPurposeEnum $purpose): bool`. `enabled` is the master switch for every purpose; each purpose then requires its own context flag — `shop_enabled` for `ORDER`, `wallet_topup_enabled` for `WALLET_TOPUP`. The two flags are independent, so a gateway can fund a wallet while being hidden from checkout (and vice versa). The default purpose is `ORDER`, keeping the checkout call sites (`CheckoutData::rules()`) unchanged.
+- **Mechanism:** Resolves each `PaymentMethodEnum` with a `settingKey()` against `SettingsService`, falling back to `PaymentMethodEnum::defaultConfig()` (reads from `config/payments.php`) when no stored settings exist. `config/payments.php` therefore carries the wallet top-up default: `mellat`/`digipay` true, `wallet`/`bank_transfer` false. The E2E simulator gateway is offered for every purpose when available.
+- **Purpose routing:** `GatewayListController` accepts `?purpose=order|wallet_topup`; `WalletTopupRequestData::eligiblePaymentMethods()` uses the `WALLET_TOPUP` list to build its validation rule, so the gateway setting — not a hard-coded list — decides which methods the top-up endpoint accepts.
 
 ### SettingSecretRedactor (`app/Services/SettingSecretRedactor.php`)
 - **Purpose:** Redacts secret field values from setting arrays before API responses and audit logging. The field list is built once per process from `SettingKeyEnum::secretFields()` — the single registry of secret-bearing keys — so a key cannot be registered without also being redacted.

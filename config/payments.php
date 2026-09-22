@@ -25,11 +25,12 @@ return [
     */
 
     'mellat' => [
-        'enabled'      => true,
-        'shop_enabled' => true,
-        'label'        => 'درگاه ملت',
-        'description'  => null,
-        'icon'         => null,
+        'enabled'              => true,
+        'shop_enabled'         => true,
+        'wallet_topup_enabled' => true,
+        'label'                => 'درگاه ملت',
+        'description'          => null,
+        'icon'                 => null,
 
         'ims_bank_account_number' => env('MELLAT_IMS_BANK_ACCOUNT_NUMBER'),
         'server_url'              => env('MELLAT_SERVER_URL', 'https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl'),
@@ -50,6 +51,7 @@ return [
     'bank_transfer' => [
         'enabled'                 => true,
         'shop_enabled'            => true,
+        'wallet_topup_enabled'    => false,
         'label'                   => 'انتقال بانکی',
         'description'             => null,
         'icon'                    => null,
@@ -59,6 +61,7 @@ return [
     'wallet' => [
         'enabled'                 => true,
         'shop_enabled'            => true,
+        'wallet_topup_enabled'    => false,
         'label'                   => 'کیف پول',
         'description'             => null,
         'icon'                    => null,
@@ -68,6 +71,7 @@ return [
     'digipay' => [
         'enabled'              => true,
         'shop_enabled'         => true,
+        'wallet_topup_enabled' => true,
         'label'                => 'دیجی‌پی',
         'description'          => null,
         'icon'                 => null,

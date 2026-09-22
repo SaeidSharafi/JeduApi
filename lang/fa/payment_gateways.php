@@ -7,6 +7,7 @@ return [
         'label'                   => 'عنوان',
         'description'             => 'توضیحات',
         'icon'                    => 'آیکون',
+        'wallet_topup_enabled'    => 'فعال برای شارژ کیف پول',
         'ims_bank_account_number' => 'شماره حساب بانکی IMS',
         'terminal_id'             => 'شناسه ترمینال',
         'username'                => 'نام کاربری',

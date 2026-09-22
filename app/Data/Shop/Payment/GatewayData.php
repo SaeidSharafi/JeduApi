@@ -15,6 +15,7 @@ final class GatewayData extends Data
         public string $label,
         public ?string $description,
         public ?string $icon_url,
+        public bool $wallet_topup_enabled = false,
     ) {}
 
     /**

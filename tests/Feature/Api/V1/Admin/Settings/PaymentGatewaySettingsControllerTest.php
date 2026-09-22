@@ -6,6 +6,28 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\System\SettingKeyEnum;
 use App\Services\SettingsService;
 
+/**
+ * Reshape a request payload into the array the controller actually persists:
+ * field order follows GatewaySettingCreateData, with `wallet_topup_enabled`
+ * defaulted to false because every concrete gateway DTO serializes it.
+ *
+ * @param  array<string, mixed>  $payload
+ * @return array<string, mixed>
+ */
+function persistedGatewayPayload(array $payload): array
+{
+    return [
+        'enabled'                 => $payload['enabled']                 ?? null,
+        'shop_enabled'            => $payload['shop_enabled']            ?? null,
+        'wallet_topup_enabled'    => $payload['wallet_topup_enabled']    ?? false,
+        'label'                   => $payload['label']                   ?? null,
+        'description'             => $payload['description']             ?? null,
+        'icon'                    => $payload['icon']                    ?? null,
+        'ims_bank_account_number' => $payload['ims_bank_account_number'] ?? null,
+        'config'                  => $payload['config']                  ?? null,
+    ];
+}
+
 beforeEach(function (): void {
     $this->admin_user();
 });
@@ -24,7 +46,7 @@ describe('index', function (): void {
 
         $this->mock(SettingsService::class)
             ->shouldReceive('get')
-            ->with(SettingKeyEnum::WALLET, [])
+            ->with(SettingKeyEnum::WALLET, Mockery::any())
             ->andReturn($mockSettings)
             ->shouldReceive('get')
             ->andReturn([]); // return empty for other gateways
@@ -60,6 +82,23 @@ describe('index', function (): void {
         // Ensure config keys in Mellat's schema are prefixed with 'config.'
         $terminalIdField = collect($mellat['schema']['credentials'])->firstWhere('key', 'config.terminal_id');
         expect($terminalIdField)->not->toBeNull();
+    });
+
+    it('exposes wallet_topup_enabled as a boolean general field for every gateway', function (): void {
+        $this->mock(SettingsService::class)
+            ->shouldReceive('get')
+            ->andReturn([]);
+
+        $response = $this->getJson('/api/v1/admin/settings/payment-gateways');
+
+        $response->assertOk();
+
+        foreach ($response->json('data') as $gateway) {
+            $field = collect($gateway['schema']['general'])->firstWhere('key', 'wallet_topup_enabled');
+
+            expect($field)->not->toBeNull()
+                ->and($field['type'])->toBe('boolean');
+        }
     });
 
     it('converts icon from array to MediaData when icon is an array', function (): void {
@@ -208,12 +247,12 @@ describe('update success', function (): void {
 
         $this->mock(SettingsService::class)
             ->shouldReceive('set')
-            ->with(SettingKeyEnum::WALLET, $payload)
+            ->with(SettingKeyEnum::WALLET, persistedGatewayPayload($payload))
             ->once()
             ->shouldReceive('get')
             ->with(SettingKeyEnum::WALLET)
             ->once()
-            ->andReturn($payload);
+            ->andReturn(persistedGatewayPayload($payload));
 
         $response = $this->putJson('/api/v1/admin/settings/payment-gateways/'.PaymentMethodEnum::WALLET->value, $payload);
 
@@ -240,12 +279,12 @@ describe('update success', function (): void {
 
         $this->mock(SettingsService::class)
             ->shouldReceive('set')
-            ->with(SettingKeyEnum::MELLAT, $payload)
+            ->with(SettingKeyEnum::MELLAT, persistedGatewayPayload($payload))
             ->once()
             ->shouldReceive('get')
             ->with(SettingKeyEnum::MELLAT)
             ->once()
-            ->andReturn($payload);
+            ->andReturn(persistedGatewayPayload($payload));
 
         $response = $this->putJson('/api/v1/admin/settings/payment-gateways/'.PaymentMethodEnum::MELLAT_GATEWAY->value, $payload);
 
@@ -253,5 +292,58 @@ describe('update success', function (): void {
             ->assertJsonPath('data.label', 'Mellat Bank Gateway')
             ->assertJsonPath('data.config.terminal_id', '999888')
             ->assertJsonPath('data.config.test_mode', true);
+    });
+
+    it('persists wallet_topup_enabled for a simple gateway', function (): void {
+        $payload = [
+            'enabled'                 => true,
+            'shop_enabled'            => true,
+            'wallet_topup_enabled'    => true,
+            'label'                   => 'Wallet Payment',
+            'description'             => 'Pay via wallet',
+            'icon'                    => null,
+            'ims_bank_account_number' => '11223344',
+            'config'                  => null,
+        ];
+
+        $this->mock(SettingsService::class)
+            ->shouldReceive('set')
+            ->with(SettingKeyEnum::WALLET, persistedGatewayPayload($payload))
+            ->once()
+            ->shouldReceive('get')
+            ->with(SettingKeyEnum::WALLET)
+            ->once()
+            ->andReturn(persistedGatewayPayload($payload));
+
+        $response = $this->putJson('/api/v1/admin/settings/payment-gateways/'.PaymentMethodEnum::WALLET->value, $payload);
+
+        $response->assertOk()
+            ->assertJsonPath('data.wallet_topup_enabled', true);
+    });
+
+    it('defaults wallet_topup_enabled to false when omitted', function (): void {
+        $payload = [
+            'enabled'                 => true,
+            'shop_enabled'            => true,
+            'label'                   => 'Wallet Payment',
+            'description'             => 'Pay via wallet',
+            'icon'                    => null,
+            'ims_bank_account_number' => '11223344',
+            'config'                  => null,
+        ];
+
+        $this->mock(SettingsService::class)
+            ->shouldReceive('set')
+            ->with(SettingKeyEnum::WALLET, persistedGatewayPayload($payload))
+            ->once()
+            ->shouldReceive('get')
+            ->with(SettingKeyEnum::WALLET)
+            ->once()
+            ->andReturn(persistedGatewayPayload($payload));
+
+        $response = $this->putJson('/api/v1/admin/settings/payment-gateways/'.PaymentMethodEnum::WALLET->value, $payload);
+
+        $response->assertOk()
+            ->assertJsonPath('data.wallet_topup_enabled', false);
     });
 });

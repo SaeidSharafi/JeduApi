@@ -22,10 +22,10 @@ enum SettingKeyEnum: string
     case SMS_IPPANEL       = 'sms.ippanel';
     case SMS_NOTIFICATIONS = 'sms_notifications';
 
-    case MELLAT        = 'payment.mellat';
-    case WALLET        = 'payment.wallet';
-    case BANK_TRANSFER = 'payment.bank_transfer';
-    case DIGIPAY       = 'payment.digipay';
+    case MELLAT        = 'payments.mellat';
+    case WALLET        = 'payments.wallet';
+    case BANK_TRANSFER = 'payments.bank_transfer';
+    case DIGIPAY       = 'payments.digipay';
 
     /**
      * Secret sub-fields for each setting key.

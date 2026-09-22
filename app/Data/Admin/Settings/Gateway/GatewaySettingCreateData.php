@@ -13,10 +13,11 @@ final class GatewaySettingCreateData extends Data
     public function __construct(
         public bool $enabled,
         public bool $shop_enabled,
-        public string $label,
-        public ?string $description,
-        public ?int $icon,
-        public ?string $ims_bank_account_number,
+        public bool $wallet_topup_enabled = false,
+        public string $label = '',
+        public ?string $description = null,
+        public ?int $icon = null,
+        public ?string $ims_bank_account_number = null,
         public mixed $config = null,
     ) {
         $gatewayParam = request()->route('gateway');
@@ -54,6 +55,12 @@ final class GatewaySettingCreateData extends Data
                 'key'      => 'icon',
                 'type'     => 'media',
                 'label'    => __('payment_gateways.fields.icon'),
+                'required' => false,
+            ],
+            [
+                'key'      => 'wallet_topup_enabled',
+                'type'     => 'boolean',
+                'label'    => __('payment_gateways.fields.wallet_topup_enabled'),
                 'required' => false,
             ],
             [
@@ -104,6 +111,7 @@ final class GatewaySettingCreateData extends Data
         $rules = [
             'enabled'                 => ['required', 'boolean'],
             'shop_enabled'            => ['required', 'boolean'],
+            'wallet_topup_enabled'    => ['nullable', 'boolean'],
             'label'                   => ['required', 'string'],
             'description'             => ['nullable', 'string'],
             'icon'                    => ['nullable', 'integer'],
@@ -150,6 +158,10 @@ final class GatewaySettingCreateData extends Data
             ],
             'shop_enabled' => [
                 'description' => 'Whether the gateway is offered to customers at checkout.',
+                'example'     => true,
+            ],
+            'wallet_topup_enabled' => [
+                'description' => 'Whether the gateway may be used for wallet top-ups. Independent of `shop_enabled`; a disabled gateway is never eligible.',
                 'example'     => true,
             ],
             'label' => [
