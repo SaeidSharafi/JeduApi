@@ -74,6 +74,9 @@
   - Envelope keys are resource agnostic: `run_id`, `resource`, `status` (`preview_ready`), `identity_key`, `summary` (`total_rows`/`valid_rows`/`invalid_rows`/`create_count`/`update_count`/`provider_provisioning_request_count`), `rows[]` (`row_number`, `status` = `valid`|`invalid`, `operation` = `create`|`update`|null, `errors[]` of `{field, code, message}`, `data` owned by the resource contract), `can_approve` and `approval_warning`.
   - Structural spreadsheet problems (no data rows, more than 2000 data rows, missing required headings, unknown headings) return 422 with messages under `errors.file`. The first worksheet is read as it is: extra worksheets, merged cells, alignment and formatting are ignored rather than repaired, because the downloadable template defines the expected shape.
   - Preview never mutates stored resources and never calls a provider; it stores the private upload plus the immutable Import Run.
+- `ApproveImportController` (`ApproveImportController.php`): **Route:** `POST /api/v1/admin/{resource}/import/{run}/approve` (`/api/v1/admin/users/import/{run}/approve`) — **Request DTO:** `ImportApprovalRequestData` (`include_valid_rows=true` is required only when invalid preview rows exist) — **Response DTO:** `ImportApprovalData`. **Permission:** `imports.approve`.
+  - Approval atomically creates/updates every valid local User, skips invalid rows, preserves omitted optional update values, and returns `status=processing` with `created_count`, `updated_count`, and `provider_queued_count`.
+  - Repeated approval is idempotent and returns the stored local result without repeating User mutations. Identity or stored-file drift returns 422 before mutation. Passwords are never returned.
 
 ### CategoryController (`app/Http/Controllers/Api/Admin/Category/CategoryController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/category` - **Delegates to:** Category listing with hierarchy - **Response DTO:** CategoryData collection

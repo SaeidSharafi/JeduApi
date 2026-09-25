@@ -46,4 +46,9 @@ interface ImportResourceContract
      * @param  ImportIdentityKeyEnum  $identityKey  Identity the row is matched on.
      */
     public function validateRow(array $values, ImportIdentityKeyEnum $identityKey): ImportRowResult;
+
+    /**
+     * Persist one previously validated row inside the engine's transaction.
+     */
+    public function importRow(ImportRowResult $row): void;
 }

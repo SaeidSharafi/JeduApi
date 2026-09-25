@@ -58,11 +58,14 @@ return [
     ],
 
     'errors' => [
-        'empty'              => 'کاربرگ هیچ ردیف داده‌ای ندارد.',
-        'too_many_rows'      => 'حداکثر :max ردیف داده‌ای در هر فایل مجاز است.',
-        'unknown_columns'    => 'سرستون‌های ناشناخته: :columns',
-        'missing_columns'    => 'سرستون‌های الزامی موجود نیست: :columns',
-        'duplicate_identity' => 'شناسه «:identity» در این فایل تکراری است.',
-        'invalid_boolean'    => 'مقدار :column باید true یا false باشد.',
+        'empty'                       => 'کاربرگ هیچ ردیف داده‌ای ندارد.',
+        'too_many_rows'               => 'حداکثر :max ردیف داده‌ای در هر فایل مجاز است.',
+        'unknown_columns'             => 'سرستون‌های ناشناخته: :columns',
+        'missing_columns'             => 'سرستون‌های الزامی موجود نیست: :columns',
+        'duplicate_identity'          => 'شناسه «:identity» در این فایل تکراری است.',
+        'invalid_boolean'             => 'مقدار :column باید true یا false باشد.',
+        'include_valid_rows_required' => 'باید وارد کردن تنها ردیف‌های معتبر را تأیید کنید.',
+        'no_valid_rows'               => 'این اجرای واردسازی هیچ ردیف معتبری برای تأیید ندارد.',
+        'snapshot_changed'            => 'پیش‌نمایش واردسازی دیگر با منبع ذخیره‌شده یکسان نیست. پیش‌نمایش تازه‌ای بسازید.',
     ],
 ];

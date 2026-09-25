@@ -80,6 +80,7 @@ enum PermissionEnum: string
     case HOME_PAGE_BLOCK_VIEW             = 'home_page_blocks.view';
     case HOME_PAGE_BLOCK_VIEW_ANY         = 'home_page_blocks.view_any';
     case IMPORT_PREVIEW                   = 'imports.preview';
+    case IMPORT_APPROVE                   = 'imports.approve';
     case IMPORT_TEMPLATE                  = 'imports.template';
     case ORDER_APPROVE                    = 'orders.approve';
     case ORDER_CREATE                     = 'orders.create';

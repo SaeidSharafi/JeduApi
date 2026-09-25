@@ -21,4 +21,9 @@ final class ImportRunPolicy
     {
         return $staff->can(PermissionEnum::IMPORT_TEMPLATE->value);
     }
+
+    public function approve(Staff $staff): bool
+    {
+        return $staff->can(PermissionEnum::IMPORT_APPROVE->value);
+    }
 }

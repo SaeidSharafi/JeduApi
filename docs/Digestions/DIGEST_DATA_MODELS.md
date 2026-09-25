@@ -527,15 +527,15 @@
 
 ### ImportRun (`app/Models/ImportRun.php`)
 - **Purpose:** Immutable record of one uploaded spreadsheet, its preview result and the private upload it came from
-- **Key Fields:** `uuid`, `resource` (SpreadsheetResourceEnum, currently `users`), `identity_key` (ImportIdentityKeyEnum: `phone`/`email`), `status` (ImportRunStatusEnum), `staff_id`, `original_filename`, `file_path` (private `local` disk), `file_size`, `rows_total`, `rows_valid`, `rows_invalid`
+- **Key Fields:** `uuid`, `resource` (SpreadsheetResourceEnum, currently `users`), `identity_key` (ImportIdentityKeyEnum: `phone`/`email`), `status` (ImportRunStatusEnum), `staff_id`, `original_filename`, `file_path` (private `local` disk), `file_size`, `file_checksum`, `rows_total`, `rows_valid`, `rows_invalid`, `created_count`, `updated_count`, `provider_queued_count`, `approved_at`
 - **Relationships:**
   - `hasMany(ImportRunRow::class)` - rows
   - `belongsTo(Staff::class)` - staff
-- **Special Features:** UUID (`uuid7`) generated on create. Never mutated after approval; `status` starts at `preview_ready` and the later import tickets move it through `approved`/`processing`/`completed`/`completed_with_provider_failures`/`failed`/`expired`. The stored file is the source of truth for values that must not be persisted in the run (imported passwords).
+- **Special Features:** UUID (`uuid7`) generated on create. Approval moves `status` from `preview_ready` to `processing` and persists the local result counters exactly once; repeated approval returns those counters. The stored file is checksum-protected and remains the source of truth for values that must not be persisted in the run (imported passwords).
 
 ### ImportRunRow (`app/Models/ImportRunRow.php`)
 - **Purpose:** One validated spreadsheet row of an import run, including its preview outcome
-- **Key Fields:** `import_run_id`, `row_number` (spreadsheet row), `identity_value` (normalized), `action` (ImportRowActionEnum: `create`/`update`, null when invalid), `is_valid`, `errors` (`[{field, code, message}]`), `data` (normalized, resource-owned values under `rows[].data`)
+- **Key Fields:** `import_run_id`, `row_number` (spreadsheet row), `identity_value` (normalized), `target_resource_id` (internal target identity for safe updates), `action` (ImportRowActionEnum: `create`/`update`, null when invalid), `is_valid`, `errors` (`[{field, code, message}]`), `data` (normalized, resource-owned values under `rows[].data`)
 - **Relationships:**
   - `belongsTo(ImportRun::class)` - importRun
 - **Special Features:** Unique `(import_run_id, row_number)`. Row `data` follows the resource contract: create rows carry every field (nulls included), update rows carry only supplied cells so empty cells never erase stored values. Enum columns store raw values, Jalali dates store Gregorian `Y-m-d`, and passwords are never written here.

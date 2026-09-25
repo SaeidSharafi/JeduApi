@@ -603,10 +603,11 @@
   - uuid (UUID, unique) — public identifier
   - resource (VARCHAR, indexed) — registered spreadsheet resource (`users`)
   - identity_key (VARCHAR) — `phone` | `email`
-  - status (VARCHAR, indexed) — `preview_ready` (import tickets add `approved` | `processing` | `completed` | `completed_with_provider_failures` | `failed` | `expired`)
+  - status (VARCHAR, indexed) — currently `preview_ready` | `processing`; provider-processing tickets add `approved` | `completed` | `completed_with_provider_failures` | `failed` | `expired`
   - staff_id (BIGINT nullable) FK -> staff(id) SET NULL
-  - original_filename (VARCHAR), file_path (VARCHAR), file_size (BIGINT nullable)
+  - original_filename (VARCHAR), file_path (VARCHAR), file_size (BIGINT nullable), file_checksum (VARCHAR(64) nullable)
   - rows_total / rows_valid / rows_invalid (INTEGER, default 0)
+  - created_count / updated_count / provider_queued_count (INTEGER, default 0), approved_at (TIMESTAMP nullable)
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: PK(id), UNIQUE(uuid), INDEX(resource), INDEX(status), INDEX(resource, status), INDEX(staff_id)
 
@@ -617,6 +618,7 @@
   - import_run_id (BIGINT) FK -> import_runs(id) CASCADE
   - row_number (INTEGER) — spreadsheet row
   - identity_value (VARCHAR nullable) — normalized identity
+  - target_resource_id (VARCHAR nullable) — internal resource identifier captured at preview for safe update revalidation
   - action (VARCHAR nullable) — `create` | `update`
   - is_valid (BOOLEAN)
   - errors (JSONB nullable) — `[{field, code, message}]`

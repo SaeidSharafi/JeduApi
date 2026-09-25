@@ -31,9 +31,14 @@ final class ImportRun extends Model
         'original_filename',
         'file_path',
         'file_size',
+        'file_checksum',
         'rows_total',
         'rows_valid',
         'rows_invalid',
+        'created_count',
+        'updated_count',
+        'provider_queued_count',
+        'approved_at',
     ];
 
     /** @return HasMany<ImportRunRow, $this> */
@@ -58,13 +63,17 @@ final class ImportRun extends Model
     protected function casts(): array
     {
         return [
-            'resource'     => SpreadsheetResourceEnum::class,
-            'identity_key' => ImportIdentityKeyEnum::class,
-            'status'       => ImportRunStatusEnum::class,
-            'file_size'    => 'integer',
-            'rows_total'   => 'integer',
-            'rows_valid'   => 'integer',
-            'rows_invalid' => 'integer',
+            'resource'              => SpreadsheetResourceEnum::class,
+            'identity_key'          => ImportIdentityKeyEnum::class,
+            'status'                => ImportRunStatusEnum::class,
+            'file_size'             => 'integer',
+            'rows_total'            => 'integer',
+            'rows_valid'            => 'integer',
+            'rows_invalid'          => 'integer',
+            'created_count'         => 'integer',
+            'updated_count'         => 'integer',
+            'provider_queued_count' => 'integer',
+            'approved_at'           => 'datetime',
         ];
     }
 }

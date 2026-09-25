@@ -93,6 +93,7 @@ final readonly class CreateImportPreviewAction
             'original_filename' => $this->originalFilename($file),
             'file_path'         => $filePath,
             'file_size'         => (int) $file->getSize(),
+            'file_checksum'     => hash_file('sha256', Storage::disk(self::DISK)->path($filePath)),
             'rows_total'        => $total,
             'rows_valid'        => $valid,
             'rows_invalid'      => $invalid,
@@ -100,12 +101,13 @@ final readonly class CreateImportPreviewAction
 
         $run->rows()->createMany(array_map(
             static fn (int $rowNumber, ImportRowResult $result): array => [
-                'row_number'     => $rowNumber,
-                'identity_value' => $result->identity,
-                'action'         => $result->action?->value,
-                'is_valid'       => $result->valid,
-                'errors'         => $result->errors,
-                'data'           => $result->data,
+                'row_number'         => $rowNumber,
+                'identity_value'     => $result->identity,
+                'target_resource_id' => $result->targetResourceId,
+                'action'             => $result->action?->value,
+                'is_valid'           => $result->valid,
+                'errors'             => $result->errors,
+                'data'               => $result->data,
             ],
             array_keys($results),
             $results,
