@@ -384,6 +384,7 @@ return [
     ],
     'import' => [
         'preview_ready' => 'پیش‌نمایش فایل با موفقیت آماده شد.',
+        'approved'      => 'واردسازی با موفقیت تأیید شد.',
     ],
     'category' => [
         'good_for_start' => [

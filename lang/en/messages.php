@@ -356,6 +356,7 @@ return [
     ],
     'import' => [
         'preview_ready' => 'Import preview generated successfully.',
+        'approved'      => 'Import approved successfully.',
     ],
     'category' => [
         'good_for_start' => [

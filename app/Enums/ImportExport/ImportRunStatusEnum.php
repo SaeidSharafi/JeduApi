@@ -12,4 +12,5 @@ enum ImportRunStatusEnum: string
     use AdvanceEnum;
 
     case PREVIEW_READY = 'preview_ready';
+    case PROCESSING    = 'processing';
 }

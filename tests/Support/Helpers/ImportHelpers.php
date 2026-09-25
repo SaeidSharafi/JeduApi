@@ -180,6 +180,25 @@ if (! function_exists('postImportPreview')) {
     }
 }
 
+if (! function_exists('postImportApproval')) {
+    /**
+     * Approve a previously previewed import run.
+     *
+     * @param  array<string, mixed>  $body
+     */
+    function postImportApproval(
+        Tests\TestCase $test,
+        string $runId,
+        array $body = [],
+        string $resource = 'users',
+    ): Illuminate\Testing\TestResponse {
+        return $test->postJson(route('api.v1.admin.imports.approve', [
+            'resource' => $resource,
+            'run'      => $runId,
+        ]), $body);
+    }
+}
+
 if (! function_exists('importWorksheetRows')) {
     /**
      * Read the first worksheet of an XLSX file into rows.

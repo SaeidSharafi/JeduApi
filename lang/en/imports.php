@@ -58,11 +58,14 @@ return [
     ],
 
     'errors' => [
-        'empty'              => 'The worksheet does not contain any data row.',
-        'too_many_rows'      => 'At most :max data rows are allowed per file.',
-        'unknown_columns'    => 'Unknown headings: :columns',
-        'missing_columns'    => 'Missing required headings: :columns',
-        'duplicate_identity' => 'Identity ":identity" is duplicated in this file.',
-        'invalid_boolean'    => 'The :column column must be true or false.',
+        'empty'                       => 'The worksheet does not contain any data row.',
+        'too_many_rows'               => 'At most :max data rows are allowed per file.',
+        'unknown_columns'             => 'Unknown headings: :columns',
+        'missing_columns'             => 'Missing required headings: :columns',
+        'duplicate_identity'          => 'Identity ":identity" is duplicated in this file.',
+        'invalid_boolean'             => 'The :column column must be true or false.',
+        'include_valid_rows_required' => 'You must confirm that only valid rows should be imported.',
+        'no_valid_rows'               => 'This import run has no valid rows to approve.',
+        'snapshot_changed'            => 'The import preview no longer matches its stored source. Create a new preview.',
     ],
 ];

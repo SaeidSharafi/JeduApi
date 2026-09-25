@@ -247,9 +247,38 @@ final readonly class UserImportResource implements ImportResourceContract
             return ImportRowResult::invalid($identity, $data, $errors);
         }
 
+        $sensitiveData = array_filter([
+            'password' => $values['password'] ?? null,
+        ], static fn (mixed $value): bool => $value !== null);
+
         return $isCreate
-            ? ImportRowResult::create((string) $identity, $data)
-            : ImportRowResult::update((string) $identity, $data);
+            ? ImportRowResult::create((string) $identity, $data, $sensitiveData)
+            : ImportRowResult::update((string) $identity, $data, (string) $existing->getKey(), $sensitiveData);
+    }
+
+    public function importRow(ImportRowResult $row): void
+    {
+        $attributes = array_filter(
+            $row->data,
+            static fn (string $key): bool => ! str_starts_with($key, 'provision_'),
+            ARRAY_FILTER_USE_KEY,
+        );
+
+        if (isset($row->sensitiveData['password'])) {
+            $attributes['password'] = $row->sensitiveData['password'];
+        }
+
+        if ($row->action === \App\Enums\ImportExport\ImportRowActionEnum::CREATE) {
+            User::create($attributes);
+
+            return;
+        }
+
+        User::query()
+            ->whereKey($row->targetResourceId)
+            ->lockForUpdate()
+            ->firstOrFail()
+            ->update($attributes);
     }
 
     /**

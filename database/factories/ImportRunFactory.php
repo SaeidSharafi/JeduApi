@@ -21,7 +21,7 @@ final class ImportRunFactory extends Factory
         return [
             'resource'          => SpreadsheetResourceEnum::USERS,
             'identity_key'      => ImportIdentityKeyEnum::PHONE,
-            'status'            => ImportRunStatusEnum::PREVIEWED,
+            'status'            => ImportRunStatusEnum::PREVIEW_READY,
             'staff_id'          => Staff::factory(),
             'original_filename' => 'users.xlsx',
             'file_path'         => 'imports/'.fake()->uuid().'/users.xlsx',

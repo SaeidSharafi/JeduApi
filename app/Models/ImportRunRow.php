@@ -24,6 +24,7 @@ final class ImportRunRow extends Model
         'import_run_id',
         'row_number',
         'identity_value',
+        'target_resource_id',
         'action',
         'is_valid',
         'errors',

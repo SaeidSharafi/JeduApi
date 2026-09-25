@@ -17,6 +17,7 @@ final readonly class ImportRowResult
     /**
      * @param  list<array{field: string, code: string, message: string}>  $errors
      * @param  array<string, mixed>  $data  Normalized resource values exposed under rows[].data.
+     * @param  array<string, mixed>  $sensitiveData  Values used during approval but never persisted or returned.
      */
     public function __construct(
         public bool $valid,
@@ -24,22 +25,28 @@ final readonly class ImportRowResult
         public ?string $identity,
         public array $data,
         public array $errors,
+        public ?string $targetResourceId = null,
+        public array $sensitiveData = [],
     ) {}
 
     /**
      * @param  array<string, mixed>  $data
      */
-    public static function create(string $identity, array $data): self
+    public static function create(string $identity, array $data, array $sensitiveData = []): self
     {
-        return new self(true, ImportRowActionEnum::CREATE, $identity, $data, []);
+        return new self(true, ImportRowActionEnum::CREATE, $identity, $data, [], null, $sensitiveData);
     }
 
     /**
      * @param  array<string, mixed>  $data
      */
-    public static function update(string $identity, array $data): self
-    {
-        return new self(true, ImportRowActionEnum::UPDATE, $identity, $data, []);
+    public static function update(
+        string $identity,
+        array $data,
+        ?string $targetResourceId = null,
+        array $sensitiveData = [],
+    ): self {
+        return new self(true, ImportRowActionEnum::UPDATE, $identity, $data, [], $targetResourceId, $sensitiveData);
     }
 
     /**
@@ -63,6 +70,8 @@ final readonly class ImportRowResult
             $this->identity,
             $this->data,
             [['field' => $field, 'code' => 'duplicate_identity', 'message' => $message], ...$this->errors],
+            $this->targetResourceId,
+            $this->sensitiveData,
         );
     }
 }
