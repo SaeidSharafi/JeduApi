@@ -18,6 +18,7 @@ set('bin/php', 'php8.4');
 set('bin/composer', '{{bin/php}} $(which composer)');
 set('migrate', false);
 set('migrate-fresh', false);
+set('rebuild-search-index', false);
 
 add('shared_files', ['.env']);
 add('shared_dirs', ['storage']);
@@ -50,6 +51,16 @@ task('db:seed:demo', function () {
         run('cd {{release_path}} && {{php_binary}} artisan db:seed --class=DemoSeeder');
     }
 });
+task('search:rebuild', function () {
+    run('cd {{release_path}} && {{php_binary}} artisan products:index-availability --sync');
+    run('cd {{release_path}} && {{php_binary}} artisan scout:delete-index "App\\Models\\Product"');
+    run('cd {{release_path}} && {{php_binary}} artisan scout:import "App\\Models\\Product"');
+});
+task('search:rebuild-if-needed', function () {
+    if (get('migrate-fresh') || get('rebuild-search-index')) {
+        invoke('search:rebuild');
+    }
+});
 task('scribe:generate', function () {
     run('cd {{release_path}} && {{php_binary}} artisan scribe:generate');
 });
@@ -67,6 +78,7 @@ task('deploy', [
     'permission:update',
     'artisan:optimize',
     'db:seed:demo',
+    'search:rebuild-if-needed',
     'deploy:publish',
     'php-fpm:reload',
     'artisan:queue:restart',
