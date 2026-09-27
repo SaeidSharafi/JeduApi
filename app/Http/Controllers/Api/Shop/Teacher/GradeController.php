@@ -110,7 +110,7 @@ final class GradeController extends Controller
      *
      * <aside class="notice">NOT IMPLEMENTED YET</aside>
      */
-    public function destroy(int $gradeId): Response
+    public function destroy(string $courseCode): Response
     {
         // TODO implement the grade delete
         return response()->noContent();
