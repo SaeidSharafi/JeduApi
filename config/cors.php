@@ -22,17 +22,15 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'https://dev-jedu.encel.ir',
-        'https://test-jedu.encel.ir',
         'http://localhost:3000',
-        'https://api.jedu.ir',
+
+        'https://*.jedu.ir',
+        'https://jedu.ir',
+
         'https://dev-jedu.encel.ir',
         'https://dev-admin-jedu.encel.ir',
         'https://test-jedu.encel.ir',
         'https://test-admin-jedu.encel.ir',
-        'http://localhost:3000',
-        'http://185.141.133.114:8080',
-        'https://shop.jedu.ir',
     ],
 
     'allowed_origins_patterns' => [],
