@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Staff;
 
 use App\Data\Admin\Staff\UpdateStaffData;
+use App\Models\PersonalAccessToken;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -31,5 +32,7 @@ final readonly class UpdateStaffAction
                 $staff->syncRoles($data->roles);
             }
         });
+
+        PersonalAccessToken::forgetCacheFor($staff);
     }
 }

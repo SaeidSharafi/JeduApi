@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\User;
 
 use App\Actions\Media\DispatchImageVariantsAction;
+use App\Models\PersonalAccessToken;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,7 @@ final readonly class UpdateUserAvatarAction
 
     public function handle(User $user, UploadedFile $file): Media
     {
-        return DB::transaction(function () use ($user, $file): Media {
+        $media = DB::transaction(function () use ($user, $file): Media {
             $media = MediaUploader::fromSource($file)
                 ->toDisk(config('mediable.default_disk', 'public'))
                 ->onDuplicateIncrement()
@@ -37,5 +38,9 @@ final readonly class UpdateUserAvatarAction
 
             return $media;
         });
+
+        PersonalAccessToken::forgetCacheFor($user);
+
+        return $media;
     }
 }

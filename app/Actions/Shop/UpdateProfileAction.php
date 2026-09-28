@@ -6,6 +6,7 @@ namespace App\Actions\Shop;
 
 use App\Data\Shop\Customer\UpdateProfileData;
 use App\Events\ProfileCompletedEvent;
+use App\Models\PersonalAccessToken;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,7 @@ final readonly class UpdateProfileAction
      */
     public function handle(UpdateProfileData $data, User $user): User
     {
-        return DB::transaction(function () use ($data, $user): User {
+        $user = DB::transaction(function () use ($data, $user): User {
             $wasCompleted = $user->profileCompleted();
 
             $updateData = [
@@ -48,5 +49,9 @@ final readonly class UpdateProfileAction
 
             return $user;
         });
+
+        PersonalAccessToken::forgetCacheFor($user);
+
+        return $user;
     }
 }

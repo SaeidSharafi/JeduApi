@@ -2,7 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheKey;
+use App\Models\PersonalAccessToken;
+
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
 it('show profile', function (): void {
     $user     = App\Models\User::factory()->create();
     $response = $this->customer($user)
@@ -43,6 +48,51 @@ it('shows profile using the http only authentication cookie', function (): void 
 it('rejects unauthenticated profile requests', function (): void {
     $this->getJson(route('api.v1.shop.profile.show'))
         ->assertUnauthorized();
+});
+
+it('clears the cached tokenable when the customer avatar is deleted', function (): void {
+    $user  = App\Models\User::factory()->create();
+    $plain = $user->createToken('auth_token', ['*'], now()->addMinutes(60))->plainTextToken;
+    $token = PersonalAccessToken::findToken($plain);
+    $token->tokenable;
+
+    $this->withToken($plain)
+        ->deleteJson(route('api.v1.shop.profile.avatar.destroy'))
+        ->assertNoContent();
+
+    expect(app(CacheStore::class)->get(CacheKey::Tokenable, [
+        'id'  => $token->id,
+        'env' => app()->environment(),
+    ]))->toBeNull();
+});
+
+it('clears the cached tokenable when the customer profile is updated', function (): void {
+    $user  = App\Models\User::factory()->withPassport()->create();
+    $plain = $user->createToken('auth_token', ['*'], now()->addMinutes(60))->plainTextToken;
+    $token = PersonalAccessToken::findToken($plain);
+    $token->tokenable;
+
+    $this->withToken($plain)
+        ->putJson(route('api.v1.shop.profile.update'), [
+            'first_name'       => 'Updated',
+            'last_name'        => 'Customer',
+            'email'            => 'updated@example.com',
+            'phone2'           => null,
+            'civil_id'         => $user->civil_id,
+            'civil_id_type'    => $user->civil_id_type->value,
+            'date_of_birth'    => '1402-01-01',
+            'father_name'      => 'Father Name',
+            'gender'           => $user->gender->value,
+            'education_level'  => $user->education_level->value,
+            'field_of_study'   => 'Computer Science',
+            'education_status' => $user->education_status->value,
+        ])
+        ->assertOk();
+
+    expect(app(CacheStore::class)->get(CacheKey::Tokenable, [
+        'id'  => $token->id,
+        'env' => app()->environment(),
+    ]))->toBeNull();
 });
 
 it('update all fields on newly created profile', function (): void {

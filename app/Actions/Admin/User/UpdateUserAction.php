@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\User;
 
 use App\Data\Admin\User\UserCreateData;
+use App\Models\PersonalAccessToken;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Media;
@@ -16,7 +17,7 @@ final readonly class UpdateUserAction
      */
     public function handle(UserCreateData $data, User $user): User
     {
-        return DB::transaction(function () use ($data, $user): User {
+        $user = DB::transaction(function () use ($data, $user): User {
             $userData               = $data->except('media')->toArray();
             $avatarMedia            = null;
             $userData['avatar_url'] = null;
@@ -30,5 +31,9 @@ final readonly class UpdateUserAction
 
             return $user->fresh();
         });
+
+        PersonalAccessToken::forgetCacheFor($user);
+
+        return $user;
     }
 }

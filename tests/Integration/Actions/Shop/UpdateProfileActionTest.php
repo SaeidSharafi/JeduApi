@@ -9,6 +9,7 @@ use App\Enums\User\EducationLevelEnum;
 use App\Enums\User\EducationStatusEnum;
 use App\Enums\User\GenderEnum;
 use App\Events\ProfileCompletedEvent;
+use App\Models\PersonalAccessToken;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
@@ -94,4 +95,15 @@ describe('UpdateProfileAction profile-completed event', function (): void {
 
         Event::assertDispatchedTimes(ProfileCompletedEvent::class, 1);
     });
+});
+
+it('invalidates the cached tokenable after updating a customer profile', function (): void {
+    $user  = User::factory()->create(['first_name' => 'Before']);
+    $plain = $user->createToken('auth_token', ['*'], now()->addMinutes(60))->plainTextToken;
+
+    expect(PersonalAccessToken::findToken($plain)->tokenable->first_name)->toBe('Before');
+
+    $this->action->handle(profileData(['first_name' => 'After']), $user->fresh());
+
+    expect(PersonalAccessToken::findToken($plain)->tokenable->first_name)->toBe('After');
 });

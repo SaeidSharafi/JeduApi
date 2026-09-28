@@ -267,7 +267,7 @@
 
 #### Staff Actions (`app/Actions/Admin/Staff/`)
 - **CreateStaffAction**: Creates new admin user accounts
-- **UpdateStaffAction**: Updates staff details and permissions
+- **UpdateStaffAction**: Updates staff details and permissions, then forgets the affected token lookup and tokenable snapshots after commit
 - **BanStaffAction**: Sets the ban flag, snapshots the staff member's tokens, deletes them, and only after the transaction commits forgets each token's lookup and user snapshot through `PersonalAccessToken::forgetCachedIdentifiers()`, so a concurrent request cannot re-cache a still-live token
 - **DeleteStaffAction**: Removes staff access and archives records; likewise forgets the deleted tokens' cache entries after the transaction commits
 
@@ -275,7 +275,7 @@
 - **CreateUserAction** (`app/Actions/Admin/User/CreateUserAction.php`)
   - `handle(UserCreateData $data): User`: Creates new customer accounts; supports avatar media attachment.
 - **UpdateUserAction** (`app/Actions/Admin/User/UpdateUserAction.php`)
-  - `handle(UserUpdateData $data, User $user): User`: Updates customer profile information; supports avatar media attachment.
+  - `handle(UserUpdateData $data, User $user): User`: Updates customer profile information; supports avatar media attachment and forgets the user's cached token lookup and tokenable snapshots after commit.
 - **BanUserAction**: Sets the ban flag, snapshots and deletes the customer's tokens, and forgets their cache entries only after the transaction commits
 - **DeleteUserAction**: Handles customer account deactivation; likewise snapshots the tokens inside the transaction and forgets their cache entries after it commits
 
@@ -407,7 +407,9 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### Customer Profile & Utilities
 - **UpdateProfileAction** (`app/Actions/Shop/UpdateProfileAction.php`)
-  - `handle(UpdateProfileData $data, User $user): User`: Transactionally updates customer profile fields, respecting immutable civil ID constraints and returning a fresh model instance.
+  - `handle(UpdateProfileData $data, User $user): User`: Transactionally updates customer profile fields, respecting immutable civil ID constraints and returning a fresh model instance; after commit, forgets the user's cached token lookup and tokenable snapshots so authenticated profile reads see the new values.
+- **UpdateUserAvatarAction** (`app/Actions/User/UpdateUserAvatarAction.php`)
+  - `handle(User $user, UploadedFile $file): Media`: Replaces the customer's avatar media and mirrored URL inside a transaction, dispatches supported image variants, and forgets the user's cached token lookup and tokenable snapshots after commit.
 - **UploadFileAction** (`app/Actions/Shop/UploadFileAction.php`)
   - `handle(UploadedFile $file, bool $isPublic = true): Media`: Streams uploaded attachments into Mediable storage with duplicate-safe filenames, reused by form actions.
 
@@ -481,7 +483,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 ### Admin Profile Actions (`app/Actions/Admin/`)
 - **UpdateStaffProfileAction** (`app/Actions/Admin/UpdateStaffProfileAction.php`)
-  - `handle(UpdateStaffProfileData $data, Staff $staff): Staff`: Updates the authenticated staff member's own profile fields (name, email, avatar).
+  - `handle(UpdateStaffProfileData $data, Staff $staff): Staff`: Updates the authenticated staff member's own profile fields (name, email, avatar) and forgets the affected token lookup and tokenable snapshots after commit.
 
 ### Payment Actions (`app/Actions/Payment/`)
 - **PreparePendingPaymentAction** (`app/Actions/Payment/PreparePendingPaymentAction.php`)

@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
+covers(AuthenticateTokenFromCookie::class);
+
 describe('AuthenticateTokenFromCookie', function (): void {
     beforeEach(function (): void {
         $this->middleware    = new AuthenticateTokenFromCookie();
@@ -88,6 +90,31 @@ describe('AuthenticateTokenFromCookie', function (): void {
         $this->middleware->handle($request, $this->next);
 
         expect($this->passedRequest->header('Authorization'))->toBe('Bearer abc123');
+    });
+
+    test('it allows a non-safe method with a cookie from a wildcard subdomain origin', function (): void {
+        config()->set('cors.allowed_origins', ['https://*.jedu.ir']);
+        config()->set('app.url', 'http://localhost');
+
+        $request = Request::create('/api/v1/admin/users', 'POST');
+        $request->cookies->set('user_token', 'abc123');
+        $request->headers->set('Origin', 'https://shop.jedu.ir');
+
+        $this->middleware->handle($request, $this->next);
+
+        expect($this->passedRequest->header('Authorization'))->toBe('Bearer abc123');
+    });
+
+    test('it rejects an origin outside a wildcard domain', function (): void {
+        config()->set('cors.allowed_origins', ['https://*.jedu.ir']);
+        config()->set('app.url', 'http://localhost');
+
+        $request = Request::create('/api/v1/admin/users', 'POST');
+        $request->cookies->set('user_token', 'abc123');
+        $request->headers->set('Origin', 'https://shop.jedu.ir.evil.example');
+
+        expect(fn () => $this->middleware->handle($request, $this->next))
+            ->toThrow(AccessDeniedHttpException::class);
     });
 
     test('it derives the Origin from the Referer header when Origin is missing', function (): void {

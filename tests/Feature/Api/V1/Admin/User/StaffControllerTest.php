@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
+use App\Enums\System\CacheKey;
+use App\Models\PersonalAccessToken;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
@@ -292,6 +295,9 @@ describe('admin show', function (): void {
 describe('admin update', function (): void {
     it('should update an existing admin', function (): void {
         $staff = App\Models\Staff::factory()->create();
+        $plain = $staff->createToken('staff_token', ['*'], now()->addMinutes(60))->plainTextToken;
+        $token = PersonalAccessToken::findToken($plain);
+        $token->tokenable;
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_UPDATE->value,
         ]);
@@ -305,6 +311,11 @@ describe('admin update', function (): void {
             'email' => $this->data['email'],
             'phone' => $this->data['phone'],
         ]);
+
+        expect(app(CacheStore::class)->get(CacheKey::Tokenable, [
+            'id'  => $token->id,
+            'env' => app()->environment(),
+        ]))->toBeNull();
     });
     it('should update an existing staff without changing password', function (): void {
         $staff    = App\Models\Staff::factory()->create();

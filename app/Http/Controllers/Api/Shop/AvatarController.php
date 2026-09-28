@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Shop;
 use App\Actions\User\UpdateUserAvatarAction;
 use App\Contracts\ApiResponseInterface;
 use App\Http\Controllers\Controller;
+use App\Models\PersonalAccessToken;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -63,10 +64,10 @@ final class AvatarController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
+        /** @var User $user */
+        $user = auth('user')->user();
 
-        DB::transaction(function (): void {
-
-            $user = auth('user')->user();
+        DB::transaction(function () use ($user): void {
             $user->load('media');
             $avatars = $user->getMediaMatchAll(['avatar']);
             foreach ($avatars as $avatar) {
@@ -76,6 +77,8 @@ final class AvatarController extends Controller
             $user->save();
 
         });
+
+        PersonalAccessToken::forgetCacheFor($user);
 
         return apiResponse()->noContentJson();
     }

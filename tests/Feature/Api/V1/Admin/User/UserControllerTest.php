@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\PermissionEnum;
+use App\Enums\System\CacheKey;
 use App\Enums\User\CivilIdTypeEnum;
 use App\Enums\Wallet\WalletStatusEnum;
+use App\Models\PersonalAccessToken;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 
@@ -341,7 +344,10 @@ describe('CRUD Autherized', function (): void {
 
     it('should update user', function (): void {
         $this->authorized_user([PermissionEnum::USER_UPDATE]);
-        $user           = User::factory()->withPassport()->create();
+        $user       = User::factory()->withPassport()->create();
+        $plainToken = $user->createToken('auth_token', ['*'], now()->addMinutes(60))->plainTextToken;
+        $token      = PersonalAccessToken::findToken($plainToken);
+        $token->tokenable;
         $updateUserData = [
             ...$user->toArray(),
             'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
@@ -392,6 +398,11 @@ describe('CRUD Autherized', function (): void {
             'first_name' => $user->first_name,
             'last_name'  => $user->last_name,
         ]);
+
+        expect(app(CacheStore::class)->get(CacheKey::Tokenable, [
+            'id'  => $token->id,
+            'env' => app()->environment(),
+        ]))->toBeNull();
     });
 
     it('should delete user', function (): void {

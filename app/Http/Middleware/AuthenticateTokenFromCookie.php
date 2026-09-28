@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -46,6 +47,12 @@ final class AuthenticateTokenFromCookie
                 : null;
         }
 
+        if ($origin === null) {
+            throw new AccessDeniedHttpException(__('messages.forbidden'));
+        }
+
+        $origin = mb_rtrim($origin, '/');
+
         $allowedOrigins   = Arr::wrap(config('cors.allowed_origins'));
         $allowedOrigins[] = config('app.url');
         $allowedOrigins   = array_map(
@@ -53,7 +60,15 @@ final class AuthenticateTokenFromCookie
             $allowedOrigins
         );
 
-        if ($origin === null || ! in_array(mb_rtrim($origin, '/'), $allowedOrigins, true)) {
+        $isAllowed = false;
+        foreach ($allowedOrigins as $allowedOrigin) {
+            if (Str::is($allowedOrigin, $origin)) {
+                $isAllowed = true;
+                break;
+            }
+        }
+
+        if (! $isAllowed) {
             throw new AccessDeniedHttpException(__('messages.forbidden'));
         }
     }
