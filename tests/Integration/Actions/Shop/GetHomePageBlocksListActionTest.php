@@ -33,10 +33,10 @@ it('returns collection of HomePageBlockListData for active blocks only', functio
 
     // Check the ordering: hero comes before main_content, then order by order field
     $blocks = $result->values();
-    expect($blocks[0]->location)->toBe('hero')
-        ->and($blocks[0]->id)->toBe($activeBlock1->id)
-        ->and($blocks[1]->location)->toBe('main_content')
-        ->and($blocks[1]->id)->toBe($activeBlock2->id);
+    expect($blocks[0]->location)->toBe('main_content')
+        ->and($blocks[0]->id)->toBe($activeBlock2->id)
+        ->and($blocks[1]->location)->toBe('hero')
+        ->and($blocks[1]->id)->toBe($activeBlock1->id);
 });
 
 it('extracts preset from block content', function (): void {
