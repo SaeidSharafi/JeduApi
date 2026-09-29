@@ -41,6 +41,7 @@ final class CustomerSelectOptionController extends Controller
                 });
             })
             ->orderBy('last_name')
+            ->orderBy('id')
             ->paginate($perPage, ['id', 'first_name', 'last_name', 'email', 'phone', 'avatar_url'])
             ->withQueryString();
 

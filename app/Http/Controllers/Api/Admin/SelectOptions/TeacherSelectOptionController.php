@@ -41,6 +41,7 @@ final class TeacherSelectOptionController extends Controller
             })
             ->withMediaAndVariants(['profile'])
             ->orderBy('last_name')
+            ->orderBy('id')
             ->paginate($perPage, ['id', 'first_name', 'last_name', 'email', 'phone'])
             ->withQueryString();
 

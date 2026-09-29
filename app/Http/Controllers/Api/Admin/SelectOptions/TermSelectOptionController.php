@@ -39,6 +39,7 @@ final class TermSelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
+            ->orderBy('id')
             ->paginate($perPage, ['id', 'name', 'academic_year'])
             ->withQueryString();
 

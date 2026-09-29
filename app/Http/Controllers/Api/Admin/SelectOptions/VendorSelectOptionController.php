@@ -36,6 +36,7 @@ final class VendorSelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
+            ->orderBy('id')
             ->paginate($perPage, ['id', 'name', 'address', 'logo_url'])
             ->withQueryString();
 

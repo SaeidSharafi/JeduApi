@@ -46,6 +46,7 @@ final class ProductSelectOptionController extends Controller
         $products = $productsQuery
             ->search($query->value())
             ->orderBy('short_name')
+            ->orderBy('id')
             ->paginate($perPage)
             ->withQueryString();
 

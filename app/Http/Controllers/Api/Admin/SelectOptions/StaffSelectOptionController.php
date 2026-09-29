@@ -40,6 +40,7 @@ final class StaffSelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
+            ->orderBy('id')
             ->paginate($perPage, ['id', 'name', 'email'])
             ->withQueryString();
 

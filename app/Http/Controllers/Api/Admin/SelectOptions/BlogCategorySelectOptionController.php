@@ -41,6 +41,7 @@ final class BlogCategorySelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
+            ->orderBy('id')
             ->paginate($perPage, ['id', 'name', 'slug', 'icon'])
             ->withQueryString();
 

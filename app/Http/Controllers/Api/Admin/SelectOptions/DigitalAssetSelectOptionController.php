@@ -56,6 +56,7 @@ final class DigitalAssetSelectOptionController extends Controller
             )
             ->withMediaAndVariants([MediaTagEnum::MAIN->value])
             ->orderBy('full_name')
+            ->orderBy('id')
             ->paginate($perPage, ['id', 'full_name', 'thumbnail_url'])
             ->withQueryString();
 
