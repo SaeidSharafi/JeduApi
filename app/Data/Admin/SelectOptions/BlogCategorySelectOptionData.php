@@ -16,6 +16,6 @@ final class BlogCategorySelectOptionData extends Data
         #[MapInputName('slug')]
         public string $subtitle,
         #[MapInputName('icon')]
-        public string $icon_url,
+        public ?string $icon_url = null,
     ) {}
 }
