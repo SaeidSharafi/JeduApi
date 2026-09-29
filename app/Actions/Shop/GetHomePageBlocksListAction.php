@@ -17,8 +17,8 @@ final readonly class GetHomePageBlocksListAction
     {
         return HomePageBlock::query()
             ->where('is_active', true)
-            ->orderBy('location')
             ->orderBy('order')
+            ->orderBy('location')
             ->get()
             ->map(function (HomePageBlock $block): HomePageBlockListData {
                 return new HomePageBlockListData(
