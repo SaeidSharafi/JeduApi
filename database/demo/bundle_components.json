@@ -1,0 +1,242 @@
+[
+  {
+    "id": 1,
+    "bundle_product_delivery_option_id": 55,
+    "component_product_delivery_option_id": 42,
+    "allocation": 1500000,
+    "created_at": "2024-10-21 11:02:00",
+    "updated_at": "2024-10-21 11:02:00"
+  },
+  {
+    "id": 2,
+    "bundle_product_delivery_option_id": 55,
+    "component_product_delivery_option_id": 52,
+    "allocation": 1100000,
+    "created_at": "2024-10-21 11:02:00",
+    "updated_at": "2024-10-21 11:02:00"
+  },
+  {
+    "id": 3,
+    "bundle_product_delivery_option_id": 55,
+    "component_product_delivery_option_id": 6,
+    "allocation": 150000,
+    "created_at": "2024-10-21 11:02:00",
+    "updated_at": "2024-10-21 11:02:00"
+  },
+  {
+    "id": 4,
+    "bundle_product_delivery_option_id": 56,
+    "component_product_delivery_option_id": 4,
+    "allocation": 800000,
+    "created_at": "2024-10-21 11:20:00",
+    "updated_at": "2024-10-21 11:20:00"
+  },
+  {
+    "id": 5,
+    "bundle_product_delivery_option_id": 56,
+    "component_product_delivery_option_id": 11,
+    "allocation": 200000,
+    "created_at": "2024-10-21 11:20:00",
+    "updated_at": "2024-10-21 11:20:00"
+  },
+  {
+    "id": 6,
+    "bundle_product_delivery_option_id": 56,
+    "component_product_delivery_option_id": 16,
+    "allocation": 250000,
+    "created_at": "2024-10-21 11:20:00",
+    "updated_at": "2024-10-21 11:20:00"
+  },
+  {
+    "id": 7,
+    "bundle_product_delivery_option_id": 57,
+    "component_product_delivery_option_id": 10,
+    "allocation": 1900000,
+    "created_at": "2024-10-21 11:21:00",
+    "updated_at": "2024-10-21 11:21:00"
+  },
+  {
+    "id": 8,
+    "bundle_product_delivery_option_id": 57,
+    "component_product_delivery_option_id": 21,
+    "allocation": 1700000,
+    "created_at": "2024-10-21 11:21:00",
+    "updated_at": "2024-10-21 11:21:00"
+  },
+  {
+    "id": 9,
+    "bundle_product_delivery_option_id": 57,
+    "component_product_delivery_option_id": 44,
+    "allocation": 2100000,
+    "created_at": "2024-10-21 11:21:00",
+    "updated_at": "2024-10-21 11:21:00"
+  },
+  {
+    "id": 10,
+    "bundle_product_delivery_option_id": 58,
+    "component_product_delivery_option_id": 12,
+    "allocation": 900000,
+    "created_at": "2024-10-21 11:22:00",
+    "updated_at": "2024-10-21 11:22:00"
+  },
+  {
+    "id": 11,
+    "bundle_product_delivery_option_id": 58,
+    "component_product_delivery_option_id": 29,
+    "allocation": 1200000,
+    "created_at": "2024-10-21 11:22:00",
+    "updated_at": "2024-10-21 11:22:00"
+  },
+  {
+    "id": 12,
+    "bundle_product_delivery_option_id": 58,
+    "component_product_delivery_option_id": 27,
+    "allocation": 2200000,
+    "created_at": "2024-10-21 11:22:00",
+    "updated_at": "2024-10-21 11:22:00"
+  },
+  {
+    "id": 13,
+    "bundle_product_delivery_option_id": 59,
+    "component_product_delivery_option_id": 19,
+    "allocation": 3000000,
+    "created_at": "2024-10-21 11:23:00",
+    "updated_at": "2024-10-21 11:23:00"
+  },
+  {
+    "id": 14,
+    "bundle_product_delivery_option_id": 59,
+    "component_product_delivery_option_id": 3,
+    "allocation": 1500000,
+    "created_at": "2024-10-21 11:23:00",
+    "updated_at": "2024-10-21 11:23:00"
+  },
+  {
+    "id": 15,
+    "bundle_product_delivery_option_id": 59,
+    "component_product_delivery_option_id": 54,
+    "allocation": 2400000,
+    "created_at": "2024-10-21 11:23:00",
+    "updated_at": "2024-10-21 11:23:00"
+  },
+  {
+    "id": 16,
+    "bundle_product_delivery_option_id": 60,
+    "component_product_delivery_option_id": 22,
+    "allocation": 400000,
+    "created_at": "2024-10-21 11:24:00",
+    "updated_at": "2024-10-21 11:24:00"
+  },
+  {
+    "id": 17,
+    "bundle_product_delivery_option_id": 60,
+    "component_product_delivery_option_id": 32,
+    "allocation": 40000,
+    "created_at": "2024-10-21 11:24:00",
+    "updated_at": "2024-10-21 11:24:00"
+  },
+  {
+    "id": 18,
+    "bundle_product_delivery_option_id": 60,
+    "component_product_delivery_option_id": 51,
+    "allocation": 760000,
+    "created_at": "2024-10-21 11:24:00",
+    "updated_at": "2024-10-21 11:24:00"
+  },
+  {
+    "id": 19,
+    "bundle_product_delivery_option_id": 61,
+    "component_product_delivery_option_id": 36,
+    "allocation": 2500000,
+    "created_at": "2024-10-21 11:25:00",
+    "updated_at": "2024-10-21 11:25:00"
+  },
+  {
+    "id": 20,
+    "bundle_product_delivery_option_id": 61,
+    "component_product_delivery_option_id": 30,
+    "allocation": 450000,
+    "created_at": "2024-10-21 11:25:00",
+    "updated_at": "2024-10-21 11:25:00"
+  },
+  {
+    "id": 21,
+    "bundle_product_delivery_option_id": 61,
+    "component_product_delivery_option_id": 49,
+    "allocation": 150000,
+    "created_at": "2024-10-21 11:25:00",
+    "updated_at": "2024-10-21 11:25:00"
+  },
+  {
+    "id": 22,
+    "bundle_product_delivery_option_id": 62,
+    "component_product_delivery_option_id": 40,
+    "allocation": 850000,
+    "created_at": "2024-10-21 11:26:00",
+    "updated_at": "2024-10-21 11:26:00"
+  },
+  {
+    "id": 23,
+    "bundle_product_delivery_option_id": 62,
+    "component_product_delivery_option_id": 45,
+    "allocation": 180000,
+    "created_at": "2024-10-21 11:26:00",
+    "updated_at": "2024-10-21 11:26:00"
+  },
+  {
+    "id": 24,
+    "bundle_product_delivery_option_id": 62,
+    "component_product_delivery_option_id": 24,
+    "allocation": 120000,
+    "created_at": "2024-10-21 11:26:00",
+    "updated_at": "2024-10-21 11:26:00"
+  },
+  {
+    "id": 25,
+    "bundle_product_delivery_option_id": 63,
+    "component_product_delivery_option_id": 25,
+    "allocation": 1450000,
+    "created_at": "2024-10-21 11:27:00",
+    "updated_at": "2024-10-21 11:27:00"
+  },
+  {
+    "id": 26,
+    "bundle_product_delivery_option_id": 63,
+    "component_product_delivery_option_id": 31,
+    "allocation": 1600000,
+    "created_at": "2024-10-21 11:27:00",
+    "updated_at": "2024-10-21 11:27:00"
+  },
+  {
+    "id": 27,
+    "bundle_product_delivery_option_id": 63,
+    "component_product_delivery_option_id": 43,
+    "allocation": 700000,
+    "created_at": "2024-10-21 11:27:00",
+    "updated_at": "2024-10-21 11:27:00"
+  },
+  {
+    "id": 28,
+    "bundle_product_delivery_option_id": 64,
+    "component_product_delivery_option_id": 17,
+    "allocation": 2400000,
+    "created_at": "2024-10-21 11:28:00",
+    "updated_at": "2024-10-21 11:28:00"
+  },
+  {
+    "id": 29,
+    "bundle_product_delivery_option_id": 64,
+    "component_product_delivery_option_id": 18,
+    "allocation": 650000,
+    "created_at": "2024-10-21 11:28:00",
+    "updated_at": "2024-10-21 11:28:00"
+  },
+  {
+    "id": 30,
+    "bundle_product_delivery_option_id": 64,
+    "component_product_delivery_option_id": 48,
+    "allocation": 950000,
+    "created_at": "2024-10-21 11:28:00",
+    "updated_at": "2024-10-21 11:28:00"
+  }
+]

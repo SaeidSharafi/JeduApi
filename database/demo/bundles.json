@@ -1,0 +1,153 @@
+[
+  {
+    "id": 1,
+    "slug": "web-development-starter-bundle",
+    "full_name": "بسته جامع شروع توسعه وب",
+    "short_name": "بسته شروع توسعه وب",
+    "description": "مسیر یادگیری کاربردی برای ساخت وب‌سایت‌های مدرن؛ از الگوهای طراحی PHP و طراحی واکنش‌گرا تا مرجع الگوهای طراحی.",
+    "properties": {
+      "level": "intermediate",
+      "focus": "web-development"
+    },
+    "additional_info": {
+      "included_items": 3,
+      "delivery": "online"
+    },
+    "faq": [
+      {
+        "question": "این بسته برای چه کسانی مناسب است؟",
+        "answer": "برای برنامه‌نویسانی که می‌خواهند مهارت‌های PHP و طراحی وب خود را یک‌جا تقویت کنند."
+      }
+    ],
+    "status": "published",
+    "created_at": "2024-10-21 11:00:00",
+    "updated_at": "2024-10-21 11:00:00",
+    "category_ids": [7]
+  },
+  {
+    "id": 2,
+    "slug": "digital-design-bundle",
+    "full_name": "بسته جامع طراحی دیجیتال",
+    "short_name": "بسته طراحی دیجیتال",
+    "description": "ترکیبی برای تقویت نگاه بصری و مهارت‌های طراحی دیجیتال با نقاشی مینیاتور، وکتورهای ایرانی و پروژه آماده افترافکت.",
+    "properties": {"level": "intermediate", "focus": "digital-design"},
+    "additional_info": {"included_items": 3, "delivery": "online"},
+    "faq": [],
+    "status": "published",
+    "created_at": "2024-10-21 11:10:00",
+    "updated_at": "2024-10-21 11:10:00",
+    "category_ids": [9]
+  },
+  {
+    "id": 3,
+    "slug": "iranian-music-bundle",
+    "full_name": "بسته جامع موسیقی ایرانی",
+    "short_name": "بسته موسیقی ایرانی",
+    "description": "مسیر جامع موسیقی برای پرورش صدا، آشنایی با موسیقی تلفیقی و یادگیری سازهای ایرانی.",
+    "properties": {"level": "all-levels", "focus": "music"},
+    "additional_info": {"included_items": 3, "delivery": "online"},
+    "faq": [],
+    "status": "published",
+    "created_at": "2024-10-21 11:11:00",
+    "updated_at": "2024-10-21 11:11:00",
+    "category_ids": [11]
+  },
+  {
+    "id": 4,
+    "slug": "philosophy-and-thought-bundle",
+    "full_name": "بسته اندیشه و فلسفه",
+    "short_name": "بسته اندیشه و فلسفه",
+    "description": "نگاهی چندجانبه به اندیشه‌های شرقی و غربی، معنویت و عقلانیت برای یادگیری عمیق‌تر.",
+    "properties": {"level": "all-levels", "focus": "philosophy"},
+    "additional_info": {"included_items": 3, "delivery": "online"},
+    "faq": [],
+    "status": "published",
+    "created_at": "2024-10-21 11:12:00",
+    "updated_at": "2024-10-21 11:12:00",
+    "category_ids": [3]
+  },
+  {
+    "id": 5,
+    "slug": "film-production-bundle",
+    "full_name": "بسته جامع تولید فیلم",
+    "short_name": "بسته تولید فیلم",
+    "description": "از ایده‌پردازی و کارگردانی تا فیلم‌نامه و موسیقی؛ بسته‌ای برای ساختن یک فیلم کامل.",
+    "properties": {"level": "intermediate", "focus": "film-production"},
+    "additional_info": {"included_items": 3, "delivery": "online"},
+    "faq": [],
+    "status": "published",
+    "created_at": "2024-10-21 11:13:00",
+    "updated_at": "2024-10-21 11:13:00",
+    "category_ids": [10]
+  },
+  {
+    "id": 6,
+    "slug": "business-growth-and-marketing-bundle",
+    "full_name": "بسته رشد کسب‌وکار و بازاریابی",
+    "short_name": "بسته رشد کسب‌وکار",
+    "description": "مهارت‌های کاربردی برای رشد کسب‌وکار از کپی‌رایتینگ و بازاریابی دیجیتال تا راه‌اندازی استارتاپ.",
+    "properties": {"level": "intermediate", "focus": "business"},
+    "additional_info": {"included_items": 3, "delivery": "online"},
+    "faq": [],
+    "status": "published",
+    "created_at": "2024-10-21 11:14:00",
+    "updated_at": "2024-10-21 11:14:00",
+    "category_ids": [12]
+  },
+  {
+    "id": 7,
+    "slug": "creative-photography-bundle",
+    "full_name": "بسته جامع عکاسی خلاق",
+    "short_name": "بسته عکاسی خلاق",
+    "description": "بسته‌ای برای دیدن، ثبت و ساختن تصویر؛ از عکاسی خیابانی و پرتره تا شناخت ترکیب‌بندی.",
+    "properties": {"level": "intermediate", "focus": "photography"},
+    "additional_info": {"included_items": 3, "delivery": "online"},
+    "faq": [],
+    "status": "published",
+    "created_at": "2024-10-21 11:15:00",
+    "updated_at": "2024-10-21 11:15:00",
+    "category_ids": [11]
+  },
+  {
+    "id": 8,
+    "slug": "career-skills-and-productivity-bundle",
+    "full_name": "بسته مهارت‌های شغلی و بهره‌وری",
+    "short_name": "بسته مهارت‌های شغلی",
+    "description": "ابزارهای یادگیری و پیشرفت شغلی با زبان آلمانی، اکسل پیشرفته و قالب‌های حرفه‌ای رزومه.",
+    "properties": {"level": "all-levels", "focus": "career"},
+    "additional_info": {"included_items": 3, "delivery": "online"},
+    "faq": [],
+    "status": "published",
+    "created_at": "2024-10-21 11:16:00",
+    "updated_at": "2024-10-21 11:16:00",
+    "category_ids": [5]
+  },
+  {
+    "id": 9,
+    "slug": "art-and-literature-bundle",
+    "full_name": "بسته هنر و ادبیات جهان",
+    "short_name": "بسته هنر و ادبیات",
+    "description": "ترکیبی برای شناخت هنر و ادبیات، از تاریخ هنر و شعر نو تا روایت‌های کلاسیک جهان.",
+    "properties": {"level": "all-levels", "focus": "arts-and-literature"},
+    "additional_info": {"included_items": 3, "delivery": "online"},
+    "faq": [],
+    "status": "published",
+    "created_at": "2024-10-21 11:17:00",
+    "updated_at": "2024-10-21 11:17:00",
+    "category_ids": [10]
+  },
+  {
+    "id": 10,
+    "slug": "analytical-thinking-bundle",
+    "full_name": "بسته تفکر تحلیلی و استدلال",
+    "short_name": "بسته تفکر تحلیلی",
+    "description": "بسته‌ای میان‌رشته‌ای برای تقویت تفکر تحلیلی با ریاضیات، فلسفه و مباحث فقه و حقوق.",
+    "properties": {"level": "advanced", "focus": "critical-thinking"},
+    "additional_info": {"included_items": 3, "delivery": "online"},
+    "faq": [],
+    "status": "published",
+    "created_at": "2024-10-21 11:18:00",
+    "updated_at": "2024-10-21 11:18:00",
+    "category_ids": [3]
+  }
+]

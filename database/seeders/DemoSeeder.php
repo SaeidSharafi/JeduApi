@@ -10,6 +10,8 @@ use App\Enums\System\MorphTypeEnum;
 use App\Models\AdviceRequest;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
+use App\Models\Bundle;
+use App\Models\BundleComponent;
 use App\Models\Category;
 use App\Models\CollaborationRequest;
 use App\Models\ContactUsRequest;
@@ -155,6 +157,8 @@ final class DemoSeeder extends Seeder
             $this->seedDigitalAssetMedia($collection);
         });
 
+        $this->seedModel(Bundle::class, 'bundles.json');
+
         $this->seedModel(Product::class, 'products.json', function ($data) {
             if (empty($data['term_id'])) {
                 $data['term_id'] = random_int(1, 4);
@@ -169,6 +173,7 @@ final class DemoSeeder extends Seeder
         });
 
         $this->seedModel(ProductDeliveryOption::class, 'product_delivery_options.json');
+        $this->seedModel(BundleComponent::class, 'bundle_components.json');
 
         $this->seedModel(BlogCategory::class, 'blog_categories.json', null, function (array $collection) {
             $this->seedBlogCategoryMedia($collection);
@@ -899,11 +904,11 @@ final class DemoSeeder extends Seeder
             'reviews', 'partners', 'settings',
             'wallet_transactions', 'wallet_campaigns', 'wallets',
             'payment_transactions', 'payments',
-            'enrollments', 'refunds', 'order_items', 'orders',
+            'enrollments', 'refunds', 'order_items', 'bundle_purchases', 'orders',
             'product_delivery_option_discount_prices', 'product_prices',
             'discount_coupons', 'discount_promotion_rules', 'discount_promotions',
             'student_stories', 'home_page_blocks', 'sliders', 'blog_posts', 'blog_categories',
-            'product_delivery_options', 'products', 'digital_assets', 'seminars',
+            'bundle_components', 'product_delivery_options', 'products', 'bundles', 'digital_assets', 'seminars',
             'courses', 'categories', 'teachers', 'terms', 'vendors', 'staff', 'users',
             'categorizables', 'media', 'mediables',
             'product_delivery_option_teacher', 'blog_post_productables', 'blog_post_category',
