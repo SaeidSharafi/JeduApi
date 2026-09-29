@@ -284,6 +284,7 @@ return [
         'course'        => 'Course',
         'seminar'       => 'Seminar',
         'digital_asset' => 'Digital Asset',
+        'bundle'        => 'Bundle',
     ],
     'ProductDeliveryStatusEnum' => [
         'online'    => 'Online',

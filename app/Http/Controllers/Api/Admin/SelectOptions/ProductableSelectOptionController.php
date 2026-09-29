@@ -8,6 +8,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\SelectOptions\ProductableSelectOptionData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Bundle;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\DB;
  * @group Admin - Select Options
  *
  * @authenticated
- * retrieve a list of productable items (courses, seminars, digital assets) for select options
+ * retrieve a list of productable items (courses, seminars, digital assets, bundles) for select options
  */
 final class ProductableSelectOptionController extends Controller
 {
@@ -27,7 +28,9 @@ final class ProductableSelectOptionController extends Controller
      *
      * @queryParam  q string The search query for filtering productable items (match name). Example: "advanced"
      * @queryParam  types array The types of productable items to include. Possible values: course, seminar,
-     *     digital_asset. Example: ["course", "seminar"]
+     *     digital_asset, bundle. Example: ["course", "seminar"]
+     * @queryParam  type string The singular productable type alias. Possible values: course, seminar,
+     *     digital_asset, bundle. Example: "bundle"
      * @queryParam  page integer The page number for pagination. Example: 2
      * @queryParam  per_page integer The number of results per page. Default is 15. Example: 10
      *
@@ -37,12 +40,15 @@ final class ProductableSelectOptionController extends Controller
     {
         $query   = request()->string('q', '');
         $perPage = request()->integer('per_page', config('app.page_size')) ?: (int) config('app.page_size');
-        $types   = request()->array('types')
-            ?: [
+        $types   = request()->array('types');
+        if ($types === []) {
+            $singleType = request()->string('type')->toString();
+            $types      = $singleType !== '' ? [$singleType] : [
                 ProductableEnum::COURSE->value,
                 ProductableEnum::SEMINAR->value,
                 ProductableEnum::DIGITAL_ASSET->value,
             ];
+        }
 
         $queries = [];
 
@@ -94,6 +100,24 @@ final class ProductableSelectOptionController extends Controller
                         ->orWhereLike('short_name', "%{$search}%");
                 });
             $queries[] = $digitalAssetsQuery;
+        }
+
+        if (in_array(ProductableEnum::BUNDLE->value, $types)) {
+            $bundlesQuery = Bundle::query()
+                ->select([
+                    'id',
+                    'full_name as name',
+                    'slug',
+                    DB::raw("'".ProductableEnum::BUNDLE->value."' as type"),
+                ])
+                ->when($query->isNotEmpty(), function ($q) use ($query): void {
+                    $term = '%'.addcslashes((string) $query, '%_').'%';
+                    $q->where(function ($w) use ($term): void {
+                        $w->whereLike('full_name', $term)
+                            ->orWhereLike('short_name', $term);
+                    });
+                });
+            $queries[] = $bundlesQuery;
         }
 
         if ($queries === []) {

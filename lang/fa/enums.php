@@ -284,6 +284,7 @@ return [
         'course'        => 'دوره',
         'seminar'       => 'سمینار',
         'digital_asset' => 'فایل',
+        'bundle'        => 'بسته',
     ],
     'ProductDeliveryStatusEnum' => [
         'online'    => 'آنلاین',

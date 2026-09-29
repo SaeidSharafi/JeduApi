@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Data\Admin\SelectOptions\ProductableSelectOptionData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Api\Admin\SelectOptions\ProductableSelectOptionController;
+use App\Models\Bundle;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
@@ -144,6 +145,47 @@ describe('Admin Producatable Select Option API', function (): void {
         foreach ($response->json('data.data') as $item) {
             $this->assertTrue(in_array($item['type']['value'], [ProductableEnum::COURSE->value, ProductableEnum::SEMINAR->value]));
         }
+    });
+
+    it('returns bundles when requested by either supported type parameter', function (string $query): void {
+        $bundle = Bundle::factory()->create([
+            'full_name'  => 'Complete PHP Bundle',
+            'short_name' => 'PHP Bundle',
+            'slug'       => 'complete-php-bundle',
+        ]);
+
+        $response = $this->getJson('/api/v1/admin/select-option/productables?'.$query);
+
+        $response->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.data.0.id', $bundle->id)
+            ->assertJsonPath('data.data.0.title', 'Complete PHP Bundle')
+            ->assertJsonPath('data.data.0.subtitle', 'complete-php-bundle')
+            ->assertJsonPath('data.data.0.type.value', ProductableEnum::BUNDLE->value)
+            ->assertJsonPath('data.data.0.type.label', ProductableEnum::BUNDLE->translate());
+    })->with([
+        'singular type parameter' => 'type=bundle',
+        'array type parameter'    => 'types[]=bundle',
+    ]);
+
+    it('filters bundles by their full or short name', function (): void {
+        Bundle::factory()->create([
+            'full_name'  => 'Complete Programming Collection',
+            'short_name' => 'Advanced PHP Bundle',
+            'slug'       => 'complete-programming-collection',
+        ]);
+        Bundle::factory()->create([
+            'full_name'  => 'Java Fundamentals Collection',
+            'short_name' => 'Java Bundle',
+            'slug'       => 'java-fundamentals-collection',
+        ]);
+
+        $response = $this->getJson('/api/v1/admin/select-option/productables?type=bundle&q=php');
+
+        $response->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.data.0.title', 'Complete Programming Collection')
+            ->assertJsonPath('data.data.0.subtitle', 'complete-programming-collection');
     });
 
     it('returns empty data when no productable items match the criteria', function (): void {
