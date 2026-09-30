@@ -172,7 +172,7 @@ return [
             PermissionAction::DELETE,
             'retry_provision',
             'diagnostics_view',
-            'waive_provision'
+            'waive_provision',
         ],
         'refund' => [
             PermissionAction::VIEW_SCOPED,
@@ -266,6 +266,12 @@ return [
             PermissionAction::DELETE,
             'publish',
             'feature',
+        ],
+        'learning_path' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
         ],
 
         /*

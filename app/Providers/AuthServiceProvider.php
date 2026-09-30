@@ -17,6 +17,7 @@ use App\Models\DigitalAsset;
 use App\Models\DiscountPromotion;
 use App\Models\Enrollment;
 use App\Models\HomePageBlock;
+use App\Models\LearningPath;
 use App\Models\Order;
 use App\Models\Partner;
 use App\Models\Payment;
@@ -48,6 +49,7 @@ use App\Policies\Admin\DigitalAssetPolicy;
 use App\Policies\Admin\DiscountPromotionPolicy;
 use App\Policies\Admin\EnrollmentPolicy;
 use App\Policies\Admin\HomePageBlockPolicy;
+use App\Policies\Admin\LearningPathPolicy;
 use App\Policies\Admin\OrderPolicy;
 use App\Policies\Admin\PartnerPolicy;
 use App\Policies\Admin\PaymentPolicy;
@@ -123,6 +125,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(BlogCategory::class, BlogCategoryPolicy::class);
         Gate::policy(BlogPost::class, BlogPostPolicy::class);
         Gate::policy(Bundle::class, BundlePolicy::class);
+        Gate::policy(LearningPath::class, LearningPathPolicy::class);
 
     }
 }

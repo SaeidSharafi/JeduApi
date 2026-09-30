@@ -12,6 +12,7 @@ use App\Models\CollaborationRequest;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\HomePageBlock;
+use App\Models\LearningPath;
 use App\Models\Order;
 use App\Models\Partner;
 use App\Models\Payment;
@@ -38,6 +39,7 @@ enum MorphTypeEnum: string
     case SEMINAR       = 'seminar';
     case DIGITAL_ASSET = 'digital_asset';
     case BUNDLE        = 'bundle';
+    case LEARNING_PATH = 'learning_path';
     case STAFF         = 'staff';
     case USER          = 'user';
 
@@ -127,6 +129,7 @@ enum MorphTypeEnum: string
             self::SEMINAR               => Seminar::class,
             self::DIGITAL_ASSET         => DigitalAsset::class,
             self::BUNDLE                => Bundle::class,
+            self::LEARNING_PATH         => LearningPath::class,
             self::STAFF                 => Staff::class,
             self::USER                  => User::class,
             self::TEACHER               => Teacher::class,
