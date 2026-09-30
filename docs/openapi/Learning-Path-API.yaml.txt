@@ -69,7 +69,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
-  /learning-paths:
+  /shop/learning-paths:
     get:
       security: []
       tags: [Shop / Learning Paths]
@@ -80,7 +80,7 @@ paths:
         - { $ref: '#/components/parameters/PaginationPerPage' }
       responses:
         '200': { $ref: '#/components/responses/LearningPathCardCollection' }
-  /learning-paths/{slug}:
+  /shop/learning-paths/{slug}:
     parameters:
       - name: slug
         in: path
@@ -101,7 +101,7 @@ components:
   parameters:
     LearningPathId: { name: learning_path, in: path, required: true, schema: { type: integer } }
     PaginationPage: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
-    PaginationPerPage: { name: per_page, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 12 } }
+    PaginationPerPage: { name: per_page, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 15 } }
   requestBodies:
     LearningPathWrite:
       required: true
@@ -178,6 +178,19 @@ components:
         title: { type: string }
         description: { type: string }
         productable: { allOf: [{ $ref: '#/components/schemas/ReferencedProductable' }], nullable: true }
+    ShopLearningPathStep:
+      type: object
+      required: [id, position, productable_type, productable_id, title, description, productable, current_product, action]
+      properties:
+        id: { type: integer }
+        position: { type: integer, minimum: 1 }
+        productable_type: { type: string, enum: [course, seminar, digital_asset] }
+        productable_id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        productable: { allOf: [{ $ref: '#/components/schemas/ShopReferencedProductable' }], nullable: true }
+        current_product: { allOf: [{ $ref: '#/components/schemas/CurrentProduct' }], nullable: true, description: Current catalog Product for the referenced Productable. It is null when no published catalog Product resolves. }
+        action: { $ref: '#/components/schemas/LearningPathStepAction' }
     LearningPathListItem:
       type: object
       required: [id, title, slug, display_order, status, steps_count, created_at, updated_at]
@@ -200,19 +213,60 @@ components:
         name: { type: string }
         slug: { type: string, nullable: true }
         thumbnail_url: { type: string, format: uri, nullable: true }
-    ReferencedProduct:
+    ShopReferencedProductable:
+      type: object
+      description: Stable existing Productable identity and fallback presentation used by the public guide.
+      required: [id, productable_type, name, short_description, excerpt, slug, thumbnail_url, media]
+      properties:
+        id: { type: integer }
+        productable_type: { type: string, enum: [course, seminar, digital_asset] }
+        name: { type: string }
+        short_description: { type: string, nullable: true }
+        excerpt: { type: string, nullable: true, description: Productable fallback excerpt; equivalent to short_description for the public path contract. }
+        slug: { type: string, nullable: true }
+        thumbnail_url: { type: string, format: uri, nullable: true }
+        media: { type: array, items: { $ref: '#/components/schemas/LearningPathMedia' } }
+    CurrentProduct:
       type: object
       description: Existing current Product projection for a Productable. It may be absent while no active Product is available.
-      required: [id, slug, name, productable_type]
+      required: [id, slug, name, productable_type, short_description, excerpt, thumbnail_url, price, price_data, media]
       properties:
         id: { type: integer }
         slug: { type: string }
         name: { type: string }
         productable_type: { type: string, enum: [course, seminar, digital_asset] }
         short_description: { type: string, nullable: true }
+        excerpt: { type: string, nullable: true, description: 'Product override when present, otherwise the Productable fallback excerpt.' }
         thumbnail_url: { type: string, format: uri, nullable: true }
-        price_data: { type: object, nullable: true, description: Existing Product pricing summary for display only. Purchase uses the Product's existing delivery options. }
-        delivery_options: { type: array, items: { type: object }, description: Existing Product Delivery Options available through the normal Product flow. }
+        price: { type: integer, nullable: true, description: Current Product price. It is never read from the Productable. }
+        price_data: { $ref: '#/components/schemas/LearningPathProductPrice', description: Existing Product pricing summary for display only. Purchase uses the Product's existing delivery options. }
+        media: { type: array, items: { $ref: '#/components/schemas/LearningPathMedia' }, description: Productable media used by the Product projection. }
+    LearningPathStepAction:
+      type: object
+      required: [type, state, enabled]
+      properties:
+        type: { type: string, enum: [view_product, coming_soon] }
+        state: { type: string, enum: [available, unavailable, coming_soon] }
+        enabled: { type: boolean, description: True only when the current Product has an available published delivery option under the existing catalog rules. }
+    LearningPathMedia:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, format: uri }
+    LearningPathProductPrice:
+      type: object
+      required: [min_price, min_original_price, has_featured_price, has_discount, has_pre_payment, discount_type, discount_percentage, highest_discount_amount, range, prices]
+      properties:
+        min_price: { type: integer, nullable: true }
+        min_original_price: { type: integer, nullable: true }
+        has_featured_price: { type: boolean, nullable: true }
+        has_discount: { type: boolean, nullable: true }
+        has_pre_payment: { type: boolean, nullable: true }
+        discount_type: { type: string, nullable: true }
+        discount_percentage: { type: number, format: float, nullable: true }
+        highest_discount_amount: { type: integer, nullable: true }
+        range: { type: object, nullable: true, additionalProperties: true }
+        prices: { type: array, nullable: true, items: { type: object } }
     LearningPathCard:
       type: object
       required: [id, title, slug, description, step_count]
@@ -223,6 +277,27 @@ components:
         description: { type: string }
         media: { type: array, items: { type: object } }
         step_count: { type: integer, minimum: 0 }
+    ShopLearningPathDetail:
+      type: object
+      required: [id, title, slug, description, introduction_title, introduction_description, conclusion_title, conclusion_description, meta_title, meta_description, meta_keywords, display_order, status, steps, media]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        introduction_title: { type: string }
+        introduction_description: { type: string }
+        conclusion_title: { type: string }
+        conclusion_description: { type: string }
+        meta_title: { type: string, nullable: true }
+        meta_description: { type: string, nullable: true }
+        meta_keywords: { type: string, nullable: true }
+        display_order: { type: integer, minimum: 0 }
+        status: { type: string, enum: [published] }
+        steps:
+          type: array
+          items: { $ref: '#/components/schemas/ShopLearningPathStep' }
+        media: { type: array, items: { $ref: '#/components/schemas/LearningPathMedia' } }
     ApiMetadata:
       type: array
       items: { type: object }
@@ -294,5 +369,5 @@ components:
       required: [message, data, metadata]
       properties:
         message: { type: string }
-        data: { $ref: '#/components/schemas/LearningPath' }
+        data: { $ref: '#/components/schemas/ShopLearningPathDetail' }
         metadata: { $ref: '#/components/schemas/ApiMetadata' }

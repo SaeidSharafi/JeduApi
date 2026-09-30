@@ -129,6 +129,15 @@
 - **Commercial boundary:** The API persists only LearningPath/LearningPathStep rows and media attachments. It does not create or update Products, ProductDeliveryOptions, carts, orders, or enrollments. Responses use `apiResponse()` and spatie/laravel-data DTOs.
 - **Reference integrity:** Course, Seminar, and DigitalAsset deletion actions reject deletion while a LearningPathStep references the record; references are never copied into commercial entities. The 422 response keeps the standard relationship error message and returns `errors.learning_paths[]` with each affected path's `id`, `title`, `slug`, and lifecycle `status`, covering draft, published, and archived paths.
 
+### Shop Learning Path catalog endpoints (`/api/v1/shop/learning-paths`)
+**Authentication:** Unauthenticated public access
+
+#### LearningPathController (`app/Http/Controllers/Api/Shop/LearningPath/LearningPathController.php`)
+- `index(PaginationRequestData $request, ListPublishedLearningPathsAction $action)`: **Route:** `GET /api/v1/shop/learning-paths` - Delegates to `ListPublishedLearningPathsAction`, returns only published paths ordered by explicit `display_order ASC, id ASC`, and maps each result to `LearningPathCardData` (`id`, `title`, `slug`, `description`, flat media URLs, `step_count`). Supports the shared bounded `page`/`per_page` query contract.
+- `show(string $slug, ShowPublishedLearningPathAction $action)`: **Route:** `GET /api/v1/shop/learning-paths/{slug}` - Resolves only published paths and returns `LearningPathDetailData` with required Path Introduction and Path Conclusion fields, SEO metadata, path media, and contiguous ordered steps. Each `LearningPathStepData` contains its editorial title/description, stable Productable identity and fallback presentation, nullable `current_product`, and a typed action state.
+- **Catalog-aware step projection:** `ShowPublishedLearningPathAction` dynamically resolves the one current published Product for each referenced Productable through the existing Product visibility, published-delivery-option, published-Productable, and active-term gates. Product name/excerpt override the Productable fallback only when populated; Productable media/type/excerpt remain available, and Product `price`/`price_data` plus Product-page `slug` are absent when no current Product resolves. `action.type=coming_soon` and `action.state=coming_soon` represent that case; a resolved Product uses `view_product`, with `action.enabled` determined by the existing published delivery-option date/capacity availability rule.
+- **Commercial boundary:** These read-only endpoints do not create or mutate Products, Product Delivery Options, carts, orders, reservations, enrollments, or any Learning Path state. Responses use `apiResponse()` and the Shop spatie/laravel-data DTOs; draft/archived paths and missing slugs resolve as not found.
+
 ### ArchiveProductController (`app/Http/Controllers/Api/Admin/Product/ArchiveProductController.php`)
 - `__invoke(Product $product)`: **Route:** `POST /api/v1/admin/product/{product}/archive` - **Delegates to:** Product archival - **Response DTO:** ProductData
 
