@@ -1,0 +1,43 @@
+{
+    "message": "Operation successful.",
+    "data": {
+        "id": 1,
+        "title": "Backend Engineering Path",
+        "slug": "backend-engineering-path",
+        "description": "A guided path for backend engineering.",
+        "introduction_title": "Start here",
+        "introduction_description": "Begin with the foundations and follow the path in order.",
+        "conclusion_title": "Keep building",
+        "conclusion_description": "Finish the path by applying what you learned.",
+        "meta_title": "Backend Engineering Learning Path",
+        "meta_description": "A practical backend engineering learning path for developers.",
+        "meta_keywords": "backend, laravel, engineering",
+        "display_order": 2,
+        "status": "draft",
+        "steps": [
+            {
+                "id": 1,
+                "position": 1,
+                "productable_type": "course",
+                "productable_id": 42,
+                "title": "Learn the course",
+                "description": "Build the required foundation.",
+                "productable": {
+                    "type": "course",
+                    "id": 42,
+                    "name": "Backend Foundations",
+                    "slug": "backend-foundations",
+                    "thumbnail_url": null
+                }
+            }
+        ],
+        "media": {
+            "cover": [],
+            "gallery": [],
+            "video": [],
+            "certificate": [],
+            "main": []
+        }
+    },
+    "metadata": []
+}

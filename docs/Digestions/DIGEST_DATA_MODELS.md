@@ -130,6 +130,22 @@
 - **Traits:** Uses `IsProductable`, `HasCategories`, `HasMedia`, and `Mediable`
 - **Special Features:** Bundle publication requires every component Product and PDO to be published; bundles do not expose difficulty or virtuality and are excluded from delivery-method promotion selectors.
 
+### LearningPath (`app/Models/LearningPath.php`)
+- **Purpose:** Non-commercial, staff-authored aggregate that sequences existing Course, Seminar, and DigitalAsset productable references for a guided learning experience.
+- **Key Fields:** `title`, unique editable `slug`, `description`, required `introduction_title`/`introduction_description`, required `conclusion_title`/`conclusion_description`, optional `meta_title`/`meta_description`/`meta_keywords`, `display_order`, and lifecycle `status` (`draft`, `published`, `archived`).
+- **Relationships:**
+  - `hasMany(LearningPathStep::class)` - ordered `steps` (position ascending)
+  - Mediable media relation through `HasMedia`/`Mediable` using the shared media tags
+- **Special Features:** The aggregate is not a `Productable`, does not own Products or ProductDeliveryOptions, and has no cart, checkout, purchase, or enrollment behavior. Drafts may have zero steps; publication requires at least one ordered step but does not require the referenced offerings to be published or purchasable. Lifecycle transitions are `draft -> published -> archived`; a non-draft path cannot return to draft, a draft cannot be archived directly, and an archived path cannot be reopened. A never-published draft can be deleted; published and archived deletion is rejected. Referenced Course, Seminar, and DigitalAsset records cannot be deleted until their path references are removed.
+
+### LearningPathStep (`app/Models/LearningPathStep.php`)
+- **Purpose:** Ordered editorial node owned by a LearningPath.
+- **Key Fields:** `learning_path_id`, contiguous `position` starting at 1, `productable_type`, `productable_id`, required editorial `title` and `description`.
+- **Relationships:**
+  - `belongsTo(LearningPath::class)` - learningPath
+  - `morphTo()` - productable reference restricted by validation to Course, Seminar, or DigitalAsset
+- **Special Features:** The reference stores only the stable polymorphic type/id; the same productable may be reused by different paths but may occur only once within one path. DB unique constraints enforce per-path positions and references, and the indexed reference columns support deletion guards on the referenced productables.
+
 ### BundleComponent (`app/Models/BundleComponent.php`)
 - **Purpose:** Pivot model linking a parent Bundle PDO to each component PDO and storing the component's price allocation.
 - **Key Fields:** `bundle_product_delivery_option_id`, `component_product_delivery_option_id`, `allocation`

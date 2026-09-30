@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Course;
 
+use App\Actions\Admin\LearningPath\EnsureProductableHasNoLearningPathReferencesAction;
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheTag;
+use App\Enums\System\MorphTypeEnum;
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\Course;
 use App\Models\Product;
@@ -13,7 +15,10 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DeleteCourseAction
 {
-    public function __construct(private CacheStore $cache) {}
+    public function __construct(
+        private CacheStore $cache,
+        private EnsureProductableHasNoLearningPathReferencesAction $learningPathReferenceGuard,
+    ) {}
 
     /**
      * Execute the action.
@@ -21,6 +26,8 @@ final readonly class DeleteCourseAction
     public function handle(Course $course): void
     {
         DB::transaction(function () use ($course): void {
+            $this->learningPathReferenceGuard->handle(MorphTypeEnum::COURSE, (int) $course->getKey());
+
             if ($course->products()->exists()) {
                 throw new ModelHasRelationshipDataException(Product::class);
             }

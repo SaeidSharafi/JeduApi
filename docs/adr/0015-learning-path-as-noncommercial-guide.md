@@ -1,0 +1,3 @@
+# Learning Paths remain noncommercial guides over Productable identities
+
+Learning Paths are staff-authored public guides, not Products, Bundles, purchases, Enrollments, or customer-progress programs. Each path step references a stable Productable identity and resolves the current published Product dynamically for catalog presentation; this preserves the guide when commercial Products are archived or replaced while keeping pricing, availability, and purchasing in the existing catalog boundary. The path also owns required introductory and concluding editorial content, but neither section represents a step or completion state. Productable deletion is blocked while any path references it so the guide cannot retain dangling domain references.

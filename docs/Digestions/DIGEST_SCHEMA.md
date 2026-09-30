@@ -79,6 +79,16 @@
 - Purpose: Productable Bundle definitions used by the normal Product catalog workflow.
 - Columns: `id`, `slug` (unique), `full_name`, `short_name`, `description`, `thumbnail_url`, `properties` (JSON), `additional_info` (JSON), `faq` (JSON), `status`, `created_by` (nullable FK to staff, SET NULL), timestamps.
 
+### Table: `learning_paths`
+- Purpose: Non-commercial Learning Path aggregate for staff-authored guided content.
+- Columns: `id`, `title`, `slug` (unique), `description`, `introduction_title`, `introduction_description`, `conclusion_title`, `conclusion_description`, optional `meta_title` (VARCHAR(70)), `meta_description` (VARCHAR(160)), `meta_keywords` (VARCHAR(255)), `display_order` (unsigned integer, default 0), `status` (VARCHAR, default `draft`, indexed), timestamps.
+- Constraints: The slug is unique and editable. This table has no Product, ProductDeliveryOption, cart, order, or enrollment foreign key.
+
+### Table: `learning_path_steps`
+- Purpose: Ordered Learning Path editorial steps referencing existing productable records.
+- Columns: `id`, `learning_path_id` (FK -> `learning_paths.id`, CASCADE), `position` (unsigned integer), `productable_type` (morph alias), `productable_id` (BIGINT), `title`, `description`, timestamps.
+- Constraints and indexes: UNIQUE(`learning_path_id`, `position`) keeps positions unique; UNIQUE(`learning_path_id`, `productable_type`, `productable_id`) prevents duplicate references inside a path; INDEX(`productable_type`, `productable_id`) supports reference lookup and productable deletion guards. The polymorphic reference is intentionally not a copied Product and has no commercial FK.
+
 ### Table: `vendors`
 - Purpose: Product vendors/departments.
 - Columns:
