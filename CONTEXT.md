@@ -58,8 +58,16 @@ An internal fulfillment and accounting line created for one component of a Bundl
 _Avoid_: Bundle Purchase, standalone Order Item
 
 **Learning Path**:
-A long-lived, goal-oriented ordered guide composed of existing Productable identities. A Learning Path is not a Product, Product Delivery Option, Enrollment, or purchasable package. Its steps resolve to current Products for catalog information; Product archival or replacement does not change the path's stable Productable references.
+A long-lived, goal-oriented ordered guide composed of existing Productable identities, with editorial content that introduces and concludes the guide. A Learning Path is not a Product, Product Delivery Option, Enrollment, or purchasable package. Its steps resolve to current Products for catalog information; Product archival or replacement does not change the path's stable Productable references.
 _Avoid_: Route, journey, bundle, curriculum enrollment
+
+**Path Introduction**:
+The required opening editorial content that explains the purpose or starting point of a Learning Path. It is part of the guide, not a path step and not a customer-progress state.
+_Avoid_: Step zero, enrollment start
+
+**Path Conclusion**:
+The required closing editorial content that explains the intended outcome or direction after the ordered steps. It is part of the guide, not a path step and not evidence that a customer completed anything.
+_Avoid_: Completion record, final enrollment
 
 **Purchase Eligibility**:
 A customer is eligible to purchase an offering only when they have not previously acquired its educational content, directly or through a Bundle. Owning any Bundle component makes that Bundle ineligible.
