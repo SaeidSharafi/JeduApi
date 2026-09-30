@@ -25,6 +25,7 @@ return [
             'audits'                   => 'گزارش‌های حسابرسی',
             'blog_categories'          => 'دسته‌بندی‌های وبلاگ',
             'blog_posts'               => 'نوشته‌های وبلاگ',
+            'bundles'                  => 'بسته‌ها',
             'categories'               => 'دسته‌بندی‌ها',
             'collaboration_requests'   => 'درخواست‌های همکاری',
             'contact_us_requests'      => 'درخواست‌های تماس با ما',

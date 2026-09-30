@@ -48,7 +48,7 @@ function bundleAdminPayload(array $overrides = []): array
 }
 
 it('can create a bundle with media', function (): void {
-    $this->authorized_user([PermissionEnum::PRODUCT_CREATE->value]);
+    $this->authorized_user([PermissionEnum::BUNDLE_CREATE->value]);
 
     $response = $this->postJson(route('api.v1.admin.bundles.store'), bundleAdminPayload([
         'media' => [
@@ -85,7 +85,7 @@ it('can create a bundle with media', function (): void {
 });
 
 it('rejects an invalid bundle create request', function (): void {
-    $this->authorized_user([PermissionEnum::PRODUCT_CREATE->value]);
+    $this->authorized_user([PermissionEnum::BUNDLE_CREATE->value]);
 
     $this->postJson(route('api.v1.admin.bundles.store'), [
         'full_name'   => null,
@@ -100,7 +100,7 @@ it('rejects an invalid bundle create request', function (): void {
 it('can update a bundle and synchronize its media', function (): void {
     $bundle = Bundle::factory()->create();
     $bundle->attachMedia($this->gallery, 'gallery');
-    $this->authorized_user([PermissionEnum::PRODUCT_UPDATE->value]);
+    $this->authorized_user([PermissionEnum::BUNDLE_UPDATE->value]);
 
     $response = $this->putJson(route('api.v1.admin.bundles.update', $bundle), bundleAdminPayload([
         'slug'      => $bundle->slug,
@@ -137,7 +137,7 @@ it('can update a bundle and synchronize its media', function (): void {
 it('returns bundle media from the admin show endpoint', function (): void {
     $bundle = Bundle::factory()->create();
     $bundle->attachMedia($this->cover, 'cover');
-    $this->authorized_user([PermissionEnum::PRODUCT_VIEW->value]);
+    $this->authorized_user([PermissionEnum::BUNDLE_VIEW->value]);
 
     $this->getJson(route('api.v1.admin.bundles.show', $bundle))
         ->assertOk()

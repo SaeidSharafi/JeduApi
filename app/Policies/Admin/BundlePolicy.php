@@ -12,26 +12,26 @@ final class BundlePolicy
 {
     public function viewAny(Staff $user): bool
     {
-        return $user->can(PermissionEnum::PRODUCT_VIEW_ANY->value);
+        return $user->can(PermissionEnum::BUNDLE_VIEW_ANY->value);
     }
 
     public function view(Staff $user, Bundle $bundle): bool
     {
-        return $user->can(PermissionEnum::PRODUCT_VIEW->value);
+        return $user->can(PermissionEnum::BUNDLE_VIEW->value);
     }
 
     public function create(Staff $user): bool
     {
-        return $user->can(PermissionEnum::PRODUCT_CREATE->value);
+        return $user->can(PermissionEnum::BUNDLE_CREATE->value);
     }
 
     public function update(Staff $user, Bundle $bundle): bool
     {
-        return $user->can(PermissionEnum::PRODUCT_UPDATE->value);
+        return $user->can(PermissionEnum::BUNDLE_UPDATE->value);
     }
 
     public function delete(Staff $user, Bundle $bundle): bool
     {
-        return $user->can(PermissionEnum::PRODUCT_DELETE->value);
+        return $user->can(PermissionEnum::BUNDLE_DELETE->value);
     }
 }

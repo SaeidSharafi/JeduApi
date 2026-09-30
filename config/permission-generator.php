@@ -86,6 +86,14 @@ return [
             PermissionAction::DELETE,
             PermissionAction::DELETE_OWN,
         ],
+        'bundle' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::UPDATE_OWN,
+            PermissionAction::DELETE,
+            PermissionAction::DELETE_OWN,
+        ],
         'staff' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
@@ -164,6 +172,7 @@ return [
             PermissionAction::DELETE,
             'retry_provision',
             'diagnostics_view',
+            'waive_provision'
         ],
         'refund' => [
             PermissionAction::VIEW_SCOPED,
