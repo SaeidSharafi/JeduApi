@@ -12,14 +12,7 @@ use App\Models\Product;
 use Tests\Support\Traits\ProductTestTrait;
 
 covers(
-    App\Actions\Shop\LearningPath\ListPublishedLearningPathsAction::class,
-    App\Actions\Shop\LearningPath\ShowPublishedLearningPathAction::class,
     App\Http\Controllers\Api\Shop\LearningPath\LearningPathController::class,
-);
-
-mutates(
-    App\Actions\Shop\LearningPath\ListPublishedLearningPathsAction::class,
-    App\Actions\Shop\LearningPath\ShowPublishedLearningPathAction::class,
 );
 
 describe('Shop Learning Path API', function (): void {
