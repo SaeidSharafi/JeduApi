@@ -176,17 +176,17 @@
 #### Course Actions (`app/Actions/Admin/Course/`)
 - **CreateCourseAction**: Creates new course instances with content structure; bumps the `CacheTag::HomePage` and `CacheTag::Catalog` generations so student stories and good-for-start listings are not served stale
 - **UpdateCourseAction**: Updates course metadata and structure; bumps `CacheTag::HomePage` and `CacheTag::Catalog` because the story and good-for-start queries filter on course slug
-- **DeleteCourseAction**: Handles course archival and cleanup; bumps `CacheTag::HomePage` and `CacheTag::Catalog`
+- **DeleteCourseAction**: Rejects deletion when a LearningPath references the Course, then handles course cleanup and bumps `CacheTag::HomePage` and `CacheTag::Catalog`
 
 #### DigitalAsset Actions (`app/Actions/Admin/DigitalAsset/`)
 - **CreateDigitalAssetAction**: Creates new digital asset products; bumps `CacheTag::Search` so search results and suggestions drop the new asset's stale absence
 - **UpdateDigitalAssetAction**: Updates digital asset metadata and files; bumps `CacheTag::Search`
-- **DeleteDigitalAssetAction**: Handles digital asset removal; bumps `CacheTag::Search`
+- **DeleteDigitalAssetAction**: Rejects deletion when a LearningPath references the DigitalAsset, then handles asset removal and bumps `CacheTag::Search`
 
 #### Seminar Actions (`app/Actions/Admin/Seminar/`)
 - **CreateSeminarAction**: Creates new seminar events and bumps `CacheTag::Search`, because the deleted model observer used to clear it on every Seminar save
 - **UpdateSeminarAction**: Updates seminar scheduling and details; searchable-field and status changes are still covered by `ProductableAvailabilityObserver`, which dispatches `ProductSearchIndexInvalidated`
-- **DeleteSeminarAction**: Handles seminar cancellation and cleanup; bumps `CacheTag::Search`
+- **DeleteSeminarAction**: Rejects deletion when a LearningPath references the Seminar, then handles seminar cleanup and bumps `CacheTag::Search`
 
 #### ProductDeliveryOption Actions (`app/Actions/Admin/ProductDeliveryOption/`)
 - **CreateProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/CreateProductDeliveryOptionAction.php`)
@@ -210,6 +210,7 @@
 - **ArchiveLearningPathAction**: Atomically changes only a published LearningPath to `archived`; archived paths remain staff-visible and are excluded from public discovery. Draft and already archived paths are rejected with a validation error.
 - **SyncLearningPathStepsAction**: Deletes and recreates the validated step set in position order; validation requires contiguous positions beginning at 1 and forbids a duplicate reference within one path while allowing reuse across paths.
 - **DeleteLearningPathAction**: Deletes only a draft that has never entered a non-draft lifecycle state and detaches its media; published or archived paths are rejected rather than converted into commercial side effects.
+- **EnsureProductableHasNoLearningPathReferencesAction**: Queries all LearningPaths that reference a Course, Seminar, or DigitalAsset through `LearningPathStep` and rejects deletion with deterministic `id`, `title`, `slug`, and `status` details for every affected path. Draft, published, and archived paths are equally protective; an unreferenced productable proceeds through its existing deletion action.
 - **Productable deletion guards** (`DeleteCourseAction`, `DeleteSeminarAction`, `DeleteDigitalAssetAction`): Reject deletion while any `LearningPathStep` references the productable, preventing dangling editorial references.
 - **Validation:** `LearningPathCreateData`/`LearningPathUpdateData` enforce required introduction/conclusion content, unique editable slugs, optional SEO/media fields, allowed productable types/existence without publication or purchasability checks, step editorial fields, and draft-only empty step sets. Archived creation is rejected because archiving is a published-path transition.
 

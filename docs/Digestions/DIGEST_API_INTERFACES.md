@@ -127,7 +127,7 @@
 - `destroy(LearningPath $learningPath)`: **Route:** `DELETE /api/v1/admin/learning-paths/{learning_path}` - Deletes only a never-published draft and returns the standard 204 response; requires `learning_paths.delete`.
 - **Request DTO validation:** `steps` may be empty only for a draft; publishing requires at least one step, and non-empty steps require contiguous positions starting at 1, unique per-path Course/Seminar/DigitalAsset references, and editorial title/description. Productable existence is checked, but publication/purchasability is intentionally not; `bundle` is not an allowed reference type.
 - **Commercial boundary:** The API persists only LearningPath/LearningPathStep rows and media attachments. It does not create or update Products, ProductDeliveryOptions, carts, orders, or enrollments. Responses use `apiResponse()` and spatie/laravel-data DTOs.
-- **Reference integrity:** Course, Seminar, and DigitalAsset deletion actions reject deletion while a LearningPathStep references the record; references are never copied into commercial entities.
+- **Reference integrity:** Course, Seminar, and DigitalAsset deletion actions reject deletion while a LearningPathStep references the record; references are never copied into commercial entities. The 422 response keeps the standard relationship error message and returns `errors.learning_paths[]` with each affected path's `id`, `title`, `slug`, and lifecycle `status`, covering draft, published, and archived paths.
 
 ### ArchiveProductController (`app/Http/Controllers/Api/Admin/Product/ArchiveProductController.php`)
 - `__invoke(Product $product)`: **Route:** `POST /api/v1/admin/product/{product}/archive` - **Delegates to:** Product archival - **Response DTO:** ProductData

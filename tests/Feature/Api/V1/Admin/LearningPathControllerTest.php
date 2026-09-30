@@ -7,6 +7,7 @@ use App\Actions\Admin\DigitalAsset\DeleteDigitalAssetAction;
 use App\Actions\Admin\LearningPath\ArchiveLearningPathAction;
 use App\Actions\Admin\LearningPath\CreateLearningPathAction;
 use App\Actions\Admin\LearningPath\DeleteLearningPathAction;
+use App\Actions\Admin\LearningPath\EnsureProductableHasNoLearningPathReferencesAction;
 use App\Actions\Admin\LearningPath\SyncLearningPathStepsAction;
 use App\Actions\Admin\LearningPath\UpdateLearningPathAction;
 use App\Actions\Admin\Seminar\DeleteSeminarAction;
@@ -35,6 +36,7 @@ covers(
     LearningPathCreateData::class,
     CreateLearningPathAction::class,
     DeleteLearningPathAction::class,
+    EnsureProductableHasNoLearningPathReferencesAction::class,
     SyncLearningPathStepsAction::class,
     UpdateLearningPathAction::class,
     DeleteCourseAction::class,
@@ -561,16 +563,34 @@ it('allows a productable reference to be reused by another path', function (): v
     })->count())->toBe(2);
 });
 
-it('prevents deleting productables referenced by a learning path', function (): void {
+it('returns affected learning paths when deleting referenced productables', function (): void {
     $course       = Course::factory()->create();
     $seminar      = Seminar::factory()->create();
     $digitalAsset = DigitalAsset::factory()->create();
-    $path         = LearningPath::factory()->create();
-    $path->steps()->createMany([
-        learningPathStep(1, 'course', $course->id),
-        learningPathStep(2, 'seminar', $seminar->id),
-        learningPathStep(3, 'digital_asset', $digitalAsset->id),
-    ]);
+    $paths        = [
+        LearningPath::factory()->create([
+            'title'  => 'Draft Learning Path',
+            'slug'   => 'draft-learning-path',
+            'status' => PublicationStatusEnum::DRAFT,
+        ]),
+        LearningPath::factory()->create([
+            'title'  => 'Published Learning Path',
+            'slug'   => 'published-learning-path',
+            'status' => PublicationStatusEnum::PUBLISHED,
+        ]),
+        LearningPath::factory()->create([
+            'title'  => 'Archived Learning Path',
+            'slug'   => 'archived-learning-path',
+            'status' => PublicationStatusEnum::ARCHIVED,
+        ]),
+    ];
+    foreach ($paths as $path) {
+        $path->steps()->createMany([
+            learningPathStep(1, 'course', $course->id),
+            learningPathStep(2, 'seminar', $seminar->id),
+            learningPathStep(3, 'digital_asset', $digitalAsset->id),
+        ]);
+    }
 
     $this->authorized_user([
         PermissionEnum::COURSE_DELETE->value,
@@ -578,16 +598,60 @@ it('prevents deleting productables referenced by a learning path', function (): 
         PermissionEnum::FILE_DELETE->value,
     ]);
 
-    $this->deleteJson(route('api.v1.admin.courses.destroy', $course))
-        ->assertUnprocessable();
-    $this->deleteJson(route('api.v1.admin.seminars.destroy', $seminar))
-        ->assertUnprocessable();
-    $this->deleteJson(route('api.v1.admin.digital-assets.destroy', $digitalAsset))
-        ->assertUnprocessable();
+    $expectedPaths = [
+        [
+            'id'     => $paths[0]->id,
+            'title'  => 'Draft Learning Path',
+            'slug'   => 'draft-learning-path',
+            'status' => PublicationStatusEnum::DRAFT->value,
+        ],
+        [
+            'id'     => $paths[1]->id,
+            'title'  => 'Published Learning Path',
+            'slug'   => 'published-learning-path',
+            'status' => PublicationStatusEnum::PUBLISHED->value,
+        ],
+        [
+            'id'     => $paths[2]->id,
+            'title'  => 'Archived Learning Path',
+            'slug'   => 'archived-learning-path',
+            'status' => PublicationStatusEnum::ARCHIVED->value,
+        ],
+    ];
 
-    expect(Course::query()->whereKey($course)->exists())->toBeTrue()
-        ->and(Seminar::query()->whereKey($seminar)->exists())->toBeTrue()
-        ->and(DigitalAsset::query()->whereKey($digitalAsset)->exists())->toBeTrue();
+    $this->deleteJson(route('api.v1.admin.courses.destroy', $course))
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.learning_paths', $expectedPaths);
+    $this->deleteJson(route('api.v1.admin.seminars.destroy', $seminar))
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.learning_paths', $expectedPaths);
+    $this->deleteJson(route('api.v1.admin.digital-assets.destroy', $digitalAsset))
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.learning_paths', $expectedPaths);
+
+    $this->assertDatabaseHas('courses', ['id' => $course->id]);
+    $this->assertDatabaseHas('seminars', ['id' => $seminar->id]);
+    $this->assertDatabaseHas('digital_assets', ['id' => $digitalAsset->id]);
+});
+
+it('deletes unreferenced productables through their existing endpoints', function (): void {
+    $course       = Course::factory()->create();
+    $seminar      = Seminar::factory()->create();
+    $digitalAsset = DigitalAsset::factory()->create();
+
+    $this->authorized_user([
+        PermissionEnum::COURSE_DELETE->value,
+        PermissionEnum::SEMINAR_DELETE->value,
+        PermissionEnum::FILE_DELETE->value,
+    ]);
+
+    $this->deleteJson(route('api.v1.admin.courses.destroy', $course))->assertNoContent();
+    $this->deleteJson(route('api.v1.admin.seminars.destroy', $seminar))->assertNoContent();
+    $this->deleteJson(route('api.v1.admin.digital-assets.destroy', $digitalAsset))->assertNoContent();
+
+    $this->assertDatabaseMissing('courses', ['id' => $course->id]);
+    $this->assertDatabaseMissing('seminars', ['id' => $seminar->id]);
+    $this->assertDatabaseMissing('digital_assets', ['id' => $digitalAsset->id]);
 });
 
 it('rejects staff without the dedicated permission', function (): void {

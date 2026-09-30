@@ -13,8 +13,15 @@ final class ModelHasRelationshipDataException extends Exception
 {
     protected string $relatedModel;
 
-    public function __construct(string $relatedModel, string $message = '', ?Throwable $previous = null)
-    {
+    /**
+     * @param  array<string, mixed>|null  $errors
+     */
+    public function __construct(
+        string $relatedModel,
+        string $message = '',
+        ?Throwable $previous = null,
+        private readonly ?array $errors = null,
+    ) {
         $this->relatedModel = $relatedModel;
         $message            = $message ?: __(
             'messages.errors.model_has_relationship_data',
@@ -30,8 +37,16 @@ final class ModelHasRelationshipDataException extends Exception
         return $this->relatedModel;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getErrors(): ?array
+    {
+        return $this->errors;
+    }
+
     public function render(Request $request): ApiResponseInterface
     {
-        return apiResponse()->validationError($this->getMessage());
+        return apiResponse()->error($this->getMessage(), 422, $this->getErrors());
     }
 }

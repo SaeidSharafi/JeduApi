@@ -61,6 +61,7 @@ return [
         'footer'                             => 'Footer',
         'header'                             => 'Header',
         'homepageblock'                      => 'Home Page Block',
+        'learningpath'                       => 'Learning Path',
         'order'                              => 'Order',
         'orderitem'                          => 'Order Item',
         'partner'                            => 'Partner',

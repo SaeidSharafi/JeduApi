@@ -61,6 +61,7 @@ return [
         'footer'                             => 'پاورقی',
         'header'                             => 'سربرگ',
         'homepageblock'                      => 'بلوک صفحه اصلی',
+        'learningpath'                       => 'مسیر یادگیری',
         'order'                              => 'سفارش',
         'orderitem'                          => 'قلم سفارش',
         'partner'                            => 'همکار',
