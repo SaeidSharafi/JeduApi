@@ -50,7 +50,6 @@ final class LearningPathCreateData extends Data
                 Rule::in([
                     PublicationStatusEnum::DRAFT->value,
                     PublicationStatusEnum::PUBLISHED->value,
-                    PublicationStatusEnum::ARCHIVED->value,
                 ]),
             ],
             'meta_title'               => ['nullable', 'string', 'max:70'],
@@ -111,7 +110,7 @@ final class LearningPathCreateData extends Data
                 'example'     => 'Apply what you learned.',
             ],
             'status' => [
-                'description' => 'Learning path lifecycle status.',
+                'description' => 'Learning path lifecycle status. On create, use draft or published. On replacement, keep the current status or transition draft to published; archive a published path through the archive endpoint. Non-draft paths cannot return to draft.',
                 'example'     => PublicationStatusEnum::DRAFT->value,
             ],
             'meta_title' => [

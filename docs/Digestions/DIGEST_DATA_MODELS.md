@@ -136,7 +136,7 @@
 - **Relationships:**
   - `hasMany(LearningPathStep::class)` - ordered `steps` (position ascending)
   - Mediable media relation through `HasMedia`/`Mediable` using the shared media tags
-- **Special Features:** The aggregate is not a `Productable`, does not own Products or ProductDeliveryOptions, and has no cart, checkout, purchase, or enrollment behavior. Drafts may have zero steps. A never-published draft can be deleted; non-draft deletion is rejected. Referenced Course, Seminar, and DigitalAsset records cannot be deleted until their path references are removed.
+- **Special Features:** The aggregate is not a `Productable`, does not own Products or ProductDeliveryOptions, and has no cart, checkout, purchase, or enrollment behavior. Drafts may have zero steps; publication requires at least one ordered step but does not require the referenced offerings to be published or purchasable. Lifecycle transitions are `draft -> published -> archived`; a non-draft path cannot return to draft, a draft cannot be archived directly, and an archived path cannot be reopened. A never-published draft can be deleted; published and archived deletion is rejected. Referenced Course, Seminar, and DigitalAsset records cannot be deleted until their path references are removed.
 
 ### LearningPathStep (`app/Models/LearningPathStep.php`)
 - **Purpose:** Ordered editorial node owned by a LearningPath.

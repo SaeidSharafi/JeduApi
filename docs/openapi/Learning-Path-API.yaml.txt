@@ -42,7 +42,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
     put:
       tags: [Admin / Learning Paths]
-      summary: Replace a Learning Path
+      summary: Replace a Learning Path, including published content edits
       operationId: updateLearningPath
       requestBody: { $ref: '#/components/requestBodies/LearningPathWrite' }
       responses:
@@ -54,6 +54,19 @@ paths:
       operationId: deleteLearningPathDraft
       responses:
         '204': { description: Draft deleted }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /admin/learning-paths/{learning_path}/archive:
+    parameters:
+      - $ref: '#/components/parameters/LearningPathId'
+    post:
+      tags: [Admin / Learning Paths]
+      summary: Archive a published Learning Path
+      operationId: archiveLearningPath
+      responses:
+        '200': { $ref: '#/components/responses/LearningPath' }
+        '403': { description: Missing learning_paths.update permission }
+        '404': { $ref: '#/components/responses/NotFound' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
   /learning-paths:
@@ -120,7 +133,7 @@ components:
         meta_keywords: { type: string, nullable: true, maxLength: 255 }
         display_order: { type: integer, minimum: 0 }
         media: { type: object, additionalProperties: { type: array, items: { type: integer } } }
-        status: { type: string, enum: [draft, published, archived] }
+        status: { type: string, enum: [draft, published, archived], description: Create accepts draft or published; replacement keeps the current status or publishes a draft; archive a published path through the dedicated archive endpoint; non-draft paths cannot return to draft. }
         steps:
           type: array
           items: { $ref: '#/components/schemas/LearningPathStepWrite' }

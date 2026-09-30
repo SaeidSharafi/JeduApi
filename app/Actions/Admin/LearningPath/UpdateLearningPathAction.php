@@ -37,12 +37,30 @@ final readonly class UpdateLearningPathAction
 
     private function validateStatusTransition(LearningPath $learningPath, string $status): void
     {
-        if (
-            $learningPath->status !== PublicationStatusEnum::DRAFT
-            && PublicationStatusEnum::from($status) === PublicationStatusEnum::DRAFT
-        ) {
+        $currentStatus = $learningPath->status;
+        $nextStatus    = PublicationStatusEnum::from($status);
+
+        if ($currentStatus !== PublicationStatusEnum::DRAFT && $nextStatus === PublicationStatusEnum::DRAFT) {
             throw ValidationException::withMessages([
                 'status' => 'A non-draft learning path cannot return to draft status.',
+            ]);
+        }
+
+        if ($currentStatus === PublicationStatusEnum::DRAFT && $nextStatus === PublicationStatusEnum::ARCHIVED) {
+            throw ValidationException::withMessages([
+                'status' => 'Only published learning paths can be archived.',
+            ]);
+        }
+
+        if ($currentStatus === PublicationStatusEnum::PUBLISHED && $nextStatus === PublicationStatusEnum::ARCHIVED) {
+            throw ValidationException::withMessages([
+                'status' => 'Use the archive operation to retire a published learning path.',
+            ]);
+        }
+
+        if ($currentStatus === PublicationStatusEnum::ARCHIVED && $nextStatus !== PublicationStatusEnum::ARCHIVED) {
+            throw ValidationException::withMessages([
+                'status' => 'An archived learning path cannot return to another lifecycle state.',
             ]);
         }
     }

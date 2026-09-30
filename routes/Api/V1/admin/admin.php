@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestController;
 use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestUpdateStatusController;
 use App\Http\Controllers\Api\Admin\Forms\CollaborationRequest\CollaborationRequestController;
 use App\Http\Controllers\Api\Admin\Forms\ContactRequest\ContactRequestController;
+use App\Http\Controllers\Api\Admin\LearningPath\ArchiveLearningPathController;
 use App\Http\Controllers\Api\Admin\LearningPathController;
 use App\Http\Controllers\Api\Admin\MoodleSsoController;
 use App\Http\Controllers\Api\Admin\Notifications\StaffNotificationController;
@@ -53,6 +54,8 @@ Route::apiResource('teachers', TeacherController::class);
 Route::apiResource('terms', TermController::class);
 Route::apiResource('users', UserController::class);
 Route::apiResource('learning-paths', LearningPathController::class);
+Route::post('learning-paths/{learning_path}/archive', ArchiveLearningPathController::class)
+    ->name('learning-paths.archive');
 
 Route::prefix('users/{user}')->name('users.')->group(function (): void {
     Route::apiSingleton('wallet', AdminWalletController::class)->creatable()->only('show', 'store');

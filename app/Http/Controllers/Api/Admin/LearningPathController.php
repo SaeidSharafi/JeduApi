@@ -46,6 +46,7 @@ final class LearningPathController extends Controller
             ->allowedFilters(['title', 'slug', 'status'])
             ->allowedSorts(['display_order', 'title', 'slug', 'status', 'created_at', 'updated_at'])
             ->defaultSort('-updated_at')
+            ->orderByDesc('id')
             ->withCount('steps')
             ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
@@ -54,7 +55,7 @@ final class LearningPathController extends Controller
     }
 
     /**
-     * Create a learning path draft.
+     * Create a learning path draft or a valid non-empty published path.
      *
      * @responseFile 201 resources/responses/admin/learning-path/show.json
      * @responseFile 422 resources/responses/422.json
@@ -82,7 +83,7 @@ final class LearningPathController extends Controller
     }
 
     /**
-     * Replace a learning path draft.
+     * Replace a learning path, including content for an already-published path.
      *
      * @responseFile 200 resources/responses/admin/learning-path/show.json
      * @responseFile 403 resources/responses/403.json
@@ -104,7 +105,8 @@ final class LearningPathController extends Controller
     }
 
     /**
-     * Delete a never-published learning path draft.
+     * Delete a never-published learning path draft. Published and archived paths
+     * must be retained and are not deletable.
      *
      * @response 204
      *

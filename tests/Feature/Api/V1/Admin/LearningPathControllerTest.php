@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 use App\Actions\Admin\Course\DeleteCourseAction;
 use App\Actions\Admin\DigitalAsset\DeleteDigitalAssetAction;
+use App\Actions\Admin\LearningPath\ArchiveLearningPathAction;
 use App\Actions\Admin\LearningPath\CreateLearningPathAction;
 use App\Actions\Admin\LearningPath\DeleteLearningPathAction;
 use App\Actions\Admin\LearningPath\SyncLearningPathStepsAction;
 use App\Actions\Admin\LearningPath\UpdateLearningPathAction;
 use App\Actions\Admin\Seminar\DeleteSeminarAction;
+use App\Data\Admin\LearningPath\LearningPathCreateData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\PermissionEnum;
+use App\Http\Controllers\Api\Admin\LearningPath\ArchiveLearningPathController;
 use App\Http\Controllers\Api\Admin\LearningPathController;
 use App\Models\Course;
 use App\Models\DigitalAsset;
@@ -27,6 +30,9 @@ use function Pest\Laravel\assertDatabaseHas;
 
 covers(
     LearningPathController::class,
+    ArchiveLearningPathController::class,
+    ArchiveLearningPathAction::class,
+    LearningPathCreateData::class,
     CreateLearningPathAction::class,
     DeleteLearningPathAction::class,
     SyncLearningPathStepsAction::class,
@@ -165,6 +171,24 @@ it('allows an empty draft', function (): void {
     expect($path->steps)->toBeEmpty();
 });
 
+it('does not allow an archived path to be created directly', function (): void {
+    $course = Course::factory()->create();
+    $this->authorized_user([PermissionEnum::LEARNING_PATH_CREATE->value]);
+
+    $this->postJson(
+        route('api.v1.admin.learning-paths.store'),
+        learningPathPayload([
+            'status' => PublicationStatusEnum::ARCHIVED->value,
+            'steps'  => [learningPathStep(1, 'course', $course->id)],
+        ]),
+    )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['status'])
+        ->assertJsonPath('errors.status.0', __('validation.in', ['attribute' => 'status']));
+
+    $this->assertDatabaseMissing('learning_paths', ['slug' => 'backend-engineering-path']);
+});
+
 it('rejects a published path when steps are omitted', function (): void {
     $this->authorized_user([PermissionEnum::LEARNING_PATH_CREATE->value]);
     $payload = learningPathPayload(['status' => 'published']);
@@ -173,6 +197,169 @@ it('rejects a published path when steps are omitted', function (): void {
     $this->postJson(route('api.v1.admin.learning-paths.store'), $payload)
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['steps']);
+});
+
+it('publishes a draft with an unpublished productable reference', function (): void {
+    $course = Course::factory()->create(['status' => PublicationStatusEnum::DRAFT]);
+    $path   = LearningPath::factory()->create();
+
+    $this->authorized_user([PermissionEnum::LEARNING_PATH_UPDATE->value]);
+
+    $this->putJson(
+        route('api.v1.admin.learning-paths.update', $path),
+        learningPathPayload([
+            'status' => PublicationStatusEnum::PUBLISHED->value,
+            'steps'  => [learningPathStep(1, 'course', $course->id)],
+        ]),
+    )
+        ->assertOk()
+        ->assertJsonPath('data.status', PublicationStatusEnum::PUBLISHED->value);
+
+    expect($path->refresh()->status)->toBe(PublicationStatusEnum::PUBLISHED);
+});
+
+it('rejects publishing an empty draft', function (): void {
+    $path = LearningPath::factory()->create();
+
+    $this->authorized_user([PermissionEnum::LEARNING_PATH_UPDATE->value]);
+
+    $this->putJson(
+        route('api.v1.admin.learning-paths.update', $path),
+        learningPathPayload(['status' => PublicationStatusEnum::PUBLISHED->value, 'steps' => []]),
+    )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['steps'])
+        ->assertJsonPath('errors.steps.0', 'A learning path must contain at least one step unless it is a draft.');
+
+    expect($path->refresh()->status)->toBe(PublicationStatusEnum::DRAFT);
+});
+
+it('allows direct edits to published paths', function (): void {
+    $course = Course::factory()->create();
+    $path   = LearningPath::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+    $path->steps()->create(learningPathStep(1, 'course', $course->id));
+
+    $this->authorized_user([PermissionEnum::LEARNING_PATH_UPDATE->value]);
+
+    $this->putJson(
+        route('api.v1.admin.learning-paths.update', $path),
+        learningPathPayload([
+            'title'  => 'Updated Published Path',
+            'status' => PublicationStatusEnum::PUBLISHED->value,
+            'steps'  => [learningPathStep(1, 'course', $course->id, 'Updated course')],
+        ]),
+    )->assertOk();
+
+    expect($path->refresh()->title)->toBe('Updated Published Path')
+        ->and($path->steps->first()->title)->toBe('Updated course');
+});
+
+it('archives a published path and keeps it visible to staff', function (): void {
+    $course = Course::factory()->create();
+    $path   = LearningPath::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+    $path->steps()->create(learningPathStep(1, 'course', $course->id));
+
+    $this->authorized_user([
+        PermissionEnum::LEARNING_PATH_UPDATE->value,
+        PermissionEnum::LEARNING_PATH_VIEW->value,
+        PermissionEnum::LEARNING_PATH_VIEW_ANY->value,
+    ]);
+
+    $this->postJson(route('api.v1.admin.learning-paths.archive', $path))
+        ->assertOk()
+        ->assertJsonPath('data.status', PublicationStatusEnum::ARCHIVED->value);
+
+    expect($path->refresh()->status)->toBe(PublicationStatusEnum::ARCHIVED);
+
+    $this->getJson(route('api.v1.admin.learning-paths.show', $path))
+        ->assertOk()
+        ->assertJsonPath('data.status', PublicationStatusEnum::ARCHIVED->value);
+    $this->getJson(route('api.v1.admin.learning-paths.index'))
+        ->assertOk()
+        ->assertJsonPath('data.data.0.id', $path->id)
+        ->assertJsonPath('data.data.0.status', PublicationStatusEnum::ARCHIVED->value);
+});
+
+it('rejects archiving a draft and reopening an archived path', function (): void {
+    $draft = LearningPath::factory()->create();
+
+    $this->authorized_user([PermissionEnum::LEARNING_PATH_UPDATE->value]);
+
+    $this->postJson(route('api.v1.admin.learning-paths.archive', $draft))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['status'])
+        ->assertJsonPath('errors.status.0', 'Only published learning paths can be archived.');
+
+    $courseForDraftArchive = Course::factory()->create();
+    $this->putJson(
+        route('api.v1.admin.learning-paths.update', $draft),
+        learningPathPayload([
+            'status' => PublicationStatusEnum::ARCHIVED->value,
+            'steps'  => [learningPathStep(1, 'course', $courseForDraftArchive->id)],
+        ]),
+    )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['status'])
+        ->assertJsonPath('errors.status.0', 'Only published learning paths can be archived.');
+
+    $course   = Course::factory()->create();
+    $archived = LearningPath::factory()->create(['status' => PublicationStatusEnum::ARCHIVED]);
+    $archived->steps()->create(learningPathStep(1, 'course', $course->id));
+
+    $this->putJson(
+        route('api.v1.admin.learning-paths.update', $archived),
+        learningPathPayload([
+            'status' => PublicationStatusEnum::PUBLISHED->value,
+            'steps'  => [learningPathStep(1, 'course', $course->id)],
+        ]),
+    )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['status'])
+        ->assertJsonPath('errors.status.0', 'An archived learning path cannot return to another lifecycle state.');
+
+    expect($archived->refresh()->status)->toBe(PublicationStatusEnum::ARCHIVED);
+});
+
+it('requires the archive operation to retire a published path', function (): void {
+    $course    = Course::factory()->create();
+    $published = LearningPath::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+    $published->steps()->create(learningPathStep(1, 'course', $course->id));
+
+    $this->authorized_user([PermissionEnum::LEARNING_PATH_UPDATE->value]);
+
+    $this->putJson(
+        route('api.v1.admin.learning-paths.update', $published),
+        learningPathPayload([
+            'status' => PublicationStatusEnum::ARCHIVED->value,
+            'steps'  => [learningPathStep(1, 'course', $course->id)],
+        ]),
+    )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['status'])
+        ->assertJsonPath('errors.status.0', 'Use the archive operation to retire a published learning path.');
+
+    expect($published->refresh()->status)->toBe(PublicationStatusEnum::PUBLISHED);
+});
+
+it('does not delete an archived learning path', function (): void {
+    $path = LearningPath::factory()->create(['status' => PublicationStatusEnum::ARCHIVED]);
+
+    $this->authorized_user([PermissionEnum::LEARNING_PATH_DELETE->value]);
+
+    $this->deleteJson(route('api.v1.admin.learning-paths.destroy', $path))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['learning_path'])
+        ->assertJsonPath('errors.learning_path.0', 'Only never-published learning path drafts can be deleted.');
+
+    $this->assertDatabaseHas('learning_paths', ['id' => $path->id]);
+});
+
+it('rejects archive access without the learning path update permission', function (): void {
+    $path = LearningPath::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+    $this->unauthorized_user();
+
+    $this->postJson(route('api.v1.admin.learning-paths.archive', $path))
+        ->assertForbidden();
 });
 
 it('updates a draft and synchronizes its ordered steps and media', function (): void {
@@ -274,9 +461,11 @@ it('lists, shows, and deletes a draft', function (): void {
     $this->assertDatabaseMissing('learning_paths', ['id' => $path->id]);
 });
 
-it('lists learning paths by latest update by default', function (): void {
-    $olderPath  = LearningPath::factory()->create(['updated_at' => now()->subDay()]);
-    $latestPath = LearningPath::factory()->create();
+it('lists learning paths by latest update by default with a stable tie-breaker', function (): void {
+    $olderPath = LearningPath::factory()->create(['updated_at' => now()->subDay()]);
+    $timestamp = now();
+    $firstPath = LearningPath::factory()->create(['updated_at' => $timestamp]);
+    $lastPath  = LearningPath::factory()->create(['updated_at' => $timestamp]);
 
     $this->authorized_user([PermissionEnum::LEARNING_PATH_VIEW_ANY->value]);
 
@@ -287,8 +476,9 @@ it('lists learning paths by latest update by default', function (): void {
                 'data' => [['created_at', 'updated_at']],
             ],
         ])
-        ->assertJsonPath('data.data.0.id', $latestPath->id)
-        ->assertJsonPath('data.data.1.id', $olderPath->id);
+        ->assertJsonPath('data.data.0.id', $lastPath->id)
+        ->assertJsonPath('data.data.1.id', $firstPath->id)
+        ->assertJsonPath('data.data.2.id', $olderPath->id);
 });
 
 it('does not allow a non-draft path to return to a deletable draft', function (): void {
@@ -304,11 +494,13 @@ it('does not allow a non-draft path to return to a deletable draft', function ()
         learningPathPayload(['status' => PublicationStatusEnum::DRAFT->value]),
     )
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['status']);
+        ->assertJsonValidationErrors(['status'])
+        ->assertJsonPath('errors.status.0', 'A non-draft learning path cannot return to draft status.');
 
     $this->deleteJson(route('api.v1.admin.learning-paths.destroy', $path))
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['learning_path']);
+        ->assertJsonValidationErrors(['learning_path'])
+        ->assertJsonPath('errors.learning_path.0', 'Only never-published learning path drafts can be deleted.');
 
     expect($path->refresh()->status)->toBe(PublicationStatusEnum::PUBLISHED);
 });
