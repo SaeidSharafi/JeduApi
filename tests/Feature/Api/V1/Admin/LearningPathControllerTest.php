@@ -2,26 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Actions\Admin\Course\DeleteCourseAction;
-use App\Actions\Admin\DigitalAsset\DeleteDigitalAssetAction;
-use App\Actions\Admin\LearningPath\ArchiveLearningPathAction;
-use App\Actions\Admin\LearningPath\CreateLearningPathAction;
-use App\Actions\Admin\LearningPath\DeleteLearningPathAction;
-use App\Actions\Admin\LearningPath\EnsureProductableHasNoLearningPathReferencesAction;
-use App\Actions\Admin\LearningPath\SyncLearningPathStepsAction;
-use App\Actions\Admin\LearningPath\UpdateLearningPathAction;
-use App\Actions\Admin\Seminar\DeleteSeminarAction;
-use App\Data\Admin\LearningPath\LearningPathCreateData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Http\Controllers\Api\Admin\LearningPath\ArchiveLearningPathController;
-use App\Http\Controllers\Api\Admin\LearningPathController;
+use App\Http\Controllers\Api\Admin\LearningPath\LearningPathController;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\LearningPath;
 use App\Models\Seminar;
-use App\Rules\LearningPathProductableExistRule;
-use App\Rules\LearningPathStepsRule;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -32,18 +20,6 @@ use function Pest\Laravel\assertDatabaseHas;
 covers(
     LearningPathController::class,
     ArchiveLearningPathController::class,
-    ArchiveLearningPathAction::class,
-    LearningPathCreateData::class,
-    CreateLearningPathAction::class,
-    DeleteLearningPathAction::class,
-    EnsureProductableHasNoLearningPathReferencesAction::class,
-    SyncLearningPathStepsAction::class,
-    UpdateLearningPathAction::class,
-    DeleteCourseAction::class,
-    DeleteSeminarAction::class,
-    DeleteDigitalAssetAction::class,
-    LearningPathProductableExistRule::class,
-    LearningPathStepsRule::class,
 );
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
@@ -54,6 +30,13 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
  */
 function learningPathPayload(array $overrides = []): array
 {
+    $cover = MediaUploader::fromSource(UploadedFile::fake()->image('cover.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $gallery = MediaUploader::fromSource(UploadedFile::fake()->image('gallery.jpg'))
+        ->toDisk('public')
+        ->upload();
+
     return [
         'title'                    => 'Backend Engineering Path',
         'slug'                     => 'backend-engineering-path',
@@ -68,11 +51,8 @@ function learningPathPayload(array $overrides = []): array
         'display_order'            => 2,
         'status'                   => 'draft',
         'media'                    => [
-            'cover'       => [],
-            'gallery'     => [],
-            'video'       => [],
-            'certificate' => [],
-            'main'        => [],
+            'cover'   => [$cover->id],
+            'gallery' => [$gallery->id],
         ],
         'steps' => [],
         ...$overrides,
@@ -98,6 +78,9 @@ it('creates an ordered draft with productable references, seo, and media', funct
     $cover = MediaUploader::fromSource(UploadedFile::fake()->image('path-cover.jpg'))
         ->toDisk('public')
         ->upload();
+    $gallery = MediaUploader::fromSource(UploadedFile::fake()->image('path-gallery.jpg'))
+        ->toDisk('public')
+        ->upload();
     $course       = Course::factory()->create();
     $seminar      = Seminar::factory()->create();
     $digitalAsset = DigitalAsset::factory()->create();
@@ -108,11 +91,8 @@ it('creates an ordered draft with productable references, seo, and media', funct
 
     $response = $this->postJson(route('api.v1.admin.learning-paths.store'), learningPathPayload([
         'media' => [
-            'cover'       => [$cover->id],
-            'gallery'     => [],
-            'video'       => [],
-            'certificate' => [],
-            'main'        => [],
+            'cover'   => [$cover->id],
+            'gallery' => [$gallery->id],
         ],
         'steps' => [
             learningPathStep(3, 'digital_asset', $digitalAsset->id, 'Build the asset'),
@@ -125,6 +105,7 @@ it('creates an ordered draft with productable references, seo, and media', funct
         ->assertJsonPath('data.slug', 'backend-engineering-path')
         ->assertJsonPath('data.meta_title', 'Backend Engineering Learning Path')
         ->assertJsonPath('data.media.cover.0.id', $cover->id)
+        ->assertJsonPath('data.media.gallery.0.id', $gallery->id)
         ->assertJsonPath('data.steps.0.position', 1)
         ->assertJsonPath('data.steps.0.productable.type', 'course')
         ->assertJsonPath('data.steps.0.productable.id', $course->id)
@@ -142,6 +123,7 @@ it('creates an ordered draft with productable references, seo, and media', funct
         'meta_keywords'      => 'backend, laravel, engineering',
         'display_order'      => 2,
         'status'             => 'draft',
+        'thumbnail_url'      => $cover->getUrl(),
     ]);
     assertDatabaseHas('learning_path_steps', [
         'learning_path_id' => $path->id,
@@ -199,6 +181,25 @@ it('rejects a published path when steps are omitted', function (): void {
     $this->postJson(route('api.v1.admin.learning-paths.store'), $payload)
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['steps']);
+});
+
+it('requires cover and gallery media on create and update', function (): void {
+    $this->authorized_user([PermissionEnum::LEARNING_PATH_CREATE->value]);
+    $createPayload = learningPathPayload();
+    unset($createPayload['media']['cover']);
+
+    $this->postJson(route('api.v1.admin.learning-paths.store'), $createPayload)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['media.cover']);
+
+    $path = LearningPath::factory()->create();
+    $this->authorized_user([PermissionEnum::LEARNING_PATH_UPDATE->value]);
+    $updatePayload = learningPathPayload();
+    unset($updatePayload['media']['gallery']);
+
+    $this->putJson(route('api.v1.admin.learning-paths.update', $path), $updatePayload)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['media.gallery']);
 });
 
 it('publishes a draft with an unpublished productable reference', function (): void {
@@ -388,11 +389,8 @@ it('updates a draft and synchronizes its ordered steps and media', function (): 
             'title' => 'Updated Backend Path',
             'slug'  => 'updated-backend-path',
             'media' => [
-                'cover'       => [$newMedia->id],
-                'gallery'     => [],
-                'video'       => [],
-                'certificate' => [],
-                'main'        => [],
+                'cover'   => [$newMedia->id],
+                'gallery' => [$oldMedia->id],
             ],
             'steps' => [learningPathStep(1, 'course', $newCourse->id, 'New course')],
         ]),
@@ -401,6 +399,7 @@ it('updates a draft and synchronizes its ordered steps and media', function (): 
     $path->refresh();
     expect($path->title)->toBe('Updated Backend Path')
         ->and($path->slug)->toBe('updated-backend-path')
+        ->and($path->thumbnail_url)->toBe($newMedia->getUrl())
         ->and($path->steps)->toHaveCount(1)
         ->and($path->steps->first()->productable_id)->toBe($newCourse->id);
     assertDatabaseHas('mediables', [
@@ -411,29 +410,6 @@ it('updates a draft and synchronizes its ordered steps and media', function (): 
     ]);
     $this->assertDatabaseMissing('mediables', [
         'media_id'      => $oldMedia->id,
-        'mediable_id'   => $path->id,
-        'mediable_type' => 'learning_path',
-        'tag'           => 'cover',
-    ]);
-});
-
-it('preserves existing media when an update omits media', function (): void {
-    Storage::fake('public');
-    $media = MediaUploader::fromSource(UploadedFile::fake()->image('preserved-cover.jpg'))
-        ->toDisk('public')
-        ->upload();
-    $path = LearningPath::factory()->create();
-    $path->attachMedia($media, 'cover');
-    $payload = learningPathPayload(['slug' => 'media-preserving-path']);
-    unset($payload['media']);
-
-    $this->authorized_user([PermissionEnum::LEARNING_PATH_UPDATE->value]);
-
-    $this->putJson(route('api.v1.admin.learning-paths.update', $path), $payload)
-        ->assertOk();
-
-    assertDatabaseHas('mediables', [
-        'media_id'      => $media->id,
         'mediable_id'   => $path->id,
         'mediable_type' => 'learning_path',
         'tag'           => 'cover',
