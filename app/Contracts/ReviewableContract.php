@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
+use App\Enums\MediaTagEnum;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -20,9 +21,10 @@ interface ReviewableContract
     public function products(): MorphMany;
 
     /**
+     * @param  array<int, MediaTagEnum|string>  $onlyTags
      * @return array<string, mixed>|null
      */
-    public function getAllMedia(): ?array;
+    public function getAllMedia(bool $urlOnly = false, array $onlyTags = []): ?array;
 
     /**
      * @param  Builder<TModel>  $query

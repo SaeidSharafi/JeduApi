@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
+use App\Enums\MediaTagEnum;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,14 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @template TModel of Model
+ *
+ * @mixin Model
+ *
+ * @property string $slug
+ * @property string $full_name
+ * @property string|null $short_name
+ * @property string|null $description
+ * @property string|null $thumbnail_url
  */
 interface ProductableContract
 {
@@ -20,9 +29,10 @@ interface ProductableContract
     public function products(): MorphMany;
 
     /**
+     * @param  array<int, MediaTagEnum|string>  $onlyTags
      * @return array<string, mixed>|null
      */
-    public function getAllMedia(): ?array;
+    public function getAllMedia(bool $urlOnly = false, array $onlyTags = []): ?array;
 
     /**
      * @param  Builder<TModel>  $query
