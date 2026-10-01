@@ -81,7 +81,7 @@
 
 ### Table: `learning_paths`
 - Purpose: Non-commercial Learning Path aggregate for staff-authored guided content.
-- Columns: `id`, `title`, `slug` (unique), `description`, `introduction_title`, `introduction_description`, `conclusion_title`, `conclusion_description`, optional `meta_title` (VARCHAR(70)), `meta_description` (VARCHAR(160)), `meta_keywords` (VARCHAR(255)), `display_order` (unsigned integer, default 0), `status` (VARCHAR, default `draft`, indexed), timestamps.
+- Columns: `id`, `title`, `slug` (unique), `description`, `introduction_title`, `introduction_description`, `conclusion_title`, `conclusion_description`, nullable `thumbnail_url` (denormalized URL of the first submitted cover media), optional `meta_title` (VARCHAR(70)), `meta_description` (VARCHAR(160)), `meta_keywords` (VARCHAR(255)), `display_order` (unsigned integer, default 0), `status` (VARCHAR, default `draft`, indexed), timestamps.
 - Constraints: The slug is unique and editable. This table has no Product, ProductDeliveryOption, cart, order, or enrollment foreign key.
 
 ### Table: `learning_path_steps`
