@@ -27,16 +27,16 @@ final class LearningPathStepData extends Data
             $type = MorphTypeEnum::getAlias($type) ?? $type;
         }
 
-        return self::factory()->withoutMagicalCreation()->from([
-            'id'               => $step->getKey(),
-            'position'         => $step->position,
-            'productable_type' => $type,
-            'productable_id'   => $step->productable_id,
-            'title'            => $step->title,
-            'description'      => $step->description,
-            'productable'      => $step->relationLoaded('productable') && $step->productable !== null
+        return new self(
+            id: $step->getKey(),
+            position: $step->position,
+            productable_type: $type,
+            productable_id: $step->productable_id,
+            title: $step->title,
+            description: $step->description,
+            productable: $step->relationLoaded('productable') && $step->productable !== null
                 ? LearningPathProductableData::fromModel($step->productable, $type)
                 : null,
-        ]);
+        );
     }
 }

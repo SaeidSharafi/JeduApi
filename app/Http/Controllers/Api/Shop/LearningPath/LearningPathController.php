@@ -8,19 +8,10 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\LearningPath\LearningPathCardData;
 use App\Data\Shop\LearningPath\LearningPathDetailData;
 use App\Data\Shop\PaginationRequestData;
-use App\Data\Shop\ProductPriceData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Http\Controllers\Controller;
-use App\Models\Course;
-use App\Models\DigitalAsset;
 use App\Models\LearningPath;
-use App\Models\LearningPathStep;
-use App\Models\Product;
-use App\Models\ProductDeliveryOption;
-use App\Models\Seminar;
-use App\Services\ProductPriceService;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
+use App\Services\LearningPath\LearningPathStepResolverService;
 
 /**
  * @group Shop - Learning Paths
@@ -28,11 +19,21 @@ use Illuminate\Support\Collection;
  * @unauthenticated
  *
  * Public, non-commercial Learning Path catalog APIs.
+ *
+ * The shop projection keeps editorial step fields separate from a merged
+ * `product` object. That object uses the current sellable Product when one is
+ * available and falls back to the referenced productable for identity fields.
+ * Pricing is null for a coming-soon step; action state is serialized with its
+ * enum value and translated label.
  */
 final class LearningPathController extends Controller
 {
     /**
      * List published Learning Paths in their public display order.
+     *
+     * Each card contains `title`, `slug`, `description`, the denormalized
+     * `thumbnail_url` (nullable), and `step_count`. Draft and archived paths are not
+     * included.
      *
      * @responseFile 200 resources/responses/shop/learning-paths/index.json
      */
@@ -56,6 +57,18 @@ final class LearningPathController extends Controller
     /**
      * Get a published Learning Path by its public slug.
      *
+     * Steps are returned in editorial position order. Each step exposes its
+     * path-specific title and description, the productable alias and ID, a
+     * merged `product` projection, and an `action` describing whether the user
+     * can view the current product. Product name, short description, and slug
+     * override productable fallbacks when populated; the productable supplies
+     * the fallback name, excerpt, slug, and thumbnail. `price` and
+     * `price_data` are null when no published visible Product is available.
+     *
+     * `action.type` is `view_product` for a resolved Product and `coming_soon`
+     * otherwise. `action.state` contains `{value, label}` and `action.enabled`
+     * is true only when a published delivery option has current capacity.
+     *
      * @urlParam slug string required The public Learning Path slug. Example: backend-learning-path
      *
      * @responseFile 200 resources/responses/shop/learning-paths/show.json
@@ -63,7 +76,7 @@ final class LearningPathController extends Controller
      */
     public function show(
         string $slug,
-        ProductPriceService $priceService,
+        LearningPathStepResolverService $resolver,
     ): ApiResponseInterface {
         $learningPath = LearningPath::query()
             ->where('slug', $slug)
@@ -72,106 +85,8 @@ final class LearningPathController extends Controller
             ->with('steps.productable')
             ->firstOrFail();
 
-        $learningPath->steps->loadMorph('productable', [
-            Course::class       => ['media'],
-            Seminar::class      => ['media'],
-            DigitalAsset::class => ['media'],
-        ]);
-
-        $this->resolveCurrentProducts($learningPath, $priceService);
-
-        return apiResponse()->success(LearningPathDetailData::fromModel($learningPath));
-    }
-
-    private static function referenceKey(string $type, int $id): string
-    {
-        return $type.':'.$id;
-    }
-
-    private function resolveCurrentProducts(LearningPath $learningPath, ProductPriceService $priceService): void
-    {
-        $references = $learningPath->steps
-            ->map(static fn (LearningPathStep $step): array => [
-                'type' => (string) $step->productable_type,
-                'id'   => (int) $step->productable_id,
-            ])
-            ->groupBy('type')
-            ->map(static fn (Collection $items): array => $items->pluck('id')->unique()->values()->all());
-
-        if ($references->isEmpty()) {
-            $this->setStepResolutions($learningPath->steps, collect(), collect());
-
-            return;
-        }
-
-        $products = Product::query()
-            ->publishedAndVisible()
-            ->hasPublishedDeliveryOption()
-            ->publishedProductable()
-            ->activeTerm()
-            ->forListing()
-            ->where(function (Builder $query) use ($references): void {
-                $first = true;
-                foreach ($references as $type => $ids) {
-                    $method = $first ? 'where' : 'orWhere';
-                    $query->{$method}(function (Builder $typeQuery) use ($type, $ids): void {
-                        $typeQuery
-                            ->where('productable_type', $type)
-                            ->whereIn('productable_id', $ids);
-                    });
-                    $first = false;
-                }
-            })
-            ->get()
-            ->keyBy(fn (Product $product): string => self::referenceKey(
-                (string) $product->productable_type,
-                (int) $product->productable_id,
-            ));
-
-        $availableProductIds = ProductDeliveryOption::query()
-            ->whereIn('product_id', $products->modelKeys())
-            ->availableWithCapacity()
-            ->pluck('product_id')
-            ->map(static fn (int|string $id): int => (int) $id)
-            ->unique()
-            ->values();
-
-        $priceData = $products->mapWithKeys(function (Product $product) use ($priceService): array {
-            return [
-                $product->id => $priceService->getPriceDataForProduct($product),
-            ];
-        });
-
-        $this->setStepResolutions($learningPath->steps, $products, $availableProductIds, $priceData);
-    }
-
-    /**
-     * @param  Collection<int, LearningPathStep>  $steps
-     * @param  Collection<string, Product>  $products
-     * @param  Collection<int, int>  $availableProductIds
-     * @param  Collection<int, ProductPriceData>  $priceData
-     */
-    private function setStepResolutions(
-        Collection $steps,
-        Collection $products,
-        Collection $availableProductIds,
-        Collection $priceData = new Collection(),
-    ): void {
-        foreach ($steps as $step) {
-            $product = $products->get(self::referenceKey(
-                (string) $step->productable_type,
-                (int) $step->productable_id,
-            ));
-
-            $step->setRelation('currentProduct', $product);
-            $step->setAttribute(
-                'current_product_action_enabled',
-                $product instanceof Product && $availableProductIds->contains($product->id),
-            );
-            $step->setAttribute(
-                'current_product_price_data',
-                $product instanceof Product ? $priceData->get($product->id) : null,
-            );
-        }
+        return apiResponse()->success(
+            LearningPathDetailData::fromModel($learningPath, $resolver->resolve($learningPath)),
+        );
     }
 }

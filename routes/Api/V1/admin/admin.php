@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestUpdateStatus
 use App\Http\Controllers\Api\Admin\Forms\CollaborationRequest\CollaborationRequestController;
 use App\Http\Controllers\Api\Admin\Forms\ContactRequest\ContactRequestController;
 use App\Http\Controllers\Api\Admin\LearningPath\ArchiveLearningPathController;
-use App\Http\Controllers\Api\Admin\LearningPathController;
+use App\Http\Controllers\Api\Admin\LearningPath\LearningPathController;
 use App\Http\Controllers\Api\Admin\MoodleSsoController;
 use App\Http\Controllers\Api\Admin\Notifications\StaffNotificationController;
 use App\Http\Controllers\Api\Admin\Profile\StaffChangePasswordController;

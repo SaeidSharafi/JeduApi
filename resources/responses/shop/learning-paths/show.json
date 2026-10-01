@@ -1,7 +1,6 @@
 {
   "message": "Operation successful.",
   "data": {
-    "id": 1,
     "title": "مسیر یادگیری برنامه‌نویسی پایتون",
     "slug": "python-programming-path",
     "description": "از صفر تا ساخت اولین پروژه واقعی با پایتون.",
@@ -16,33 +15,17 @@
     "status": "published",
     "steps": [
       {
-        "id": 10,
         "position": 1,
         "productable_type": "course",
         "productable_id": 101,
         "title": "شروع با اصول پایتون",
         "description": "مفاهیم پایه و ساختارهای شرطی را یاد بگیرید.",
-        "productable": {
-          "id": 101,
+        "product": {
           "productable_type": "course",
           "name": "پایتون مقدماتی",
           "short_description": "دوره مقدماتی برنامه‌نویسی پایتون",
           "excerpt": "دوره مقدماتی برنامه‌نویسی پایتون",
           "slug": "python-fundamentals",
-          "thumbnail_url": "https://api.jedu.ir/storage/fake-media/python-cover.svg",
-          "media": [
-            {
-              "url": "https://api.jedu.ir/storage/fake-media/python-cover.svg"
-            }
-          ]
-        },
-        "current_product": {
-          "id": 11,
-          "slug": "python-fundamentals",
-          "name": "پایتون مقدماتی",
-          "productable_type": "course",
-          "short_description": "دوره مقدماتی برنامه‌نویسی پایتون",
-          "excerpt": "دوره مقدماتی برنامه‌نویسی پایتون",
           "thumbnail_url": "https://api.jedu.ir/storage/fake-media/python-cover.svg",
           "price": 1200000,
           "price_data": {
@@ -59,49 +42,51 @@
               "max": 1200000
             },
             "prices": null
-          },
-          "media": [
-            {
-              "url": "https://api.jedu.ir/storage/fake-media/python-cover.svg"
-            }
-          ]
+          }
         },
         "action": {
           "type": "view_product",
-          "state": "available",
+          "state": {
+            "value": "available",
+            "label": "در دسترس"
+          },
           "enabled": true
         }
       },
       {
-        "id": 11,
         "position": 2,
         "productable_type": "seminar",
         "productable_id": 202,
         "title": "پرسش و پاسخ",
         "description": "در این مرحله با مدرس گفتگو کنید.",
-        "productable": {
-          "id": 202,
+        "product": {
           "productable_type": "seminar",
           "name": "وبینار پرسش و پاسخ پایتون",
           "short_description": "جلسه پرسش و پاسخ پایتون",
           "excerpt": "جلسه پرسش و پاسخ پایتون",
           "slug": "python-qa-webinar",
           "thumbnail_url": "https://api.jedu.ir/storage/fake-media/python-cover.svg",
-          "media": []
+          "price": null,
+          "price_data": null
         },
-        "current_product": null,
         "action": {
           "type": "coming_soon",
-          "state": "coming_soon",
+          "state": {
+            "value": "coming_soon",
+            "label": "به زودی"
+          },
           "enabled": false
         }
       }
     ],
-    "media": [
-      {
-        "url": "https://api.jedu.ir/storage/learning-paths/python-cover.jpg"
-      }
-    ]
+    "media": {
+      "cover": [
+        "https://api.jedu.ir/storage/learning-paths/python-cover.jpg"
+      ],
+      "gallery": [
+        "https://api.jedu.ir/storage/learning-paths/python-gallery.jpg"
+      ]
+    }
   },
   "metadata": []
 }

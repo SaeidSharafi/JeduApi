@@ -22,6 +22,8 @@ use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
 use App\Models\Enrollment;
 use App\Models\HomePageBlock;
+use App\Models\LearningPath;
+use App\Models\LearningPathStep;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Partner;
@@ -156,6 +158,11 @@ final class DemoSeeder extends Seeder
         }, function (array $collection) {
             $this->seedDigitalAssetMedia($collection);
         });
+
+        $this->seedModel(LearningPath::class, 'learning_paths.json', null, function (array $collection) {
+            $this->seedLearningPathMedia($collection);
+        });
+        $this->seedModel(LearningPathStep::class, 'learning_path_steps.json');
 
         $this->seedModel(Bundle::class, 'bundles.json');
 
@@ -591,6 +598,41 @@ final class DemoSeeder extends Seeder
         }
     }
 
+    /**
+     * @param  array<int, array<string, mixed>>  $collection
+     */
+    private function seedLearningPathMedia(array $collection): void
+    {
+        $coverPool = [
+            $this->media('cover-tech.svg'),
+            $this->media('cover-business.svg'),
+            $this->media('cover-art.svg'),
+        ];
+        $galleryPool = [
+            [$this->media('gallery-tech.svg'), $this->media('gallery-nature.svg')],
+            [$this->media('gallery-art.svg'), $this->media('gallery-tech.svg')],
+            [$this->media('gallery-nature.svg'), $this->media('gallery-art.svg')],
+        ];
+
+        $learningPaths = LearningPath::query()
+            ->whereIn('id', collect($collection)->pluck('id'))
+            ->orderBy('id')
+            ->get();
+
+        foreach ($learningPaths as $index => $learningPath) {
+            $cover      = $coverPool[$index % count($coverPool)];
+            $galleryIds = array_map(
+                static fn (Media $media): int|string => $media->getKey(),
+                $galleryPool[$index % count($galleryPool)],
+            );
+
+            $learningPath->syncMedia($cover, 'cover');
+            $learningPath->syncMedia($galleryIds, 'gallery');
+            $learningPath->thumbnail_url = $cover->getUrl();
+            $learningPath->save();
+        }
+    }
+
     private function seedBlogCategoryMedia(array $collection): void
     {
         $icon = $this->media('icon.svg');
@@ -908,6 +950,7 @@ final class DemoSeeder extends Seeder
             'product_delivery_option_discount_prices', 'product_prices',
             'discount_coupons', 'discount_promotion_rules', 'discount_promotions',
             'student_stories', 'home_page_blocks', 'sliders', 'blog_posts', 'blog_categories',
+            'learning_path_steps', 'learning_paths',
             'bundle_components', 'product_delivery_options', 'products', 'bundles', 'digital_assets', 'seminars',
             'courses', 'categories', 'teachers', 'terms', 'vendors', 'staff', 'users',
             'categorizables', 'media', 'mediables',

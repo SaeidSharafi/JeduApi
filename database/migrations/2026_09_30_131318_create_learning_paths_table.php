@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('introduction_description');
             $table->string('conclusion_title');
             $table->text('conclusion_description');
+            $table->string('thumbnail_url')->nullable();
             $table->string('meta_title', 70)->nullable();
             $table->string('meta_description', 160)->nullable();
             $table->string('meta_keywords')->nullable();

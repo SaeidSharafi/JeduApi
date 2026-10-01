@@ -27,6 +27,7 @@ final class LearningPath extends Model
         'introduction_description',
         'conclusion_title',
         'conclusion_description',
+        'thumbnail_url',
         'meta_title',
         'meta_description',
         'meta_keywords',

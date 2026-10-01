@@ -16,14 +16,6 @@ final readonly class SyncLearningPathStepsAction
         $learningPath->steps()->delete();
         usort($steps, static fn (array $left, array $right): int => $left['position'] <=> $right['position']);
 
-        foreach ($steps as $step) {
-            $learningPath->steps()->create([
-                'position'         => $step['position'],
-                'productable_type' => $step['productable_type'],
-                'productable_id'   => $step['productable_id'],
-                'title'            => $step['title'],
-                'description'      => $step['description'],
-            ]);
-        }
+        $learningPath->steps()->createMany($steps);
     }
 }

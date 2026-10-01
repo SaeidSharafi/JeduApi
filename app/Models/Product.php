@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Searchable;
 
@@ -517,6 +518,25 @@ final class Product extends Model
                     }
 
                     $productableQuery->withPgroonga()->fullTextSearch($columns, $searchTerm);
+                });
+            }
+        });
+    }
+
+    /**
+     * Restrict products to the typed productable references used by a caller.
+     *
+     * @param  SupportCollection<int, array{type: string, id: int<0, max>}>  $references
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function forProductables(Builder $query, SupportCollection $references): Builder
+    {
+        return $query->where(function (Builder $group) use ($references): void {
+            foreach ($references->groupBy('type') as $type => $items) {
+                $group->orWhere(function (Builder $typed) use ($type, $items): void {
+                    $typed->where('productable_type', $type)
+                        ->whereIn('productable_id', $items->pluck('id')->unique()->values());
                 });
             }
         });

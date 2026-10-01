@@ -9,27 +9,22 @@ use Spatie\LaravelData\Data;
 
 final class LearningPathCardData extends Data
 {
-    /**
-     * @param  array<int, LearningPathMediaData>  $media
-     */
     public function __construct(
-        public int $id,
         public string $title,
         public string $slug,
         public string $description,
-        public array $media = [],
+        public ?string $thumbnail_url = null,
         public int $step_count = 0,
     ) {}
 
     public static function fromModel(LearningPath $learningPath): self
     {
-        return self::factory()->withoutMagicalCreation()->from([
-            'id'          => (int) $learningPath->getKey(),
-            'title'       => $learningPath->title,
-            'slug'        => $learningPath->slug,
-            'description' => $learningPath->description,
-            'media'       => LearningPathMediaData::forModel($learningPath),
-            'step_count'  => (int) ($learningPath->steps_count ?? 0),
-        ]);
+        return new self(
+            title     : $learningPath->title,
+            slug      : $learningPath->slug,
+            description: $learningPath->description,
+            thumbnail_url: $learningPath->thumbnail_url,
+            step_count: (int) ($learningPath->steps_count ?? 0),
+        );
     }
 }

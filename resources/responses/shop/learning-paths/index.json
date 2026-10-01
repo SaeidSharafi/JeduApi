@@ -4,15 +4,10 @@
     "current_page": 1,
     "data": [
       {
-        "id": 1,
         "title": "مسیر یادگیری برنامه‌نویسی پایتون",
         "slug": "python-programming-path",
         "description": "از صفر تا ساخت اولین پروژه واقعی با پایتون.",
-        "media": [
-          {
-            "url": "https://api.jedu.ir/storage/learning-paths/python-cover.jpg"
-          }
-        ],
+        "thumbnail_url": "https://api.jedu.ir/storage/learning-paths/python-cover.jpg",
         "step_count": 3
       }
     ],

@@ -4,23 +4,28 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\LearningPath;
 
-use App\Models\Product;
+use App\Data\Transformer\TranslatableEnumData;
+use App\Enums\LearningPathStepActionStateEnum;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\WithTransformer;
+use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
 final class LearningPathStepActionData extends Data
 {
     public function __construct(
         public string $type,
-        public string $state,
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
+        public LearningPathStepActionStateEnum $state,
         public bool $enabled,
     ) {}
 
-    public static function fromResolution(?Product $product, bool $enabled): self
+    public static function fromState(LearningPathStepActionStateEnum $state): self
     {
-        return self::factory()->withoutMagicalCreation()->from([
-            'type'    => $product === null ? 'coming_soon' : 'view_product',
-            'state'   => $product === null ? 'coming_soon' : ($enabled ? 'available' : 'unavailable'),
-            'enabled' => $product !== null && $enabled,
-        ]);
+        return new self(
+            type: $state->actionType(),
+            state: $state,
+            enabled: $state->isEnabled(),
+        );
     }
 }

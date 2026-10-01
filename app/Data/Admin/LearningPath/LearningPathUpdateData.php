@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Data\Admin\LearningPath;
 
 use App\Enums\Content\PublicationStatusEnum;
-use App\Enums\MediaTagEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\LearningPath;
 use App\Rules\LearningPathProductableExistRule;
 use App\Rules\LearningPathStepsRule;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Optional;
 
 final class LearningPathUpdateData extends Data
 {
@@ -30,7 +28,7 @@ final class LearningPathUpdateData extends Data
         public ?string $meta_keywords = null,
         public int $display_order = 0,
         public array $steps = [],
-        public array|Optional $media = new Optional(),
+        public array $media = [],
     ) {}
 
     /**
@@ -81,7 +79,11 @@ final class LearningPathUpdateData extends Data
             'steps.*.productable_id' => ['required', 'integer', new LearningPathProductableExistRule()],
             'steps.*.title'          => ['required', 'string', 'max:255'],
             'steps.*.description'    => ['required', 'string'],
-            ...self::mediaValidationRules(),
+            'media'                  => ['required', 'array:cover,gallery'],
+            'media.gallery'          => ['required', 'array'],
+            'media.cover'            => ['required', 'array'],
+            'media.cover.*'          => ['required', 'integer', 'exists:media,id'],
+            'media.gallery.*'        => ['required', 'integer', 'exists:media,id'],
         ];
     }
 
@@ -93,22 +95,5 @@ final class LearningPathUpdateData extends Data
     public function bodyParameters(): array
     {
         return LearningPathCreateData::bodyParameterDefinitions();
-    }
-
-    /**
-     * @return array<string, array<int, mixed>>
-     */
-    private static function mediaValidationRules(): array
-    {
-        $tags = implode(',', array_map(
-            static fn (MediaTagEnum $tag): string => $tag->value,
-            MediaTagEnum::cases(),
-        ));
-
-        return [
-            'media'     => ['sometimes', 'array:'.$tags],
-            'media.*'   => ['sometimes', 'array'],
-            'media.*.*' => ['integer', 'exists:media,id'],
-        ];
     }
 }

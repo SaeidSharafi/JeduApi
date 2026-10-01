@@ -15,13 +15,18 @@ use Illuminate\Support\Facades\Gate;
  * @group Admin - Learning Path Management
  *
  * @authenticated Staff
+ *
+ * This operation is intentionally separate from replacement so a published
+ * path cannot be archived accidentally through the normal update endpoint.
  */
 final class ArchiveLearningPathController extends Controller
 {
     /**
      * Archive a published learning path.
      *
-     * Archived paths remain visible to staff and are excluded from public discovery.
+     * Archived paths remain visible to authorized staff, retain their steps and
+     * media, and are excluded from public discovery. Only a published path can
+     * be archived.
      *
      * @responseFile 200 resources/responses/admin/learning-path/show.json
      * @responseFile 403 resources/responses/403.json

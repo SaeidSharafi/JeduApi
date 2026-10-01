@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Data\Admin\LearningPath;
 
 use App\Enums\Content\PublicationStatusEnum;
-use App\Enums\MediaTagEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Rules\LearningPathProductableExistRule;
 use App\Rules\LearningPathStepsRule;
@@ -71,7 +70,11 @@ final class LearningPathCreateData extends Data
             'steps.*.productable_id' => ['required', 'integer', new LearningPathProductableExistRule()],
             'steps.*.title'          => ['required', 'string', 'max:255'],
             'steps.*.description'    => ['required', 'string'],
-            ...self::mediaValidationRules(),
+            'media'                  => ['required', 'array:cover,gallery'],
+            'media.gallery'          => ['required', 'array'],
+            'media.cover'            => ['required', 'array'],
+            'media.cover.*'          => ['required', 'integer', 'exists:media,id'],
+            'media.gallery.*'        => ['required', 'integer', 'exists:media,id'],
         ];
     }
 
@@ -154,11 +157,23 @@ final class LearningPathCreateData extends Data
                 'example'     => 'Build the required foundation.',
             ],
             'media' => [
-                'description' => 'Optional media IDs grouped by existing media tag.',
+                'description' => 'Required media IDs grouped under the cover and gallery tags.',
                 'example'     => ['cover' => [1], 'gallery' => [2, 3]],
             ],
-            'media.*.*' => [
-                'description' => 'An existing media ID.',
+            'media.gallery' => [
+                'description' => 'Required media IDs for the gallery group.',
+                'example'     => [1, 2, 3],
+            ],
+            'media.cover' => [
+                'description' => 'Required media IDs for the cover group. The first ID supplies the path thumbnail_url.',
+                'example'     => [1],
+            ],
+            'media.cover.*' => [
+                'description' => 'Array of media ids for cover.',
+                'example'     => 1,
+            ],
+            'media.gallery.*' => [
+                'description' => 'Array of media ids for gallery',
                 'example'     => 1,
             ],
         ];
@@ -172,22 +187,5 @@ final class LearningPathCreateData extends Data
     public function bodyParameters(): array
     {
         return self::bodyParameterDefinitions();
-    }
-
-    /**
-     * @return array<string, array<int, mixed>>
-     */
-    private static function mediaValidationRules(): array
-    {
-        $tags = implode(',', array_map(
-            static fn (MediaTagEnum $tag): string => $tag->value,
-            MediaTagEnum::cases(),
-        ));
-
-        return [
-            'media'     => ['sometimes', 'array:'.$tags],
-            'media.*'   => ['sometimes', 'array'],
-            'media.*.*' => ['integer', 'exists:media,id'],
-        ];
     }
 }

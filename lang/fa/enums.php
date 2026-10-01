@@ -350,4 +350,9 @@ return [
         'suspended' => 'معلق',
         'closed'    => 'بسته شده',
     ],
+    'LearningPathStepActionStateEnum' => [
+        'coming_soon' => 'به زودی',
+        'available'   => 'در دسترس',
+        'unavailable' => 'غیرقابل دسترس',
+    ],
 ];

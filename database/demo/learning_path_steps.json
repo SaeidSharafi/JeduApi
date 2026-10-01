@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "learning_path_id": 1,
+    "position": 1,
+    "productable_type": "course",
+    "productable_id": 25,
+    "title": "طراحی وب واکنش‌گرا",
+    "description": "صفحه‌هایی بسازید که در موبایل، تبلت و دسکتاپ تجربه‌ای یکپارچه ارائه می‌کنند."
+  },
+  {
+    "id": 2,
+    "learning_path_id": 1,
+    "position": 2,
+    "productable_type": "course",
+    "productable_id": 16,
+    "title": "جاوااسکریپت و React",
+    "description": "با JavaScript مدرن و React رابط‌های کاربری تعاملی و قابل توسعه بسازید."
+  },
+  {
+    "id": 3,
+    "learning_path_id": 1,
+    "position": 3,
+    "productable_type": "course",
+    "productable_id": 20,
+    "title": "الگوهای طراحی و معماری PHP",
+    "description": "ساختار کد را با الگوهای طراحی و اصول معماری نرم‌افزار قابل نگهداری کنید."
+  },
+  {
+    "id": 4,
+    "learning_path_id": 1,
+    "position": 4,
+    "productable_type": "digital_asset",
+    "productable_id": 1,
+    "title": "مرجع الگوهای طراحی",
+    "description": "برای مرور و تمرین، مرجع الکترونیکی الگوهای طراحی PHP را همراه مسیر داشته باشید."
+  },
+  {
+    "id": 5,
+    "learning_path_id": 2,
+    "position": 1,
+    "productable_type": "course",
+    "productable_id": 4,
+    "title": "مبانی بازاریابی دیجیتال",
+    "description": "مفاهیم اصلی بازاریابی آنلاین و کانال‌های مؤثر برای رسیدن به مخاطب را یاد بگیرید."
+  },
+  {
+    "id": 6,
+    "learning_path_id": 2,
+    "position": 2,
+    "productable_type": "seminar",
+    "productable_id": 5,
+    "title": "نوشتن متن تبلیغاتی مؤثر",
+    "description": "پیام‌های تبلیغاتی روشن و متقاعدکننده برای کمپین‌های مختلف بنویسید."
+  },
+  {
+    "id": 7,
+    "learning_path_id": 2,
+    "position": 3,
+    "productable_type": "digital_asset",
+    "productable_id": 7,
+    "title": "چک‌لیست اجرای کمپین",
+    "description": "با یک چک‌لیست عملی، مراحل آماده‌سازی و اجرای کمپین دیجیتال را مرور کنید."
+  },
+  {
+    "id": 8,
+    "learning_path_id": 3,
+    "position": 1,
+    "productable_type": "course",
+    "productable_id": 2,
+    "title": "مبانی کارگردانی",
+    "description": "با اصول کارگردانی، دکوپاژ و هدایت بازیگر برای ساخت یک روایت منسجم آشنا شوید."
+  },
+  {
+    "id": 9,
+    "learning_path_id": 3,
+    "position": 2,
+    "productable_type": "course",
+    "productable_id": 9,
+    "title": "فیلمنامه‌نویسی پیشرفته",
+    "description": "ایده خود را به ساختاری دراماتیک و آماده تولید تبدیل کنید."
+  },
+  {
+    "id": 10,
+    "learning_path_id": 3,
+    "position": 3,
+    "productable_type": "seminar",
+    "productable_id": 13,
+    "title": "از ایده تا فیلم کوتاه",
+    "description": "مراحل تبدیل ایده به فیلم کوتاه را از پیش‌تولید تا نمایش نهایی مرور کنید."
+  }
+]

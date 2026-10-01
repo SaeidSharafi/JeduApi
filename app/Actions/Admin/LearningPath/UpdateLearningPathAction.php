@@ -4,29 +4,30 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\LearningPath;
 
+use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Data\Admin\LearningPath\LearningPathUpdateData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\MediaTagEnum;
 use App\Models\LearningPath;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Spatie\LaravelData\Optional;
 
 final readonly class UpdateLearningPathAction
 {
-    public function __construct(private SyncLearningPathStepsAction $syncSteps) {}
+    public function __construct(private SyncLearningPathStepsAction $syncSteps, private GetThumbnailUrlAction $thumbnailUrlAction) {}
 
     public function handle(LearningPathUpdateData $data, LearningPath $learningPath): LearningPath
     {
         $this->validateStatusTransition($learningPath, $data->status);
 
         return DB::transaction(function () use ($data, $learningPath): LearningPath {
-            $learningPath->update($data->except('steps', 'media')->toArray());
+            $validatedData                  = $data->except('steps', 'media')->toArray();
+            $validatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
 
-            if (! $data->media instanceof Optional) {
-                foreach (MediaTagEnum::cases() as $tag) {
-                    $learningPath->syncMedia($data->media[$tag->value] ?? [], $tag->value);
-                }
+            $learningPath->update($validatedData);
+
+            foreach (MediaTagEnum::cases() as $tag) {
+                $learningPath->syncMedia($data->media[$tag->value] ?? [], $tag->value);
             }
 
             $this->syncSteps->handle($learningPath, $data->steps);
