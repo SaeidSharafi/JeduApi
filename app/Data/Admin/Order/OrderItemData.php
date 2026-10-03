@@ -32,6 +32,8 @@ final class OrderItemData extends Data
         public int $price,
         public int $total,
         public int $original_price,
+        public int $base_price_amount,
+        public int $paid_amount,
         public int $product_discount_amount,
         public int $total_discount_amount,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]

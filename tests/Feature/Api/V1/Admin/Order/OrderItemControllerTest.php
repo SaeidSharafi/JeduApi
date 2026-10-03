@@ -10,6 +10,8 @@ use App\Models\Vendor;
 
 use function Pest\Laravel\getJson;
 
+covers(App\Data\Admin\Order\OrderItemData::class);
+
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('Admin OrderItemController', function (): void {
@@ -48,8 +50,9 @@ describe('Admin OrderItemController', function (): void {
             'message',
             'data' => [
                 'id', 'Order_id', 'product_delivery_option_id', 'discount_amount', 'qty_ordered', 'tax_amount',
-                'name', 'sku', 'price', 'total', 'payment_type' => ['value', 'label'], 'prepayment_amount',
-                'qty_refunded', 'total_refunded', 'status'      => ['value', 'label'], 'vendor', 'product_snapshot',
+                'name', 'sku', 'price', 'total', 'original_price', 'base_price_amount', 'paid_amount',
+                'product_discount_amount', 'total_discount_amount', 'payment_type' => ['value', 'label'], 'prepayment_amount',
+                'qty_refunded', 'total_refunded', 'status'                         => ['value', 'label'], 'vendor', 'product_snapshot',
             ],
             'metadata',
         ]);
@@ -62,6 +65,9 @@ describe('Admin OrderItemController', function (): void {
                 'sku'                        => 'SKU-123',
                 'price'                      => 1000,
                 'total'                      => 1000,
+                'original_price'             => 1000,
+                'base_price_amount'          => 1000,
+                'paid_amount'                => 1000,
                 'payment_type'               => [
                     'value' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
                 ],
@@ -78,8 +84,9 @@ describe('Admin OrderItemController', function (): void {
             'message',
             'data' => [
                 ['id', 'Order_id', 'product_delivery_option_id', 'discount_amount', 'qty_ordered', 'tax_amount',
-                    'name', 'sku', 'price', 'total', 'payment_type' => ['value', 'label'], 'prepayment_amount',
-                    'qty_refunded', 'total_refunded', 'status'      => ['value', 'label'], 'vendor', 'product_snapshot'],
+                    'name', 'sku', 'price', 'total', 'original_price', 'base_price_amount', 'paid_amount',
+                    'product_discount_amount', 'total_discount_amount', 'payment_type' => ['value', 'label'], 'prepayment_amount',
+                    'qty_refunded', 'total_refunded', 'status'                         => ['value', 'label'], 'vendor', 'product_snapshot'],
             ],
             'metadata',
         ]);
@@ -91,6 +98,9 @@ describe('Admin OrderItemController', function (): void {
             'sku'                        => 'SKU-123',
             'price'                      => 1000,
             'total'                      => 1000,
+            'original_price'             => 1000,
+            'base_price_amount'          => 1000,
+            'paid_amount'                => 1000,
             'prepayment_amount'          => 200,
         ]);
     });

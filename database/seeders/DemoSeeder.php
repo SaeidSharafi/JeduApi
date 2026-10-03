@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\Content\HomePageBlockTypeEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\AdviceRequest;
@@ -216,7 +217,10 @@ final class DemoSeeder extends Seeder
         // ─── Orders & Fulfillment ──────────────────────────────────────────
 
         $this->seedModel(Order::class, 'orders.json');
-        $this->seedModel(OrderItem::class, 'order_items.json');
+        $this->seedModel(OrderItem::class, 'order_items.json', fn (array $data): array => [
+            ...$data,
+            'pricing_metadata' => $this->demoOrderItemPricingMetadata($data),
+        ]);
         $this->seedModel(Payment::class, 'payments.json');
         $this->seedModel(PaymentTransaction::class, 'payment_transactions.json');
         $this->seedModel(Refund::class, 'refunds.json');
@@ -917,6 +921,39 @@ final class DemoSeeder extends Seeder
         }
 
         $this->command->line("  <info>Seeded:</info>  {$jsonFile}");
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{
+     *     original_price: int,
+     *     base_price_amount: int,
+     *     paid_amount: int,
+     *     product_discount_amount: int,
+     *     cart_discount_amount: int,
+     *     total_discount_amount: int,
+     *     discount_type: null,
+     *     discount_amount: int,
+     *     discount_percentage: null,
+     * }
+     */
+    private function demoOrderItemPricingMetadata(array $data): array
+    {
+        $basePriceAmount = (int) $data['price'] * (int) $data['qty_ordered'];
+        $paidAmount      = max(0, (int) $data['total']);
+        $isPrePayment    = ($data['payment_type'] ?? null) === OrderItemPaymentTypeEnum::PRE_PAYMENT->value;
+
+        return [
+            'original_price'          => (int) $data['price'],
+            'base_price_amount'       => $basePriceAmount,
+            'paid_amount'             => $paidAmount,
+            'product_discount_amount' => 0,
+            'cart_discount_amount'    => $isPrePayment ? 0 : (int) ($data['discount_amount'] ?? 0),
+            'total_discount_amount'   => $isPrePayment ? 0 : max(0, $basePriceAmount - $paidAmount),
+            'discount_type'           => null,
+            'discount_amount'         => 0,
+            'discount_percentage'     => null,
+        ];
     }
 
     private function resetSequence(string $table, string $primaryKey = 'id'): void

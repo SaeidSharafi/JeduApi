@@ -11,6 +11,11 @@
     "sku": "online_service2577",
     "price": 5768710,
     "total": 5768710,
+    "original_price": 5768710,
+    "base_price_amount": 5768710,
+    "paid_amount": 5768710,
+    "product_discount_amount": 0,
+    "total_discount_amount": 0,
     "payment_type": {
       "value": "pre_payment",
       "label": "پیش‌پرداخت"

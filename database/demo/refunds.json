@@ -3,9 +3,9 @@
     "id": 1,
     "order_id": 4,
     "order_item_id": 6,
-    "customer_id": 4,
+    "customer_id": 1,
     "created_by": 1,
-    "amount": 2000000,
+    "amount": 900000,
     "deduction_amount": 200000,
     "status": "completed",
     "transaction_details": {

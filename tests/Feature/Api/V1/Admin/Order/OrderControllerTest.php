@@ -14,6 +14,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Traits\AuthTestTrait;
 
+covers(App\Data\Admin\Order\OrderData::class);
+covers(App\Data\Admin\Order\OrderItemData::class);
+
 uses(AuthTestTrait::class);
 
 describe('OrderController', function (): void {
@@ -119,10 +122,11 @@ describe('OrderController', function (): void {
                     'data' => [
                         'id', 'increment_id', 'status', 'payment_status', 'customer_id',
                         'total_item_count', 'total_qty_ordered', 'grand_total', 'total_paid',
-                        'balance_due', 'items',
+                        'total_refunded', 'balance_due', 'items',
                     ],
                 ])
                 ->assertJsonPath('data.grand_total', 50000)
+                ->assertJsonPath('data.total_refunded', 0)
                 ->assertJsonPath('data.total_item_count', 1)
                 ->assertJsonPath('data.total_qty_ordered', 1);
 
@@ -270,6 +274,8 @@ describe('OrderController', function (): void {
             // Final price: 85,000 - 8,500 = 76,500
             expect($item['original_price'])->toBe(100000)
                 ->and($item['price'])->toBe(100000) // ALWAYS base price
+                ->and($item['base_price_amount'])->toBe(100000)
+                ->and($item['paid_amount'])->toBe(76500)
                 ->and($item['product_discount_amount'])->toBe(15000)
                 ->and($item['discount_amount'])->toBe(8500) // Cart discount
                 ->and($item['total_discount_amount'])->toBe(23500) // 15,000 + 8,500
