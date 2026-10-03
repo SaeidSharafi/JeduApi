@@ -31,13 +31,14 @@ final class CreateCategoryData extends Data
         public ?array $properties,
         public ?array $additional_info,
         public ?array $media = [],
-    ) {}
+    ) {
+    }
 
     public static function rules(?ValidationContext $context = null): array
     {
         return array_merge(
             [
-                'slug' => [
+                'slug'                       => [
                     'required',
                     'string',
                     'alpha_dash',
@@ -51,7 +52,17 @@ final class CreateCategoryData extends Data
                         return $query;
                     }),
                 ],
-                'name'                       => ['required', 'string', 'max:191'],
+                'name'                       => [
+                    'required', 'string', 'max:191',
+                    Rule::unique('categories', 'name')->where(function (Builder $query) {
+                        $category = request()->route()->parameter('category');
+                        if ($category && $category->id) {
+                            $query->whereNot('id', $category->id);
+                        }
+
+                        return $query;
+                    }),
+                ],
                 'status'                     => ['required', Rule::enum(PublicationStatusEnum::class)],
                 'description'                => ['nullable', 'string', 'max:65535'],
                 'parent_id'                  => ['nullable', 'integer', 'exists:categories,id'],
@@ -100,51 +111,51 @@ final class CreateCategoryData extends Data
     public function bodyParameters(): array
     {
         return [
-            'name' => [
+            'name'                       => [
                 'description' => 'The name of the category.',
                 'example'     => 'Web Development',
             ],
-            'slug' => [
+            'slug'                       => [
                 'description' => 'The unique slug for the category.',
                 'example'     => 'web-development',
             ],
-            'status' => [
+            'status'                     => [
                 'description' => 'The publication status of the category.',
                 'example'     => PublicationStatusEnum::PUBLISHED->value,
             ],
-            'parent_id' => [
+            'parent_id'                  => [
                 'description' => 'The ID of the parent category, if any.',
                 'example'     => 1,
             ],
-            'description' => [
+            'description'                => [
                 'description' => 'A brief description of the category.',
                 'example'     => 'This category includes all courses related to web development.',
             ],
-            'color_scheme' => [
+            'color_scheme'               => [
                 'description' => 'The color scheme for the category, used for UI representation.',
                 'example'     => '#3490dc',
             ],
-            'meta_title' => [
+            'meta_title'                 => [
                 'description' => 'The meta title for the digital asset, used for SEO.',
                 'example'     => 'Digital Asset Meta Title',
             ],
-            'meta_description' => [
+            'meta_description'           => [
                 'description' => 'The meta description for the digital asset, used for SEO.',
                 'example'     => 'This is a meta description for the digital asset.',
             ],
-            'meta_keywords' => [
+            'meta_keywords'              => [
                 'description' => 'Meta keywords for the digital asset, used for SEO.',
                 'example'     => 'meta keyword1, meta keyword2',
             ],
-            'properties' => [
+            'properties'                 => [
                 'description' => 'Additional properties for the category, if any.',
                 'example'     => ['difficulty' => 'beginner', 'language' => 'English'],
             ],
-            'additional_info' => [
+            'additional_info'            => [
                 'description' => 'Any additional information related to the category.',
                 'example'     => ['created_by' => 'admin', 'created_at' => '2023-10-01'],
             ],
-            'media' => [
+            'media'                      => [
                 'description' => 'Media associated with the category.',
                 'example'     => [
                     'icon'                 => 1, // Media ID for the icon
@@ -152,11 +163,11 @@ final class CreateCategoryData extends Data
                     'educational_calendar' => 3, // Media ID for the educational calendar file
                 ],
             ],
-            'media.icon' => [
+            'media.icon'                 => [
                 'description' => 'The media ID for the category icon.',
                 'example'     => 1,
             ],
-            'media.image' => [
+            'media.image'                => [
                 'description' => 'The media ID for the category image.',
                 'example'     => 2,
             ],
