@@ -8,11 +8,13 @@ use App\Models\Product;
 describe('CategoryController', function (): void {
 
     it('get list of categories', function (): void {
+        Category::factory()->count(3)->create();
         $parentCategory = Category::factory()->create();
         Category::factory()->create(['parent_id' => $parentCategory->id]);
         Category::factory()->create(['parent_id' => $parentCategory->id]);
         $response = $this->getJson(route('api.v1.shop.categories.index'));
         $response->assertOk();
+        $response->assertJsonCount(4, 'data');
         $response->assertJsonStructure([
             'data' => [
                 '*' => [

@@ -31,13 +31,17 @@ final class CategoryController extends Controller
     {
         $categories = Category::query()
             ->with('children')
+            ->whereDoesntHave('parent')
             ->withCount([
                 'products' => fn ($query) => $query
                     ->publishedAndVisible()
                     ->hasPublishedDeliveryOption()
                     ->publishedProductable()
                     ->activeTerm(),
-            ])->get();
+            ])
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get();
 
         return apiResponse()->success(CategoryCardData::collect($categories));
     }
