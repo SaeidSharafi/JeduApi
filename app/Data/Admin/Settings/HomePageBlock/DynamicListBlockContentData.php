@@ -25,7 +25,7 @@ final class DynamicListBlockContentData extends Data
      */
     public static function rules(?ValidationContext $context = null): array
     {
-        return [
+        $rules = [
             'entity_type'    => ['required', 'string', Rule::enum(DynamicListEntityTypeEnum::class)],
             'sort_by'        => ['required', 'string', Rule::enum(DynamicListSortByEnum::class)],
             'limit'          => ['required', 'integer', 'min:1', 'max:20'],
@@ -33,5 +33,12 @@ final class DynamicListBlockContentData extends Data
             'category_ids'   => ['nullable', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
         ];
+
+        if (request()->input('content.entity_type') === DynamicListEntityTypeEnum::BLOG_POST->value) {
+            $rules['category_ids'] = ['prohibited'];
+            unset($rules['category_ids.*']);
+        }
+
+        return $rules;
     }
 }

@@ -65,18 +65,16 @@ final class HomePageBlockController
      * - `image_id` (integer, required): The ID of the image to be used in the webinar banner.
      * - `product_id` (integer, required): The ID of the webinar product.
      * - `text` (string, required): The text to be displayed on the webinar banner.
-     * - `action` (string, required): The URL or action to be taken when the banner is clicked.
-     * - `action_title` (string, required): The title of the action button on the banner.
      * - `preset` (string, optional): The display preset for the webinar banner. Default is 'default'.
      *
      * ### type DYNAMIC_LIST:
-     * - `category_ids` (array, required): An array of category IDs to filter the items. If empty, items from all categories will be considered.
-     * - `item_type` (string, required): The type of items to display can be one of (course_products, seminar_products, digital_asset_products, blog_post, all_products  :
+     * - `entity_type` (string, required): The type of items to display. Possible values are:
      *     - `course_products` = Products where productable_type = Course
      *     - `seminar_products` = Products where productable_type = Seminar
      *     - `digital_asset_products` = Products where productable_type = DigitalAsset
      *     - `blog_post` = Actual blog posts (not products)
      *     - `all_products` = All products regardless of productable_type
+     * - `category_ids` (array, optional): Product category IDs used to filter product lists. Omit this field for `blog_post`.
      * - `sort_by` (string, required): The criteria for sorting the items, can be one of:
      *     - `created_at:desc` = Newest first
      *     - `created_at:asc` = Oldest first
@@ -91,7 +89,7 @@ final class HomePageBlockController
      *
      *
      *
-     * @responseFile 200 resources/responses/admin/settings/home-page-block/show.json
+     * @responseFile 201 resources/responses/admin/settings/home-page-block/show.json
      * @responseFile 403 resources/responses/403.json
      * @responseFile 422 resources/responses/422.json
      */

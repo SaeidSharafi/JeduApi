@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Data\Admin\Settings\HomePageBlock\DynamicListBlockContentData;
 use App\Enums\Content\DynamicListEntityTypeEnum;
 use App\Enums\Content\DynamicListSortByEnum;
 use App\Enums\Content\HomePageBlockTypeEnum;
@@ -9,7 +10,9 @@ use App\Enums\PermissionEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\HomePageBlock;
 
+covers(DynamicListBlockContentData::class);
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
@@ -390,6 +393,29 @@ describe('HomePageBlockController validation', function (): void {
         $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $payload);
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['content.limit']);
+    });
+
+    it('validation fails when a blog post dynamic list includes category ids', function (): void {
+        $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
+        $payload = [
+            'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
+            'title'     => 'Recent Articles',
+            'location'  => 'homepage_bottom',
+            'order'     => 1,
+            'is_active' => true,
+            'content'   => [
+                'entity_type'  => DynamicListEntityTypeEnum::BLOG_POST->value,
+                'sort_by'      => DynamicListSortByEnum::CREATED_AT_DESC->value,
+                'limit'        => 5,
+                'preset'       => 'blog_list',
+                'category_ids' => [999999],
+            ],
+        ];
+
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['content.category_ids']);
     });
 });
 
