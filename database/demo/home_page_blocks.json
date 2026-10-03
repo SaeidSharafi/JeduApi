@@ -1,32 +1,29 @@
 [
   {
     "id": 1,
-    "type": "WEBINAR_BANNER",
-    "title": "وبینار ویژه: اکتشافات فضایی",
-    "location": "hero",
+    "type": "MAIN_CATEGORIES",
+    "title": "دسته‌بندی‌های محبوب",
+    "location": "AFTER_SLIDER_AND_CATEGORIES",
     "content": {
-      "product_id": 7,
-      "text": "در این وبینار آنلاین و جذاب، با دکتر فیروز نادری به اعماق کیهان سفر کنید و با جدیدترین یافته‌های تلسکوپ جیمز وب آشنا شوید. فرصت را از دست ندهید.",
-      "image_id": null,
-      "image_url": "banner-webinar.svg"
+      "items": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "preset": "default"
     },
     "order": 0,
-    "is_active": true,
+    "is_active": false,
     "created_at": "2024-10-23 11:00:00",
     "updated_at": "2024-10-23 11:00:00"
   },
   {
     "id": 2,
-    "type": "BANNER",
-    "title": "به آکادمی آنلاین ما خوش آمدید",
-    "location": "hero",
+    "type": "DYNAMIC_LIST",
+    "title": "جدیدترین دوره‌ها",
+    "location": "AFTER_SLIDER_AND_CATEGORIES",
     "content": {
-      "action": "/",
-      "action_title": "مشاهده دوره‌ها",
-      "content": "مسیر یادگیری خود را با برترین دوره‌های آموزشی در حوزه‌های برنامه‌نویسی، هنر و کسب‌وکار آغاز کنید.",
+      "entity_type": "course_products",
+      "sort_by": "created_at:desc",
+      "limit": 5,
       "preset": "default",
-      "image_id": null,
-      "image_url": "banner-course.svg"
+      "category_ids": null
     },
     "order": 1,
     "is_active": true,
@@ -35,11 +32,14 @@
   },
   {
     "id": 3,
-    "type": "CURATED_LIST",
-    "title": "دوره‌های پیشنهادی برای شما",
-    "location": "middle",
+    "type": "WEBINAR_BANNER",
+    "title": "وبینار ویژه: اکتشافات فضایی",
+    "location": "AFTER_SLIDER_AND_CATEGORIES",
     "content": {
-      "items": [1, 6, 12, 30, 48],
+      "product_id": 7,
+      "text": "در این وبینار آنلاین و جذاب، با دکتر فیروز نادری به اعماق کیهان سفر کنید و با جدیدترین یافته‌های تلسکوپ جیمز وب آشنا شوید. فرصت را از دست ندهید.",
+      "image_id": null,
+      "image_url": "banner-webinar-space.webp",
       "preset": "default"
     },
     "order": 2,
@@ -49,12 +49,15 @@
   },
   {
     "id": 4,
-    "type": "MAIN_CATEGORIES",
-    "title": "دسته‌بندی‌های محبوب",
-    "location": "middle",
+    "type": "DYNAMIC_LIST",
+    "title": "جدیدترین وبینارها",
+    "location": "AFTER_SLIDER_AND_CATEGORIES",
     "content": {
-      "items": [1, 2, 3, 4],
-      "preset": "default"
+      "entity_type": "seminar_products",
+      "sort_by": "created_at:desc",
+      "limit": 5,
+      "preset": "default",
+      "category_ids": null
     },
     "order": 3,
     "is_active": true,
@@ -63,17 +66,18 @@
   },
   {
     "id": 5,
-    "type": "DYNAMIC_LIST",
-    "title": "جدیدترین دوره‌ها",
-    "location": "middle",
+    "type": "BANNER",
+    "title": "تقویم آموزشی جهاد دانشگاهی",
+    "location": "AFTER_BUNDLES_AND_LEARNING_PATHS",
     "content": {
-      "entity_type": "course_products",
-      "sort_by": "created_at:desc",
-      "limit": 5,
+      "action": "#",
+      "action_title": "دانلود تقویم",
+      "content": "رایانه‌ها نیروی محرکه پیشرفت و سرعت بخشیدن به امور کاری در هر زمینه‌ای هستند. برای مطالعه و به‌کارگیری علوم کامپیوتر، کنترل تعامل بین توسعه نرم افزار و سخت افزار کامپیوتر و الگوریتم‌هایی که آنها را اجرا می‌کنند، یادگیری مهارت‌های مرتبط ضروری است....",
       "preset": "default",
-      "category_ids": null
+      "image_id": null,
+      "image_url": "calendar.webp"
     },
-    "order": 4,
+    "order": 0,
     "is_active": true,
     "created_at": "2024-10-23 11:04:00",
     "updated_at": "2024-10-23 11:04:00"
@@ -81,53 +85,18 @@
   {
     "id": 6,
     "type": "DYNAMIC_LIST",
-    "title": "پرفروش‌ترین محصولات",
-    "location": "middle",
+    "title": "دوره‌های محبوب",
+    "location": "AFTER_INTERNATIONAL_BANNER",
     "content": {
-      "entity_type": "all_products",
+      "entity_type": "course_products",
       "sort_by": "popular",
       "limit": 5,
       "preset": "default",
       "category_ids": null
     },
-    "order": 5,
+    "order": 0,
     "is_active": true,
     "created_at": "2024-10-23 11:05:00",
     "updated_at": "2024-10-23 11:05:00"
-  },
-  {
-    "id": 7,
-    "type": "DYNAMIC_LIST",
-    "title": "آخرین مقالات وبلاگ",
-    "location": "middle",
-    "content": {
-      "entity_type": "blog_post",
-      "sort_by": "created_at:desc",
-      "limit": 4,
-      "preset": "default",
-      "category_ids": null
-    },
-    "order": 6,
-    "is_active": true,
-    "created_at": "2024-10-23 11:06:00",
-    "updated_at": "2024-10-23 11:06:00"
-  },
-  {
-    "id": 8,
-    "type": "BANNER",
-    "title": "با اساتید برجسته ایران بیاموزید",
-    "location": "full_width",
-    "content": {
-      "action": "/teachers",
-      "action_title": "مشاهده لیست اساتید",
-      "content": "مجموعه‌ای از برترین اساتید و متخصصان کشور، تجربیات خود را با شما به اشتراک می‌گذارند.",
-      "preset": "default",
-      "image_id": null,
-      "image_url": "banner-course.svg"
-    },
-    "order": 7,
-    "is_active": true,
-    "created_at": "2024-10-23 11:07:00",
-    "updated_at": "2024-10-23 11:07:00"
   }
 ]

@@ -384,8 +384,26 @@ final class DemoSeeder extends Seeder
         // Gallery variants
         $galleryFiles = ['gallery-tech.svg', 'gallery-art.svg', 'gallery-nature.svg'];
         // Sliders & banners
-        $sliderFiles = ['slider-main.svg', 'slider-promo.svg'];
-        $bannerFiles = ['banner-course.svg', 'banner-webinar.svg'];
+        $sliderFiles = [
+            'slider-learning.webp', 'slider-creative.webp', 'slider-winter-registration.webp',
+        ];
+        $bannerFiles = [
+            'banner-course.svg', 'banner-webinar.svg', 'banner-webinar-space.webp',
+            'calendar.webp', 'collab.webp',
+        ];
+        $generatedProductImageFiles = [
+            'course-01-python.webp', 'course-02-film-directing.webp', 'course-03-miniature-painting.webp',
+            'course-04-digital-marketing.webp', 'course-05-persian-vocal.webp', 'course-06-eastern-philosophy.webp',
+            'course-07-graphic-identity.webp', 'course-08-differential-geometry.webp',
+            'course-16-javascript-react.webp', 'course-19-german-a1.webp',
+            'course-22-playwriting.webp', 'course-23-islamic-law.webp', 'course-24-maqami-singing.webp',
+            'course-25-responsive-web.webp', 'course-26-film-scoring.webp',
+            'seminar-01-ai.webp', 'seminar-02-space.webp', 'seminar-03-investment.webp',
+            'seminar-05-copywriting.webp', 'seminar-08-stress.webp',
+            'seminar-09-blockchain.webp', 'seminar-10-thousand-nights.webp',
+            'seminar-11-nutrition.webp', 'seminar-12-entrepreneurship.webp',
+            'asset-01-php-patterns.webp', 'asset-02-persian-vector.webp', 'asset-03-neon-logo.webp',
+        ];
         // Core assets
         $coreImageFiles = [
             'placeholder.svg', 'icon.svg',
@@ -401,7 +419,7 @@ final class DemoSeeder extends Seeder
         Storage::disk('public')->putFileAs('fake-media', new File($seedPath.'/placeholder.mp4'), 'placeholder3.mp4');
 
         // Import all image files
-        $allImageFiles = array_merge($coverFiles, $galleryFiles, $sliderFiles, $bannerFiles, $coreImageFiles);
+        $allImageFiles = array_merge($coverFiles, $galleryFiles, $sliderFiles, $bannerFiles, $generatedProductImageFiles, $coreImageFiles);
         foreach ($allImageFiles as $file) {
             Storage::disk('public')->putFileAs('fake-media', new File($seedPath.'/'.$file), $file);
         }
@@ -532,7 +550,9 @@ final class DemoSeeder extends Seeder
 
         $courses = Course::whereIn('id', collect($collection)->pluck('id'))->get();
         foreach ($courses as $i => $course) {
-            $cover   = $coverPool[$i % count($coverPool)];
+            $cover = str_ends_with((string) $course->thumbnail_url, '.webp')
+                ? $this->media($course->thumbnail_url)
+                : $coverPool[$i % count($coverPool)];
             $gallery = $galleryPool[$i % count($galleryPool)];
             $video   = $videoPool[$i % count($videoPool)];
             $course->attachMedia($cover, 'cover');
@@ -566,7 +586,9 @@ final class DemoSeeder extends Seeder
 
         $seminars = Seminar::whereIn('id', collect($collection)->pluck('id'))->get();
         foreach ($seminars as $i => $seminar) {
-            $cover   = $coverPool[$i % count($coverPool)];
+            $cover = str_ends_with((string) $seminar->thumbnail_url, '.webp')
+                ? $this->media($seminar->thumbnail_url)
+                : $coverPool[$i % count($coverPool)];
             $gallery = $galleryPool[$i % count($galleryPool)];
             $video   = $videoPool[$i % count($videoPool)];
             $seminar->attachMedia($cover, 'cover');
@@ -593,7 +615,9 @@ final class DemoSeeder extends Seeder
 
         $assets = DigitalAsset::whereIn('id', collect($collection)->pluck('id'))->get();
         foreach ($assets as $i => $asset) {
-            $main    = $mainPool[$i % count($mainPool)];
+            $main = str_ends_with((string) $asset->thumbnail_url, '.webp')
+                ? $this->media($asset->thumbnail_url)
+                : $mainPool[$i % count($mainPool)];
             $preview = $previewPool[$i % count($previewPool)];
             $asset->syncMedia($main, 'main');
             $asset->syncMedia($preview, 'preview');
@@ -673,14 +697,9 @@ final class DemoSeeder extends Seeder
 
     private function seedSliderMedia(array $collection): void
     {
-        $imagePool = [
-            $this->media('slider-main.svg'),
-            $this->media('slider-promo.svg'),
-        ];
-
         $sliders = Slider::whereIn('id', collect($collection)->pluck('id'))->get();
-        foreach ($sliders as $i => $slider) {
-            $image = $imagePool[$i % count($imagePool)];
+        foreach ($sliders as $slider) {
+            $image = $this->media($slider->image_url);
             $slider->syncMedia($image, 'image');
             $slider->image_url = $image->getUrl();
             $slider->save();
@@ -689,17 +708,12 @@ final class DemoSeeder extends Seeder
 
     private function seedHomePageBlockMedia(array $collection): void
     {
-        $imagePool = [
-            $this->media('banner-course.svg'),
-            $this->media('banner-webinar.svg'),
-        ];
-
         $blocks = HomePageBlock::whereIn('id', collect($collection)->pluck('id'))->get();
-        foreach ($blocks as $i => $block) {
+        foreach ($blocks as $block) {
             if (! in_array($block->type, [HomePageBlockTypeEnum::WEBINAR_BANNER, HomePageBlockTypeEnum::BANNER], true)) {
                 continue;
             }
-            $image = $imagePool[$i % count($imagePool)];
+            $image = $this->media($block->content['image_url'] ?? 'banner-course.svg');
             $block->syncMedia($image, 'image');
             $content              = $block->content;
             $content['image_url'] = $image->getUrl();

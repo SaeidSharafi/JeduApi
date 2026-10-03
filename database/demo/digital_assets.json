@@ -4,8 +4,8 @@
     "short_name": "کتاب الگوهای طراحی",
     "full_name": "کتاب جامع الکترونیکی الگوهای طراحی در PHP",
     "slug": "php-design-patterns-ebook",
-    "description": "مرجعی کامل برای یادگیری الگوهای طراحی (Design Patterns) و پیاده‌سازی آن‌ها در زبان برنامه‌نویسی PHP.",
-    "thumbnail_url": "main.svg",
+    "description": "این کتابچه یک مرجع عملی برای انتخاب و پیاده‌سازی الگوهای طراحی در پروژه‌های PHP است. هر فصل با مسئله‌ای واقعی شروع می‌شود، راه‌حل ساده و نسخه بهبود‌یافته را مقایسه می‌کند و نشان می‌دهد چه زمانی استفاده از الگو به خوانایی و نگهداری بهتر کد کمک می‌کند.",
+    "thumbnail_url": "asset-01-php-patterns.webp",
     "version": "1.2.0",
     "page_count": 85,
     "duration_seconds": null,
@@ -17,7 +17,7 @@
     "meta_keywords": "PHP,Design Patterns,OOP",
     "published_at": "2024-09-15 10:00:00",
     "created_by": 3,
-    "category_ids": [7],
+    "category_ids": [10],
     "faq": [
       {
         "question": "این کتاب برای چه کسانی مناسب است؟",
@@ -38,8 +38,8 @@
     "short_name": "مجموعه وکتور",
     "full_name": "مجموعه وکتورهای ایرانی برای طراحی گرافیک",
     "slug": "iranian-vector-collection-for-graphic-design",
-    "description": "شامل المان‌های گرافیکی با کیفیت بالا با الهام از هنر و فرهنگ ایرانی، مناسب برای طراحان گرافیک.",
-    "thumbnail_url": "main.svg",
+    "description": "مجموعه‌ای سازمان‌یافته از المان‌های وکتوری الهام‌گرفته از نقش‌های ایرانی، اسلیمی، هندسی و خوشنویسی برای استفاده در هویت بصری، بسته‌بندی، پوستر و محتوای دیجیتال. فایل‌ها قابل ویرایش و مناسب ترکیب با پروژه‌های گرافیکی مختلف هستند.",
+    "thumbnail_url": "asset-02-persian-vector.webp",
     "version": "2.0",
     "page_count": null,
     "duration_seconds": null,
@@ -51,7 +51,7 @@
     "meta_keywords": "وکتور ایرانی,طراحی گرافیک,هنر",
     "published_at": "2024-10-20 11:30:00",
     "created_by": 5,
-    "category_ids": [2, 9],
+    "category_ids": [4],
     "faq": [
       {
         "question": "این وکتورها در چه نرم‌افزارهایی قابل استفاده هستند؟",
@@ -68,8 +68,8 @@
     "short_name": "پروژه آماده افترافکت",
     "full_name": "پروژه آماده نمایش لوگو با افکت نئون در افترافکت",
     "slug": "after-effects-neon-logo-reveal-template",
-    "description": "یک قالب حرفه‌ای و آماده برای نرم‌افزار افترافکت جهت ساخت انیمیشن لوگوی جذاب و مدرن با افکت نئون.",
-    "thumbnail_url": "main.svg",
+    "description": "یک پروژه آماده و قابل ویرایش افترافکت برای ساخت لوگوموشن نئونی در ویدئوهای معرفی برند، شبکه‌های اجتماعی و تیزرهای کوتاه. ساختار لایه‌ها، رنگ نور و زمان‌بندی انیمیشن مستند شده تا کاربر بتواند لوگو و رنگ سازمانی خود را سریع جایگزین کند.",
+    "thumbnail_url": "asset-03-neon-logo.webp",
     "version": "1.0",
     "page_count": null,
     "duration_seconds": 15,
@@ -81,7 +81,7 @@
     "meta_keywords": "افترافکت,لوگو موشن,نئون",
     "published_at": "2024-11-01 14:00:00",
     "created_by": 8,
-    "category_ids": [2, 9],
+    "category_ids": [4],
     "faq": [
       {
         "question": "آیا برای استفاده از این پروژه به پلاگین خاصی نیاز است؟",
