@@ -1,5 +1,7 @@
 # Digest: Data Models & Relationships
 
+Reference for uploaded-doc chat: model purpose, relationships, casts, and helpers. Read affected model sections. Column/index/constraint details in `DIGEST_SCHEMA.md` when uploaded. Code paths identify locations; repo access optional. Missing details → flag gap. Reading guide: `CODEBASE_DIGEST.md` when uploaded.
+
 ### User (`app/Models/User.php`)
 - **Purpose:** Customer accounts for the e-commerce platform
 - **Key Fields:** `uuid`, `first_name`, `last_name`, `email`, `phone`, `password`, `civil_id`, `civil_id_type`, `date_of_birth`, `gender`, `education_level`, `avatar_url`

@@ -1,5 +1,7 @@
 # Digest: Core Business Logic (Actions/Services)
 
+Reference for uploaded-doc chat: workflows, side effects, events/jobs, invariants, and failure behavior. Read affected sections and documented dependencies. Code paths identify locations; repo access optional. Missing details or unsupplied ADR context → flag gap. Reading guide: `CODEBASE_DIGEST.md` when uploaded.
+
 ## Actions Pattern (`app/Actions/`)
 
 ### E2E Actions (`app/Actions/Testing/`)

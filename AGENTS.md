@@ -1,12 +1,8 @@
 Jedu API (Laravel). Project rules below override generic Boost guidelines on conflict.
 
 ## Source of Truth
-Read before touch code:
-- docs/Digestions/DIGEST_DATA_MODELS.md — DB models, relations
-- docs/Digestions/DIGEST_CORE_LOGIC.md — Actions/Services, business logic
-- docs/Digestions/DIGEST_API_INTERFACES.md — endpoints, routes, DTO contracts
-- docs/Digestions/DIGEST_SCHEMA.md — full DB schema
-  Trust digests, don't infer architecture. Scope unclear → ask, no assumptions. Smallest change that fulfills requirement, preserve API contracts, no unrelated refactor.
+For repo work, locate affected code through Graphify/search; read scoped code and tests first. Consult relevant digest sections only for unresolved domain meaning, workflow boundaries, or cross-module effects, or when path rules require them. `docs/Digestions/CODEBASE_DIGEST.md` is optional orientation for unfamiliar domains. No mandatory digest preload. Reuse context already read; avoid reading code and digests for same facts. Digest maintenance remains required below.
+Digests also serve chatbots receiving only uploaded digestion files; preserve standalone reference coverage. With repo access, current code, migrations, configuration, and tests decide implementation details. Without access, use supplied docs and flag missing details; never infer contracts from class names. Scope unclear → ask, no assumptions. Smallest change that fulfills requirement, preserve API contracts, no unrelated refactor.
 
 ## Codebase Search
 graphify-out/graph.json exists → use `graphify query "<question>"` (or `graphify path`, `graphify explain`). Prefer over grep/glob.
@@ -25,8 +21,15 @@ PEST only. AuthTestTrait, not actingAs(). Database reset is owned by the shared 
 ## Commands
 sail artisan always, never bare php artisan. Run `sail bin pint --dirty --format agent` before finalizing any PHP change.
 
-## Befor Commits
-update the Digestion docs if any DB model, relation, action/service, or API interface changed.
+## Digest Maintenance
+Before finalizing any code task, check whether changes affect documented models/relations, schema, workflows/services/jobs, API contracts, or navigation. Update affected digest sections in same task, even when no commit requested:
+
+- Models/relations → `DIGEST_DATA_MODELS.md`; columns/indexes/constraints → `DIGEST_SCHEMA.md`.
+- Workflows, side effects, invariants, failure behavior → `DIGEST_CORE_LOGIC.md`.
+- Routes, guards, request/response contracts → `DIGEST_API_INTERFACES.md`.
+- Domain boundaries or navigation entry points → `CODEBASE_DIGEST.md`; keep overview compact.
+
+For maintenance, inspect only affected digest sections and dependencies after determining code changes; reuse sections already read. Update changed facts and add coverage for new models, schema, workflows, and API interfaces. Preserve details needed by chatbots receiving only digestion files: relationships/casts, columns/constraints, workflow effects/failures, endpoint auth and request/response contracts. Remove repeated facts between docs through cross-links; retain brief context needed to understand each section. Code accessibility alone is no reason to remove reference detail. Digestion reading guidance must stand alone; AGENTS.md, README, ADRs, and code are not part of chatbot upload unless explicitly supplied. Formatting, internal refactors, and test-only changes need no digest edits unless documented behavior or paths change. Before final response, verify affected documentation matches change; mention updates or why none needed.
 
 ## Commits
 Conventional Commits: `type(scope): imperative description`

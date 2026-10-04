@@ -1,5 +1,7 @@
 # Complete Application Database Schema
 
+Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read affected tables. Model semantics in `DIGEST_DATA_MODELS.md` when uploaded. Repo access optional; missing details → flag gap. Reading guide: `CODEBASE_DIGEST.md` when uploaded.
+
 ## User & Staff Management
 
 ### Table: `users`

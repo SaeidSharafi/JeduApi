@@ -1,5 +1,7 @@
 # Digest: API Interfaces & Endpoints
 
+Reference for uploaded-doc chat: routes, auth, documented request/response contracts, and implementation pointers. DTO names without field definitions are not complete payload specifications; flag missing fields/shapes. Code and generated API docs usable only when available. Reading guide: `CODEBASE_DIGEST.md` when uploaded.
+
 ## E2E Control Interface (`/api/v1/e2e/*`)
 **Environment:** Routes are registered only when `APP_ENV=e2e`.
 **Authentication:** Destructive control requests require the `X-E2E-Key` header matching `E2E_CONTROL_KEY` using constant-time comparison.

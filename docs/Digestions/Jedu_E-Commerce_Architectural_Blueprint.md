@@ -1,5 +1,6 @@
-
 ## Jedu E-Commerce Platform: A Definitive Architectural Blueprint
+
+Narrative reference for uploaded-doc chat: cross-domain concepts and examples. Read relevant sections; detailed contracts in other digests when uploaded. Repository files and external notes accessible only when supplied. Reading guide: `CODEBASE_DIGEST.md` when uploaded.
 
 ### Executive Summary
 

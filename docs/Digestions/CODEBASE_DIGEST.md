@@ -1,157 +1,43 @@
-# Codebase Digest: Jedu E-Commerce API
+# Codebase Digest: Overview & Reference Guide
 
-## 1. High-Level Architecture
-- **Type:** Headless Laravel E-Commerce Platform - Pure REST API with no traditional web views
-- **Interfaces:** Dual API system: Admin (`/api/v1/admin/*`) and Customer (`/api/v1/*`) interfaces with separate authentication guards
-- **Core Principle:** Business logic is centralized in Actions/Services consumed by thin controllers for each interface
+## Architecture
 
-## 2. Core Technologies
-- **PHP Version:** ^8.4
-- **Laravel Version:** ^12.0
-- **Database:** PostgreSQL with JSONB support
-- **Key Packages:**
-  - `spatie/laravel-data`: Comprehensive DTO system for type-safe API contracts (v4.15)
-  - `spatie/laravel-permission`: Role-based access control for admin operations (v6.18)
-  - `spatie/laravel-query-builder`: Advanced API filtering and querying (v6.3)
-  - `plank/laravel-mediable`: Media management and file handling (v6.3)
-  - `spatie/laravel-webhook-client`: External integrations and webhooks (v3.4)
-  - `laravel/sanctum`: Dual-guard authentication system (v4.0)
-- **Service Layer Architecture:**
-  - `SkuGeneratorService`: Automatic SKU generation with pattern-based formatting for product delivery options
-  - `ProductQueryService` (`App\Query\ProductQueryService`): Unified product query engine with Typesense-to-database fallback, availability window filters, and deferred relationship constraints for score-aware ordering
-  - `CategoryQueryService` (`App\Query\CategoryQueryService`): Category-based product retrieval that reuses the central query engine and batch pricing hydration
-  - `GlobalSearchService`: Multi-collection search across products and blog posts with Scout/Typesense integration, union hydration, and automatic SWR-cached suggestions
+Headless Laravel API for educational commerce. Admin and shop interfaces share Actions/Services. Controllers delegate business logic; `app/Data/` uses `spatie/laravel-data` DTOs for request/response contracts. API responses use `apiResponse()`. Admin authenticates staff; shop authenticates customers through separate guards.
 
-## 3. Architectural Principles & Patterns (Mandatory for New Code)
-- **API Contract:** All API requests and responses MUST use `spatie/laravel-data` DTOs in `app/Data/`. These DTOs are the definitive contract for all API interactions
-- **Business Logic:** Business logic MUST be encapsulated in Action Classes within `app/Actions/` organized by interface (Admin/Shop). Controllers MUST remain thin and delegate to Actions
-- **Database:** All schema is managed via migration files in `database/migrations/` with PostgreSQL-specific features like JSONB columns
-- **API Authentication:** Dual Sanctum guard system - `auth:staff` for Admin API, `auth:user` for Customer API with separate User/Staff models
-- **Response Format:** Consistent JSON response structure using dedicated `ResponseService` (success, created, noContent, error, notFound, forbidden, unauthenticated)
+Catalog separates content (`Course`, `Seminar`, `DigitalAsset`, `Bundle`), commercial `Product`, and buyable `ProductDeliveryOption`. Checkout creates orders with purchase snapshots; payment and enrollment provisioning have separate lifecycles.
 
-## 4. Complete Feature Coverage
+## Using uploaded digests in chat
 
-### Core E-Commerce Features
-- **Product Management:** Multi-type products (Course, Seminar, DigitalAsset) with polymorphic relationships, delivery options, and media management
-- **Order System:** Complete order lifecycle with items, payments, refunds, and status tracking. Supports configurable provisioning triggers: `any_payment` (auto-provision), `full_payment` (provision when fully paid), `manual_approval` (staff must approve). Customers can cancel pending orders.
-- **Discount System:** Advanced promotion engine with complex rules, conditions, and coupon management. Enforces `usage_limit_total` on promotions.
-- **Payment Processing:** Multi-gateway support (wallet, bank transfer, Mellat, Digipay) with factory pattern implementation. All processors create per-attempt `PaymentTransaction` records for full audit trail. `PaymentTransactionReferenceService` for unique sequential reference generation with concurrency safety. Digipay: full REST integration with token-based auth, callback verification, admin refund/deliver/reverse operations. Hidden gateway credentials managed via `PaymentGatewaySettingsController`.
-- **Refund System:** Cache-locked refund processing with gateway-specific processors (`DigipayRefundProcessor`, `ManualRefundProcessor`, `WalletRefundProcessor`). Order-level refund endpoint, cumulative amount validation, `UpdateOrderRefundedAmountAction` for parent order status recalculation.
-- **Enrollment System:** Student access management for purchased content with lifecycle tracking. **Admin Enrollment Management** endpoints for CRUD, status transitions (with allowed transition matrix), and retry provisioning. Enrollments fire model events on status changes for `enrolled_count` synchronization.
+These files support questions about codebase without repository access. Use uploaded content as reference; code paths and class names identify implementation locations, not files chatbot can open. No `AGENTS.md`, README, or other repository documents required to follow this guide.
 
-### Admin Platform Features
-- **Staff Management:** Role-based admin users with comprehensive permission system using Spatie Permission
-- **Audit System:** Complete action logging with risk assessment, compliance reporting, and suspicious activity detection
-- **Content Management:** Categories with hierarchy, media management, and "good for start" recommendations
-- **Product Relationships:** Comprehensive related product management with support for related (similar/alternative), cross-sell (frequently bought together), and upsell (premium alternatives) relationships; includes list, filter by type, bulk attach/sync, and delete operations with validation to prevent self-referencing
-- **Site CMS:** Modular `App\Http\Controllers\Api\Admin\Content\*` controllers covering header, footer, about us, collaboration content, partners, sliders (with publication status toggles), and homepage blocks backed by reusable DTOs
-- **Student Story CMS:** Admin `StudentStoryController` accepts featured flags plus `categories[]`/`courses[]` associations; list endpoints expose `filter[course_id]` and `filter[category_id]` for moderation of curated testimonials
-- **Blog System:** Complete blog management with hierarchical categories, publication workflow, content relationships to educational materials, and automated scheduling
-- **Settings Management:** Settings index endpoint plus cache-gateway-backed SettingsService with explicit invalidation on every write path to keep responses consistent across the admin and shop surfaces
-- **Form Intake:** Admin review workflows for advice requests alongside collaboration/contact form submissions with attachment handling
-- **Review System:** Customer review management with approval workflow and featured selection
-- **Wallet System:** User credit management with campaigns, bulk allocations, and transaction tracking
-- **File Management:** Public media and private file handling with secure access controls
-- **Product Select Options:** Dedicated endpoint for product dropdowns with id, title (short_name), subtitle (slug), and type; supports search across product names, filtering by productable type (course, seminar, digital_asset), and `page`/`per_page` pagination for infinite-scroll dropdowns
-- **Digital Asset Select Options:** Dedicated endpoint for digital asset dropdowns with id, title (full_name), subtitle (main file type and size), and image_url (thumbnail); returns only published assets and supports search by full/short name, an attachability filter, and `page`/`per_page` pagination
+Select relevant sections by question. Use cross-references only when target file also uploaded. Missing field definitions, validation rules, response shapes, or external decision context → state what supplied docs establish and flag missing detail. DTO/class names alone do not establish contracts. Code and generated API docs can verify details only when actually available.
 
-### Customer Features
-- **Authentication:** OTP and password-based login with secure token management
-- **Profile Management:** Customer account management and profile updates
-- **Course Access:** Enrollment-based access to purchased content
-- **Review System:** Customer review submission for products and courses
-- **Teacher Profiles:** View detailed instructor profiles with avatar, bio, rate, and social media links; browse teachers associated with specific products
-- **Home Page Content:** Dynamic home page block hydration with curated, dynamic, banner, and webinar layouts powered by cached pricing data, block-specific hydration actions, and SWR caching profiles
-- **Public CMS Pages:** Read-only endpoints for header, footer, about us, collaboration, contact page, partner listings, sliders, and student stories derived from admin-managed settings
-- **Public Course Catalog:** Browse courses, seminars, and digital assets with filtering by fulfillment type, category slug, difficulty level, price range, availability windows, and discount flags driven by the shared product query engine
-- **Course Details:** Detailed course information pages with curriculum, pricing options, and teacher information
-- **Category Browsing:** Hierarchical category listing and detail pages with product counts
-- **Category Products:** Browse products within categories by type (course, seminar, digital asset) with pagination
-- **Consultation Requests:** Request educational consultation via phone number submission with rate-limited form handling
-- **Cart & Checkout:** Persistent carts for guests and authenticated users (coupon support, capacity validation) feed the checkout pipeline that validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`) on each item before converting carts into orders and launching wallet, bank-transfer, or Mellat gateway processors with retry + callback verification endpoints
-- **Blog & Editorial Content:** Public `/api/v1/shop/blog/*` endpoints provide paginated blog post listings, slug detail retrieval, and category feeds with filtering by featured flag, category slug, and sort order for customer discovery
-- **Related Product Recommendations:** `/api/v1/shop/product/{slug}/related/{relation_type}` serves related, cross-sell, and upsell suggestions using `ProductQueryService` + `ProductPriceService` hydration for consistent card responses
-- **Student Story Filtering:** Home page student stories accept `course_slug`, `category_slug`, `featured_only` filters (with featured fallback) for context-aware testimonials
+| Question | Reference file | Contents |
+| --- | --- | --- |
+| What is entity for? How does it relate to others? | [Data models](DIGEST_DATA_MODELS.md) | Model purpose, relationships, casts, helpers |
+| How does operation work? What else does it affect? | [Core logic](DIGEST_CORE_LOGIC.md) | Actions/Services, events/jobs, workflows, side effects, failures |
+| Which endpoint? Which auth/input/output? | [API interfaces](DIGEST_API_INTERFACES.md) | Routes, guards, documented request/response contracts, controller/action pointers |
+| Which columns, keys, constraints? | [Schema](DIGEST_SCHEMA.md) | Tables, columns, indexes, foreign keys |
+| How do major domain concepts fit together? | [Architectural blueprint](Jedu_E-Commerce_Architectural_Blueprint.md) | Cross-domain narrative and examples |
 
-### System Features
-- **Multi-tenancy Support:** Vendor-based product organization
-- **Academic Terms:** Time-based product organization and scheduling
-- **Media Management:** Comprehensive file and image handling with processing
-- **SMS Integration:** OTP delivery via IP Panel SMS service
-- **API Documentation:** Comprehensive endpoint coverage with DTOs
-- **Select Options:** Dropdown data provision for admin interface
-- **Content Automation:** Scheduled blog post publication with automated workflow management
-- **Cache Invalidation:** Explicit, tag-based invalidation through the `CacheStore` gateway — mutating actions and jobs call `invalidate(CacheTag::…)` in plain sight, `CacheKey` owns every key template/TTL/group, and `SettingsService` clears `CacheKey::Settings` on write. No observer or config map clears caches implicitly. Enforced by the architecture and tag-coverage tests in `tests/Architecture/CacheGatewayTest.php`
-- **Unified Search & Discovery:** Typesense-powered search with PGroonga-backed database fallback, multi-model result hydration, and SWR-cached autosuggest responses
-- **Review Aggregation:** Background listener recomputes `review_count` and `average_rating` whenever reviews change for reviewable models
-- **Price Indexing System:** Denormalized product_prices table for fast price queries with discount and featured price calculations
-  - **Automated Updates:** `UpdateProductPricingJob` for batch updates, `CheckExpiredFeaturedPricesCommand` for scheduled expiry checks
-  - **Manual Indexing:** `prices:index-all` command with --missing-only, --sync, and --queue options for maintenance
-  - **Query Optimization:** ProductQueryService leverages price index for efficient filtering and sorting
-- **Automatic SKU Generation:** SkuGeneratorService creates unique product codes when SKU not manually provided
+Upload relevant files for narrow questions; upload all digests for broad or cross-domain questions. Overview optional when detailed reference already matches question. Some entries name DTOs without full field definitions; those entries are navigation references, not complete payload specifications.
 
-## 5. Security & Compliance
-- **Audit Trail:** All admin actions logged with risk assessment
-- **Permission System:** Granular role-based access control
-- **Authentication Guards:** Separate authentication for admin and customer interfaces
-- **File Security:** Private file access with authorization checks
-- **Data Validation:** Comprehensive request validation through DTOs
-- **Compliance Reporting:** Automated compliance report generation
+## Reading with repository access
 
-## 6. Data Model Completeness
-**39 Models Total:** User, Staff, AdminActionLog, Order, OrderItem, Product (polymorphic to Course/Seminar/DigitalAsset), ProductDeliveryOption (includes `access_days` for content access duration), ProductDeliveryOptionDiscountPrice, ProductPrice (pricing index), Enrollment (stores `provisioning_data` JSONB for per-provider provisioning state), **Payment** (includes `last_gateway_reference`, `attempt_count`, `last_attempted_at`), **PaymentTransaction** (per-attempt gateway tracking with full request/response capture), Refund, Review, Category (self-referencing parent/children), Categorizable, Teacher, Vendor, Term, DiscountPromotion, DiscountPromotionRule, DiscountCoupon, Wallet, WalletTransaction, WalletCampaign, Setting (secrets encrypted at rest via SettingSecretRedactor), HomePageBlock (includes `type` field), Slider, StudentStory, CollaborationCarousel, CollaborationRequest, ContactUsRequest, AdviceRequest, SmsLog, BlogCategory, BlogPost (includes `average_rating` for popularity sorting)
+Locate affected code through Graphify/search; read scoped code/tests first. This overview is optional orientation for unfamiliar domains. Consult matching digest sections only for unresolved domain meaning, workflow boundaries, cross-module effects, or explicit path-rule requirements. Reuse facts already read; no mandatory digest preload. For exact details, use models, DTOs, routes, migrations, or Boost schema tools directly. Current implementation decides conflicts; flag mismatches.
 
-## 7. Business Logic Coverage
-**100+ Action Classes** (plus 6 integration services, 5 provisioning jobs, and setting encryption commands) organized by domain:
-- **Admin Actions:** Complete CRUD operations for all entities including `GetThumbnailUrlAction`, `UpdateSliderStatusAction`, `CreateRelatedProductAction`, `DeleteRelatedProductAction`, admin enrollment management, refund actions with gateway processors, `CreateTeacherAction`/`UpdateTeacherAction` (UUID auto-generation, avatar uploads, social media links)
-- **Shop Actions:** Customer-facing operations include `GetHomePageBlocksListAction`, `GetHomePageBlockAction`, `GetEnrollmentDetailAction` (per-delivery-type block DTOs), `GetJoinUrlAction` (lazy join URL generation), attachment-aware collaboration/contact form submissions, shared file upload handling, `StoreAdviceRequestAction` for consultation requests
-- **Auth Actions:** Comprehensive authentication system with OTP and password support
-- **Wallet Actions:** Credit management and transaction processing
+Understanding and maintenance are separate: before finishing code changes, inspect affected digest sections and update changed reference facts, including new coverage. Reuse sections already read; leave unrelated digests unloaded. Preserve detailed references for chatbot uploads.
 
-**Comprehensive Service Layer:**
-- **Order Management:** Status tracking and lifecycle management
-- **Discount Engine:** Advanced promotion calculation with multiple rule types, conditions, and cart/product-level actions
-- **Payment Processing:** Multi-gateway support with factory pattern; all processors create per-attempt `PaymentTransaction` records with full gateway request/response capture; `PaymentTransactionReferenceService` generates unique sequential references
-- **Product Pricing:** Centralized pricing service with hierarchy support (product discounts > featured prices > standard prices) and request-scoped caching
-- **Price Indexing:** Denormalized pricing table with `UpdateProductPricingJob` for batch updates and scheduled `CheckExpiredFeaturedPricesCommand` for expiry checks
-- **SKU Generation:** Automatic SKU generation via `SkuGeneratorService` with pattern-based formatting
-- **Product Querying:** `ProductQueryService` provides fluent interface for complex product filtering with discount, price range, category, and availability filters; enhanced search matching across product names (name, short_name) and productable fields using `whereLike()` for optimized pattern matching
-- **Category Querying:** `CategoryQueryService` handles category-based product retrieval with type filtering
-- **Content Management:** Dynamic home page content assembly with performance optimization and gateway-backed explicit invalidation
-- **Settings:** `SettingsService` centralizes cached reads/writes for site-wide configuration through the cache gateway (`CacheKey::Settings`), SKIP_MEDIA optimization for integration keys, auto-encryption of secrets on write, auto-decryption on read, and redaction in API responses via `SettingSecretRedactor`
-- **Integration Services:** `ImsService` (REST student/enrollment CRUD with PII redaction), `MoodleService` (Web Services user/enrollment/grades/completion/SSO), `SpotPlayerService` (video license provisioning), `SkyroomService` (video conferencing SSO and user/room management), `NiliroomService` (live-session panel login and meeting join grants). All extend `AbstractIntegrationService` base class with shared config resolution, HTTP error handling, and lifecycle guards (`isEnabled()`, `assertConfigured()`, `isReady()`). All use `SettingsService` for credential resolution with dual-mode config (direct/settings).
-- **Provisioning:** Canonical `ProvisionEnrollmentProviderJob` (3 retries [60s, 180s, 600s], unique per attempt) resolves provider adapters through `ProvisioningProviderRegistry` and persists outcomes via `ProvisioningAttemptService`. `OrderStatusUpdateListener` dispatches it per planned provider after order completion. `ProvisioningPlanResolver` builds the canonical provider plan; `ProvisioningDiagnosticsService` exposes safe diagnostics; `SyncMoodleProgressJob` updates enrollment provisioning_data with Moodle completion/grades. Skyroom join URLs generated lazily via `GetJoinUrlAction` at request time (not async provisioning).
-- **ExternalProvisioningException:** Custom exception class with context array for structured error logging in integration services
-- **PaymentTransactionReferenceService:** Unique sequential reference generation with row-locking for concurrent safety
-- **Order Provisioning:** Configurable trigger system (`any_payment`, `full_payment`, `manual_approval`) with `ApproveOrderAction` for staff approval flow
-- **OTP Management:** Secure verification code handling
-- **SMS Service:** Integration with external SMS provider
-- **Console Commands:** Automated blog post publication, price indexing with `prices:index-all` (--missing-only, --sync, --queue options), featured price expiry checks with `prices:check-expired-featured` (--dry-run, --queue options), `payments:check-stuck` for detecting abandoned gateway payments, `settings:encrypt-secrets` (--dry-run) for migrating legacy plaintext integration secrets to encrypted at rest, and the cache operator commands `cache:keys` (registry audit), `cache:versions` (current version per group) and `cache:invalidate {group}` (bump one group's version counter)
-- **Performance Optimization:** Request-scoped caching service to prevent N+1 queries and duplicate calculations
+Use Graphify for code navigation when graph available. For digest navigation:
 
-## 8. API Interface Completeness
-**250+ Endpoints** across all domains (including Admin Enrollment Management, Digipay admin, Refund system, Student dashboard endpoints, Moodle SSO, blog popularity sort with related products, category children, product listing capacity/availability filters, settings with encrypted secrets):
-- **Admin API:** Complete platform management with 170+ endpoints including Content module for CMS settings, slider status toggles, product relationship management (related, cross-sell, upsell), order approval (`POST orders/{order}/approve`), enrollment management, Digipay admin operations, refund processing
-- **Customer API:** Profile and course access management with Moodle progress sync triggered on enrollment detail view (rate-limited 5-min per enrollment). **Student Dashboard** under `/api/v1/shop/student/*` with enriched enrollment detail (per-delivery-type block DTOs), Moodle SSO, lazy join URLs (Niliroom/Skyroom/SpotPlayer), quizzes, digital asset downloads.
-- **Shop Public API:** Modular endpoints for home page blocks, sliders, partners, header/footer, CMS pages, teacher profiles, and rate-limited contact/collaboration/advice request form submissions
-- **Course Catalog API:** Public course listing with advanced filtering (search, category, level, price range, capacity (nearing/full), availability status (past/upcoming/ongoing), discounts, sort by `capacity_utilization`) and detailed course pages. ProductCardData enriched with `registration_status`, `delivery_type`, and `teachers` arrays.
-- **Category API:** Category listing, detail pages, and category-based product browsing by type with pagination
-- **Teacher API:** Teacher profile display and product-specific teacher listings
-- **Authentication:** Dual system for both admin and customer interfaces
-- **File Management:** Secure media and private file handling
-- **Select Options:** Dropdown data for admin interface; the DB-backed select-option endpoints are paginated with Laravel `paginate()` (`page`/`per_page`, default `config('app.page_size')`) so the frontend can infinite-scroll, while the enum-only wallet-campaign-types and delivery-options endpoints stay flat
-- **Blog Management:** Full CRUD operations for blog categories and posts with publication workflow, `sortBy=popularity` (by `average_rating`) on public listing, related products in post detail, and thumbnail scoped to `cover` media tag
-- **Moodle SSO:** `POST /api/v1/shop/student/courses/{enrollment:uuid}/moodle/sso` generates auto-login URL for enrolled users
-- **Category API:** Categories expose `children` hierarchy in `CategoryCardData` for recursive navigation
-
-### System Features (continued)
-- **Provisioning System:** Provisioning adapters (IMS REST, Moodle Web Services, Moodle Quiz, SpotPlayer License, Skyroom rooms) each reached through the canonical queued job (3 retries, exponential backoff); Niliroom is a live-session adapter with nothing to provision. `OrderStatusUpdateListener` dispatches jobs after `OrderStatusUpdatedEvent`. `SyncMoodleProgressJob` syncs Moodle progress on enrollment view.
-- **Settings Encryption:** Secrets in integration configs (API keys, tokens, passwords) encrypted at rest via `Crypt::encryptString()`, auto-decrypted on read, redacted in API responses via `SettingSecretRedactor`. `SKIP_MEDIA` optimization skips `witImages()` for integration keys.
-- **CORS:** Schema-based allowed origins with credentials support via dedicated `config/cors.php`
-
-## 9. Digest Index
-- **[Data Models & Relationships](./DIGEST_DATA_MODELS.md)** - Complete coverage of all 39+ models with relationships including PaymentTransaction, teacher profiles, provisioning trigger configuration, Category parent/children hierarchy, ProductDeliveryOption access_days, Enrollment provisioning_data, BlogPost average_rating, product enums (AvailabilityStatusEnum, ProductRegistrationStatusEnum, ProductDeliveryStatusEnum, DeliveryMethodEnum, FulfillmentTypeEnum). Product model has `event_start_at`/`event_ended_at` with event date scopes.
-- **[Core Business Logic (Actions/Services)](./DIGEST_CORE_LOGIC.md)** - Complete coverage of 100+ Action classes, comprehensive services (Integration services ImsService/MoodleService/SpotPlayerService/SkyroomService/NiliroomService + AbstractIntegrationService base, PaymentTransactionReferenceService, SettingSecretRedactor, ResponseService, DigipayPaymentProcessor, RefundProcessorFactory), provisioning jobs (5 providers + SyncMoodleProgressJob + OrderStatusUpdateListener), ProductQueryService capacity filters and availability sort, SettingsService encrypt/decrypt/SKIP_MEDIA/redact, console commands (CheckStuckPaymentsCommand + EncryptSettingSecretsCommand). Admin Enrollment Actions, Refund Actions with gateway processors.
-- **[API Interfaces & Endpoints](./DIGEST_API_INTERFACES.md)** - Complete coverage of 250+ API endpoints organized by domain including order approval, order cancellation, registration/availability window validation, product listing capacity filters (nearing capacity, availability status, capacity_utilization sort), blog popularity sort + related products, category children hierarchy, Moodle SSO endpoint, Settings update with encrypted secrets, CORS configuration, ProductCardData enrichment (registration_status, delivery_type, teachers). Admin routes use plural form. Student dashboard under `/api/v1/shop/student/*`. Admin enrollment/digipay/refund endpoints available. Response files in `resources/responses/`.
-
+```bash
+rg -n '^#{1,4} ' docs/Digestions/DIGEST_CORE_LOGIC.md
+rg -n 'Order|Payment|Checkout' docs/Digestions/DIGEST_CORE_LOGIC.md
+sed -n 'START,ENDp' docs/Digestions/DIGEST_CORE_LOGIC.md
 ```
+
+Replace `START,END` with section bounds. Stop expanding once affected entry points, contracts, invariants, and dependencies understood.
+
+## Reference organization
+
+Preserve detail needed for chatbot questions without code access. Each fact has primary home: relationships/casts in models, columns/indexes/constraints in schema, workflows in core logic, endpoint auth and request/response contracts in API interfaces. Cross-link repeated details; retain brief local context. Useful technical detail remains valuable even when easy to find in code.

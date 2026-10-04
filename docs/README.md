@@ -1,15 +1,15 @@
 # JeduShop documentation
 
-This directory deliberately contains a small set of documents. Documentation that repeats routes, DTO fields, schemas, file maps, or implementation walkthroughs becomes stale quickly and must not be treated as a second codebase.
+Digests serve both repo-connected agents and agents with docs only. Preserve standalone reference detail; reduce repeated facts between documents. Repo-connected agents read scoped code/tests first; consult digests for unresolved domain context or required documentation maintenance. Chatbots use uploaded digests as reference.
 
 ## Authority order
 
-1. `docs/Digestions/` is the repository's maintained technical source of truth.
-2. Current code, migrations, configuration, and tests decide implementation details.
+1. Current code, migrations, configuration, and tests decide implementation details for repo work.
+2. `docs/Digestions/` provides standalone reference for chatbot uploads and conditional domain context for repo agents. `CODEBASE_DIGEST.md` is optional orientation; no upfront digest reading required.
 3. `docs/Architecture/` records only non-obvious boundaries, invariants, and failure behavior. It is supporting context, not an API or schema contract.
 4. `IP_OWNERSHIP_DOCUMENT.md` and `sales-document-fa.md` are legal/product material, not engineering specifications.
 
-Generated API documentation is the authority for client integration. Do not recreate endpoint maps or request/response examples here.
+Generated API documentation is authority for client integration when available. Digestion API references retain endpoint auth and request/response contracts needed by docs-only agents. Missing details must be flagged; DTO names alone are insufficient.
 
 ## Retained architecture notes
 
@@ -24,6 +24,6 @@ Generated API documentation is the authority for client integration. Do not recr
 
 ## Maintenance rule
 
-Add a document only when it captures a decision that cannot be recovered cheaply from code. Prefer a short invariant plus its reason and failure mode. Do not add temporary handoffs, audit snapshots, proposed implementations, progress percentages, exhaustive inventories, or copies of third-party documentation.
+Prefer existing digest sections for model, schema, workflow, and API coverage. Add architecture notes for non-obvious decisions, reasons, and failure modes. Avoid temporary handoffs, progress reports, and copies of third-party documentation. Keep each fact in its owning reference; cross-link elsewhere with enough context for understanding.
 
-When behavior changes, update the relevant Digestion first. Update an Architecture note only when the underlying boundary or invariant changes.
+Follow **Digest Maintenance** in `AGENTS.md` before finalizing code tasks. Update affected sections only; preserve reference detail needed without repo access. Update an Architecture note only when underlying boundary or invariant changes.
