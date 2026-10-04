@@ -284,7 +284,20 @@
 ### Vendor (`app/Models/Vendor.php`)
 - **Purpose:** Internal departments/external entities
 - **Key Fields:** Vendor information and business details
-- **Relationships:** `hasMany(Product::class)` - products
+- **Relationships:** `hasMany(Product::class)` - products; `hasOne(OrganizationPage::class)` - organizationPage; `hasMany(OrganizationTrainingRequest::class)` - organizationTrainingRequests
+
+### OrganizationPage (`app/Models/OrganizationPage.php`)
+- **Purpose:** Dedicated singleton configuration for the one-off Organization landing-page feature; a Vendor remains the school department that owns the recent Course catalog, not a marketplace seller.
+- **Singleton invariant:** The database unique sentinel is fixed at 1, and the model singleton scope targets that row for all page reads and updates.
+- **Key Fields:** Nullable `vendor_id`, `hero_title`, `hero_description`, `ims_portal_url`, `request_section_title`, `request_section_explanation`, ordered `faqs` JSON, `hero_image_url`, and `educational_calendar_url`.
+- **Relationships:** `belongsTo(Vendor::class)` - vendor; Mediable attachments tagged `hero` and `educational_calendar`.
+- **Special Features:** The initial singleton row is created by migration with no Vendor or optional content. Admin replacement requires a Vendor, while public retrieval remains available without one. FAQ entries are ordered `{question, answer, is_visible}` objects. Admin media remains Mediable, while update denormalizes the `hero` and `educational_calendar` URLs into `hero_image_url` and `educational_calendar_url` for the shop read path. Partners are intentionally not duplicated because the existing dedicated partners link remains canonical; no `hero_image_id` column exists.
+
+### OrganizationTrainingRequest (`app/Models/OrganizationTrainingRequest.php`)
+- **Purpose:** Public, unauthenticated organization training enquiries, separate from CollaborationRequest and course selection.
+- **Key Fields:** UUID reference, representative `first_name`, `last_name`, `phone`, `position`, `organization_name`, normalized `requested_course_names` JSON array, optional `notes`, `status`, nullable `assigned_to_id`, nullable `vendor_id`, and immutable `vendor_snapshot` JSON.
+- **Relationships:** `belongsTo(Staff::class, 'assigned_to_id')` - assignee; `belongsTo(Vendor::class)` - historical Vendor reference; private Mediable `attachment` tag.
+- **Special Features:** New records use `InboundRequestStatusEnum::PENDING`, have no assignee, accept at most one private PDF attachment up to 2 MB, and snapshot the Organization page’s linked Vendor at submission time. The UUID is returned as the stable public request reference. Dedicated `organization_training_requests.view_any`, `.view`, `.update`, and `.update_own` permissions protect staff access.
 
 ### Term (`app/Models/Term.php`)
 - **Purpose:** Academic terms and scheduling periods

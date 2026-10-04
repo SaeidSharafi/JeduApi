@@ -64,6 +64,8 @@ return [
         'learningpath'                       => 'Learning Path',
         'order'                              => 'Order',
         'orderitem'                          => 'Order Item',
+        'organizationpage'                   => 'Organization Page',
+        'organizationtrainingrequest'        => 'Organization Training Request',
         'partner'                            => 'Partner',
         'payment'                            => 'Payment',
         'paymenttransaction'                 => 'Payment Transaction',
@@ -94,6 +96,20 @@ return [
     'errors' => [
         'model_has_relationship_data'                       => 'The selected record has related data (:related_model) and cannot be deleted.',
         'model_has_relationship_data_without_related_model' => 'The selected record has related data and cannot be deleted.',
+    ],
+    'notifications' => [
+        'organization_training_request_submitted' => [
+            'title'   => 'New Organization Training Request',
+            'message' => 'A new organization training request was submitted.',
+        ],
+        'inbound_request_assignment' => [
+            'title'    => 'New inbound request assignment',
+            'messages' => [
+                'contact_request'               => 'A contact request was assigned to you.',
+                'collaboration_request'         => 'A collaboration request was assigned to you.',
+                'organization_training_request' => 'An organization training request was assigned to you.',
+            ],
+        ],
     ],
     'product' => [
         'acrhived' => 'Product archived successfully.',

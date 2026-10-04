@@ -11,6 +11,7 @@ use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\Product\ProductDeliveryStatusEnum;
 use App\Enums\Product\ProductRegistrationStatusEnum;
+use App\Models\Course;
 use App\Models\Product;
 use Carbon\CarbonImmutable;
 use Hekmatinasser\Verta\Verta;
@@ -61,16 +62,126 @@ final class ProductCardData extends Data
         ProductPriceData $priceData,
         bool $withFullPriceData = true
     ): self {
-        $teachers              = [];
+        $productable        = $product->productable;
+        $defaultTeacherInfo = isset($productable?->default_teacher_info)
+            ? $productable->default_teacher_info
+            : null;
+        $delivery = self::deliveryPresentation($product, $defaultTeacherInfo);
+
+        return new self(
+            slug: $product->slug,
+            name: $product->name,
+            excerpt: $product->short_description,
+            price: $priceData->min_price,
+            original_price: $priceData->min_original_price,
+            price_range: $priceData->range,
+            has_discount: $priceData->has_discount,
+            discount_percent: $priceData->discount_percentage,
+            is_free: ($priceData->min_price ?? 0) <= 0,
+            is_featured: $product->is_featured,
+            provides_certificate: $productable?->provides_certificate ?? false,
+            product_type: ProductableEnum::from($product->productable_type),
+            thumbnail_url: $productable?->thumbnail_url,
+            available_from: $delivery['available_from'] ? Verta::instance($delivery['available_from']) : null,
+            available_to: $delivery['available_to'] ? Verta::instance($delivery['available_to']) : null,
+            registration_start_date: $delivery['registration_start_date']
+                ? Verta::instance($delivery['registration_start_date'])
+                : null,
+            registration_end_date: $delivery['registration_end_date']
+                ? Verta::instance($delivery['registration_end_date'])
+                : null,
+            teachers: $delivery['teachers'],
+            reviews_count: $product->reviews_count ?? 0,
+            average_rating: (float) ($product->average_rating ?? 0.0),
+            registration_status: $delivery['registration_status'],
+            delivery_type: $delivery['delivery_type'],
+            price_data: $withFullPriceData ? $priceData : null,
+            event_start_at: $product->event_start_at?->toDateString(),
+            event_ended_at: $product->event_ended_at?->toDateString(),
+        );
+    }
+
+    /**
+     * Build the flat ProductCardData shape from a Course and its commercial Product shell.
+     *
+     * Course fields provide the catalog identity and presentation; Product fields provide
+     * pricing, featured state, delivery dates, registration state, and fulfillment information.
+     */
+    public static function fromCourse(
+        Course $course,
+        ?Product $product,
+        ?ProductPriceData $priceData,
+        bool $withFullPriceData = true,
+    ): self {
+        $delivery = [
+            'available_from'          => null,
+            'available_to'            => null,
+            'registration_start_date' => null,
+            'registration_end_date'   => null,
+            'teachers'                => $course->default_teacher_info !== null
+                ? [$course->default_teacher_info]
+                : [],
+            'registration_status' => null,
+            'delivery_type'       => null,
+        ];
+
+        if ($product !== null) {
+            $delivery = self::deliveryPresentation($product, $course->default_teacher_info);
+        }
+
+        return new self(
+            slug: $product ? $product->slug : $course->slug,
+            name: $course->full_name,
+            excerpt: $course->description,
+            price: $priceData?->min_price,
+            original_price: $priceData?->min_original_price,
+            price_range: $priceData?->range,
+            has_discount: $priceData?->has_discount,
+            discount_percent: $priceData?->discount_percentage,
+            is_free: $priceData !== null && ($priceData->min_price ?? 0) <= 0,
+            is_featured: $product?->is_featured ?? false,
+            provides_certificate: (bool) $course->provides_certificate,
+            product_type: ProductableEnum::COURSE,
+            thumbnail_url: $course->thumbnail_url,
+            available_from: $delivery['available_from'] ? Verta::instance($delivery['available_from']) : null,
+            available_to: $delivery['available_to'] ? Verta::instance($delivery['available_to']) : null,
+            registration_start_date: $delivery['registration_start_date']
+                ? Verta::instance($delivery['registration_start_date'])
+                : null,
+            registration_end_date: $delivery['registration_end_date']
+                ? Verta::instance($delivery['registration_end_date'])
+                : null,
+            teachers: $delivery['teachers'],
+            reviews_count: (int) $course->review_count,
+            average_rating: (float) $course->average_rating,
+            registration_status: $delivery['registration_status'],
+            delivery_type: $delivery['delivery_type'],
+            price_data: $withFullPriceData ? $priceData : null,
+            event_start_at: $product?->event_start_at?->toDateString(),
+            event_ended_at: $product?->event_ended_at?->toDateString(),
+        );
+    }
+
+    /**
+     * @return array{
+     *     available_from: null|Carbon|CarbonImmutable,
+     *     available_to: null|Carbon|CarbonImmutable,
+     *     registration_start_date: null|Carbon|CarbonImmutable,
+     *     registration_end_date: null|Carbon|CarbonImmutable,
+     *     teachers: array<int, mixed>,
+     *     registration_status: ?ProductRegistrationStatusEnum,
+     *     delivery_type: ?ProductDeliveryStatusEnum
+     * }
+     */
+    private static function deliveryPresentation(Product $product, mixed $defaultTeacherInfo): array
+    {
         $availableFrom         = null;
         $availableTo           = null;
         $registrationStartDate = null;
         $registrationEndDate   = null;
         $teacherMap            = [];
-        $registrationStatus    = null;
         $fulfillmentTypes      = [];
 
-        // single pass: collect date boundaries + unique teachers
         foreach ($product->productDeliveryOptions as $option) {
             $fulfillmentTypes[] = $option?->fulfillment_type?->value;
             if ($option->available_from) {
@@ -100,17 +211,12 @@ final class ProductCardData extends Data
                 }
             }
         }
-        if (self::isInProgress($registrationStartDate, $registrationEndDate)) {
-            $registrationStatus = ProductRegistrationStatusEnum::IN_PROGRESS;
-        }
-        if ($availableTo && now()->isAfter($availableTo)) {
-            $registrationStatus = ProductRegistrationStatusEnum::FINISHED;
-        }
+
         $teachers = array_values($teacherMap);
-        if (! $teachers) {
-            $teachers = isset($product->productable?->default_teacher_info)
-                ? [$product->productable?->default_teacher_info] : [];
+        if (! $teachers && $defaultTeacherInfo !== null) {
+            $teachers = [$defaultTeacherInfo];
         }
+
         $fulfillmentTypes = array_unique($fulfillmentTypes);
         $deliveryStatus   = match (true) {
             count($fulfillmentTypes) > 1 => ProductDeliveryStatusEnum::COMBINED,
@@ -120,33 +226,22 @@ final class ProductCardData extends Data
             default                                                                    => null,
         };
 
-        return new self(
-            slug: $product->slug,
-            name: $product->name,
-            excerpt: $product->short_description,
-            price: $priceData->min_price,
-            original_price: $priceData->min_original_price,
-            price_range: $priceData->range,
-            has_discount: $priceData->has_discount,
-            discount_percent: $priceData->discount_percentage,
-            is_free: ($priceData?->min_price ?? 0) <= 0,
-            is_featured: $product->is_featured,
-            provides_certificate: $product->productable->provides_certificate ?? false,
-            product_type: ProductableEnum::from($product->productable_type),
-            thumbnail_url: $product->productable->thumbnail_url ?? null,
-            available_from: $availableFrom ? Verta::instance($availableFrom) : null,
-            available_to: $availableTo ? Verta::instance($availableTo) : null,
-            registration_start_date: $registrationStartDate ? Verta::instance($registrationStartDate) : null,
-            registration_end_date: $registrationEndDate ? Verta::instance($registrationEndDate) : null,
-            teachers: $teachers,
-            reviews_count: $product->reviews_count   ?? 0,
-            average_rating: $product->average_rating ?? 0.0,
-            registration_status: $registrationStatus,
-            delivery_type: $deliveryStatus,
-            price_data: $withFullPriceData ? $priceData : null,
-            event_start_at: $product->event_start_at?->toDateString(),
-            event_ended_at: $product->event_ended_at?->toDateString(),
-        );
+        $registrationStatus = self::isInProgress($registrationStartDate, $registrationEndDate)
+            ? ProductRegistrationStatusEnum::IN_PROGRESS
+            : null;
+        if ($availableTo && now()->isAfter($availableTo)) {
+            $registrationStatus = ProductRegistrationStatusEnum::FINISHED;
+        }
+
+        return [
+            'available_from'          => $availableFrom,
+            'available_to'            => $availableTo,
+            'registration_start_date' => $registrationStartDate,
+            'registration_end_date'   => $registrationEndDate,
+            'teachers'                => $teachers,
+            'registration_status'     => $registrationStatus,
+            'delivery_type'           => $deliveryStatus,
+        ];
     }
 
     private static function isInProgress(null|Carbon|CarbonImmutable $registrationStartDate, null|Carbon|CarbonImmutable $registrationEndDate): bool

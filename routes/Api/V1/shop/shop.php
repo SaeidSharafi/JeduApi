@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Shop\HomePage\PartnerController;
 use App\Http\Controllers\Api\Shop\HomePage\SliderController;
 use App\Http\Controllers\Api\Shop\HomePage\StudentStoryController;
 use App\Http\Controllers\Api\Shop\LearningPath\LearningPathController;
+use App\Http\Controllers\Api\Shop\OrganizationPageController;
 use App\Http\Controllers\Api\Shop\Product\BundleController;
 use App\Http\Controllers\Api\Shop\Product\CategoryController;
 use App\Http\Controllers\Api\Shop\Product\CategoryCourseController;
@@ -44,6 +45,7 @@ Route::get('footer', FooterController::class)->name('footer.index');
 Route::get('aboutus', AboutUsController::class)->name('aboutus.show');
 Route::get('contact-page', ContactPageController::class)->name('contactpage.show');
 Route::get('collaboration', CollaborationPageController::class)->name('collaboration.show');
+Route::get('organization', OrganizationPageController::class)->name('organization.show');
 Route::get('partners', PartnerController::class)->name('partners.index');
 Route::get('student-stories', StudentStoryController::class)->name('student-stories.index');
 

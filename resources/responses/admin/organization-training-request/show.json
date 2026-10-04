@@ -1,0 +1,30 @@
+{
+  "message": "Operation successful.",
+  "data": {
+    "id": 1,
+    "reference": "0199abcd-1234-7000-8000-123456789abc",
+    "first_name": "Sara",
+    "last_name": "Ahmadi",
+    "phone": "09121234567",
+    "position": "HR manager",
+    "organization_name": "Example Organization",
+    "requested_course_names": ["Project management"],
+    "notes": null,
+    "status": {"value": "pending", "label": "Pending"},
+    "assignee": null,
+    "vendor_snapshot": {"id": 1, "name": "Education Department"},
+    "attachment": {
+      "id": 2,
+      "url": "https://example.com/api/v1/admin/organization-training-requests/1/attachment/download",
+      "size": 123456,
+      "file_name": "requirements.pdf",
+      "alt": null,
+      "mime_type": "application/pdf",
+      "extension": "pdf",
+      "tag": "attachment"
+    },
+    "created_at": "1405-07-12 12:00:00",
+    "updated_at": "1405-07-12 12:00:00"
+  },
+  "metadata": []
+}

@@ -6,6 +6,7 @@ namespace App\Notifications\Admin;
 
 use App\Models\CollaborationRequest;
 use App\Models\ContactUsRequest;
+use App\Models\OrganizationTrainingRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
@@ -14,7 +15,7 @@ final class InboundRequestAssignedNotification extends Notification implements S
 {
     use Queueable;
 
-    public function __construct(protected ContactUsRequest|CollaborationRequest $request)
+    public function __construct(protected ContactUsRequest|CollaborationRequest|OrganizationTrainingRequest $request)
     {
         $this->onQueue('notifications');
     }
@@ -28,12 +29,15 @@ final class InboundRequestAssignedNotification extends Notification implements S
     /** @return array{title: string, message: string, resource_type: string, resource_id: int} */
     public function toDatabase(object $notifiable): array
     {
-        $resourceType = $this->request instanceof CollaborationRequest ? 'collaboration_request' : 'contact_request';
-        $label        = $this->request instanceof CollaborationRequest ? 'collaboration request' : 'contact request';
+        [$resourceType, $messageKey] = match (true) {
+            $this->request instanceof CollaborationRequest        => ['collaboration_request', 'collaboration_request'],
+            $this->request instanceof OrganizationTrainingRequest => ['organization_training_request', 'organization_training_request'],
+            default                                               => ['contact_request', 'contact_request'],
+        };
 
         return [
-            'title'         => 'New inbound request assignment',
-            'message'       => "A {$label} was assigned to you.",
+            'title'         => (string) __('messages.notifications.inbound_request_assignment.title'),
+            'message'       => (string) __('messages.notifications.inbound_request_assignment.messages.'.$messageKey),
             'resource_type' => $resourceType,
             'resource_id'   => $this->request->id,
         ];

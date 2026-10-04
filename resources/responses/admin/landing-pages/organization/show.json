@@ -1,0 +1,38 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "vendor_id": 42,
+    "hero_title": "خدمات آموزشی سازمانی",
+    "hero_description": "توضیح صفحه سازمان‌ها",
+    "ims_portal_url": "https://ims.example.test/organizations",
+    "request_section_title": "درخواست آموزش سازمانی",
+    "request_section_explanation": "نیاز آموزشی سازمان خود را ثبت کنید.",
+    "hero_image_url": "http://jedu.test/storage/fake-media/organization-hero.jpg",
+    "educational_calendar_url": "http://jedu.test/storage/fake-media/educational-calendar.pdf",
+    "faqs": [
+      {
+        "question": "چه آموزش‌هایی قابل درخواست است؟",
+        "answer": "دوره‌های مورد نیاز سازمان شما.",
+        "is_visible": true
+      }
+    ],
+    "media": {
+      "hero": [
+        {
+          "id": 10,
+          "url": "http://jedu.test/storage/fake-media/organization-hero.jpg",
+          "size": 102400,
+          "file_name": "organization-hero",
+          "alt": "",
+          "mime_type": "image/jpeg",
+          "extension": "jpg",
+          "tag": "hero",
+          "thumbnail": null
+        }
+      ],
+      "educational_calendar": []
+    }
+  },
+  "metadata": []
+}

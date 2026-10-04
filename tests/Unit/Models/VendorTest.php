@@ -21,3 +21,24 @@ it('to Array', function (): void {
         'updated_at'    => $vendor->updated_at?->utc()->toJSON(),
     ]);
 })->group('vendor');
+
+it('has one organization page', function (): void {
+    $vendor = App\Models\Vendor::factory()->create();
+    $page   = App\Models\OrganizationPage::query()->singleton()->firstOrFail();
+    $page->update(['vendor_id' => $vendor->id]);
+
+    expect($vendor->organizationPage)
+        ->toBeInstanceOf(App\Models\OrganizationPage::class)
+        ->id->toBe($page->id);
+})->group('vendor');
+
+it('has many organization training requests', function (): void {
+    $vendor  = App\Models\Vendor::factory()->create();
+    $request = App\Models\OrganizationTrainingRequest::factory()->create(['vendor_id' => $vendor->id]);
+
+    $related = $vendor->organizationTrainingRequests->firstOrFail();
+
+    expect($vendor->organizationTrainingRequests)->toHaveCount(1)
+        ->and($related)->toBeInstanceOf(App\Models\OrganizationTrainingRequest::class)
+        ->and($related->id)->toBe($request->id);
+})->group('vendor');

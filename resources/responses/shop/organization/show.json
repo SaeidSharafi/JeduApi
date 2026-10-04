@@ -1,0 +1,64 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "vendor": {
+      "name": "معاونت آموزشی"
+    },
+    "hero_title": "خدمات آموزشی سازمانی",
+    "hero_description": "توضیح صفحه سازمان‌ها",
+    "ims_portal_url": "https://ims.example.test/organizations",
+    "request_section_title": "درخواست آموزش سازمانی",
+    "request_section_explanation": "نیاز آموزشی سازمان خود را ثبت کنید.",
+    "hero_image_url": "http://jedu.test/storage/fake-media/organization-hero.jpg",
+    "educational_calendar_url": "http://jedu.test/storage/fake-media/educational-calendar.pdf",
+    "faqs": [
+      {
+        "question": "چه آموزش‌هایی قابل درخواست است؟",
+        "answer": "دوره‌های مورد نیاز سازمان شما.",
+        "is_visible": true
+      }
+    ],
+    "recent_courses": [
+      {
+        "slug": "organization-course",
+        "name": "دوره آموزشی سازمانی",
+        "excerpt": "معرفی کوتاه دوره",
+        "price": 2900000,
+        "original_price": 2900000,
+        "price_range": {
+          "min": 2900000,
+          "max": 2900000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "provides_certificate": true,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "http://jedu.test/storage/fake-media/course.jpg",
+        "available_from": null,
+        "available_to": null,
+        "registration_start_date": null,
+        "registration_end_date": null,
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
+        "price_data": null,
+        "event_start_at": null,
+        "event_ended_at": null
+      }
+    ]
+  },
+  "metadata": []
+}

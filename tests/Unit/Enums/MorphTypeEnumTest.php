@@ -17,6 +17,8 @@ it('return alias correctly', function (): void {
     expect($alias)->toBe('teacher');
     $alias = App\Enums\System\MorphTypeEnum::getAlias(App\Models\Vendor::class);
     expect($alias)->toBe('vendor');
+    $alias = App\Enums\System\MorphTypeEnum::getAlias(App\Models\OrganizationTrainingRequest::class);
+    expect($alias)->toBe('organization_training_request');
 
     $alias = App\Enums\System\MorphTypeEnum::getAlias('non_existent_class');
     expect($alias)->toBeNull();
@@ -55,7 +57,9 @@ it('return morph map correctly', function (): void {
         ->toHaveKey('product', App\Models\Product::class)
         ->toHaveKey('user', App\Models\User::class)
         ->toHaveKey('order', App\Models\Order::class)
-        ->toHaveKey('refund', App\Models\Refund::class);
+        ->toHaveKey('refund', App\Models\Refund::class)
+        ->toHaveKey('organization_page', App\Models\OrganizationPage::class)
+        ->toHaveKey('organization_training_request', App\Models\OrganizationTrainingRequest::class);
 });
 
 it('return categorizable types correctly', function (): void {

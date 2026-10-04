@@ -253,6 +253,11 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::UPDATE_OWN,
         ],
+        'organization_training_request' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::UPDATE,
+            PermissionAction::UPDATE_OWN,
+        ],
         'blog_category' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,

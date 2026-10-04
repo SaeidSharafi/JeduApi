@@ -27,6 +27,7 @@ enum CacheKey: string
     case StudentStory       = 'shop.homepage.student-stories:{hash}';
     case PartnersInCourse   = 'shop.course.partners';
     case Partners           = 'shop.partners';
+    case OrganizationPage   = 'shop.organization-page:{limit}';
     case StudentQuizzes     = 'student_quizzes:{userId}';
     case TeacherQuizzes     = 'teacher_quizzes:{userId}';
     case GoodForStart       = 'shop.category.{slug}.good-for-start.courses-{limit}';
@@ -75,7 +76,7 @@ enum CacheKey: string
     {
         return match ($this) {
             self::Slider, self::PartnersInHome, self::PartnersInCourse,
-            self::Partners, self::StudentStory, self::StudentQuizzes,
+            self::Partners, self::OrganizationPage, self::StudentStory, self::StudentQuizzes,
             self::TeacherQuizzes, self::Search => 300,
             self::OtpValue                     => (int) config('otp.ttl_seconds', 300),
             self::OtpMarker                    => (int) config('otp.marker_ttl_seconds', 900),
@@ -97,7 +98,7 @@ enum CacheKey: string
     {
         return match ($this) {
             self::Slider, self::PartnersInHome, self::PartnersInCourse,
-            self::Partners, self::StudentStory, self::StudentQuizzes,
+            self::Partners, self::OrganizationPage, self::StudentStory, self::StudentQuizzes,
             self::TeacherQuizzes, self::Search => 900,
             self::SearchSuggest                => 14400,
             default                            => null,
@@ -114,7 +115,7 @@ enum CacheKey: string
             self::StudentStory => CacheTag::HomePage,
             self::PartnersInCourse, self::Partners, self::StudentQuizzes,
             self::TeacherQuizzes                                     => CacheTag::Content,
-            self::GoodForStart                                       => CacheTag::Catalog,
+            self::GoodForStart, self::OrganizationPage               => CacheTag::Catalog,
             self::Search, self::SearchSuggest, self::PgroongaEnabled => CacheTag::Search,
             self::DiscountHandlers                                   => CacheTag::Discounts,
             self::Settings, self::DigipayAccessToken                 => CacheTag::Settings,

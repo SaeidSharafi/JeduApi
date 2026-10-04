@@ -8,6 +8,9 @@ use App\Enums\Product\ProductableEnum;
 use App\Enums\Product\ProductRegistrationStatusEnum;
 use App\Enums\User\GenderEnum;
 use App\Models\Product;
+use App\Models\Seminar;
+
+covers(ProductCardData::class);
 
 describe('ProductCardData', function (): void {
     it('can be created from a Product model', function (): void {
@@ -131,6 +134,20 @@ describe('ProductCardData', function (): void {
 
         // Assertions
         expect($productCardData->teachers)->toBe(['John Doe']);
+    });
+
+    it('does not require a default teacher attribute for non-course productables', function (): void {
+        $product                   = new Product();
+        $product->slug             = 'example-product';
+        $product->name             = 'Example Product';
+        $product->is_featured      = false;
+        $product->productable_type = ProductableEnum::SEMINAR->value;
+        $product->setRelation('productable', new Seminar(['thumbnail_url' => 'thumbnail.jpg']));
+        $product->setRelation('productDeliveryOptions', collect([new App\Models\ProductDeliveryOption()]));
+
+        $productCardData = ProductCardData::fromModel($product, ProductPriceData::make([]));
+
+        expect($productCardData->teachers)->toBe([]);
     });
 
     it('get  earliest available_from and latest available_to dates (same for registration dates)', function (): void {

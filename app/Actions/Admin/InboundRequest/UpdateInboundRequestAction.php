@@ -6,13 +6,14 @@ namespace App\Actions\Admin\InboundRequest;
 
 use App\Models\CollaborationRequest;
 use App\Models\ContactUsRequest;
+use App\Models\OrganizationTrainingRequest;
 use App\Models\Staff;
 use App\Notifications\Admin\InboundRequestAssignedNotification;
 
 final class UpdateInboundRequestAction
 {
     /** @param array{status?: mixed, note?: ?string, assigned_to_id?: ?int} $attributes */
-    public function handle(ContactUsRequest|CollaborationRequest $request, array $attributes, ?Staff $actor = null): ContactUsRequest|CollaborationRequest
+    public function handle(ContactUsRequest|CollaborationRequest|OrganizationTrainingRequest $request, array $attributes, ?Staff $actor = null): ContactUsRequest|CollaborationRequest|OrganizationTrainingRequest
     {
         $previousAssigneeId = $request->assigned_to_id;
         $nextAssigneeId     = $attributes['assigned_to_id'] ?? $previousAssigneeId;

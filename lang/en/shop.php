@@ -18,7 +18,8 @@ return [
     ],
     'responses' => [
         'forms' => [
-            'collaboration_request_submitted' => 'Your collaboration request has been submitted. We will get back to you as soon as possible.',
+            'collaboration_request_submitted'         => 'Your collaboration request has been submitted. We will get back to you as soon as possible.',
+            'organization_training_request_submitted' => 'Your organization training request has been submitted.',
         ],
         'contact_form_submitted'   => 'Your message has been successfully sent. We will get back to you as soon as possible.',
         'advice_request_submitted' => 'Your consultation request has been saved. We will contact you shortly.',

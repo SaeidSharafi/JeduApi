@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Vendor;
 
+use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Vendor\CreateVendorData;
+use App\Enums\System\CacheKey;
 use App\Models\Vendor;
 use Illuminate\Support\Facades\DB;
 
 final readonly class UpdateVendorAction
 {
+    public function __construct(private CacheStore $cache) {}
+
     /**
      * Execute the action.
      */
@@ -29,5 +33,9 @@ final readonly class UpdateVendorAction
             $vendor->favicon_url = null;
 
         });
+
+        foreach (range(1, 20) as $limit) {
+            $this->cache->forget(CacheKey::OrganizationPage, ['limit' => $limit]);
+        }
     }
 }

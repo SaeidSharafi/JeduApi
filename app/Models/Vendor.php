@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
@@ -41,6 +42,20 @@ final class Vendor extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    /**
+     * @return HasOne<OrganizationPage, $this>
+     */
+    public function organizationPage(): HasOne
+    {
+        return $this->hasOne(OrganizationPage::class);
+    }
+
+    /** @return HasMany<OrganizationTrainingRequest, $this> */
+    public function organizationTrainingRequests(): HasMany
+    {
+        return $this->hasMany(OrganizationTrainingRequest::class);
     }
 
     protected function casts(): array
