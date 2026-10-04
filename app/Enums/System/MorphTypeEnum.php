@@ -15,6 +15,7 @@ use App\Models\HomePageBlock;
 use App\Models\LearningPath;
 use App\Models\Order;
 use App\Models\OrganizationPage;
+use App\Models\OrganizationTrainingRequest;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\Product;
@@ -53,14 +54,15 @@ enum MorphTypeEnum: string
     case SLIDER          = 'slider';
     case HOME_PAGE_BLOCK = 'home_page_block';
 
-    case PARTNER               = 'partner';
-    case STUDENT_STORY         = 'student_story';
-    case BLOG_POST             = 'blog_post';
-    case BLOG_CATEGORY         = 'blog_category';
-    case SETTING               = 'setting';
-    case COLLABORATION_REQUEST = 'collaboration_request';
-    case DEPOSIT               = 'deposit';
-    case ORGANIZATION_PAGE     = 'organization_page';
+    case PARTNER                       = 'partner';
+    case STUDENT_STORY                 = 'student_story';
+    case BLOG_POST                     = 'blog_post';
+    case BLOG_CATEGORY                 = 'blog_category';
+    case SETTING                       = 'setting';
+    case COLLABORATION_REQUEST         = 'collaboration_request';
+    case DEPOSIT                       = 'deposit';
+    case ORGANIZATION_PAGE             = 'organization_page';
+    case ORGANIZATION_TRAINING_REQUEST = 'organization_training_request';
 
     /**
      * @return array<string, class-string>
@@ -126,30 +128,31 @@ enum MorphTypeEnum: string
     public function getModelClass(): string
     {
         return match ($this) {
-            self::CATEGORY              => Category::class,
-            self::COURSE                => Course::class,
-            self::SEMINAR               => Seminar::class,
-            self::DIGITAL_ASSET         => DigitalAsset::class,
-            self::BUNDLE                => Bundle::class,
-            self::LEARNING_PATH         => LearningPath::class,
-            self::STAFF                 => Staff::class,
-            self::USER                  => User::class,
-            self::TEACHER               => Teacher::class,
-            self::VENDOR                => Vendor::class,
-            self::PRODUCT               => Product::class,
-            self::ORDER                 => Order::class,
-            self::REFUND                => Refund::class,
-            self::CAMPAIGN              => WalletCampaign::class,
-            self::SLIDER                => Slider::class,
-            self::HOME_PAGE_BLOCK       => HomePageBlock::class,
-            self::PARTNER               => Partner::class,
-            self::STUDENT_STORY         => StudentStory::class,
-            self::BLOG_POST             => BlogPost::class,
-            self::BLOG_CATEGORY         => BlogCategory::class,
-            self::SETTING               => Setting::class,
-            self::COLLABORATION_REQUEST => CollaborationRequest::class,
-            self::DEPOSIT               => Payment::class,
-            self::ORGANIZATION_PAGE     => OrganizationPage::class,
+            self::CATEGORY                      => Category::class,
+            self::COURSE                        => Course::class,
+            self::SEMINAR                       => Seminar::class,
+            self::DIGITAL_ASSET                 => DigitalAsset::class,
+            self::BUNDLE                        => Bundle::class,
+            self::LEARNING_PATH                 => LearningPath::class,
+            self::STAFF                         => Staff::class,
+            self::USER                          => User::class,
+            self::TEACHER                       => Teacher::class,
+            self::VENDOR                        => Vendor::class,
+            self::PRODUCT                       => Product::class,
+            self::ORDER                         => Order::class,
+            self::REFUND                        => Refund::class,
+            self::CAMPAIGN                      => WalletCampaign::class,
+            self::SLIDER                        => Slider::class,
+            self::HOME_PAGE_BLOCK               => HomePageBlock::class,
+            self::PARTNER                       => Partner::class,
+            self::STUDENT_STORY                 => StudentStory::class,
+            self::BLOG_POST                     => BlogPost::class,
+            self::BLOG_CATEGORY                 => BlogCategory::class,
+            self::SETTING                       => Setting::class,
+            self::COLLABORATION_REQUEST         => CollaborationRequest::class,
+            self::DEPOSIT                       => Payment::class,
+            self::ORGANIZATION_PAGE             => OrganizationPage::class,
+            self::ORGANIZATION_TRAINING_REQUEST => OrganizationTrainingRequest::class,
         };
     }
 }

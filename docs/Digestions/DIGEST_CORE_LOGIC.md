@@ -306,12 +306,19 @@
 - **CreateVendorAction**: Creates new vendor/department records
 - **UpdateVendorAction**: Updates vendor information
 - **UpdateVendorAction cache behavior:** After a successful transaction, forgets the cached OrganizationPage projections for limits 1 through 20 so a linked department rename is visible immediately.
-- **DeleteVendorAction**: Removes vendor relationships, but rejects deletion when the Vendor has Products or is linked to the OrganizationPage.
+- **DeleteVendorAction**: Removes vendor relationships, but rejects deletion when the Vendor has Products, is linked to the OrganizationPage, or is referenced by an OrganizationTrainingRequest, preserving request history.
 
 #### Organization Page Actions (`app/Actions/Admin/Organization/`)
 - **UpdateOrganizationPageAction** (`app/Actions/Admin/Organization/UpdateOrganizationPageAction.php`): Fully replaces the singleton OrganizationPage content and Vendor association in a transaction, synchronizes its `hero` and `educational_calendar` Mediable tags, stores their public URLs in `hero_image_url` and `educational_calendar_url`, and forgets cached public projections for limits 1 through 20.
 
 The public Organization page controller (`app/Http/Controllers/Api/Shop/OrganizationPageController.php`) builds the read projection directly and caches it by requested limit through `CacheKey::OrganizationPage`. It loads the fixed singleton and linked Vendor without the media relation. When a Vendor is linked, it queries published Course records associated with any Course Product belonging to that Vendor. Course `created_at`/`id` provide the stable newest-first ordering and bounded limit. It separately loads eligible Product shells with published/visible, published-delivery-option, published-Course-productable, and active-term gates; those shells are optional overlays for price and commercial delivery data. A Course remains in the projection when no eligible Product resolves, and `ProductCardData` uses the Course identity/presentation fields while leaving commercial fields absent. Availability windows and other Product eligibility filters are intentionally not used to exclude recent Course cards.
+
+#### Organization Training Request Actions (`app/Actions/Shop/Organization/`)
+- **CreateOrganizationTrainingRequestAction** (`app/Actions/Shop/Organization/CreateOrganizationTrainingRequestAction.php`): Locks the singleton page, snapshots its linked Vendor, normalizes manually entered course names, creates the pending request, stores an optional private PDF through `UploadFileAction`, and sends `OrganizationTrainingRequestSubmittedNotification` after the transaction to every non-banned staff member with `ORGANIZATION_TRAINING_REQUEST_VIEW_ANY`.
+
+#### Organization Training Request Admin Actions
+- **UpdateInboundRequestAction** now also handles OrganizationTrainingRequest status and assignment changes, including assignment notifications.
+- The Organization Training Request policy applies dedicated view-any/view and update-any/update-own permissions. Its attachment download controller authorizes the request before streaming the private local-disk file.
 
 #### Term Actions (`app/Actions/Admin/Term/`)
 - **CreateTermAction**: Sets up academic terms and periods
@@ -447,6 +454,8 @@ Administrative status and access-date changes reconcile deliberately with applic
   - `handle(ContactUsRequestData $data): void`: Persists contact form submissions for staff follow-up.
 - **StoreAdviceRequestAction** (`app/Actions/Shop/Forms/StoreAdviceRequestAction.php`)
   - `handle(AdviceRequestCreateData $data): void`: Records phone numbers from users requesting educational consultation callbacks.
+- **CreateOrganizationTrainingRequestAction** (`app/Actions/Shop/Organization/CreateOrganizationTrainingRequestAction.php`)
+  - `handle(OrganizationTrainingRequestCreateData $data): OrganizationTrainingRequest`: Atomically stores public organization contact details, normalized manual course names, an optional private PDF, and the current Vendor snapshot, then dispatches authorized staff database notifications.
 
 #### Student Dashboard Actions (`app/Actions/Shop/Student/`)
 - **GetEnrollmentDetailAction** (`app/Actions/Shop/Student/GetEnrollmentDetailAction.php`)

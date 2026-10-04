@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\Admin\LearningPath\ArchiveLearningPathController;
 use App\Http\Controllers\Api\Admin\LearningPath\LearningPathController;
 use App\Http\Controllers\Api\Admin\MoodleSsoController;
 use App\Http\Controllers\Api\Admin\Notifications\StaffNotificationController;
+use App\Http\Controllers\Api\Admin\OrganizationTrainingRequest\OrganizationTrainingRequestAttachmentDownloadController;
+use App\Http\Controllers\Api\Admin\OrganizationTrainingRequest\OrganizationTrainingRequestController;
 use App\Http\Controllers\Api\Admin\Profile\StaffChangePasswordController;
 use App\Http\Controllers\Api\Admin\Profile\StaffProfileController;
 use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
@@ -94,6 +96,17 @@ Route::prefix('collaboration-requests/{collaborationRequest}')->name('collaborat
     Route::patch('assignment', [CollaborationRequestController::class, 'assignment'])->name('update-assignment');
     Route::patch('note', [CollaborationRequestController::class, 'note'])->name('update-note');
 });
+
+Route::apiResource('organization-training-requests', OrganizationTrainingRequestController::class)
+    ->only(['index', 'show']);
+Route::prefix('organization-training-requests/{organizationTrainingRequest}')
+    ->name('organization-training-requests.')
+    ->group(function (): void {
+        Route::patch('status', [OrganizationTrainingRequestController::class, 'status'])->name('update-status');
+        Route::patch('assignment', [OrganizationTrainingRequestController::class, 'assignment'])->name('update-assignment');
+        Route::get('attachment/download', OrganizationTrainingRequestAttachmentDownloadController::class)
+            ->name('attachment.download');
+    });
 
 Route::apiResource('contact-requests', ContactRequestController::class)->only(['index', 'show']);
 Route::prefix('contact-requests/{contactRequest}')->name('contact-requests.')->group(function (): void {

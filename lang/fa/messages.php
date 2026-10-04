@@ -65,6 +65,7 @@ return [
         'order'                              => 'سفارش',
         'orderitem'                          => 'قلم سفارش',
         'organizationpage'                   => 'صفحه سازمان‌ها',
+        'organizationtrainingrequest'        => 'درخواست آموزش سازمانی',
         'partner'                            => 'همکار',
         'payment'                            => 'پرداخت',
         'paymenttransaction'                 => 'تراکنش پرداخت',

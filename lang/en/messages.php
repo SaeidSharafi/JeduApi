@@ -65,6 +65,7 @@ return [
         'order'                              => 'Order',
         'orderitem'                          => 'Order Item',
         'organizationpage'                   => 'Organization Page',
+        'organizationtrainingrequest'        => 'Organization Training Request',
         'partner'                            => 'Partner',
         'payment'                            => 'Payment',
         'paymenttransaction'                 => 'Payment Transaction',

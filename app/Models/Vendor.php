@@ -52,6 +52,12 @@ final class Vendor extends Model
         return $this->hasOne(OrganizationPage::class);
     }
 
+    /** @return HasMany<OrganizationTrainingRequest, $this> */
+    public function organizationTrainingRequests(): HasMany
+    {
+        return $this->hasMany(OrganizationTrainingRequest::class);
+    }
+
     protected function casts(): array
     {
         return [
