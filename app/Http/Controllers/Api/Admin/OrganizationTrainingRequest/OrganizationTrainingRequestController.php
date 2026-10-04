@@ -74,6 +74,11 @@ final class OrganizationTrainingRequestController extends Controller
         );
     }
 
+    /**
+     * Update an Organization Training Request status.
+     *
+     * @responseFile 200 resources/responses/admin/organization-training-request/show.json
+     */
     public function status(
         ContactRequestStatusData $data,
         OrganizationTrainingRequest $organizationTrainingRequest,
@@ -88,6 +93,11 @@ final class OrganizationTrainingRequestController extends Controller
         );
     }
 
+    /**
+     * Assign or unassign an Organization Training Request.
+     *
+     * @responseFile 200 resources/responses/admin/organization-training-request/show.json
+     */
     public function assignment(
         ContactRequestAssignmentData $data,
         OrganizationTrainingRequest $organizationTrainingRequest,

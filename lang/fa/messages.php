@@ -97,6 +97,20 @@ return [
         'model_has_relationship_data'                       => 'این مورد دارای اطلاعات مرتبط (:related_model) در سیستم است و امکان حذف آن وجود ندارد.',
         'model_has_relationship_data_without_related_model' => 'این مورد دارای وابستگی‌های سیستمی است و امکان حذف آن وجود ندارد.',
     ],
+    'notifications' => [
+        'organization_training_request_submitted' => [
+            'title'   => 'درخواست آموزش سازمانی جدید',
+            'message' => 'یک درخواست آموزش سازمانی جدید ثبت شد.',
+        ],
+        'inbound_request_assignment' => [
+            'title'    => 'واگذاری درخواست ورودی جدید',
+            'messages' => [
+                'contact_request'               => 'یک درخواست تماس به شما واگذار شد.',
+                'collaboration_request'         => 'یک درخواست همکاری به شما واگذار شد.',
+                'organization_training_request' => 'یک درخواست آموزش سازمانی به شما واگذار شد.',
+            ],
+        ],
+    ],
     'product' => [
         'acrhived'                            => 'محصول با موفقیت بایگانی شد.',
         'registration_not_started'            => 'ثبت‌نام دوره «:name» هنوز آغاز نشده است.',

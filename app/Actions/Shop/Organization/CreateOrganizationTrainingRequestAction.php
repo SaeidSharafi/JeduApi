@@ -48,7 +48,6 @@ final readonly class CreateOrganizationTrainingRequestAction
         });
 
         $recipients = Staff::query()
-            ->where('is_banned', false)
             ->permission(PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW_ANY->value)
             ->get();
 

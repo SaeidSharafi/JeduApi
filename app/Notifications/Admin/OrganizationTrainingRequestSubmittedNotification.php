@@ -28,8 +28,8 @@ final class OrganizationTrainingRequestSubmittedNotification extends Notificatio
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title'         => 'New Organization Training Request',
-            'message'       => 'A new organization training request was submitted.',
+            'title'         => (string) __('messages.notifications.organization_training_request_submitted.title'),
+            'message'       => (string) __('messages.notifications.organization_training_request_submitted.message'),
             'resource_type' => 'organization_training_request',
             'resource_id'   => $this->request->id,
         ];

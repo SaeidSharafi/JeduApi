@@ -25,8 +25,8 @@ it('notifies a different Contact Request assignee', function (): void {
 
         return $payload['resource_type'] === 'contact_request'
             && $payload['resource_id']   === $request->id
-            && $payload['title']         === 'New inbound request assignment'
-            && $payload['message']       === 'A contact request was assigned to you.';
+            && $payload['title']         === __('messages.notifications.inbound_request_assignment.title')
+            && $payload['message']       === __('messages.notifications.inbound_request_assignment.messages.contact_request');
     });
 });
 
@@ -61,7 +61,8 @@ it('notifies a different Organization Training Request assignee', function (): v
 
         return $payload['resource_type'] === 'organization_training_request'
             && $payload['resource_id']   === $request->id
-            && $payload['message']       === 'An organization training request was assigned to you.';
+            && $payload['title']         === __('messages.notifications.inbound_request_assignment.title')
+            && $payload['message']       === __('messages.notifications.inbound_request_assignment.messages.organization_training_request');
     });
 });
 

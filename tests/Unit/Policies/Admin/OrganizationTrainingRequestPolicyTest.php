@@ -78,10 +78,12 @@ describe('OrganizationTrainingRequestPolicy', function (): void {
         $otherStaff   = Staff::factory()->create();
         $otherRequest = OrganizationTrainingRequest::factory()->create(['assigned_to_id' => $otherStaff->id]);
         $unassigned   = OrganizationTrainingRequest::factory()->create();
+        $assigned     = OrganizationTrainingRequest::factory()->create(['assigned_to_id' => $staff->id]);
         $staff->givePermissionTo(PermissionEnum::ORGANIZATION_TRAINING_REQUEST_UPDATE_OWN->value);
 
         expect($this->policy->assign($staff->fresh(), $unassigned, $otherStaff))->toBeFalse()
             ->and($this->policy->assign($staff, $otherRequest, $staff))->toBeFalse()
+            ->and($this->policy->assign($staff, $assigned, $otherStaff))->toBeFalse()
             ->and($this->policy->assign(Staff::factory()->create(), $unassigned, $staff))->toBeFalse();
     });
 });

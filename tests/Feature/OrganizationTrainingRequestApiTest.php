@@ -25,11 +25,13 @@ use Mockery\MockInterface;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-it('creates a public request with normalized course names and notifies authorized staff', function (): void {
+it('creates a public request with normalized course names and notifies staff with access', function (): void {
     $vendor = Vendor::factory()->create(['name' => 'Original Department']);
     OrganizationPage::query()->singleton()->firstOrFail()->update(['vendor_id' => $vendor->id]);
     $authorized = Staff::factory()->create();
     $authorized->givePermissionTo(PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW_ANY->value);
+    $bannedAuthorized = Staff::factory()->create(['is_banned' => true]);
+    $bannedAuthorized->givePermissionTo(PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW_ANY->value);
     $unauthorized = Staff::factory()->create();
     Notification::fake();
 
@@ -59,6 +61,12 @@ it('creates a public request with normalized course names and notifies authorize
 
         return $payload['resource_type'] === 'organization_training_request'
             && $payload['resource_id']   === $request->id;
+    });
+    Notification::assertSentTo($bannedAuthorized, OrganizationTrainingRequestSubmittedNotification::class, function (OrganizationTrainingRequestSubmittedNotification $notification) use ($bannedAuthorized): bool {
+        $payload = $notification->toDatabase($bannedAuthorized);
+
+        return $payload['title']   === __('messages.notifications.organization_training_request_submitted.title')
+            && $payload['message'] === __('messages.notifications.organization_training_request_submitted.message');
     });
     Notification::assertNotSentTo($unauthorized, OrganizationTrainingRequestSubmittedNotification::class);
 });
