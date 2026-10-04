@@ -8,6 +8,7 @@ use App\Data\Admin\Auth\StaffData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\InboundRequestStatusEnum;
 use App\Models\OrganizationTrainingRequest;
+use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 
@@ -30,7 +31,7 @@ final class OrganizationTrainingRequestListItemData extends Data
         public ?StaffData $assignee,
         public bool $has_attachment,
         public ?array $vendor_snapshot,
-        public ?string $created_at,
+        public ?Verta $created_at,
     ) {}
 
     public static function fromModel(OrganizationTrainingRequest $request): self
@@ -48,7 +49,7 @@ final class OrganizationTrainingRequestListItemData extends Data
             assignee: $request->assignee ? StaffData::from($request->assignee) : null,
             has_attachment: $request->hasMedia('attachment'),
             vendor_snapshot: $request->vendor_snapshot,
-            created_at: $request->created_at?->toISOString(),
+            created_at: $request->created_at ? Verta::instance($request->created_at) : null,
         );
     }
 }

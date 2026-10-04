@@ -18,6 +18,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
 use App\Models\Vendor;
 use App\Notifications\Admin\OrganizationTrainingRequestSubmittedNotification;
+use Hekmatinasser\Verta\Verta;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -71,7 +72,7 @@ it('creates a public request with normalized course names and notifies staff wit
     Notification::assertNotSentTo($unauthorized, OrganizationTrainingRequestSubmittedNotification::class);
 });
 
-it('accepts a two megabyte PDF and exposes it only through an authorized download', function (): void {
+it('accepts a two megabyte PDF and exposes it only through a request-scoped authorized download', function (): void {
     Storage::fake('local');
     Notification::fake();
 
@@ -95,14 +96,11 @@ it('accepts a two megabyte PDF and exposes it only through an authorized downloa
         ->and($media->disk)->toBe('local');
     Storage::disk('local')->assertExists($media->getDiskPath());
 
-    $this->authorized_user([
-        PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW,
-        PermissionEnum::FILE_VIEW_ANY,
-    ]);
+    $this->authorized_user([PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW]);
     $show = $this->getJson(route('api.v1.admin.organization-training-requests.show', $request));
     $show->assertOk()->assertJsonPath('data.attachment.url', route(
-        'api.v1.admin.private-upload.download',
-        ['file' => $media->id],
+        'api.v1.admin.organization-training-requests.attachment.download',
+        ['organizationTrainingRequest' => $request],
     ));
 
     $this->get($show->json('data.attachment.url'))
@@ -110,9 +108,76 @@ it('accepts a two megabyte PDF and exposes it only through an authorized downloa
         ->assertHeader('Content-Type', 'application/pdf');
 
     $this->user = Staff::factory()->create();
-    $this->unauthorized_user();
-    $this->get(route('api.v1.admin.private-upload.download', ['file' => $media->id]))
+    $this->authorized_user([PermissionEnum::FILE_VIEW_ANY]);
+    $this->get(route('api.v1.admin.organization-training-requests.attachment.download', $request))
         ->assertForbidden();
+});
+
+it('returns the staff list and detail contract', function (): void {
+    $assignee = Staff::factory()->create(['name' => 'Assigned Staff']);
+    $request  = OrganizationTrainingRequest::factory()->create([
+        'first_name'             => 'Sara',
+        'last_name'              => 'Ahmadi',
+        'phone'                  => '09121234567',
+        'position'               => 'HR manager',
+        'organization_name'      => 'Example Organization',
+        'requested_course_names' => ['Project management'],
+        'notes'                  => 'Call before noon.',
+        'status'                 => InboundRequestStatusEnum::CONTACTED,
+        'assigned_to_id'         => $assignee->id,
+        'vendor_snapshot'        => ['id' => 7, 'name' => 'Education Department'],
+    ]);
+    $this->authorized_user([
+        PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW_ANY,
+        PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW,
+    ]);
+
+    $this->getJson(route('api.v1.admin.organization-training-requests.index'))
+        ->assertOk()
+        ->assertJsonPath('data.data.0.reference', $request->uuid)
+        ->assertJsonPath('data.data.0.assignee.id', $assignee->id)
+        ->assertJsonPath('data.data.0.vendor_snapshot.name', 'Education Department');
+
+    $this->getJson(route('api.v1.admin.organization-training-requests.show', $request))
+        ->assertOk()
+        ->assertJsonPath('data.phone', '09121234567')
+        ->assertJsonPath('data.notes', 'Call before noon.')
+        ->assertJsonPath('data.status.value', InboundRequestStatusEnum::CONTACTED->value)
+        ->assertJsonPath('data.assignee.id', $assignee->id)
+        ->assertJsonPath('data.vendor_snapshot.id', 7)
+        ->assertJsonPath('data.created_at', Verta::instance($request->created_at)->format('Y-m-d H:i:s'))
+        ->assertJsonPath('data.updated_at', Verta::instance($request->updated_at)->format('Y-m-d H:i:s'));
+});
+
+it('returns not found when a request has no attachment', function (): void {
+    $request = OrganizationTrainingRequest::factory()->create();
+    $this->authorized_user([PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW]);
+
+    $this->get(route('api.v1.admin.organization-training-requests.attachment.download', $request))
+        ->assertNotFound();
+});
+
+it('returns not found when an attachment is missing from storage', function (): void {
+    Storage::fake('local');
+    Notification::fake();
+
+    $this->post(route('api.v1.shop.organization.training-requests.store'), [
+        'first_name'             => 'Sara',
+        'last_name'              => 'Ahmadi',
+        'phone'                  => '09121234567',
+        'position'               => 'HR manager',
+        'organization_name'      => 'Example Organization',
+        'requested_course_names' => [],
+        'attachment'             => UploadedFile::fake()->create('requirements.pdf', 10, 'application/pdf'),
+    ])->assertCreated();
+
+    $request = OrganizationTrainingRequest::query()->firstOrFail();
+    $media   = $request->firstMedia('attachment');
+    Storage::disk('local')->delete($media->getDiskPath());
+    $this->authorized_user([PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW]);
+
+    $this->get(route('api.v1.admin.organization-training-requests.attachment.download', $request))
+        ->assertNotFound();
 });
 
 it('accepts manual course names together with a valid PDF', function (): void {

@@ -9,6 +9,7 @@ use App\Data\Admin\PrivateFileData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\InboundRequestStatusEnum;
 use App\Models\OrganizationTrainingRequest;
+use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 
@@ -32,8 +33,8 @@ final class OrganizationTrainingRequestData extends Data
         public ?StaffData $assignee,
         public ?array $vendor_snapshot,
         public ?PrivateFileData $attachment,
-        public ?string $created_at,
-        public ?string $updated_at,
+        public ?Verta $created_at,
+        public ?Verta $updated_at,
     ) {}
 
     public static function fromModel(OrganizationTrainingRequest $request): self
@@ -53,9 +54,15 @@ final class OrganizationTrainingRequestData extends Data
             status: $request->status,
             assignee: $request->assignee ? StaffData::from($request->assignee) : null,
             vendor_snapshot: $request->vendor_snapshot,
-            attachment: $attachment ? PrivateFileData::fromModel($attachment, 'attachment') : null,
-            created_at: $request->created_at?->toISOString(),
-            updated_at: $request->updated_at?->toISOString(),
+            attachment: $attachment ? PrivateFileData::fromModel(
+                $attachment,
+                'attachment',
+                route('api.v1.admin.organization-training-requests.attachment.download', [
+                    'organizationTrainingRequest' => $request,
+                ]),
+            ) : null,
+            created_at: $request->created_at ? Verta::instance($request->created_at) : null,
+            updated_at: $request->updated_at ? Verta::instance($request->updated_at) : null,
         );
     }
 }

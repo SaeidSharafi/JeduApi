@@ -30,9 +30,9 @@ final class PrivateFileData extends Data
         public ?string $tag = null,
     ) {}
 
-    public static function fromModel(Media $media, ?string $tag = null): self
+    public static function fromModel(Media $media, ?string $tag = null, ?string $downloadUrl = null): self
     {
-        $url = route('api.v1.admin.private-upload.download', ['file' => $media->id]);
+        $url = $downloadUrl ?? route('api.v1.admin.private-upload.download', ['file' => $media->id]);
 
         return new self(
             $media->id,
