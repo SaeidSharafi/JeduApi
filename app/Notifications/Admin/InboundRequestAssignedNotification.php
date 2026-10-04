@@ -29,15 +29,10 @@ final class InboundRequestAssignedNotification extends Notification implements S
     /** @return array{title: string, message: string, resource_type: string, resource_id: int} */
     public function toDatabase(object $notifiable): array
     {
-        $resourceType = match (true) {
-            $this->request instanceof CollaborationRequest        => 'collaboration_request',
-            $this->request instanceof OrganizationTrainingRequest => 'organization_training_request',
-            default                                               => 'contact_request',
-        };
-        $label = match (true) {
-            $this->request instanceof CollaborationRequest        => 'collaboration request',
-            $this->request instanceof OrganizationTrainingRequest => 'organization training request',
-            default                                               => 'contact request',
+        [$resourceType, $label] = match (true) {
+            $this->request instanceof CollaborationRequest        => ['collaboration_request', 'collaboration request'],
+            $this->request instanceof OrganizationTrainingRequest => ['organization_training_request', 'organization training request'],
+            default                                               => ['contact_request', 'contact request'],
         };
 
         return [

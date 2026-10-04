@@ -13,7 +13,6 @@ use App\Models\Staff;
 use App\Notifications\Admin\OrganizationTrainingRequestSubmittedNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Str;
 
 final readonly class CreateOrganizationTrainingRequestAction
 {
@@ -29,7 +28,6 @@ final readonly class CreateOrganizationTrainingRequestAction
             $vendor = $page->vendor()->first();
 
             $trainingRequest = OrganizationTrainingRequest::query()->create([
-                'uuid'                   => (string) Str::uuid7(),
                 'first_name'             => mb_trim($data->first_name),
                 'last_name'              => mb_trim($data->last_name),
                 'phone'                  => mb_trim($data->phone),

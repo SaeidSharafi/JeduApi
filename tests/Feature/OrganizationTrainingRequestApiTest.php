@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 use App\Actions\Shop\Organization\CreateOrganizationTrainingRequestAction;
 use App\Actions\Shop\UploadFileAction;
+use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\Organization\OrganizationTrainingRequestCreateData;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\InboundRequestStatusEnum;
 use App\Enums\PermissionEnum;
+use App\Enums\System\CacheKey;
+use App\Models\Course;
 use App\Models\OrganizationPage;
 use App\Models\OrganizationTrainingRequest;
+use App\Models\Product;
+use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
 use App\Models\Vendor;
 use App\Notifications\Admin\OrganizationTrainingRequestSubmittedNotification;
@@ -98,6 +104,27 @@ it('accepts a two megabyte PDF and exposes it only through an authorized downloa
         ->assertForbidden();
 });
 
+it('accepts manual course names together with a valid PDF', function (): void {
+    Storage::fake('local');
+    Notification::fake();
+
+    $response = $this->post(route('api.v1.shop.organization.training-requests.store'), [
+        'first_name'             => 'Sara',
+        'last_name'              => 'Ahmadi',
+        'phone'                  => '09121234567',
+        'position'               => 'HR manager',
+        'organization_name'      => 'Example Organization',
+        'requested_course_names' => ['Leadership'],
+        'attachment'             => UploadedFile::fake()->create('requirements.pdf', 10, 'application/pdf'),
+    ]);
+
+    $response->assertCreated();
+
+    $request = OrganizationTrainingRequest::query()->firstOrFail();
+    expect($request->requested_course_names)->toBe(['Leadership'])
+        ->and($request->firstMedia('attachment'))->not->toBeNull();
+});
+
 it('rejects missing required fields and leaves no request or notification', function (): void {
     Notification::fake();
 
@@ -111,8 +138,9 @@ it('rejects missing required fields and leaves no request or notification', func
             'position',
             'organization_name',
             'requested_course_names',
-        ]);
-    expect(OrganizationTrainingRequest::query()->count())->toBe(0);
+        ])
+        ->assertJsonPath('errors.requested_course_names.0', 'At least one requested course name or a PDF attachment is required.');
+    $this->assertDatabaseCount('organization_training_requests', 0);
     Notification::assertNothingSent();
 });
 
@@ -128,8 +156,10 @@ it('rejects course IDs without manual names or an attachment', function (): void
         'course_ids'        => [1, 2],
     ]);
 
-    $response->assertUnprocessable()->assertJsonValidationErrors('requested_course_names');
-    expect(OrganizationTrainingRequest::query()->count())->toBe(0);
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('requested_course_names')
+        ->assertJsonPath('errors.requested_course_names.0', 'At least one requested course name or a PDF attachment is required.');
+    $this->assertDatabaseCount('organization_training_requests', 0);
     Notification::assertNothingSent();
 });
 
@@ -146,8 +176,10 @@ it('rejects non-PDF attachments without persisting a request', function (): void
         'attachment'             => UploadedFile::fake()->create('requirements.txt', 10, 'text/plain'),
     ]);
 
-    $response->assertUnprocessable()->assertJsonValidationErrors('attachment');
-    expect(OrganizationTrainingRequest::query()->count())->toBe(0);
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('attachment')
+        ->assertJsonPath('errors.attachment.0', 'The attachment field must be a file of type: pdf.');
+    $this->assertDatabaseCount('organization_training_requests', 0);
     Notification::assertNothingSent();
 });
 
@@ -164,8 +196,10 @@ it('rejects attachments larger than two megabytes', function (): void {
         'attachment'             => UploadedFile::fake()->create('requirements.pdf', 2049, 'application/pdf'),
     ]);
 
-    $response->assertUnprocessable()->assertJsonValidationErrors('attachment');
-    expect(OrganizationTrainingRequest::query()->count())->toBe(0);
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('attachment')
+        ->assertJsonPath('errors.attachment.0', 'The attachment field must not be greater than 2048 kilobytes.');
+    $this->assertDatabaseCount('organization_training_requests', 0);
     Notification::assertNothingSent();
 });
 
@@ -188,7 +222,7 @@ it('rolls back the request when attachment storage fails', function (): void {
     expect(fn () => app(CreateOrganizationTrainingRequestAction::class)->handle($data))
         ->toThrow(RuntimeException::class);
 
-    expect(OrganizationTrainingRequest::query()->count())->toBe(0);
+    $this->assertDatabaseCount('organization_training_requests', 0);
     Notification::assertNothingSent();
 });
 
@@ -217,6 +251,23 @@ it('lists requests and lets authorized staff update status and assignment', func
         'status'         => InboundRequestStatusEnum::CONTACTED->value,
         'assigned_to_id' => $assignee->id,
     ]);
+});
+
+it('does not expose request data to staff with update permission only', function (): void {
+    $this->authorized_user([PermissionEnum::ORGANIZATION_TRAINING_REQUEST_UPDATE]);
+    $request = OrganizationTrainingRequest::factory()->create([
+        'phone' => '09121234567',
+        'notes' => 'Private notes',
+    ]);
+
+    $response = $this->patchJson(route('api.v1.admin.organization-training-requests.update-status', $request), [
+        'status' => InboundRequestStatusEnum::CONTACTED->value,
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data', null)
+        ->assertJsonMissingPath('data.phone')
+        ->assertJsonMissingPath('data.notes');
 });
 
 it('forbids staff without request access from listing requests', function (): void {
@@ -265,4 +316,39 @@ it('retains the vendor snapshot and blocks vendor deletion', function (): void {
     ]);
     expect(OrganizationTrainingRequest::query()->firstOrFail()->vendor_snapshot)
         ->toBe(['id' => $vendor->id, 'name' => 'Historical Department']);
+});
+
+it('keeps the request vendor snapshot while future page courses follow a new vendor', function (): void {
+    $originalVendor = Vendor::factory()->create(['name' => 'Original Department']);
+    $newVendor      = Vendor::factory()->create(['name' => 'New Department']);
+    $page           = OrganizationPage::query()->singleton()->firstOrFail();
+    $page->update(['vendor_id' => $originalVendor->id]);
+
+    $this->postJson(route('api.v1.shop.organization.training-requests.store'), [
+        'first_name'             => 'Sara',
+        'last_name'              => 'Ahmadi',
+        'phone'                  => '09121234567',
+        'position'               => 'HR manager',
+        'organization_name'      => 'Example Organization',
+        'requested_course_names' => ['Leadership'],
+    ])->assertCreated();
+
+    $newCourse = Course::factory()->create([
+        'full_name' => 'New department course',
+        'status'    => PublicationStatusEnum::PUBLISHED,
+    ]);
+    $newProduct = Product::factory()->withCourse($newCourse)->create([
+        'vendor_id' => $newVendor->id,
+    ]);
+    ProductDeliveryOption::factory()->create(['product_id' => $newProduct->id]);
+    $page->update(['vendor_id' => $newVendor->id]);
+    app(CacheStore::class)->forget(CacheKey::OrganizationPage, ['limit' => 6]);
+
+    $pageResponse = $this->getJson(route('api.v1.shop.organization.show'));
+
+    $pageResponse->assertOk()
+        ->assertJsonPath('data.vendor.name', 'New Department')
+        ->assertJsonPath('data.recent_courses.0.name', 'New department course');
+    expect(OrganizationTrainingRequest::query()->firstOrFail()->vendor_snapshot)
+        ->toBe(['id' => $originalVendor->id, 'name' => 'Original Department']);
 });

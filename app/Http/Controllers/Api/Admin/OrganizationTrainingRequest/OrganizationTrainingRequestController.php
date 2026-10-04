@@ -74,7 +74,6 @@ final class OrganizationTrainingRequestController extends Controller
         );
     }
 
-    /** @responseFile 200 resources/responses/admin/organization-training-request/show.json */
     public function status(
         ContactRequestStatusData $data,
         OrganizationTrainingRequest $organizationTrainingRequest,
@@ -82,15 +81,13 @@ final class OrganizationTrainingRequestController extends Controller
     ): ApiResponseInterface {
         Gate::authorize('update', $organizationTrainingRequest);
 
-        $request = $action->handle($organizationTrainingRequest, ['status' => $data->status]);
+        $action->handle($organizationTrainingRequest, ['status' => $data->status]);
 
         return apiResponse()->updated(
-            OrganizationTrainingRequestData::fromModel($request),
             model: OrganizationTrainingRequest::class,
         );
     }
 
-    /** @responseFile 200 resources/responses/admin/organization-training-request/show.json */
     public function assignment(
         ContactRequestAssignmentData $data,
         OrganizationTrainingRequest $organizationTrainingRequest,
@@ -99,14 +96,13 @@ final class OrganizationTrainingRequestController extends Controller
         $assignee = $data->staff_id ? Staff::query()->findOrFail($data->staff_id) : null;
         Gate::authorize('assign', [$organizationTrainingRequest, $assignee]);
 
-        $request = $action->handle(
+        $action->handle(
             $organizationTrainingRequest,
             ['assigned_to_id' => $data->staff_id],
             auth('staff')->user(),
         );
 
         return apiResponse()->updated(
-            OrganizationTrainingRequestData::fromModel($request),
             model: OrganizationTrainingRequest::class,
         );
     }
