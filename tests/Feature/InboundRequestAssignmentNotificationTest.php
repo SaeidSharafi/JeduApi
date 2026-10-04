@@ -61,7 +61,7 @@ it('notifies a different Organization Training Request assignee', function (): v
 
         return $payload['resource_type'] === 'organization_training_request'
             && $payload['resource_id']   === $request->id
-            && $payload['message']       === 'A organization training request was assigned to you.';
+            && $payload['message']       === 'An organization training request was assigned to you.';
     });
 });
 

@@ -318,7 +318,7 @@ The public Organization page controller (`app/Http/Controllers/Api/Shop/Organiza
 
 #### Organization Training Request Admin Actions
 - **UpdateInboundRequestAction** now also handles OrganizationTrainingRequest status and assignment changes, including assignment notifications.
-- The Organization Training Request policy applies dedicated view-any/view and update-any/update-own permissions. Its attachment download controller authorizes the request before streaming the private local-disk file.
+- The Organization Training Request policy applies dedicated view-any/view and update-any/update-own permissions. Its attachment metadata uses the shared PrivateFileData contract and private-file download boundary.
 
 #### Term Actions (`app/Actions/Admin/Term/`)
 - **CreateTermAction**: Sets up academic terms and periods

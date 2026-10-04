@@ -29,15 +29,15 @@ final class InboundRequestAssignedNotification extends Notification implements S
     /** @return array{title: string, message: string, resource_type: string, resource_id: int} */
     public function toDatabase(object $notifiable): array
     {
-        [$resourceType, $label] = match (true) {
-            $this->request instanceof CollaborationRequest        => ['collaboration_request', 'collaboration request'],
-            $this->request instanceof OrganizationTrainingRequest => ['organization_training_request', 'organization training request'],
-            default                                               => ['contact_request', 'contact request'],
+        [$resourceType, $label, $article] = match (true) {
+            $this->request instanceof CollaborationRequest        => ['collaboration_request', 'collaboration request', 'A'],
+            $this->request instanceof OrganizationTrainingRequest => ['organization_training_request', 'organization training request', 'An'],
+            default                                               => ['contact_request', 'contact request', 'A'],
         };
 
         return [
             'title'         => 'New inbound request assignment',
-            'message'       => "A {$label} was assigned to you.",
+            'message'       => "{$article} {$label} was assigned to you.",
             'resource_type' => $resourceType,
             'resource_id'   => $this->request->id,
         ];

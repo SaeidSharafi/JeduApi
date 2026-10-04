@@ -11,7 +11,6 @@ use App\Http\Controllers\Api\Admin\LearningPath\ArchiveLearningPathController;
 use App\Http\Controllers\Api\Admin\LearningPath\LearningPathController;
 use App\Http\Controllers\Api\Admin\MoodleSsoController;
 use App\Http\Controllers\Api\Admin\Notifications\StaffNotificationController;
-use App\Http\Controllers\Api\Admin\OrganizationTrainingRequest\OrganizationTrainingRequestAttachmentDownloadController;
 use App\Http\Controllers\Api\Admin\OrganizationTrainingRequest\OrganizationTrainingRequestController;
 use App\Http\Controllers\Api\Admin\Profile\StaffChangePasswordController;
 use App\Http\Controllers\Api\Admin\Profile\StaffProfileController;
@@ -104,8 +103,6 @@ Route::prefix('organization-training-requests/{organizationTrainingRequest}')
     ->group(function (): void {
         Route::patch('status', [OrganizationTrainingRequestController::class, 'status'])->name('update-status');
         Route::patch('assignment', [OrganizationTrainingRequestController::class, 'assignment'])->name('update-assignment');
-        Route::get('attachment/download', OrganizationTrainingRequestAttachmentDownloadController::class)
-            ->name('attachment.download');
     });
 
 Route::apiResource('contact-requests', ContactRequestController::class)->only(['index', 'show']);

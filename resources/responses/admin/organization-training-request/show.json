@@ -13,7 +13,16 @@
     "status": {"value": "pending", "label": "Pending"},
     "assignee": null,
     "vendor_snapshot": {"id": 1, "name": "Education Department"},
-    "attachment": null,
+    "attachment": {
+      "id": 2,
+      "url": "https://example.com/api/v1/admin/private-file/2/download",
+      "size": 123456,
+      "file_name": "requirements.pdf",
+      "alt": null,
+      "mime_type": "application/pdf",
+      "extension": "pdf",
+      "tag": "attachment"
+    },
     "created_at": "2026-10-04T12:00:00.000000Z",
     "updated_at": "2026-10-04T12:00:00.000000Z"
   },

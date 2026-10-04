@@ -87,20 +87,23 @@ it('accepts a two megabyte PDF and exposes it only through an authorized downloa
         ->and($media->disk)->toBe('local');
     Storage::disk('local')->assertExists($media->getDiskPath());
 
-    $this->authorized_user([PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW]);
+    $this->authorized_user([
+        PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW,
+        PermissionEnum::FILE_VIEW_ANY,
+    ]);
     $show = $this->getJson(route('api.v1.admin.organization-training-requests.show', $request));
-    $show->assertOk()->assertJsonPath('data.attachment.download_url', route(
-        'api.v1.admin.organization-training-requests.attachment.download',
-        $request,
+    $show->assertOk()->assertJsonPath('data.attachment.url', route(
+        'api.v1.admin.private-upload.download',
+        ['file' => $media->id],
     ));
 
-    $this->get($show->json('data.attachment.download_url'))
+    $this->get($show->json('data.attachment.url'))
         ->assertOk()
         ->assertHeader('Content-Type', 'application/pdf');
 
     $this->user = Staff::factory()->create();
     $this->unauthorized_user();
-    $this->get(route('api.v1.admin.organization-training-requests.attachment.download', $request))
+    $this->get(route('api.v1.admin.private-upload.download', ['file' => $media->id]))
         ->assertForbidden();
 });
 
@@ -275,6 +278,20 @@ it('forbids staff without request access from listing requests', function (): vo
 
     $this->getJson(route('api.v1.admin.organization-training-requests.index'))
         ->assertForbidden();
+});
+
+it('forbids staff without request access from reading or changing a request', function (): void {
+    $this->unauthorized_user();
+    $request = OrganizationTrainingRequest::factory()->create();
+
+    $this->getJson(route('api.v1.admin.organization-training-requests.show', $request))
+        ->assertForbidden();
+    $this->patchJson(route('api.v1.admin.organization-training-requests.update-status', $request), [
+        'status' => InboundRequestStatusEnum::CONTACTED->value,
+    ])->assertForbidden();
+    $this->patchJson(route('api.v1.admin.organization-training-requests.update-assignment', $request), [
+        'staff_id' => null,
+    ])->assertForbidden();
 });
 
 it('allows update-own staff to claim only their request', function (): void {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\OrganizationTrainingRequest;
 
 use App\Data\Admin\Auth\StaffData;
+use App\Data\Admin\PrivateFileData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\InboundRequestStatusEnum;
 use App\Models\OrganizationTrainingRequest;
@@ -30,7 +31,7 @@ final class OrganizationTrainingRequestData extends Data
         #[WithTransformer(TranslatableEnumData::class)] public InboundRequestStatusEnum $status,
         public ?StaffData $assignee,
         public ?array $vendor_snapshot,
-        public ?OrganizationTrainingRequestAttachmentData $attachment,
+        public ?PrivateFileData $attachment,
         public ?string $created_at,
         public ?string $updated_at,
     ) {}
@@ -52,7 +53,7 @@ final class OrganizationTrainingRequestData extends Data
             status: $request->status,
             assignee: $request->assignee ? StaffData::from($request->assignee) : null,
             vendor_snapshot: $request->vendor_snapshot,
-            attachment: $attachment ? OrganizationTrainingRequestAttachmentData::fromModel($attachment, $request->id) : null,
+            attachment: $attachment ? PrivateFileData::fromModel($attachment, 'attachment') : null,
             created_at: $request->created_at?->toISOString(),
             updated_at: $request->updated_at?->toISOString(),
         );
