@@ -28,7 +28,7 @@ it('returns page content and no courses when no vendor is configured', function 
         ->assertJsonMissingPath('data.media');
 });
 
-it('returns six recent published visible courses ordered by Course and merged with Product data', function (): void {
+it('returns six recent published courses with commercial data only for products in the default course listing', function (): void {
     $vendor      = Vendor::factory()->create();
     $otherVendor = Vendor::factory()->create();
     OrganizationPage::query()->firstOrFail()->update(['vendor_id' => $vendor->id]);
@@ -51,6 +51,7 @@ it('returns six recent published visible courses ordered by Course and merged wi
         ]);
         ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
+            'price'      => 100000,
             ...$deliveryAttributes,
         ]);
 
@@ -69,7 +70,7 @@ it('returns six recent published visible courses ordered by Course and merged wi
         'price'          => 100000,
         'available_from' => now()->addDay(),
     ]);
-    $createCourseProduct($vendor, 'Expired course', [
+    $expiredCourse = $createCourseProduct($vendor, 'Expired course', [
         'created_at' => now()->addMinute(),
     ], [], [
         'available_to' => now()->subDay(),
@@ -103,18 +104,80 @@ it('returns six recent published visible courses ordered by Course and merged wi
         ->assertJsonPath('data.recent_courses.2.name', 'Future course')
         ->assertJsonPath('data.recent_courses.3.name', 'Expired course')
         ->assertJsonPath('data.recent_courses.0.slug', $draftCourse->slug)
-        ->assertJsonPath('data.recent_courses.2.slug', $futureCourse->products()->firstOrFail()->slug)
+        ->assertJsonPath('data.recent_courses.2.slug', $futureCourse->slug)
+        ->assertJsonPath('data.recent_courses.3.slug', $expiredCourse->slug)
+        ->assertJsonPath('data.recent_courses.2.price', null)
+        ->assertJsonPath('data.recent_courses.3.price', null)
+        ->assertJsonPath('data.recent_courses.4.price', 100000)
         ->assertJsonMissingPath('data.recent_courses.0.course_info')
         ->assertJsonMissingPath('data.recent_courses.0.product_info');
 
     expect($response->json('data.recent_courses.0.price'))
         ->toBeNull()
         ->and($response->json('data.recent_courses.0.is_free'))->toBeFalse()
-        ->and($response->json('data.recent_courses.2.price'))->toBe(100000);
+        ->and($response->json('data.recent_courses.2.is_free'))->toBeFalse();
 
     expect($response->json('data.recent_courses.*.name'))
         ->toContain('Future course', 'Expired course', 'Draft course', 'Hidden course')
         ->not->toContain('Other department course', 'Department seminar');
+});
+
+it('keeps courses visible when their only product is archived', function (): void {
+    $vendor = Vendor::factory()->create();
+    OrganizationPage::query()->singleton()->firstOrFail()->update(['vendor_id' => $vendor->id]);
+    $course  = Course::factory()->create();
+    $product = Product::factory()->withCourse($course)->create([
+        'vendor_id' => $vendor->id,
+        'status'    => PublicationStatusEnum::ARCHIVED,
+    ]);
+    ProductDeliveryOption::factory()->create(['product_id' => $product->id, 'price' => 100000]);
+
+    $response = $this->getJson(route('api.v1.shop.organization.show'));
+
+    $response->assertOk()
+        ->assertJsonCount(1, 'data.recent_courses')
+        ->assertJsonPath('data.recent_courses.0.name', $course->full_name)
+        ->assertJsonPath('data.recent_courses.0.slug', $course->slug)
+        ->assertJsonPath('data.recent_courses.0.price', null)
+        ->assertJsonPath('data.recent_courses.0.price_data', null);
+});
+
+it('keeps completed courses visible without commercial data from ended products', function (): void {
+    $vendor = Vendor::factory()->create();
+    OrganizationPage::query()->singleton()->firstOrFail()->update(['vendor_id' => $vendor->id]);
+    $course  = Course::factory()->create();
+    $product = Product::factory()->withCourse($course)->create([
+        'vendor_id'      => $vendor->id,
+        'event_ended_at' => today()->subDay(),
+    ]);
+    ProductDeliveryOption::factory()->create(['product_id' => $product->id, 'price' => 100000]);
+
+    $response = $this->getJson(route('api.v1.shop.organization.show'));
+
+    $response->assertOk()
+        ->assertJsonCount(1, 'data.recent_courses')
+        ->assertJsonPath('data.recent_courses.0.slug', $course->slug)
+        ->assertJsonPath('data.recent_courses.0.price', null)
+        ->assertJsonPath('data.recent_courses.0.price_data', null)
+        ->assertJsonPath('data.recent_courses.0.is_free', false);
+});
+
+it('shows commercial data for listed products after registration closes', function (): void {
+    $vendor = Vendor::factory()->create();
+    OrganizationPage::query()->singleton()->firstOrFail()->update(['vendor_id' => $vendor->id]);
+    $course  = Course::factory()->create();
+    $product = Product::factory()->withCourse($course)->create(['vendor_id' => $vendor->id]);
+    ProductDeliveryOption::factory()->create([
+        'product_id'            => $product->id,
+        'price'                 => 100000,
+        'registration_end_date' => today()->subDay(),
+    ]);
+
+    $response = $this->getJson(route('api.v1.shop.organization.show'));
+
+    $response->assertOk()
+        ->assertJsonPath('data.recent_courses.0.slug', $product->slug)
+        ->assertJsonPath('data.recent_courses.0.price', 100000);
 });
 
 it('accepts a recent-course limit of twenty and rejects larger limits', function (): void {

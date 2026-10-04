@@ -317,10 +317,10 @@ it('lists requests and lets authorized staff update status and assignment', func
 
     $this->patchJson(route('api.v1.admin.organization-training-requests.update-status', $request), [
         'status' => InboundRequestStatusEnum::CONTACTED->value,
-    ])->assertOk();
+    ])->assertOk()->assertJsonPath('data', null);
     $this->patchJson(route('api.v1.admin.organization-training-requests.update-assignment', $request), [
         'staff_id' => $assignee->id,
-    ])->assertOk();
+    ])->assertOk()->assertJsonPath('data', null);
 
     $this->assertDatabaseHas('organization_training_requests', [
         'id'             => $request->id,

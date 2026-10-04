@@ -77,7 +77,7 @@ final class OrganizationTrainingRequestController extends Controller
     /**
      * Update an Organization Training Request status.
      *
-     * @responseFile 200 resources/responses/admin/organization-training-request/show.json
+     * @responseFile 200 resources/responses/admin/organization-training-request/update.json
      */
     public function status(
         ContactRequestStatusData $data,
@@ -96,7 +96,7 @@ final class OrganizationTrainingRequestController extends Controller
     /**
      * Assign or unassign an Organization Training Request.
      *
-     * @responseFile 200 resources/responses/admin/organization-training-request/show.json
+     * @responseFile 200 resources/responses/admin/organization-training-request/update.json
      */
     public function assignment(
         ContactRequestAssignmentData $data,

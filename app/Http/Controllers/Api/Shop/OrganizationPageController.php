@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\OrganizationPage;
 use App\Models\Product;
+use App\Query\ProductAvailabilityFilter;
 use App\Services\ProductPriceService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -71,6 +72,9 @@ final class OrganizationPageController extends Controller
                     ->hasPublishedDeliveryOption()
                     ->publishedProductable()
                     ->activeTerm();
+
+                $eligibleProducts = ProductAvailabilityFilter::applyEventNotEnded($eligibleProducts);
+                $eligibleProducts = ProductAvailabilityFilter::applyContentAvailableNow($eligibleProducts);
 
                 /** @var Collection<int, Collection<int, Product>> $productsByCourse */
                 $productsByCourse = $eligibleProducts
