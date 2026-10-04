@@ -64,6 +64,7 @@ return [
         'learningpath'                       => 'مسیر یادگیری',
         'order'                              => 'سفارش',
         'orderitem'                          => 'قلم سفارش',
+        'organizationpage'                   => 'صفحه سازمان‌ها',
         'partner'                            => 'همکار',
         'payment'                            => 'پرداخت',
         'paymenttransaction'                 => 'تراکنش پرداخت',

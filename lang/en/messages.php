@@ -64,6 +64,7 @@ return [
         'learningpath'                       => 'Learning Path',
         'order'                              => 'Order',
         'orderitem'                          => 'Order Item',
+        'organizationpage'                   => 'Organization Page',
         'partner'                            => 'Partner',
         'payment'                            => 'Payment',
         'paymenttransaction'                 => 'Payment Transaction',

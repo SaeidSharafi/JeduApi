@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestController;
 use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestUpdateStatusController;
 use App\Http\Controllers\Api\Admin\Forms\CollaborationRequest\CollaborationRequestController;
 use App\Http\Controllers\Api\Admin\Forms\ContactRequest\ContactRequestController;
+use App\Http\Controllers\Api\Admin\LandingPage\OrganizationPageController;
 use App\Http\Controllers\Api\Admin\LearningPath\ArchiveLearningPathController;
 use App\Http\Controllers\Api\Admin\LearningPath\LearningPathController;
 use App\Http\Controllers\Api\Admin\MoodleSsoController;
@@ -40,6 +41,13 @@ require __DIR__.'/file.php';
 require __DIR__.'/sale.php';
 require __DIR__.'/setting.php';
 require __DIR__.'/wallet.php';
+
+Route::prefix('landing-pages')->name('landing-pages.')->group(function (): void {
+    Route::get('organization', [OrganizationPageController::class, 'show'])
+        ->name('organization.show');
+    Route::put('organization', [OrganizationPageController::class, 'update'])
+        ->name('organization.update');
+});
 
 Route::apiResource('staff', StaffController::class);
 Route::prefix('staff/{staff}')->name('staff.')->group(function (): void {

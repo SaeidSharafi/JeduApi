@@ -21,3 +21,13 @@ it('to Array', function (): void {
         'updated_at'    => $vendor->updated_at?->utc()->toJSON(),
     ]);
 })->group('vendor');
+
+it('has one organization page', function (): void {
+    $vendor = App\Models\Vendor::factory()->create();
+    $page   = App\Models\OrganizationPage::query()->singleton()->firstOrFail();
+    $page->update(['vendor_id' => $vendor->id]);
+
+    expect($vendor->organizationPage)
+        ->toBeInstanceOf(App\Models\OrganizationPage::class)
+        ->id->toBe($page->id);
+})->group('vendor');

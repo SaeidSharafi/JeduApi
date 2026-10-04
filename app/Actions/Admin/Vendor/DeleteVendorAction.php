@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Vendor;
 
 use App\Exceptions\ModelHasRelationshipDataException;
+use App\Models\OrganizationPage;
 use App\Models\Product;
 use App\Models\Vendor;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,9 @@ final readonly class DeleteVendorAction
     public function handle(Vendor $vendor): void
     {
         DB::transaction(function () use ($vendor): void {
+            if ($vendor->organizationPage()->exists()) {
+                throw new ModelHasRelationshipDataException(OrganizationPage::class);
+            }
             if ($vendor->products()->exists()) {
                 throw new ModelHasRelationshipDataException(Product::class);
             }

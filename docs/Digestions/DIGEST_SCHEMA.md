@@ -106,6 +106,12 @@
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: PK(id)
 
+### Table: `organization_pages`
+- Purpose: Dedicated singleton configuration for the one-off Organization page.
+- Singleton enforcement: organization_pages.singleton_key is an unsigned tiny integer defaulting to 1 with a UNIQUE constraint; the migration seeds singleton_key = 1 and application reads target that fixed key.
+- Columns: `id` (BIGINT, PK), `singleton_key` (UNSIGNED TINYINT, default 1, UNIQUE), nullable `vendor_id` (FK -> `vendors.id`, RESTRICT), nullable `hero_title` (VARCHAR), nullable `hero_description` (TEXT), nullable `ims_portal_url` (VARCHAR(2048)), nullable `request_section_title` (VARCHAR), nullable `request_section_explanation` (TEXT), nullable `faqs` (JSON), nullable `hero_image_url` (VARCHAR(2048)), nullable `educational_calendar_url` (VARCHAR(2048)), timestamps.
+- Initialization and constraints: The migration inserts the initial row with no Vendor and all optional content unset. The page uses `mediables` attachments tagged `hero` and `educational_calendar` for admin management; their public URLs are denormalized into the two URL columns for shop reads, so the shop endpoint does not load media. There is no `hero_image_id` column. Vendor deletion is rejected by the Vendor action while this row references it. FAQ array order is display order and each object contains `question`, `answer`, and `is_visible`. Partner data is not stored here.
+
 ### Table: `terms`
 - Purpose: Academic terms/scheduling periods.
 - Columns:

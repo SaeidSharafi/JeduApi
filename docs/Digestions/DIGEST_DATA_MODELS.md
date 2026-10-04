@@ -284,7 +284,14 @@
 ### Vendor (`app/Models/Vendor.php`)
 - **Purpose:** Internal departments/external entities
 - **Key Fields:** Vendor information and business details
-- **Relationships:** `hasMany(Product::class)` - products
+- **Relationships:** `hasMany(Product::class)` - products; `hasOne(OrganizationPage::class)` - organizationPage
+
+### OrganizationPage (`app/Models/OrganizationPage.php`)
+- **Purpose:** Dedicated singleton configuration for the one-off Organization landing-page feature; a Vendor remains the school department that owns the recent Course catalog, not a marketplace seller.
+- **Singleton invariant:** The database unique sentinel is fixed at 1, and the model singleton scope targets that row for all page reads and updates.
+- **Key Fields:** Nullable `vendor_id`, `hero_title`, `hero_description`, `ims_portal_url`, `request_section_title`, `request_section_explanation`, ordered `faqs` JSON, `hero_image_url`, and `educational_calendar_url`.
+- **Relationships:** `belongsTo(Vendor::class)` - vendor; Mediable attachments tagged `hero` and `educational_calendar`.
+- **Special Features:** The initial singleton row is created by migration with no Vendor or optional content. Admin replacement requires a Vendor, while public retrieval remains available without one. FAQ entries are ordered `{question, answer, is_visible}` objects. Admin media remains Mediable, while update denormalizes the `hero` and `educational_calendar` URLs into `hero_image_url` and `educational_calendar_url` for the shop read path. Partners are intentionally not duplicated because the existing dedicated partners link remains canonical; no `hero_image_id` column exists.
 
 ### Term (`app/Models/Term.php`)
 - **Purpose:** Academic terms and scheduling periods

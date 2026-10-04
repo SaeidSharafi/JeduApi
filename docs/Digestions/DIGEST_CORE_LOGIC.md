@@ -305,7 +305,13 @@
 #### Vendor Actions (`app/Actions/Admin/Vendor/`)
 - **CreateVendorAction**: Creates new vendor/department records
 - **UpdateVendorAction**: Updates vendor information
-- **DeleteVendorAction**: Removes vendor relationships
+- **UpdateVendorAction cache behavior:** After a successful transaction, forgets the cached OrganizationPage projections for limits 1 through 20 so a linked department rename is visible immediately.
+- **DeleteVendorAction**: Removes vendor relationships, but rejects deletion when the Vendor has Products or is linked to the OrganizationPage.
+
+#### Organization Page Actions (`app/Actions/Admin/Organization/`)
+- **UpdateOrganizationPageAction** (`app/Actions/Admin/Organization/UpdateOrganizationPageAction.php`): Fully replaces the singleton OrganizationPage content and Vendor association in a transaction, synchronizes its `hero` and `educational_calendar` Mediable tags, stores their public URLs in `hero_image_url` and `educational_calendar_url`, and forgets cached public projections for limits 1 through 20.
+
+The public Organization page controller (`app/Http/Controllers/Api/Shop/OrganizationPageController.php`) builds the read projection directly and caches it by requested limit through `CacheKey::OrganizationPage`. It loads the fixed singleton and linked Vendor without the media relation. When a Vendor is linked, it queries published Course records associated with any Course Product belonging to that Vendor. Course `created_at`/`id` provide the stable newest-first ordering and bounded limit. It separately loads eligible Product shells with published/visible, published-delivery-option, published-Course-productable, and active-term gates; those shells are optional overlays for price and commercial delivery data. A Course remains in the projection when no eligible Product resolves, and `ProductCardData` uses the Course identity/presentation fields while leaving commercial fields absent. Availability windows and other Product eligibility filters are intentionally not used to exclude recent Course cards.
 
 #### Term Actions (`app/Actions/Admin/Term/`)
 - **CreateTermAction**: Sets up academic terms and periods

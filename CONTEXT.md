@@ -81,6 +81,14 @@ _Avoid_: Component base price
 The school department that owns and presents catalog offerings, including its departmental landing page. It is not an external marketplace seller or a financial-settlement boundary.
 _Avoid_: Marketplace seller
 
+**Organization Landing Page**:
+A dedicated public page presenting the shop's organization-management and educational-needs service. It is associated with one Vendor for its department-owned course offerings, but it is not the universal landing-page format for Vendors.
+_Avoid_: Vendor Landing Page, generic landing-page template
+
+**Organization Training Request**:
+A public request from an organization for educational services. It records the contact person's identity and role, the organization name, manually entered requested course names, optional notes, and an optional supporting PDF. It is separate from a Collaboration Request and does not select existing shop courses.
+_Avoid_: Course selection, Collaboration Request
+
 
 **Customer**:
 The shop account (`User`) that places orders. Orders snapshot customer identity (`customer_*` fields). Per-customer limits are keyed on this.

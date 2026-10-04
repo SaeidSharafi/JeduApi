@@ -55,7 +55,8 @@ it('return morph map correctly', function (): void {
         ->toHaveKey('product', App\Models\Product::class)
         ->toHaveKey('user', App\Models\User::class)
         ->toHaveKey('order', App\Models\Order::class)
-        ->toHaveKey('refund', App\Models\Refund::class);
+        ->toHaveKey('refund', App\Models\Refund::class)
+        ->toHaveKey('organization_page', App\Models\OrganizationPage::class);
 });
 
 it('return categorizable types correctly', function (): void {

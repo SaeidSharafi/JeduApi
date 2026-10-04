@@ -14,6 +14,7 @@ use App\Models\DigitalAsset;
 use App\Models\HomePageBlock;
 use App\Models\LearningPath;
 use App\Models\Order;
+use App\Models\OrganizationPage;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\Product;
@@ -59,6 +60,7 @@ enum MorphTypeEnum: string
     case SETTING               = 'setting';
     case COLLABORATION_REQUEST = 'collaboration_request';
     case DEPOSIT               = 'deposit';
+    case ORGANIZATION_PAGE     = 'organization_page';
 
     /**
      * @return array<string, class-string>
@@ -147,6 +149,7 @@ enum MorphTypeEnum: string
             self::SETTING               => Setting::class,
             self::COLLABORATION_REQUEST => CollaborationRequest::class,
             self::DEPOSIT               => Payment::class,
+            self::ORGANIZATION_PAGE     => OrganizationPage::class,
         };
     }
 }

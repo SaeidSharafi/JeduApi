@@ -46,6 +46,10 @@
 - `update(VendorUpdateData $request, Vendor $vendor)`: **Route:** `PUT /api/v1/admin/vendors/{vendor}` - **Request DTO:** VendorUpdateData - **Response DTO:** VendorData
 - `destroy(Vendor $vendor)`: **Route:** `DELETE /api/v1/admin/vendors/{vendor}` - **Delegates to:** Vendor deletion
 
+### OrganizationPageController (`app/Http/Controllers/Api/Admin/LandingPage/OrganizationPageController.php`)
+- `show()`: **Route:** `GET /api/v1/admin/landing-pages/organization` - **Response DTO:** OrganizationPageData for the database-enforced singleton page, including the selected Vendor ID, page content, FAQ JSON, denormalized public media URLs, and Mediable media
+- `update(OrganizationPageUpdateData $request)`: **Route:** `PUT /api/v1/admin/landing-pages/organization` - **Request DTO:** OrganizationPageUpdateData - **Response DTO:** OrganizationPageData - Requires one Vendor, replaces the page content, FAQ items, and `hero`/`educational_calendar` media associations, and stores their URLs in `hero_image_url`/`educational_calendar_url`. Partner data is intentionally not accepted because the existing dedicated partners link remains canonical.
+
 ### TeacherController (`app/Http/Controllers/Api/Admin/TeacherController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/teachers` - **Delegates to:** Teacher listing - **Response DTO:** TeacherData collection
 - `store(TeacherCreateData $request)`: **Route:** `POST /api/v1/admin/teachers` - **Request DTO:** TeacherCreateData - **Response DTO:** TeacherData
@@ -746,6 +750,9 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 
 #### CollaborationPageController (`app/Http/Controllers/Api/Shop/CMS/CollaborationPageController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/collaboration` - **Response DTO:** CollaborationPageData providing collaboration content sections
+
+#### OrganizationPageController (`app/Http/Controllers/Api/Shop/OrganizationPageController.php`)
+- `__invoke(OrganizationPageRequestData $request)`: **Route:** `GET /api/v1/shop/organization` - **Request DTO:** OrganizationPageRequestData (`limit`, default 6, maximum 20) - **Response DTO:** OrganizationPageData with the always-available page content, IMS URL, denormalized public media URLs, FAQ JSON, linked department name, and recent published Course records associated with the linked Vendor's Course Products. The query is rooted in Course records and ordered by Course `created_at`/`id` descending. Eligible Product shells are loaded separately as optional price and commercial delivery overlays; a Course remains in the flat `ProductCardData` collection when no eligible Product resolves, with Course identity/presentation fields still populated and commercial fields absent. No nested course/product info objects are exposed. Availability windows and other Product eligibility filters do not exclude these recent Course cards; the card may present an unavailable state. The projection is cached per limit and invalidated when the page or linked Vendor is updated. An unlinked page returns an empty recent-course list; the endpoint does not load the media relation or expose the internal numeric Vendor ID.
 
 ### Moodle SSO Endpoints
 - Course SSO retains the existing student and teacher route paths and derives the destination from the authorized Shop enrollment or delivery option. Quiz SSO uses the Moodle course-module ID (`cid`) and checks current Moodle access. All four routes return `MoodleSsoUrlData`; its `url` contains the encoded `wantsurl` login parameter for the server-selected course or quiz destination.
