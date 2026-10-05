@@ -75,7 +75,10 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->with(Mockery::on(function (array $payload) use ($amount): bool {
                 // orderId now uses generated transaction reference, so we only assert amount
-                return $payload['amount'] === $amount && isset($payload['orderId']);
+                return $payload['amount'] === $amount
+                    && is_string($payload['orderId'])
+                    && ctype_digit($payload['orderId'])
+                    && (int) $payload['orderId'] > 0;
             }))
             ->andReturn((object) ['return' => '0,'.$refId]);
 
@@ -88,6 +91,53 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->and($result->redirect_data)->toBe(['RefId' => $refId])
             ->and($result->payment->status)->toBe(PaymentStatusEnum::PENDING)
             ->and($result->payment->transactions()->count())->toBe(1);
+    });
+
+    it('uses a fresh reference after Mellat rejects a duplicate', function (): void {
+        $payment = Payment::factory()->create([
+            'method' => PaymentMethodEnum::MELLAT_GATEWAY,
+            'status' => PaymentStatusEnum::PENDING,
+        ]);
+        $soapClient = Mockery::mock(SoapClient::class);
+        $soapClient->shouldReceive('bpPayRequest')->twice()->andReturn(
+            (object) ['return' => '41'],
+            (object) ['return' => '0,REF-RETRY'],
+        );
+        $factory = Mockery::mock(SoapClientFactory::class);
+        $factory->shouldReceive('create')->twice()->andReturn($soapClient);
+        $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
+
+        $result       = $processor->process($payment);
+        $transactions = $payment->transactions()->orderBy('id')->get();
+
+        expect($result->redirect_data)->toBe(['RefId' => 'REF-RETRY']);
+        expect($payment->fresh()->status)->toBe(PaymentStatusEnum::PENDING);
+        expect($transactions)->toHaveCount(2);
+        expect($transactions[0]->status)->toBe(PaymentTransactionStatusEnum::FAILED);
+        expect($transactions[0]->error_code)->toBe('41');
+        expect($transactions[1]->status)->toBe(PaymentTransactionStatusEnum::INITIATED);
+        expect($transactions[1]->transaction_reference)->not->toBe($transactions[0]->transaction_reference);
+        foreach ($transactions as $transaction) {
+            expect($transaction->gateway_request['orderId'])->toBe($transaction->transaction_reference);
+        }
+        expect($payment->fresh()->last_gateway_reference)->toBe($transactions[1]->transaction_reference);
+    });
+
+    it('stops after three Mellat duplicate rejections', function (): void {
+        $payment = Payment::factory()->create([
+            'method' => PaymentMethodEnum::MELLAT_GATEWAY,
+            'status' => PaymentStatusEnum::PENDING,
+        ]);
+        $soapClient = Mockery::mock(SoapClient::class);
+        $soapClient->shouldReceive('bpPayRequest')->times(3)->andReturn((object) ['return' => '41']);
+        $factory = Mockery::mock(SoapClientFactory::class);
+        $factory->shouldReceive('create')->times(3)->andReturn($soapClient);
+        $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
+
+        expect(fn () => $processor->process($payment))->toThrow(MellatException::class);
+        expect($payment->fresh()->status)->toBe(PaymentStatusEnum::FAILED);
+        expect($payment->transactions()->count())->toBe(3);
+        expect($payment->transactions()->where('status', PaymentTransactionStatusEnum::FAILED)->count())->toBe(3);
     });
 
     it('throws validation exception when Mellat gateway cannot be reached', function (): void {

@@ -52,43 +52,53 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
     public function process(Payment $payment): PaymentProcessResultData
     {
-        $transaction          = $this->referenceService->generateFor($payment);
-        $transactionReference = $transaction->transaction_reference;
+        for ($attempt = 1; ; $attempt++) {
+            $transaction          = $this->referenceService->generateFor($payment);
+            $transactionReference = $transaction->transaction_reference;
 
-        $ipAddress     = request()->ip();
-        $userAgent     = request()->userAgent();
-        $amount        = $payment->amount;
-        $attemptNumber = $payment->attempt_count ?? 1;
+            $ipAddress     = request()->ip();
+            $userAgent     = request()->userAgent();
+            $amount        = $payment->amount;
+            $attemptNumber = $payment->attempt_count ?? 1;
 
-        $callbackUrl = route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]);
+            $callbackUrl = route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]);
 
-        $gatewayRequest = [
-            'terminalId'     => $this->getConfig('terminal_id'),
-            'userName'       => $this->getConfig('username'),
-            'userPassword'   => $this->getConfig('password'),
-            'orderId'        => $transactionReference,
-            'amount'         => $amount,
-            'localDate'      => date('Ymd'),
-            'localTime'      => date('His'),
-            'additionalData' => '',
-            'callBackUrl'    => $callbackUrl,
-            'payerId'        => 0,
-        ];
+            $gatewayRequest = [
+                'terminalId'     => $this->getConfig('terminal_id'),
+                'userName'       => $this->getConfig('username'),
+                'userPassword'   => $this->getConfig('password'),
+                'orderId'        => $transactionReference,
+                'amount'         => $amount,
+                'localDate'      => date('Ymd'),
+                'localTime'      => date('His'),
+                'additionalData' => '',
+                'callBackUrl'    => $callbackUrl,
+                'payerId'        => 0,
+            ];
 
-        try {
-            // example response: 0, AF82041a2Bf6989c7fF9
-            // the first part is the result code, the second part is the RefId
-            // we should only get the RefId if the result code is 0 (success)
-            $refId = $this->sendPayRequest($gatewayRequest);
+            try {
+                // example response: 0, AF82041a2Bf6989c7fF9
+                // the first part is the result code, the second part is the RefId
+                // we should only get the RefId if the result code is 0 (success)
+                $refId = $this->sendPayRequest($gatewayRequest);
 
-        } catch (Exception $e) {
-            $transaction->update([
-                'status'        => PaymentTransactionStatusEnum::FAILED,
-                'error_message' => $e->getMessage(),
-                'completed_at'  => now(),
-            ]);
-            $payment->update(['status' => PaymentStatusEnum::FAILED]);
-            throw $e;
+            } catch (Exception $e) {
+                $transaction->update([
+                    'status'          => PaymentTransactionStatusEnum::FAILED,
+                    'error_message'   => $e->getMessage(),
+                    'error_code'      => $e instanceof MellatException ? (string) $e->getCode() : null,
+                    'gateway_request' => $gatewayRequest,
+                    'completed_at'    => now(),
+                ]);
+                if ($e instanceof MellatException && $e->getCode() === 41 && $attempt < 3) {
+                    continue;
+                }
+
+                $payment->update(['status' => PaymentStatusEnum::FAILED]);
+                throw $e;
+            }
+
+            break;
         }
 
         $transaction->update([

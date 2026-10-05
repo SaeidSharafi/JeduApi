@@ -12,10 +12,8 @@ use App\Models\PaymentTransaction;
 use App\Models\User;
 use App\Services\Payment\WalletPaymentProcessor;
 use App\Services\PaymentTransactionReferenceService;
-use Illuminate\Support\Facades\Config;
 
 beforeEach(function (): void {
-    Config::set('payments.transaction_reference.start_from', 200000001);
     $this->referenceService = app(PaymentTransactionReferenceService::class);
 });
 
@@ -47,7 +45,7 @@ it('creates a payment transaction record when processing wallet payment', functi
     // Verify transaction record was created
     $transaction = PaymentTransaction::where('payment_id', $result->payment->id)->first();
     expect($transaction)->not->toBeNull();
-    expect($transaction->transaction_reference)->toBe('200000001');
+    expect($transaction->transaction_reference)->toMatch('/^[1-9][0-9]*$/');
     expect($transaction->status)->toBe(PaymentTransactionStatusEnum::COMPLETED);
     expect($transaction->attempt_number)->toBe(2);
     expect($transaction->initiated_at)->not->toBeNull();
@@ -92,7 +90,7 @@ it('increments attempt number for subsequent transaction attempts', function ():
         ->first();
 
     expect($latestTransaction->attempt_number)->toBe(2);
-    expect($latestTransaction->transaction_reference)->toBe('200000002');
+    expect($latestTransaction->transaction_reference)->toMatch('/^[1-9][0-9]*$/')->not->toBe('200000001');
 });
 
 it('stores gateway metadata in transaction record', function (): void {
@@ -149,7 +147,7 @@ it('updates payment with last_gateway_reference after transaction', function ():
     $processor = app(WalletPaymentProcessor::class);
     $result    = $processor->process($payment);
 
-    expect($result->payment->last_gateway_reference)->toBe('200000001');
+    expect($result->payment->last_gateway_reference)->toBe($result->payment->transactions()->latest('id')->first()->transaction_reference);
     expect($result->payment->attempt_count)->toBe(2);
     expect($result->payment->last_attempted_at)->not->toBeNull();
 });
@@ -198,9 +196,9 @@ it('generates unique transaction references for concurrent payments', function (
     $transaction2 = PaymentTransaction::where('payment_id', $result2->payment->id)->first();
     $transaction3 = PaymentTransaction::where('payment_id', $result3->payment->id)->first();
 
-    expect($transaction1->transaction_reference)->toBe('200000001');
-    expect($transaction2->transaction_reference)->toBe('200000002');
-    expect($transaction3->transaction_reference)->toBe('200000003');
+    expect($transaction1->transaction_reference)->toMatch('/^[1-9][0-9]*$/');
+    expect($transaction2->transaction_reference)->toMatch('/^[1-9][0-9]*$/');
+    expect($transaction3->transaction_reference)->toMatch('/^[1-9][0-9]*$/');
 
     // Ensure all are unique
     $references = [

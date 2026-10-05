@@ -95,6 +95,7 @@ describe('store', function (): void {
 
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors('product_delivery_option_uuid');
+        $response->assertJsonPath('message', __('shop.cart.errors.product_already_in_cart'));
     });
 
     it('should fail with invalid UUID', function (): void {

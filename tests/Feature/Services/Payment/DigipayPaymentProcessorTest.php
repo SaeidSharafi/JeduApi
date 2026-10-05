@@ -91,8 +91,11 @@ describe('DigipayPaymentProcessor', function (): void {
             ->and($transaction->gateway_request)->toHaveKey('provider_id')
             ->and($transaction->gateway_request)->toHaveKey('amount', 520_000);
 
-        Http::assertSent(function (Illuminate\Http\Client\Request $request): bool {
-            return str_contains($request->url(), '/digipay/api/tickets/business');
+        Http::assertSent(function (Illuminate\Http\Client\Request $request) use ($transaction): bool {
+            return str_contains($request->url(), '/digipay/api/tickets/business')
+                && is_string($request['providerId'])
+                && ctype_digit($request['providerId'])
+                && $request['providerId'] === $transaction->transaction_reference;
         });
     });
 

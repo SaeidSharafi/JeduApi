@@ -225,10 +225,10 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### PaymentTransaction (`app/Models/PaymentTransaction.php`)
 - **Purpose:** Per-attempt gateway transaction records for payment audit trail
-- **Key Fields:** `payment_id`, `transaction_reference` (unique numeric ref starting at 200M), `attempt_number` (sequential per payment), `status` (PaymentTransactionStatusEnum: initiated/completed/failed), `gateway_request` (JSON — full request to gateway), `gateway_response` (JSON — full response from gateway), `initiated_at`, `completed_at`, `error_code`, `error_message`, `ip_address`, `user_agent`
+- **Key Fields:** `payment_id`, `transaction_reference` (unique random positive signed-64-bit numeric string), `attempt_number` (sequential per payment), `status` (PaymentTransactionStatusEnum: initiated/completed/failed), `gateway_request` (JSON — full request to gateway), `gateway_response` (JSON — full response from gateway), `initiated_at`, `completed_at`, `error_code`, `error_message`, `ip_address`, `user_agent`
 - **Relationships:**
   - `belongsTo(Payment::class)` - payment
-- **Special Features:** Sequential transaction references via `PaymentTransactionReferenceService` with row-locking for concurrency; full gateway request/response capture for debugging; lifecycle tracking with `initiated_at`/`completed_at` timestamps; error codes and messages for failure analysis
+- **Special Features:** Secure random references via `PaymentTransactionReferenceService`, reserved under a database unique constraint with bounded local collision retries; full gateway request/response capture for debugging; lifecycle tracking with `initiated_at`/`completed_at` timestamps; error codes and messages for failure analysis
 
 ### Refund (`app/Models/Refund.php`)
 - **Purpose:** Refund transaction records implementing `WalletTransactionSourceableContract` for wallet credit reversals
@@ -490,12 +490,12 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### Order Provisioning Configuration
 - `config/order.php` controls increment ID pattern (simple/dated/prefixed) and provisioning trigger (`any_payment`/`full_payment`/`manual_approval`).
-- `config/payments.php` centralizes Mellat, bank transfer, and wallet gateway configurations plus transaction reference starting point (default: 200000001).
+- `config/payments.php` centralizes Mellat, bank transfer, and wallet gateway configurations. Shared random transaction reference generation is documented in [PaymentTransactionReferenceService](DIGEST_CORE_LOGIC.md#paymenttransactionreferenceservice-appservicespaymenttransactionreferenceservicephp).
 
 ### Payment Transaction Tracking
 - All payment processors create `PaymentTransaction` records for every gateway interaction.
-- Transaction references are numeric-only sequential IDs beginning at 200000001 (configurable via `PAYMENT_TRANSACTION_START` env).
-- Mellat gateway uses transaction reference (not order increment_id) as `orderId` in gateway requests.
+- Transaction references are random positive numeric strings shared across processors; allocation, collision handling, and database-reset behavior are documented in [PaymentTransactionReferenceService](DIGEST_CORE_LOGIC.md#paymenttransactionreferenceservice-appservicespaymenttransactionreferenceservicephp).
+- Mellat uses the transaction reference as `orderId`; Digipay sends it as a string `providerId`. Neither uses the shop order identifier.
 - Wallet payments create immediate COMPLETED transaction records with wallet metadata.
 
 ### ProductDeliveryOption Capacity

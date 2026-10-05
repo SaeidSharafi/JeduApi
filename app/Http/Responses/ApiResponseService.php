@@ -117,7 +117,18 @@ final class ApiResponseService
     public function validationErrors(mixed $errors, ?string $message = null, ?array $metadata = [], mixed $data = null): ApiResponseInterface
     {
         $errorPayload = ($errors instanceof Validator) ? $errors->errors()->toArray() : $errors;
-        $message ??= (string) __('messages.validation_error');
+        if ($message === null) {
+            $errorMessages = is_array($errorPayload)
+                ? collect($errorPayload)
+                    ->flatten()
+                    ->filter(fn (mixed $error): bool => is_string($error) && $error !== '')
+                    ->values()
+                : null;
+
+            $message = $errorMessages?->count() === 1
+                ? $errorMessages->first()
+                : (string) __('messages.validation_error');
+        }
 
         return new ApiFailResponse($message, $errorPayload, HttpStatus::HTTP_UNPROCESSABLE_ENTITY, $metadata, data: $data);
     }

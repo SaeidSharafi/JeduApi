@@ -61,7 +61,7 @@ This engine orchestrates the journey from purchase to access with a focus on int
     An Order is the master receipt. Crucially, its OrderItems contain **JSON snapshots** of the product and customer data at the moment of purchase. This provides immutable, historical integrity. If a product's price changes a month later, the order record remains an accurate source of truth for what was sold, at what price, and to whom. This is vital for financial reporting and dispute resolution.
 
 -   **Payment Integrity (Per-Attempt Tracking):**
-    Every payment attempt is recorded as an immutable **PaymentTransaction** with full gateway request/response capture. The system generates unique sequential references with row-level locking for concurrency safety. This provides a complete audit trail for every gateway interaction, essential for debugging payment failures and reconciling with bank reports.
+    Every payment attempt is recorded as an immutable **PaymentTransaction** with full gateway request/response capture. The system generates secure random numeric references and uses the database unique constraint with bounded collision retries; see [PaymentTransactionReferenceService](DIGEST_CORE_LOGIC.md#paymenttransactionreferenceservice-appservicespaymenttransactionreferenceservicephp). This provides a complete audit trail for every gateway interaction, essential for debugging payment failures and reconciling with bank reports.
 
 -   **Fulfillment & Access Provisioning (Enrolment):**  
     The Enrolment is the bridge between a financial transaction and content access. The process is fully automated and driven by the OrderStatusService:

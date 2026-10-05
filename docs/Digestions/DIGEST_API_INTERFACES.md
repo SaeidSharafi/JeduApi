@@ -1,5 +1,8 @@
 # Digest: API Interfaces & Endpoints
 
+## Validation error responses
+- API `ValidationException` responses use HTTP 422 and the standard `{message, errors, metadata}` envelope. When callers do not provide a message and the flattened `errors` payload contains exactly one non-empty message, `message` uses that detail. Empty or multiple validation messages use the localized generic validation message. The full field-keyed `errors` payload remains unchanged. Clients should display `message` in a toast and may additionally map `errors` to individual fields.
+
 Reference for uploaded-doc chat: routes, auth, documented request/response contracts, and implementation pointers. DTO names without field definitions are not complete payload specifications; flag missing fields/shapes. Code and generated API docs usable only when available. Reading guide: `CODEBASE_DIGEST.md` when uploaded.
 
 ## E2E Control Interface (`/api/v1/e2e/*`)

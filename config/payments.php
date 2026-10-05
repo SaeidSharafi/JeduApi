@@ -169,24 +169,6 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Payment Transaction Reference Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Configuration for generating unique transaction references.
-    | Transaction references are numeric-only sequential IDs.
-    |
-    */
-
-    'transaction_reference' => [
-        /*
-         | Starting number for the first payment transaction
-         | Starts at 200M to differentiate from order increment_ids (100M)
-         */
-        'start_from' => (int) env('PAYMENT_TRANSACTION_START', 200000001),
-    ],
-
     'redirect' => [
         'shopdomain' => env('FRONTEND_SHOP_DOMAIN', 'http://localhost:3000'),
         'order'      => env('FRONTEND_ORDER_PAYMENT_URL', '/profile/student/financial-reports/transaction-details'),

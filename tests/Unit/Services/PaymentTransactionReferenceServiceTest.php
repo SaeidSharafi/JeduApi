@@ -2,92 +2,86 @@
 
 declare(strict_types=1);
 
+use App\Enums\Payment\PaymentTransactionStatusEnum;
+use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Services\PaymentTransactionReferenceService;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Random\Engine;
+use Random\Randomizer;
 
-beforeEach(function (): void {
-    $this->service = new PaymentTransactionReferenceService();
+covers(PaymentTransactionReferenceService::class);
+
+/** @param list<int> $values */
+function paymentReferenceServiceWithValues(array $values): PaymentTransactionReferenceService
+{
+    return new PaymentTransactionReferenceService(new Randomizer(new class($values) implements Engine
+    {
+        /** @param list<int> $values */
+        public function __construct(private array $values) {}
+
+        public function generate(): string
+        {
+            return pack('P', array_shift($this->values) - 1);
+        }
+    }));
+}
+
+it('generates positive numeric strings within the signed long range', function (): void {
+    $service = paymentReferenceServiceWithValues([1, PHP_INT_MAX]);
+
+    expect($service->generate())->toBe('1');
+    expect($service->generate())->toBe('9223372036854775807');
 });
 
-it('generates first transaction reference from config start_from value', function (): void {
-    Config::set('payments.transaction_reference.start_from', 200000001);
+it('generates references independently of the latest stored reference', function (): void {
+    PaymentTransaction::factory()->create(['transaction_reference' => '9223372036854775807']);
+    $service = paymentReferenceServiceWithValues([750000000000000000]);
 
-    $reference = $this->service->generate();
-
-    expect($reference)->toBe('200000001');
+    expect($service->generate())->toBe('750000000000000000');
 });
 
-it('generates sequential transaction references', function (): void {
-    Config::set('payments.transaction_reference.start_from', 200000001);
+it('persists a fresh initiated transaction for each payment attempt', function (): void {
+    $payment = Payment::factory()->create();
+    $service = paymentReferenceServiceWithValues([750000000000000000, 850000000000000000]);
 
-    PaymentTransaction::factory()->create([
-        'transaction_reference' => '200000001',
-    ]);
+    $first  = $service->generateFor($payment);
+    $second = $service->generateFor($payment);
 
-    $reference = $this->service->generate();
-
-    expect($reference)->toBe('200000002');
+    expect($first->fresh()->transaction_reference)->toBe('750000000000000000');
+    expect($second->fresh()->transaction_reference)->toBe('850000000000000000');
+    expect($first->status)->toBe(PaymentTransactionStatusEnum::INITIATED);
+    expect($first->attempt_number)->toBe(1);
+    expect($second->attempt_number)->toBe(2);
+    expect($payment->transactions()->count())->toBe(2);
 });
 
-it('generates correct reference after multiple transactions', function (): void {
-    Config::set('payments.transaction_reference.start_from', 200000001);
-
+it('regenerates a reference when it collides with a persisted transaction', function (int $collisionCount): void {
+    $payment = Payment::factory()->create();
     PaymentTransaction::factory()->create([
-        'transaction_reference' => '200000001',
+        'payment_id'            => $payment->id,
+        'transaction_reference' => '750000000000000000',
     ]);
-    PaymentTransaction::factory()->create([
-        'transaction_reference' => '200000002',
-    ]);
-    PaymentTransaction::factory()->create([
-        'transaction_reference' => '200000003',
+    $service = paymentReferenceServiceWithValues([
+        ...array_fill(0, $collisionCount, 750000000000000000),
+        850000000000000000,
     ]);
 
-    $reference = $this->service->generate();
+    $transaction = $service->generateFor($payment);
 
-    expect($reference)->toBe('200000004');
-});
+    expect($transaction->fresh()->transaction_reference)->toBe('850000000000000000');
+    expect($transaction->attempt_number)->toBe(2);
+    expect($payment->transactions()->count())->toBe(2);
+})->with([1, 2]);
 
-it('handles non-sequential transaction references by using the last inserted', function (): void {
-    Config::set('payments.transaction_reference.start_from', 200000001);
-
+it('stops after three local reference collisions without persisting another attempt', function (): void {
+    $payment = Payment::factory()->create();
     PaymentTransaction::factory()->create([
-        'transaction_reference' => '200000001',
+        'payment_id'            => $payment->id,
+        'transaction_reference' => '750000000000000000',
     ]);
-    PaymentTransaction::factory()->create([
-        'transaction_reference' => '200000005',
-    ]); // Gap in sequence
-    $lastTransaction = PaymentTransaction::factory()->create([
-        'transaction_reference' => '200000003',
-    ]); // Last inserted, but not highest value
+    $service = paymentReferenceServiceWithValues(array_fill(0, 3, 750000000000000000));
 
-    $reference = $this->service->generate();
-
-    // Should use last inserted (by ID) transaction's reference + 1
-    expect($reference)->toBe('200000004');
-});
-
-it('generates unique references in concurrent scenarios', function (): void {
-    Config::set('payments.transaction_reference.start_from', 200000001);
-
-    // Create initial transaction
-    PaymentTransaction::factory()->create([
-        'transaction_reference' => '200000001',
-    ]);
-
-    // Simulate concurrent generation
-    $references = [];
-    for ($i = 0; $i < 5; $i++) {
-        $reference    = $this->service->generate();
-        $references[] = $reference;
-
-        // Create the transaction immediately to simulate concurrent usage
-        PaymentTransaction::factory()->create([
-            'transaction_reference' => $reference,
-        ]);
-    }
-
-    // All references should be unique
-    expect(count($references))->toBe(count(array_unique($references)));
-    expect($references)->toMatchArray(['200000002', '200000003', '200000004', '200000005', '200000006']);
+    expect(fn () => $service->generateFor($payment))->toThrow(UniqueConstraintViolationException::class);
+    expect($payment->transactions()->count())->toBe(1);
 });

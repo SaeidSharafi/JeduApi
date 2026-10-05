@@ -200,9 +200,18 @@ describe('ApiResponseService', function (): void {
         $jsonResponse = $apiResponse->toResponse(request());
         expect($jsonResponse->getStatusCode())->toBe(HttpStatus::HTTP_UNPROCESSABLE_ENTITY);
         $responseData = $jsonResponse->getData(true);
-        expect($responseData['message'])->toBe(__('messages.validation_error'))
+        expect($responseData['message'])->toBe('The email field is required.')
             ->and($responseData['errors'])->toBe($validationErrors)
             ->and($responseData['metadata'])->toBe([]);
+
+        $emptyErrorsResponse = apiResponse()->validationErrors([])->toResponse(request());
+        expect($emptyErrorsResponse->getData(true)['message'])->toBe(__('messages.validation_error'));
+
+        $multipleErrorsResponse = apiResponse()->validationErrors([
+            'email' => ['Email is invalid.'],
+            'name'  => ['Name is required.'],
+        ])->toResponse(request());
+        expect($multipleErrorsResponse->getData(true)['message'])->toBe(__('messages.validation_error'));
 
         // Test with Validator instance and custom message
         $validator = ValidatorFacade::make([], ['name' => 'required']);
