@@ -8,6 +8,7 @@ use App\Data\Admin\ImportExport\ExportArtifactData;
 use App\Data\Admin\ImportExport\ExportRequestData;
 use App\Models\ImportExportArtifact;
 use App\Services\ImportExport\ResourceSpreadsheetExport;
+use App\Services\ImportExport\SpreadsheetAuditContext;
 use App\Services\ImportExport\SpreadsheetResourceRegistry;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
@@ -19,7 +20,10 @@ use Throwable;
 
 final readonly class CreateExportAction
 {
-    public function __construct(private SpreadsheetResourceRegistry $registry) {}
+    public function __construct(
+        private SpreadsheetResourceRegistry $registry,
+        private SpreadsheetAuditContext $auditContext,
+    ) {}
 
     public function handle(string $resource, ExportRequestData $data): ExportArtifactData
     {
@@ -30,8 +34,9 @@ final readonly class CreateExportAction
         $expires  = now()->addHours((int) config('import-export.retention_hours', 24));
 
         try {
+            $export = new ResourceSpreadsheetExport($contract, $data->locale ?? app()->getLocale());
             $stored = Excel::store(
-                new ResourceSpreadsheetExport($contract, $data->locale ?? app()->getLocale()),
+                $export,
                 $path,
                 'local',
                 ExcelWriter::XLSX,
@@ -41,6 +46,7 @@ final readonly class CreateExportAction
             if ($stored !== true) {
                 throw new RuntimeException('Unable to store the export artifact.');
             }
+            $this->auditContext->recordExportedRows($export->exportedRows);
             ImportExportArtifact::query()->create([
                 'resource'      => $resource,
                 'artifact_uuid' => $artifact,

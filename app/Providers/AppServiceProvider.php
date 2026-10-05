@@ -18,6 +18,7 @@ use App\Services\Cart\RequestCartIdentifier;
 use App\Services\DefaultOtpGenerator;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
+use App\Services\ImportExport\SpreadsheetAuditContext;
 use App\Services\Integrations\ImsService;
 use App\Services\Integrations\MoodleService;
 use App\Services\Integrations\NiliroomService;
@@ -71,6 +72,7 @@ final class AppServiceProvider extends ServiceProvider
         // Scoped: singleton per request, but fresh for each request
         // This ensures auth state is checked dynamically but token minting is stable within a request
         $this->app->scoped(CartIdentifier::class, RequestCartIdentifier::class);
+        $this->app->scoped(SpreadsheetAuditContext::class);
     }
 
     /**
