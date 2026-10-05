@@ -13,6 +13,11 @@ use Carbon\CarbonImmutable;
  */
 final class FakeNiliroomService implements NiliroomClientContract
 {
+    public function ensureUser(User $user): string
+    {
+        return 'user-'.$user->id;
+    }
+
     public function isEnabled(): bool
     {
         return true;

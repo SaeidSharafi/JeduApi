@@ -52,4 +52,5 @@ expect()->extend('toBeEmptyCollection',
 
 require_once __DIR__.'/Support/Helpers/EnrollmentHelpers.php';
 require_once __DIR__.'/Support/Helpers/OtpHelpers.php';
+require_once __DIR__.'/Support/Helpers/ImportHelpers.php';
 require_once __DIR__.'/Support/Helpers/SearchIndexHelpers.php';

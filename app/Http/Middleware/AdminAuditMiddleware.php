@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\AdminActionLog;
+use App\Services\ImportExport\SpreadsheetAuditContext;
+use App\Services\ImportExport\SpreadsheetAuditLogger;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +17,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class AdminAuditMiddleware
 {
+    public function __construct(
+        private readonly SpreadsheetAuditContext $spreadsheetAuditContext,
+        private readonly SpreadsheetAuditLogger $spreadsheetAuditLogger,
+    ) {}
+
     /**
      * Handle an incoming request and log admin actions.
      */
@@ -26,7 +33,12 @@ final class AdminAuditMiddleware
         // auth state (logout, token revocation) would otherwise resolve null/wrong.
         $adminId = auth('staff')->id();
 
-        // Get the response
+        $spreadsheetOperation = $this->spreadsheetAuditLogger->operationFor($request);
+        if ($spreadsheetOperation !== null && $adminId !== null) {
+            $this->spreadsheetAuditContext->reset();
+            $this->spreadsheetAuditContext->begin($spreadsheetOperation, (int) $adminId, $startTime);
+        }
+
         $response = $next($request);
 
         // Only log if authenticated staff member
@@ -35,14 +47,18 @@ final class AdminAuditMiddleware
         }
 
         // Skip certain routes to avoid noise
-        if ($this->shouldSkipLogging($request)) {
+        if ($spreadsheetOperation === null && $this->shouldSkipLogging($request)) {
             return $response;
         }
 
         try {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
-            $this->logAdminAction($request, $response, $executionTime, $adminId);
+            if ($spreadsheetOperation !== null) {
+                $this->spreadsheetAuditLogger->record($request, $response, $this->spreadsheetAuditContext);
+            } else {
+                $this->logAdminAction($request, $response, $executionTime, $adminId);
+            }
         }
         // @codeCoverageIgnoreStart
         catch (Exception $e) {
@@ -58,9 +74,6 @@ final class AdminAuditMiddleware
         return $response;
     }
 
-    /**
-     * Determine if the request should be skipped from logging.
-     */
     private function shouldSkipLogging(Request $request): bool
     {
         $skipRoutes = [

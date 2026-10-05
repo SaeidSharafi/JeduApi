@@ -14,6 +14,15 @@ use Illuminate\Support\Facades\Http;
 
 covers(NiliroomService::class);
 
+it('ensures an account without enrolling or issuing grants', function (): void {
+    Http::fake(['niliroom.test/api/v1/users/eshop/user-7' => Http::response(['data' => ['id' => 'identity-7']])]);
+
+    $identity = makeNiliroomService()->ensureUser(makeNiliroomUser(7, 'Ali', 'Karimi', '09120000000'));
+
+    expect($identity)->toBe('identity-7');
+    Http::assertSentCount(1);
+});
+
 describe('issueTeacherLoginGrant', function (): void {
     it('syncs the teacher identity, enrolls them as a teacher, and returns the room login grant', function (): void {
         fakeNiliroomApi();

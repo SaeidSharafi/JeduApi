@@ -621,6 +621,55 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: INDEX(admin_id, created_at), INDEX(action_type, created_at), INDEX(resource_type, resource_id), INDEX(risk_level, created_at), INDEX(route_name), INDEX(ip_address)
 
+### Table: `import_runs`
+- Purpose: Immutable record of one uploaded import spreadsheet, its stored private file and its preview totals.
+- Columns:
+  - id (BIGINT, PK)
+  - uuid (UUID, unique) — public identifier
+  - resource (VARCHAR, indexed) — registered spreadsheet resource (`users`)
+  - identity_key (VARCHAR) — `phone` | `email`
+  - status (VARCHAR, indexed) — `preview_ready` | `processing` | `completed` | `completed_with_provider_failures`; `approved`/`failed`/`expired` remain future lifecycle extensions
+  - staff_id (BIGINT nullable) FK -> staff(id) SET NULL
+  - original_filename (VARCHAR), file_path (VARCHAR nullable), file_size (BIGINT nullable), file_checksum (VARCHAR(64) nullable)
+  - rows_total / rows_valid / rows_invalid (INTEGER, default 0)
+  - created_count / updated_count / provider_queued_count (INTEGER, default 0), approved_at (TIMESTAMP nullable)
+  - error_report_path (VARCHAR nullable), error_report_fingerprint (VARCHAR(64) nullable) — private local report reference and sanitized content revision; cleared when no qualifying errors remain
+  - artifacts_expires_at (TIMESTAMP, indexed) — absolute deadline for run upload, snapshots, and report; terminal approval/provider completion resets the configured retention window
+  - artifacts_redacted_at (TIMESTAMP nullable, indexed) — set only after cleanup deletes private files and scrubs snapshots, so successful runs leave the bounded cleanup queue while failed deletions remain retryable
+  - artifacts_cleanup_retry_after (TIMESTAMP nullable, indexed) — delays a failed run cleanup attempt so untouched expired runs can be processed before retry
+- created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id), UNIQUE(uuid), INDEX(resource), INDEX(identity_key), INDEX(status), INDEX(resource, status), INDEX(artifacts_expires_at), INDEX(artifacts_redacted_at), INDEX(artifacts_cleanup_retry_after)
+- `file_path` and `error_report_path` are nullable from creation and are cleared during cleanup; row `data` and outcome value columns are nullable so expired snapshots can be redacted while row shells remain
+
+### `import_export_artifacts`
+- `id` primary key; `resource` indexed; `artifact_uuid` unique; `path` unique; `expires_at` indexed; nullable `cleanup_retry_after` indexed; timestamps
+- One row tracks each private export until physical deletion succeeds. No arbitrary storage path or public URL is persisted.
+- Indexes: PK(id), UNIQUE(artifact_uuid), UNIQUE(path), INDEX(resource), INDEX(expires_at), INDEX(cleanup_retry_after)
+- created_at/updated_at (TIMESTAMPS)
+
+### Table: `import_run_rows`
+- Purpose: One validated row of an import run, with its preview outcome and normalized resource values.
+- Columns:
+  - id (BIGINT, PK)
+  - import_run_id (BIGINT) FK -> import_runs(id) CASCADE
+  - row_number (INTEGER) — spreadsheet row
+  - identity_value (VARCHAR nullable) — normalized identity
+  - target_resource_id (VARCHAR nullable) — internal resource identifier captured at preview for safe update revalidation
+  - action (VARCHAR nullable) — `create` | `update`
+  - is_valid (BOOLEAN)
+  - errors (JSONB nullable) — `[{field, code, message}]`
+  - data (JSONB nullable) — immutable normalized resource-owned preview (no credentials), cleared after retention expires
+  - local_resource_id (VARCHAR nullable) — resource ID created/updated at approval, separate from the preview target
+  - local_result_data (JSONB nullable) — safe committed resource payload, including User ID; no password
+  - providers (JSONB nullable) — provider-keyed `{status, message, attempts}` outcomes
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id), INDEX(action), UNIQUE(import_run_id, row_number), INDEX(import_run_id, identity_value)
+
+### Table: `user_provider_accounts`
+- Purpose: Durable per-User/provider standalone account outcome used across Import Runs.
+- Columns: id (BIGINT PK), user_id (BIGINT FK -> users(id) CASCADE), provider (VARCHAR: moodle/ims/niliroom/skyroom), idempotency_key (VARCHAR), status (VARCHAR: pending/processing/succeeded/ambiguous), created_at/updated_at (TIMESTAMPS).
+- Indexes/constraints: PK(id), UNIQUE(user_id, provider), UNIQUE(idempotency_key), INDEX(status). All enum-like values use strings, not native database enums.
+
 ### Table: `reviews`
 - Purpose: User reviews for entities.
 - Columns:

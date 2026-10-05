@@ -9,6 +9,9 @@ use Carbon\CarbonInterface;
 
 interface NiliroomClientContract
 {
+    /** Ensure the provider identity exists without any room enrollment or grant. */
+    public function ensureUser(User $user): string;
+
     /**
      * Synchronize the user into Niliroom, enroll them in the room as a teacher, and
      * issue the single-use login grant that lands them on the room page.

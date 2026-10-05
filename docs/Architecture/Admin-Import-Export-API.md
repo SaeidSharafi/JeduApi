@@ -31,17 +31,18 @@ The preferred implementation stores the generated XLSX privately and returns a r
 
 ## Template
 
-`GET /users/import/template` returns an XLSX generated from `UserImport`'s column contract. It contains one header row, an example row, and documentation/notes for required fields, identity selection, accepted booleans, password behavior, and provider columns.
+`GET /users/import/template` returns an XLSX generated from `UserImport`'s column contract. It contains one header row, an example row, and documentation/notes for required fields, identity selection, accepted booleans, password behavior, and provider columns. Enum examples follow the application language. User enum cells accept Persian labels, English labels, or raw enum keys regardless of that language; Arabic/Persian letter variants and whitespace are normalized. For example, `مرد`, `Male`, and `male` all map to the same gender value.
 
 Initial provider request columns are additive:
 
 ```text
 provision_moodle
 provision_ims
-provision_spotplayer
+provision_niliroom
+provision_skyroom
 ```
 
-An absent, blank, or false column means no provider operation. True means ensure that provider account exists. Import never disables or deletes provider accounts.
+An absent, blank, or false column means no provider operation. True means ensure that provider account exists. Import never disables or deletes provider accounts and never enrolls users. Only services with a standalone account capability appear in the template; SpotPlayer is excluded. Moodle/Skyroom reconcile existing identities and Niliroom upserts its stable identity. Ambiguous IMS creates require manual verification, because the client has no safe reconciliation operation.
 
 ## Preview
 
@@ -122,9 +123,11 @@ The approval action:
 3. commits the local transaction;
 4. dispatches independent provider provisioning operations only for committed rows whose provider flag is true.
 
+Private import files and row snapshots default to 24 hours (`IMPORT_EXPORT_RETENTION_HOURS`). Each preview stores its absolute deadline. An unapproved run expires at that deadline and approval returns the normal 422 validation envelope with an expiry message, even if its upload still exists. `can_approve` becomes false at the deadline. Approval checks expiry while holding the run lock. An already-approved retry remains idempotent after expiry. When provider work finishes, the run receives a new configured retention window; active `processing` runs are excluded from cleanup.
+
 Invalid rows are never mutated or sent to providers. If local persistence fails, the transaction rolls back and no provider jobs are dispatched.
 
-The approval response does not contain final provider outcomes because provider jobs have only been queued at that point. It returns the local commit result and initial queued state:
+The approval response does not contain final provider outcomes because provider jobs have only been queued at that point. It returns the local commit result and initial queued state (`completed` immediately when no provider operations were requested):
 
 ```json
 {
@@ -201,27 +204,26 @@ Provider status is independent per row/provider. The approval response reports q
 }
 ```
 
-Transient provider failures receive bounded automatic retries through a separate job. Retries target only failed provider operations and use per-user/provider idempotency keys. A future manual retry endpoint may retry failed provider operations from the same Import Run; re-uploading a file is not the normal retry mechanism.
+Safe transient provider failures receive at most three attempts through a separate job, with 60- and 180-second backoff. Unsafe or ambiguous IMS student creation failures are terminal and require manual verification. Retries target only failed provider operations and use per-user/provider idempotency keys. A future manual retry endpoint may retry failed provider operations from the same Import Run; re-uploading a file is not the normal retry mechanism.
 
 ## Run statuses
 
 ```text
 preview_ready
-approved
 processing
 completed
 completed_with_provider_failures
-failed
-expired
 ```
 
 `processing` means local users have been committed and provider jobs are queued or running. `completed_with_provider_failures` means the local import completed but one or more provider operations remain unsuccessful.
 
 Import-specific row errors use stable `row_number`, `field`, `code`, and `message` keys. `code` is for frontend behavior; `message` is displayable text. Standard application error envelopes remain authoritative for request-level errors.
 
-## Error report and retention
+## Error reports and retention
 
-`GET /users/import/{run}/errors` returns or downloads a private error artifact containing row numbers, safe field names, validation messages, and provider failure summaries. It must not contain passwords, tokens, or raw sensitive payloads. Uploaded files, normalized snapshots, exports, and error reports require expiration and authenticated access.
+`GET /users/import/{run}/errors` downloads a private XLSX attachment with `row_number`, `field`, `code`, `message`, and `provider` columns. It requires staff authentication and `imports.results`; the run lookup is scoped by both registered resource and UUID. Responses use `Cache-Control: private, no-store`. Validation errors are available immediately; final failed provider outcomes are included once the run leaves `processing`. The report is built only from persisted outcomes and contains value-free localized messages, never cell values, identities, credentials, raw exceptions, or provider payloads. Polling fills the existing `error_report` object only while the report is usable. Report regeneration inherits the run deadline. At expiry, polling immediately suppresses row data/errors and report metadata; direct report access returns 404. Cleanup retains row shells and summary/provider outcome counts, clears personal values and messages, and deletes private files. `IMPORT_EXPORT_RETENTION_HOURS` defaults to 24 hours; changing it does not change existing deadlines. Private exports use persisted inventory and the same lifetime; downloads require both an unexpired signed URL and an unexpired inventory record.
+
+`imports:cleanup-artifacts` runs hourly with scheduler overlap protection and processes bounded batches (default 100, maximum 500). It locks each run while deleting artifacts and redacting snapshots, skips active provider runs, retries failed deletions, and continues after individual failures. Successful run cleanup records `artifacts_redacted_at`, removing it from future batches. Failed cleanup records a retry deadline so untouched expired artifacts are processed before another attempt. Exports are cleaned from the persisted artifact inventory created with each export.
 
 ## Deferred features
 

@@ -1,0 +1,9 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "resource": "users",
+    "filename": "users-export.xlsx",
+    "download_url": "/api/v1/admin/users/export/019a2d72-1234-7000-8000-123456789abc?expires=1791216000&signature=example",
+    "expires_at": "2026-10-05T16:00:00.000000Z"
+  }
+}

@@ -558,3 +558,29 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
   - `morphMany(Review::class, 'reviewable')` - reviews
 - **Traits:** Uses `HasMedia`, `HasReview`, and `Searchable` traits for standardized media management, review aggregation, and Scout/Typesense indexing
 - **Special Features:** Publication workflow with DRAFT/PUBLISHED/SCHEDULED/ARCHIVED statuses, automated read time calculation, featured content system, polymorphic relationships to educational content, automatic cover image URL generation from media, and enriched storefront payloads supplying author data, active categories, SEO metadata, and media collections.
+
+### ImportRun (`app/Models/ImportRun.php`)
+- **Purpose:** Immutable record of one uploaded spreadsheet, its preview result and the private upload it came from
+- **Key Fields:** `uuid`, `resource` (SpreadsheetResourceEnum, currently `users`), `identity_key` (ImportIdentityKeyEnum: `phone`/`email`), `status` (ImportRunStatusEnum), `staff_id`, `original_filename`, nullable `file_path` (private `local` disk), `file_size`, `file_checksum`, `artifacts_expires_at` (required absolute retention deadline), `artifacts_redacted_at` (nullable; records successful cleanup), `artifacts_cleanup_retry_after` (nullable; defers failed cleanup attempts), `rows_total`, `rows_valid`, `rows_invalid`, `created_count`, `updated_count`, `provider_queued_count`, `approved_at`, `error_report_path`, `error_report_fingerprint` (private report reference and sanitized content revision; nullable until a report is generated)
+- **Relationships:**
+  - `hasMany(ImportRunRow::class)` - rows
+  - `belongsTo(Staff::class)` - staff
+- **Special Features:** UUID (`uuid7`) generated on create. Approval moves `status` from `preview_ready` to `processing` when providers are queued, or `completed` for a local-only run, and persists the local result counters exactly once; repeated approval returns those counters. Provider processing terminates as `completed` or `completed_with_provider_failures`; details live in row outcomes. The stored file is checksum-protected and remains the source of truth for values that must not be persisted in the run (imported passwords). Preview sets an absolute expiry; terminal approval/provider completion starts a fresh configured deadline. Expired runs retain safe history while private files and row values are removed by cleanup.
+
+### ImportRunRow (`app/Models/ImportRunRow.php`)
+- **Purpose:** One validated spreadsheet row of an import run, including its preview outcome
+- **Key Fields:** `import_run_id`, `row_number` (spreadsheet row), nullable `identity_value` (normalized), nullable `target_resource_id` (internal target identity for safe updates), `action` (ImportRowActionEnum: `create`/`update`, null when invalid), `is_valid`, nullable `errors` (`[{field, code, message}]`), nullable `data` (normalized preview), `local_resource_id` (committed target), nullable `local_result_data` (safe resource-owned committed payload, including User `id`), `providers` (per-provider `{status, message, attempts}`; `queued`/`processing`/`succeeded`/`failed`/`retryable_failed`)
+- **Relationships:**
+  - `belongsTo(ImportRun::class)` - importRun
+- **Special Features:** Unique `(import_run_id, row_number)`. Row `data` follows the resource contract: create rows carry every field (nulls included), update rows carry only supplied cells so empty cells never erase stored values. Enum columns store raw values, Jalali dates store Gregorian `Y-m-d`, and passwords are never written here. `providers` and `local_result_data` cast to arrays; polling chooses committed data after approval without overwriting the preview.
+
+### ImportExportArtifact (`app/Models/ImportExportArtifact.php`)
+- **Purpose:** Retryable inventory for private spreadsheet exports.
+- **Key Fields:** `resource`, `artifact_uuid`, `path`, `expires_at` (absolute signed-link and cleanup deadline), `cleanup_retry_after` (nullable; defers failed deletion attempts).
+- **Special Features:** An inventory row remains until private file deletion succeeds; downloads reject missing or expired inventory even if the file remains.
+
+### UserProviderAccount (`app/Models/UserProviderAccount.php`)
+- **Purpose:** Durable standalone provider-account outcome shared across import runs for one local User/provider; independent of Enrollment provisioning attempts.
+- **Key Fields:** `user_id`, `provider` (UserProvisioningProviderEnum: `moodle`/`ims`/`niliroom`/`skyroom`), `idempotency_key` (`import-user:{localUserId}:{provider}` for imports), `status` (`pending`/`processing`/`succeeded`/`ambiguous`), timestamps.
+- **Relationships:** `belongsTo(User::class)` - user.
+- **Invariants:** Unique User/provider pair and unique idempotency key. Successful outcomes are reused across runs. The `processing` marker precedes external mutation; IMS cannot replay that marker or `ambiguous` without manual verification. No provider credentials or raw responses are stored. Workflow and retry details: [Core logic](DIGEST_CORE_LOGIC.md#spreadsheet-importexport-engine-appservicesimportexport).

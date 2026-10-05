@@ -239,6 +239,10 @@ The run-status response must use this canonical shape:
 }
 ```
 
+The URL uses the authenticated results endpoint. The XLSX contains one row per validation error or final provider failure with `row_number`, `field`, `code`, `message`, and `provider` columns. Validation-only reports may be available during processing; final provider failures appear after processing ends. Messages are localized and value-free. If no report is available, `download_url` is null. A stale or unavailable direct download returns 404.
+
+Preview and snapshot retention defaults to 24 hours and is configurable with `IMPORT_EXPORT_RETENTION_HOURS`. The preview response keeps the same envelope; `can_approve` becomes false at expiry, and approval returns a 422 validation error with a safe expiry message. Repeated approval after an earlier successful approval remains idempotent. Once an approved run becomes terminal, its remaining artifacts receive a fresh retention window. Processing runs are retained until provider work ends. At expiry, polling remains available with original status and summary counters, while row `data` and `errors` are empty and provider statuses remain visible. The error report becomes unavailable immediately, before physical cleanup. Exports are private and their signed link lifetime matches the persisted expiry. The scheduled cleanup redacts expired snapshots and removes import, report, and export files in bounded batches.
+
 For `preview_ready`, use `valid_rows`, `invalid_rows`, `create_count`, and `update_count`. After approval, use `created_count`, `updated_count`, `local_failure_count`, `provider_success_count`, `provider_failure_count`, and `retryable_provider_failure_count`. Do not rename these fields to a generic `success_count`.
 
 ### Error response shape
@@ -267,7 +271,7 @@ Validation and API errors continue to use the application’s standard error env
 
 ## Heading and value expectations
 
-The backend accepts English and Persian headings. The frontend does not need to normalize headings manually.
+The backend accepts English and Persian headings. The frontend does not need to normalize headings manually. Enum cells also accept Persian and English labels or raw keys, independently of the application language: `مرد` / `Male` / `male`, `کد ملی` / `National Code` / `national_code`, `کارشناسی` / `Bachelor` / `bachelor`, and `فارغ‌التحصیل` / `Graduated` / `graduated`. Template examples follow the application language; staff can enter Persian labels even in a template with English headings.
 
 The template is the safest way for users to obtain correct headings. If users upload an edited file, the backend normalizes common Persian/Arabic character variants, zero-width characters, whitespace, punctuation, and diacritics.
 
@@ -276,7 +280,8 @@ Provider request columns are additive and appear in the template when supported:
 ```text
 provision_moodle
 provision_ims
-provision_spotplayer
+provision_niliroom
+provision_skyroom
 ```
 
 Accepted boolean values include:

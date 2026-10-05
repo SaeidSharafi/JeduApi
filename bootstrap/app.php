@@ -13,9 +13,12 @@ use App\Http\Middleware\E2eResetGuard;
 use App\Http\Middleware\EnsureAdminNumericIdsMiddleware;
 use App\Http\Middleware\ProfileCheckMiddleware;
 use App\Http\Middleware\ThrottlePasswordLogin;
+use App\Services\ImportExport\SpreadsheetAuditContext;
+use App\Services\ImportExport\SpreadsheetAuditLogger;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
+use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -50,6 +53,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping();
 
         $schedule->command('products:index-availability')
+            ->hourly()
+            ->withoutOverlapping();
+
+        $schedule->command('imports:cleanup-artifacts')
             ->hourly()
             ->withoutOverlapping();
 
@@ -343,6 +350,32 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return null;
+        });
+
+        $exceptions->respond(function (
+            Responsable|Symfony\Component\HttpFoundation\Response $response,
+            Throwable $exception,
+            Request $request,
+        ): Responsable|Symfony\Component\HttpFoundation\Response {
+            if (! in_array($request->route()?->getName(), [
+                'api.v1.admin.imports.preview',
+                'api.v1.admin.imports.approve',
+                'api.v1.admin.exports.create',
+                'api.v1.admin.exports.download',
+            ], true)) {
+                return $response;
+            }
+
+            $logger           = app(SpreadsheetAuditLogger::class);
+            $context          = app(SpreadsheetAuditContext::class);
+            $operation        = $logger->operationFor($request);
+            $renderedResponse = $response instanceof Responsable ? $response->toResponse($request) : $response;
+
+            if ($operation !== null && $context->operation() === $operation && $context->adminId() !== null) {
+                $logger->record($request, $renderedResponse, $context);
+            }
+
+            return $renderedResponse;
         });
 
     })->create();
