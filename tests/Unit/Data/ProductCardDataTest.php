@@ -28,8 +28,6 @@ describe('ProductCardData', function (): void {
             'has_discount'        => true,
             'discount_percentage' => 33.33,
         ];
-        $product->reviews_count  = 10;
-        $product->average_rating = 4.5;
 
         // Mock the productable relationship
         $course = new class
@@ -37,6 +35,8 @@ describe('ProductCardData', function (): void {
             public $thumbnail_url = 'http://example.com/thumbnail.jpg';
 
             public $default_teacher_info = ['John Doe'];
+            public $average_rating        = 4.5;
+            public $review_count          = 10;
         };
         $product->setRelation('productable', $course);
 

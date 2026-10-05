@@ -12,6 +12,7 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Models\Product;
 use Carbon\CarbonImmutable;
+use Hekmatinasser\Verta\Verta;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -36,6 +37,9 @@ final class CourseDetailData extends Data
         public ?array $outcomes_json,
         public ?string $default_teacher_info,
         public bool $provides_certificate,
+        public ?int $reviews_count,
+        public ?float $average_rating,
+        public ?Verta $registration_deadline,
         public ?array $faq,
         public ?array $additional_info,
         public ?string $meta_title,
@@ -69,20 +73,20 @@ final class CourseDetailData extends Data
                     $isAvailable   = self::isAvailable($pdo->available_from, $pdo->available_to);
                     $isPurchasable = $isAvailable && self::isAvailable($pdo->registration_start_date, $pdo->registration_end_date);
 
-                    return new ProductDeliveryOptionData(
-                        uuid: $pdo->uuid,
-                        sku: $pdo->sku,
-                        name: $pdo->name,
-                        price_data: $pdoPrice,
-                        fulfillment_type: $pdo->fulfillment_type,
-                        delivery_method: $pdo->delivery_method,
-                        is_available: $isAvailable,
-                        is_purchasable: $isPurchasable,
-                        available_from: $pdo->available_from,
-                        available_to: $pdo->available_to,
-                        registration_start_date: $pdo->registration_start_date,
-                        registration_end_date: $pdo->registration_end_date,
-                    );
+                    return ProductDeliveryOptionData::from([
+                        'uuid'                    => $pdo->uuid,
+                        'sku'                     => $pdo->sku,
+                        'name'                    => $pdo->name,
+                        'price_data'              => $pdoPrice,
+                        'fulfillment_type'        => $pdo->fulfillment_type,
+                        'delivery_method'         => $pdo->delivery_method,
+                        'is_available'            => $isAvailable,
+                        'is_purchasable'          => $isPurchasable,
+                        'available_from'          => $pdo->available_from,
+                        'available_to'            => $pdo->available_to,
+                        'registration_start_date' => $pdo->registration_start_date,
+                        'registration_end_date'   => $pdo->registration_end_date,
+                    ]);
                 });
         }
 
@@ -99,6 +103,13 @@ final class CourseDetailData extends Data
             prices: null,
         );
 
+        $registrationDeadline = $product->productDeliveryOptions
+            ->where('status', PublicationStatusEnum::PUBLISHED)
+            ->pluck('registration_end_date')
+            ->filter(fn ($date) => $date !== null && $date->copy()->endOfDay()->isFuture())
+            ->sort()
+            ->first();
+
         return self::from(
             [
                 'slug'                    => $product->slug,
@@ -113,17 +124,22 @@ final class CourseDetailData extends Data
                 'outcomes_json'           => $product->productable->outcomes_json,
                 'default_teacher_info'    => $product->productable->default_teacher_info,
                 'provides_certificate'    => $product->productable->provides_certificate,
-                'faq'                     => $product->productable->faq,
-                'additional_info'         => $product->productable->additional_info,
-                'meta_title'              => $product->productable->meta_title,
-                'meta_description'        => $product->productable->meta_description,
-                'meta_keywords'           => $product->productable->meta_keywords,
-                'properties'              => $product->productable->properties,
-                'details'                 => $product->details_json,
-                'status'                  => $product->status,
-                'categories'              => $product->categories,
-                'delivery_options'        => $pdoData,
-                'media'                   => $product->productable->getAllMedia(urlOnly: true),
+                'reviews_count'           => $product->productable->review_count,
+                'average_rating'          => $product->productable->average_rating,
+                'registration_deadline'   => $registrationDeadline
+                    ? Verta::instance($registrationDeadline)
+                    : null,
+                'faq'              => $product->productable->faq,
+                'additional_info'  => $product->productable->additional_info,
+                'meta_title'       => $product->productable->meta_title,
+                'meta_description' => $product->productable->meta_description,
+                'meta_keywords'    => $product->productable->meta_keywords,
+                'properties'       => $product->productable->properties,
+                'details'          => $product->details_json,
+                'status'           => $product->status,
+                'categories'       => $product->categories,
+                'delivery_options' => $pdoData,
+                'media'            => $product->productable->getAllMedia(urlOnly: true),
             ]
         );
     }

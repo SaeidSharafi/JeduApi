@@ -91,8 +91,8 @@ final class ProductCardData extends Data
                 ? Verta::instance($delivery['registration_end_date'])
                 : null,
             teachers: $delivery['teachers'],
-            reviews_count: $product->reviews_count ?? 0,
-            average_rating: (float) ($product->average_rating ?? 0.0),
+            reviews_count: $productable->review_count ?? 0,
+            average_rating: (float) ($productable->average_rating ?? 0.0),
             registration_status: $delivery['registration_status'],
             delivery_type: $delivery['delivery_type'],
             price_data: $withFullPriceData ? $priceData : null,

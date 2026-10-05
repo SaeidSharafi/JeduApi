@@ -37,6 +37,8 @@ final class SeminarDetailData extends Data
         public ?string $promo_video_external_url,
         public ?string $estimated_duration_desc,
         public bool $provides_certificate,
+        public ?int $reviews_count,
+        public ?float $average_rating,
         public ?array $faq,
         public ?string $keywords,
         public ?string $meta_title,
@@ -71,20 +73,20 @@ final class SeminarDetailData extends Data
                     $isAvailable   = self::isAvailable($pdo->available_from, $pdo->available_to);
                     $isPurchasable = $isAvailable && self::isAvailable($pdo->registration_start_date, $pdo->registration_end_date);
 
-                    return new ProductDeliveryOptionData(
-                        uuid: $pdo->uuid,
-                        sku: $pdo->sku,
-                        name: $pdo->name,
-                        price_data: $pdoPrice,
-                        fulfillment_type: $pdo->fulfillment_type,
-                        delivery_method: $pdo->delivery_method,
-                        is_available: $isAvailable,
-                        is_purchasable: $isPurchasable,
-                        available_from: $pdo->available_from,
-                        available_to: $pdo->available_to,
-                        registration_start_date: $pdo->registration_start_date,
-                        registration_end_date: $pdo->registration_end_date,
-                    );
+                    return ProductDeliveryOptionData::from([
+                        'uuid'                    => $pdo->uuid,
+                        'sku'                     => $pdo->sku,
+                        'name'                    => $pdo->name,
+                        'price_data'              => $pdoPrice,
+                        'fulfillment_type'        => $pdo->fulfillment_type,
+                        'delivery_method'         => $pdo->delivery_method,
+                        'is_available'            => $isAvailable,
+                        'is_purchasable'          => $isPurchasable,
+                        'available_from'          => $pdo->available_from,
+                        'available_to'            => $pdo->available_to,
+                        'registration_start_date' => $pdo->registration_start_date,
+                        'registration_end_date'   => $pdo->registration_end_date,
+                    ]);
                 });
         }
 
@@ -118,6 +120,8 @@ final class SeminarDetailData extends Data
                 'estimated_duration_desc'  => $product->productable->estimated_duration_desc,
                 'keywords'                 => $product->productable->keywords,
                 'provides_certificate'     => $product->productable->provides_certificate,
+                'reviews_count'            => $product->productable->review_count,
+                'average_rating'           => $product->productable->average_rating,
                 'faq'                      => $product->productable->faq,
                 'meta_title'               => $product->productable->meta_title,
                 'meta_description'         => $product->productable->meta_description,
