@@ -561,7 +561,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### ImportRun (`app/Models/ImportRun.php`)
 - **Purpose:** Immutable record of one uploaded spreadsheet, its preview result and the private upload it came from
-- **Key Fields:** `uuid`, `resource` (SpreadsheetResourceEnum, currently `users`), `identity_key` (ImportIdentityKeyEnum: `phone`/`email`), `status` (ImportRunStatusEnum), `staff_id`, `original_filename`, `file_path` (private `local` disk), `file_size`, `file_checksum`, `rows_total`, `rows_valid`, `rows_invalid`, `created_count`, `updated_count`, `provider_queued_count`, `approved_at`
+- **Key Fields:** `uuid`, `resource` (SpreadsheetResourceEnum, currently `users`), `identity_key` (ImportIdentityKeyEnum: `phone`/`email`), `status` (ImportRunStatusEnum), `staff_id`, `original_filename`, `file_path` (private `local` disk), `file_size`, `file_checksum`, `rows_total`, `rows_valid`, `rows_invalid`, `created_count`, `updated_count`, `provider_queued_count`, `approved_at`, `error_report_path`, `error_report_fingerprint` (private report reference and sanitized content revision; nullable until a report is generated)
 - **Relationships:**
   - `hasMany(ImportRunRow::class)` - rows
   - `belongsTo(Staff::class)` - staff

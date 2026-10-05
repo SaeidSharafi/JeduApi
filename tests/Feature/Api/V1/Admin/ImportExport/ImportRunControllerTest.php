@@ -25,6 +25,96 @@ it('returns 404 for a missing run', function (): void {
     $this->getJson('/api/v1/admin/users/import/'.Illuminate\Support\Str::uuid())->assertNotFound();
 });
 
+it('publishes and reuses a private sanitized validation error workbook', function (): void {
+    Storage::fake('local');
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_RESULTS]);
+    $runId = postImportPreview($this, userImportFile([
+        userImportRow(['phone' => 'CELL-SECRET-7788', 'first_name' => null]),
+    ]))->json('data.run_id');
+    $row = App\Models\ImportRun::query()->where('uuid', $runId)->firstOrFail()->rows()->firstOrFail();
+    $row->update(['errors' => [[
+        'field'   => 'first_name',
+        'code'    => 'required',
+        'message' => 'CELL-SECRET-7788 leaked in raw validation text',
+    ], [
+        'field'   => 'phone',
+        'code'    => 'invalid',
+        'message' => 'CELL-SECRET-7788 leaked in another raw message',
+    ]]]);
+
+    $poll = $this->getJson('/api/v1/admin/users/import/'.$runId)->assertSuccessful()
+        ->assertJsonPath('data.error_report.available', true)
+        ->assertJsonPath('data.error_report.download_url', '/api/v1/admin/users/import/'.$runId.'/errors');
+    $reportPath = $row->fresh()->importRun->error_report_path;
+    expect($reportPath)->not->toBeNull();
+
+    $download = $this->get('/api/v1/admin/users/import/'.$runId.'/errors');
+    $download->assertOk()->assertDownload('users-import-errors.xlsx');
+    expect($download->headers->get('Cache-Control'))->toContain('private')->toContain('no-store');
+    $workbookRows = importWorksheetRows(Storage::disk('local')->path($reportPath));
+    expect($workbookRows[0])->toBe(['row_number', 'field', 'code', 'message', 'provider'])
+        ->and($workbookRows[1][0])->toBe('2')
+        ->and($workbookRows[1][1])->toBe('First name')
+        ->and($workbookRows[1][2])->toBe('required')
+        ->and($workbookRows[1][3])->toBe('A required value is missing.')
+        ->and($workbookRows[2][1])->toBe('Mobile phone')
+        ->and($workbookRows[2][2])->toBe('invalid')
+        ->and(json_encode($workbookRows))->not->toContain('CELL-SECRET-7788')
+        ->and($poll->json())->not->toContain('CELL-SECRET-7788');
+
+    $this->getJson('/api/v1/admin/users/import/'.$runId);
+    expect($row->fresh()->importRun->error_report_path)->toBe($reportPath);
+});
+
+it('rejects unavailable reports and enforces results authorization on downloads', function (): void {
+    Storage::fake('local');
+    $this->get('/api/v1/admin/users/import/'.Illuminate\Support\Str::uuid().'/errors')->assertUnauthorized();
+    $this->get('/api/v1/admin/unknown/import/'.Illuminate\Support\Str::uuid().'/errors')->assertNotFound();
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW]);
+    $runId = postImportPreview($this, userImportFile([userImportRow()]))->json('data.run_id');
+
+    $this->get('/api/v1/admin/users/import/'.$runId.'/errors')->assertForbidden();
+    $this->authorized_user([PermissionEnum::IMPORT_RESULTS]);
+    $this->get('/api/v1/admin/users/import/'.$runId.'/errors')->assertNotFound();
+});
+
+it('refreshes a validation report with only final failed provider outcomes', function (): void {
+    Storage::fake('local');
+    Queue::fake();
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_APPROVE, PermissionEnum::IMPORT_RESULTS]);
+    $moodle = $this->mock(App\Contracts\Integrations\MoodleClientContract::class);
+    $moodle->shouldReceive('isEnabled')->once()->andReturnTrue();
+    $moodle->shouldReceive('assertConfigured')->once();
+    $moodle->shouldReceive('findOrCreateUser')->once()->andThrow(new App\Exceptions\Integrations\UnrecoverableProvisioningException('provider-secret-991'));
+    $niliroom = $this->mock(App\Contracts\Integrations\NiliroomClientContract::class);
+    $niliroom->shouldReceive('isEnabled')->once()->andReturnTrue();
+    $niliroom->shouldReceive('assertConfigured')->once();
+    $niliroom->shouldReceive('ensureUser')->once()->andReturn('provider-id-1');
+    $runId = postImportPreview($this, userImportFile([
+        userImportRow(['first_name' => null]),
+        userImportRow(['phone' => '09123456780', 'provision_moodle' => 'true', 'provision_niliroom' => 'true']),
+    ]))->json('data.run_id');
+    $this->getJson('/api/v1/admin/users/import/'.$runId)->assertJsonPath('data.error_report.available', true);
+    $run       = App\Models\ImportRun::query()->where('uuid', $runId)->firstOrFail();
+    $firstPath = $run->error_report_path;
+
+    postImportApproval($this, $runId, ['include_valid_rows' => true])->assertSuccessful();
+    $row = $run->rows()->where('row_number', 3)->firstOrFail();
+    $this->app->call([new App\Jobs\Provisioning\ProvisionImportUserProviderJob($row->id, App\Enums\ImportExport\UserProvisioningProviderEnum::MOODLE), 'handle']);
+    $this->app->call([new App\Jobs\Provisioning\ProvisionImportUserProviderJob($row->id, App\Enums\ImportExport\UserProvisioningProviderEnum::NILIROOM), 'handle']);
+
+    $this->getJson('/api/v1/admin/users/import/'.$runId)->assertSuccessful()
+        ->assertJsonPath('data.status', 'completed_with_provider_failures');
+    $finalPath = $run->fresh()->error_report_path;
+    expect($finalPath)->not->toBe($firstPath);
+    $report = importWorksheetRows(Storage::disk('local')->path($finalPath));
+    expect(count($report))->toBe(3)
+        ->and($report[1][0])->toBe('2')
+        ->and($report[2])->toBe(['3', null, 'provider_failed', 'The requested provider operation failed.', 'moodle'])
+        ->and(json_encode($report))->not->toContain('provider-secret-991')
+        ->and(json_encode($report))->not->toContain('niliroom');
+});
+
 it('completes local-only imports and retains the original preview snapshot', function (): void {
     Storage::fake('local');
     Queue::fake();

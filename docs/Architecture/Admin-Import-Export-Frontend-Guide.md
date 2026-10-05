@@ -239,6 +239,8 @@ The run-status response must use this canonical shape:
 }
 ```
 
+The URL uses the authenticated results endpoint. The XLSX contains one row per validation error or final provider failure with `row_number`, `field`, `code`, `message`, and `provider` columns. Validation-only reports may be available during processing; final provider failures appear after processing ends. Messages are localized and value-free. If no report is available, `download_url` is null. A stale or unavailable direct download returns 404.
+
 For `preview_ready`, use `valid_rows`, `invalid_rows`, `create_count`, and `update_count`. After approval, use `created_count`, `updated_count`, `local_failure_count`, `provider_success_count`, `provider_failure_count`, and `retryable_provider_failure_count`. Do not rename these fields to a generic `success_count`.
 
 ### Error response shape

@@ -52,4 +52,13 @@ interface ImportResourceContract
      * Persist one previously validated row inside the engine's transaction.
      */
     public function importRow(ImportRowResult $row): ImportRowCommitResult;
+
+    /** Return a safe, localized label for a resource field, or null if unknown. */
+    public function errorReportFieldLabel(string $field): ?string;
+
+    /** Return a supported, stable error code for an error report. */
+    public function errorReportCode(string $code): string;
+
+    /** Return a value-free localized message for a stable validation code. */
+    public function errorReportMessage(string $code): string;
 }

@@ -222,7 +222,7 @@ Import-specific row errors use stable `row_number`, `field`, `code`, and `messag
 
 ## Error report and retention
 
-`GET /users/import/{run}/errors` returns or downloads a private error artifact containing row numbers, safe field names, validation messages, and provider failure summaries. It must not contain passwords, tokens, or raw sensitive payloads. Uploaded files, normalized snapshots, exports, and error reports require expiration and authenticated access.
+`GET /users/import/{run}/errors` downloads a private XLSX attachment with `row_number`, `field`, `code`, `message`, and `provider` columns. It requires staff authentication and `imports.results`; the run lookup is scoped by both registered resource and UUID. Responses use `Cache-Control: private, no-store`. Validation errors are available immediately; final failed provider outcomes are included once the run leaves `processing`. The report is built only from persisted outcomes and contains value-free localized messages, never cell values, identities, credentials, raw exceptions, or provider payloads. Polling fills the existing `error_report` object with this authenticated endpoint only while a current report exists. The private reference and fingerprint are persisted on the run; unchanged reports reuse the artifact and changed outcomes replace it. Retention/expiry cleanup is handled by the follow-up retention work.
 
 ## Deferred features
 

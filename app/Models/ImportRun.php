@@ -39,6 +39,8 @@ final class ImportRun extends Model
         'updated_count',
         'provider_queued_count',
         'approved_at',
+        'error_report_path',
+        'error_report_fingerprint',
     ];
 
     /** @return HasMany<ImportRunRow, $this> */

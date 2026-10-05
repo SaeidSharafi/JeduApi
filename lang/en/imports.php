@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 return [
+    'error_report' => [
+        'required'           => 'A required value is missing.',
+        'identity_conflict'  => 'The value conflicts with an existing record.',
+        'duplicate_identity' => 'The identity appears more than once in this file.',
+        'invalid'            => 'The value is invalid.',
+        'provider_failed'    => 'The requested provider operation failed.',
+    ],
     'provider_results' => [
         'retrying'            => 'Temporary provider failure; retry queued.',
         'manual_verification' => 'Provider account outcome is uncertain; manual verification is required.',

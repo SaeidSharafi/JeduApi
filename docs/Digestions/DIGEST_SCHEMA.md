@@ -633,6 +633,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - original_filename (VARCHAR), file_path (VARCHAR), file_size (BIGINT nullable), file_checksum (VARCHAR(64) nullable)
   - rows_total / rows_valid / rows_invalid (INTEGER, default 0)
   - created_count / updated_count / provider_queued_count (INTEGER, default 0), approved_at (TIMESTAMP nullable)
+  - error_report_path (VARCHAR nullable), error_report_fingerprint (VARCHAR(64) nullable) — private local report reference and sanitized content revision; cleared when no qualifying errors remain
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: PK(id), UNIQUE(uuid), INDEX(resource), INDEX(status), INDEX(resource, status), INDEX(staff_id)
 

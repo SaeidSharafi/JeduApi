@@ -293,6 +293,27 @@ final readonly class UserImportResource implements ImportResourceContract
         return new ImportRowCommitResult((string) $user->getKey(), [...$row->data, 'id' => $user->id]);
     }
 
+    public function errorReportFieldLabel(string $field): ?string
+    {
+        foreach ($this->columns() as $column) {
+            if ($column->key === $field) {
+                return $column->heading();
+            }
+        }
+
+        return null;
+    }
+
+    public function errorReportCode(string $code): string
+    {
+        return in_array($code, ['required', 'identity_conflict', 'duplicate_identity', 'invalid'], true) ? $code : 'invalid';
+    }
+
+    public function errorReportMessage(string $code): string
+    {
+        return (string) __('imports.error_report.'.$this->errorReportCode($code));
+    }
+
     /**
      * Trim every cell, fold Persian digits and canonicalize Jalali dates.
      *
