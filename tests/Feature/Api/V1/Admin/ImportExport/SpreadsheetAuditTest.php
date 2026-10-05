@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\PermissionEnum;
 use App\Http\Middleware\AdminAuditMiddleware;
 use App\Models\AdminActionLog;
+use App\Models\ImportRun;
 use App\Models\User;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
@@ -68,6 +69,33 @@ it('does not create a staff audit record for a guest', function (): void {
     postImportPreview($this, userImportFile([userImportRow()]))->assertUnauthorized();
 
     expect(AdminActionLog::query()->count())->toBe(0);
+});
+
+it('marks approval at the exact run deadline as expired', function (): void {
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_APPROVE]);
+    $runId = postImportPreview($this, userImportFile([userImportRow()]))->assertSuccessful()->json('data.run_id');
+    $run   = ImportRun::query()->where('uuid', $runId)->firstOrFail();
+    $this->travelTo($run->artifacts_expires_at);
+
+    postImportApproval($this, $runId)->assertUnprocessable();
+
+    $log = AdminActionLog::query()->where('route_name', 'api.v1.admin.imports.approve')->latest('id')->firstOrFail();
+    expect($log->metadata['request_outcome'])->toBe('expired')
+        ->and($log->metadata['failure_code'])->toBe('expired')
+        ->and($log->metadata)->not->toHaveKey('created_count');
+});
+
+it('classifies expired signed download references as expired', function (): void {
+    $this->authorized_user([PermissionEnum::USER_EXPORT]);
+    $export = $this->getJson(route('api.v1.admin.exports.create', ['resource' => 'users']))->assertSuccessful();
+    $this->travel(25)->hours();
+
+    $this->get($export->json('data.download_url'))->assertForbidden();
+
+    $log = AdminActionLog::query()->where('route_name', 'api.v1.admin.exports.download')->firstOrFail();
+    expect($log->metadata['request_outcome'])->toBe('expired')
+        ->and($log->metadata['failure_code'])->toBe('expired')
+        ->and($log->metadata)->not->toHaveKey('signature');
 });
 
 it('keeps a successful export successful when audit persistence fails', function (): void {

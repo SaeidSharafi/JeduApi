@@ -7,6 +7,8 @@ namespace Tests\Feature\Middleware;
 use App\Http\Middleware\AdminAuditMiddleware;
 use App\Models\AdminActionLog;
 use App\Models\User;
+use App\Services\ImportExport\SpreadsheetAuditContext;
+use App\Services\ImportExport\SpreadsheetAuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Routing\Route;
@@ -18,8 +20,11 @@ use Tests\Support\Traits\AuthTestTrait;
 uses(AuthTestTrait::class);
 
 beforeEach(function (): void {
-    $this->middleware = new AdminAuditMiddleware();
-    $this->next       = fn ($request): Response => new Response('Success', 200);
+    $this->middleware = new AdminAuditMiddleware(
+        app(SpreadsheetAuditContext::class),
+        app(SpreadsheetAuditLogger::class),
+    );
+    $this->next = fn ($request): Response => new Response('Success', 200);
     $this->travelTo(now()->setTime(14, 0, 0));
 });
 
