@@ -31,7 +31,7 @@ The preferred implementation stores the generated XLSX privately and returns a r
 
 ## Template
 
-`GET /users/import/template` returns an XLSX generated from `UserImport`'s column contract. It contains one header row, an example row, and documentation/notes for required fields, identity selection, accepted booleans, password behavior, and provider columns.
+`GET /users/import/template` returns an XLSX generated from `UserImport`'s column contract. It contains one header row, an example row, and documentation/notes for required fields, identity selection, accepted booleans, password behavior, and provider columns. Enum examples follow the application language. User enum cells accept Persian labels, English labels, or raw enum keys regardless of that language; Arabic/Persian letter variants and whitespace are normalized. For example, `مرد`, `Male`, and `male` all map to the same gender value.
 
 Initial provider request columns are additive:
 

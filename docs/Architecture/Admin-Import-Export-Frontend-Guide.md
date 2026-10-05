@@ -267,7 +267,7 @@ Validation and API errors continue to use the application’s standard error env
 
 ## Heading and value expectations
 
-The backend accepts English and Persian headings. The frontend does not need to normalize headings manually.
+The backend accepts English and Persian headings. The frontend does not need to normalize headings manually. Enum cells also accept Persian and English labels or raw keys, independently of the application language: `مرد` / `Male` / `male`, `کد ملی` / `National Code` / `national_code`, `کارشناسی` / `Bachelor` / `bachelor`, and `فارغ‌التحصیل` / `Graduated` / `graduated`. Template examples follow the application language; staff can enter Persian labels even in a template with English headings.
 
 The template is the safest way for users to obtain correct headings. If users upload an edited file, the backend normalizes common Persian/Arabic character variants, zero-width characters, whitespace, punctuation, and diacritics.
 

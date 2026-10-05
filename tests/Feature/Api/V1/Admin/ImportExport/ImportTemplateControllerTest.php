@@ -54,8 +54,8 @@ describe('template content', function (): void {
             ])
             ->and($rows[1])->toBe([
                 '09123456789', 'user@example.com', 'علی', 'محمدی', '09120000000', '0000000000',
-                'national_code', '1370-01-01', 'حسن', 'male', 'bachelor', 'مهندسی کامپیوتر',
-                'graduated', null, 'true', 'true', 'true', 'true',
+                'National Code', '1370-01-01', 'حسن', 'Male', 'Bachelor', 'مهندسی کامپیوتر',
+                'Graduated', null, 'true', 'true', 'true', 'true',
             ]);
     });
 

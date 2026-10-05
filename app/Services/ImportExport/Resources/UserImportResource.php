@@ -122,7 +122,7 @@ final readonly class UserImportResource implements ImportResourceContract
                 headingKey: 'imports.columns.civil_id_type',
                 aliases: ['civil id type', 'id type', 'نوع شناسه', 'نوع کد شناسایی', 'نوع کد ملی'],
                 required: true,
-                example: CivilIdTypeEnum::NATIONAL_CODE->value,
+                example: CivilIdTypeEnum::NATIONAL_CODE->translate(),
                 guidanceKey: 'imports.guidance.civil_id_type',
             ),
             new SpreadsheetColumnDefinition(
@@ -146,7 +146,7 @@ final readonly class UserImportResource implements ImportResourceContract
                 headingKey: 'imports.columns.gender',
                 aliases: ['sex', 'جنس', 'جنسیت'],
                 required: true,
-                example: GenderEnum::MALE->value,
+                example: GenderEnum::MALE->translate(),
                 guidanceKey: 'imports.guidance.gender',
             ),
             new SpreadsheetColumnDefinition(
@@ -154,7 +154,7 @@ final readonly class UserImportResource implements ImportResourceContract
                 headingKey: 'imports.columns.education_level',
                 aliases: ['education', 'مقطع تحصیلی', 'سطح تحصیلات', 'مقطع'],
                 required: false,
-                example: EducationLevelEnum::BACHELOR->value,
+                example: EducationLevelEnum::BACHELOR->translate(),
                 guidanceKey: 'imports.guidance.education_level',
             ),
             new SpreadsheetColumnDefinition(
@@ -170,7 +170,7 @@ final readonly class UserImportResource implements ImportResourceContract
                 headingKey: 'imports.columns.education_status',
                 aliases: ['education state', 'وضعیت تحصیلی', 'وضعیت تحصیل'],
                 required: false,
-                example: EducationStatusEnum::GRADUATED->value,
+                example: EducationStatusEnum::GRADUATED->translate(),
                 guidanceKey: 'imports.guidance.education_status',
             ),
             new SpreadsheetColumnDefinition(
@@ -588,16 +588,19 @@ final readonly class UserImportResource implements ImportResourceContract
         foreach ($cases as $case) {
             $caseValue = (string) $case->value;
 
-            $lookup[$this->headingNormalizer->normalize($caseValue)]          = $caseValue;
-            $lookup[$this->headingNormalizer->normalize($this->label($case))] = $caseValue;
+            $lookup[$this->headingNormalizer->normalize($caseValue)] = $caseValue;
+
+            foreach (['fa', 'en'] as $locale) {
+                $lookup[$this->headingNormalizer->normalize($this->label($case, $locale))] = $caseValue;
+            }
         }
 
         return $lookup[$this->headingNormalizer->normalize($value)] ?? $value;
     }
 
-    private function label(BackedEnum $case): string
+    private function label(BackedEnum $case, string $locale): string
     {
-        return method_exists($case, 'translate') ? $case->translate() : (string) $case->value;
+        return (string) __('enums.'.class_basename($case).'.'.$case->value, [], $locale);
     }
 
     private function normalizeJalaliDate(string $value): string
