@@ -50,12 +50,12 @@ describe('template content', function (): void {
                 'Mobile phone', 'Email', 'First name', 'Last name', 'Secondary phone', 'Civil ID',
                 'Civil ID type', 'Date of birth (Jalali)', "Father's name", 'Gender', 'Education level',
                 'Field of study', 'Education status', 'Password', 'Provision Moodle account',
-                'Provision IMS account', 'Provision SpotPlayer account',
+                'Provision IMS account', 'Provision Niliroom account', 'Provision Skyroom account',
             ])
             ->and($rows[1])->toBe([
                 '09123456789', 'user@example.com', 'علی', 'محمدی', '09120000000', '0000000000',
                 'national_code', '1370-01-01', 'حسن', 'male', 'bachelor', 'مهندسی کامپیوتر',
-                'graduated', null, 'true', 'true', 'true',
+                'graduated', null, 'true', 'true', 'true', 'true',
             ]);
     });
 
@@ -66,7 +66,7 @@ describe('template content', function (): void {
 
         $comments = importWorksheetComments($response->getFile()->getPathname());
 
-        expect($comments)->toHaveCount(18)
+        expect($comments)->toHaveCount(19)
             ->and($comments['A2'])->toBe(__('imports.template.example_notice'));
 
         $requiredColumn = explode("\n", $comments['A1']);

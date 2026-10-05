@@ -565,11 +565,17 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 - **Relationships:**
   - `hasMany(ImportRunRow::class)` - rows
   - `belongsTo(Staff::class)` - staff
-- **Special Features:** UUID (`uuid7`) generated on create. Approval moves `status` from `preview_ready` to `processing` and persists the local result counters exactly once; repeated approval returns those counters. The stored file is checksum-protected and remains the source of truth for values that must not be persisted in the run (imported passwords).
+- **Special Features:** UUID (`uuid7`) generated on create. Approval moves `status` from `preview_ready` to `processing` when providers are queued, or `completed` for a local-only run, and persists the local result counters exactly once; repeated approval returns those counters. Provider processing terminates as `completed` or `completed_with_provider_failures`; details live in row outcomes. The stored file is checksum-protected and remains the source of truth for values that must not be persisted in the run (imported passwords).
 
 ### ImportRunRow (`app/Models/ImportRunRow.php`)
 - **Purpose:** One validated spreadsheet row of an import run, including its preview outcome
-- **Key Fields:** `import_run_id`, `row_number` (spreadsheet row), `identity_value` (normalized), `target_resource_id` (internal target identity for safe updates), `action` (ImportRowActionEnum: `create`/`update`, null when invalid), `is_valid`, `errors` (`[{field, code, message}]`), `data` (normalized, resource-owned values under `rows[].data`)
+- **Key Fields:** `import_run_id`, `row_number` (spreadsheet row), `identity_value` (normalized), `target_resource_id` (internal target identity for safe updates), `action` (ImportRowActionEnum: `create`/`update`, null when invalid), `is_valid`, `errors` (`[{field, code, message}]`), `data` (immutable normalized preview), `local_resource_id` (committed target), `local_result_data` (safe resource-owned committed payload, including User `id`), `providers` (per-provider `{status, message, attempts}`; `queued`/`processing`/`succeeded`/`failed`/`retryable_failed`)
 - **Relationships:**
   - `belongsTo(ImportRun::class)` - importRun
-- **Special Features:** Unique `(import_run_id, row_number)`. Row `data` follows the resource contract: create rows carry every field (nulls included), update rows carry only supplied cells so empty cells never erase stored values. Enum columns store raw values, Jalali dates store Gregorian `Y-m-d`, and passwords are never written here.
+- **Special Features:** Unique `(import_run_id, row_number)`. Row `data` follows the resource contract: create rows carry every field (nulls included), update rows carry only supplied cells so empty cells never erase stored values. Enum columns store raw values, Jalali dates store Gregorian `Y-m-d`, and passwords are never written here. `providers` and `local_result_data` cast to arrays; polling chooses committed data after approval without overwriting the preview.
+
+### UserProviderAccount (`app/Models/UserProviderAccount.php`)
+- **Purpose:** Durable standalone provider-account outcome shared across import runs for one local User/provider; independent of Enrollment provisioning attempts.
+- **Key Fields:** `user_id`, `provider` (UserProvisioningProviderEnum: `moodle`/`ims`/`niliroom`/`skyroom`), `idempotency_key` (`import-user:{localUserId}:{provider}` for imports), `status` (`pending`/`processing`/`succeeded`/`ambiguous`), timestamps.
+- **Relationships:** `belongsTo(User::class)` - user.
+- **Invariants:** Unique User/provider pair and unique idempotency key. Successful outcomes are reused across runs. The `processing` marker precedes external mutation; IMS cannot replay that marker or `ambiguous` without manual verification. No provider credentials or raw responses are stored. Workflow and retry details: [Core logic](DIGEST_CORE_LOGIC.md#spreadsheet-importexport-engine-appservicesimportexport).

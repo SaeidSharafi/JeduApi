@@ -29,6 +29,9 @@ final class ImportRunRow extends Model
         'is_valid',
         'errors',
         'data',
+        'providers',
+        'local_resource_id',
+        'local_result_data',
     ];
 
     /** @return BelongsTo<ImportRun, $this> */
@@ -40,11 +43,13 @@ final class ImportRunRow extends Model
     protected function casts(): array
     {
         return [
-            'action'     => ImportRowActionEnum::class,
-            'is_valid'   => 'boolean',
-            'row_number' => 'integer',
-            'errors'     => 'array',
-            'data'       => 'array',
+            'action'            => ImportRowActionEnum::class,
+            'is_valid'          => 'boolean',
+            'row_number'        => 'integer',
+            'errors'            => 'array',
+            'data'              => 'array',
+            'providers'         => 'array',
+            'local_result_data' => 'array',
         ];
     }
 }

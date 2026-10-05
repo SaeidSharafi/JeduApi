@@ -81,22 +81,23 @@ describe('preview envelope', function (): void {
         $response->assertJsonPath('data.rows.0.errors', []);
 
         expect($response->json('data.rows.0.data'))->toEqual([
-            'phone'                => '09123456789',
-            'email'                => 'ali@example.com',
-            'first_name'           => 'علی',
-            'last_name'            => 'محمدی',
-            'phone2'               => null,
-            'civil_id'             => '0000000019',
-            'civil_id_type'        => 'national_code',
-            'date_of_birth'        => '1991-03-21',
-            'father_name'          => 'حسن',
-            'gender'               => 'male',
-            'education_level'      => 'bachelor',
-            'field_of_study'       => 'مهندسی کامپیوتر',
-            'education_status'     => 'graduated',
-            'provision_moodle'     => false,
-            'provision_ims'        => false,
-            'provision_spotplayer' => false,
+            'phone'              => '09123456789',
+            'email'              => 'ali@example.com',
+            'first_name'         => 'علی',
+            'last_name'          => 'محمدی',
+            'phone2'             => null,
+            'civil_id'           => '0000000019',
+            'civil_id_type'      => 'national_code',
+            'date_of_birth'      => '1991-03-21',
+            'father_name'        => 'حسن',
+            'gender'             => 'male',
+            'education_level'    => 'bachelor',
+            'field_of_study'     => 'مهندسی کامپیوتر',
+            'education_status'   => 'graduated',
+            'provision_moodle'   => false,
+            'provision_ims'      => false,
+            'provision_niliroom' => false,
+            'provision_skyroom'  => false,
         ]);
 
         expect(User::query()->count())->toBe($existingUsers);
@@ -513,15 +514,15 @@ describe('row validation', function (): void {
         $this->authorized_user([PermissionEnum::IMPORT_PREVIEW]);
 
         $response = postImportPreview($this, userImportFile([
-            userImportRow(['provision_moodle' => 'true', 'provision_ims' => 'بله', 'provision_spotplayer' => 'yes']),
+            userImportRow(['provision_moodle' => 'true', 'provision_ims' => 'بله', 'provision_niliroom' => 'yes', 'provision_skyroom' => 'true']),
             userImportRow(['phone' => '09120000000', 'provision_moodle' => 'false', 'provision_ims' => '0']),
         ]));
 
         $response->assertSuccessful();
         $response->assertJsonPath('data.rows.0.data.provision_moodle', true);
         $response->assertJsonPath('data.rows.0.data.provision_ims', true);
-        $response->assertJsonPath('data.rows.0.data.provision_spotplayer', true);
+        $response->assertJsonPath('data.rows.0.data.provision_niliroom', true);
         $response->assertJsonPath('data.rows.1.data.provision_moodle', false);
-        $response->assertJsonPath('data.summary.provider_provisioning_request_count', 3);
+        $response->assertJsonPath('data.summary.provider_provisioning_request_count', 4);
     });
 });

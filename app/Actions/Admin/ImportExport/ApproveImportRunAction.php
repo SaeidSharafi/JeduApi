@@ -11,6 +11,7 @@ use App\Data\Admin\ImportExport\ImportApprovalSummaryData;
 use App\Data\ImportExport\ImportRowResult;
 use App\Enums\ImportExport\ImportRowActionEnum;
 use App\Enums\ImportExport\ImportRunStatusEnum;
+use App\Jobs\Provisioning\ProvisionImportUserProviderJob;
 use App\Models\ImportRun;
 use App\Models\ImportRunRow;
 use App\Services\ImportExport\ImportPreviewEngine;
@@ -62,6 +63,7 @@ final readonly class ApproveImportRunAction
 
             $this->assertSnapshotUnchanged($storedRows, $freshResults);
 
+            $queued  = 0;
             $created = 0;
             $updated = 0;
 
@@ -70,17 +72,30 @@ final readonly class ApproveImportRunAction
                     continue;
                 }
 
-                $result = $freshResults[$rowNumber];
-                $contract->importRow($result);
+                $result    = $freshResults[$rowNumber];
+                $committed = $contract->importRow($result);
+                $providers = [];
+                foreach ($contract->providerCapabilities() as $provider) {
+                    if (($result->data['provision_'.$provider->value] ?? false) !== true) {
+                        continue;
+                    }
+                    $providers[$provider->value] = ['status' => 'queued', 'message' => null, 'attempts' => 0];
+                    $queued++;
+                    DB::afterCommit(static function () use ($storedRow, $provider): void {
+                        ProvisionImportUserProviderJob::dispatch($storedRow->id, $provider);
+                    });
+                }
+                $storedRow->update(['local_resource_id' => $committed->resourceId, 'local_result_data' => $committed->data, 'providers' => $providers]);
 
                 $result->action === ImportRowActionEnum::CREATE ? $created++ : $updated++;
             }
 
             $run->update([
-                'status'        => ImportRunStatusEnum::PROCESSING,
-                'created_count' => $created,
-                'updated_count' => $updated,
-                'approved_at'   => now(),
+                'status'                => $queued > 0 ? ImportRunStatusEnum::PROCESSING : ImportRunStatusEnum::COMPLETED,
+                'provider_queued_count' => $queued,
+                'created_count'         => $created,
+                'updated_count'         => $updated,
+                'approved_at'           => now(),
             ]);
 
             return $this->present($run->refresh());

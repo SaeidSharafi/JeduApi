@@ -24,6 +24,53 @@ it('rejects guests', function (): void {
     postImportApproval($this, $runId)->assertUnauthorized();
 });
 
+it('queues provider work once after committing local users', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_APPROVE]);
+    $runId = postImportPreview($this, userImportFile([
+        userImportRow(['provision_moodle' => 'true']),
+    ]))->json('data.run_id');
+
+    postImportApproval($this, $runId)
+        ->assertSuccessful()
+        ->assertJsonPath('data.status', 'processing')
+        ->assertJsonPath('data.summary.provider_queued_count', 1);
+    postImportApproval($this, $runId)->assertSuccessful();
+
+    Illuminate\Support\Facades\Queue::assertPushed(App\Jobs\Provisioning\ProvisionImportUserProviderJob::class, 1);
+    expect(User::query()->where('phone', '09123456789')->exists())->toBeTrue();
+});
+
+it('waits for the enclosing transaction to commit before dispatching provider jobs', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_APPROVE]);
+    $runId = postImportPreview($this, userImportFile([
+        userImportRow(['provision_moodle' => 'true']),
+    ]))->json('data.run_id');
+    Illuminate\Support\Facades\DB::beginTransaction();
+
+    postImportApproval($this, $runId)->assertSuccessful();
+    Illuminate\Support\Facades\Queue::assertNothingPushed();
+    Illuminate\Support\Facades\DB::commit();
+
+    Illuminate\Support\Facades\Queue::assertPushed(App\Jobs\Provisioning\ProvisionImportUserProviderJob::class, 1);
+});
+
+it('does not queue account operations for blank or false provider flags', function (?string $flag): void {
+    Illuminate\Support\Facades\Queue::fake();
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_APPROVE]);
+    $runId = postImportPreview($this, userImportFile([
+        userImportRow(['provision_moodle' => $flag, 'provision_ims' => $flag, 'provision_niliroom' => $flag, 'provision_skyroom' => $flag]),
+    ]))->json('data.run_id');
+
+    postImportApproval($this, $runId)
+        ->assertSuccessful()
+        ->assertJsonPath('data.status', 'completed')
+        ->assertJsonPath('data.summary.provider_queued_count', 0);
+
+    Illuminate\Support\Facades\Queue::assertNothingPushed();
+})->with(['blank' => [''], 'null' => [null], 'false' => ['false']]);
+
 it('rejects staff without the approval permission', function (): void {
     $this->authorized_user([PermissionEnum::IMPORT_PREVIEW]);
     $runId = postImportPreview($this, userImportFile([userImportRow()]))->json('data.run_id');
@@ -43,7 +90,7 @@ it('creates all valid users with an empty approval body and redacts passwords', 
     $response->assertSuccessful();
     $response->assertJsonPath('data.run_id', $runId);
     $response->assertJsonPath('data.resource', 'users');
-    $response->assertJsonPath('data.status', ImportRunStatusEnum::PROCESSING->value);
+    $response->assertJsonPath('data.status', ImportRunStatusEnum::COMPLETED->value);
     $response->assertJsonPath('data.summary', [
         'created_count'         => 1,
         'updated_count'         => 0,
@@ -150,9 +197,10 @@ it('uses the durable approval marker for idempotency after status changes', func
 });
 
 it('rolls back every local mutation when one valid row cannot be persisted', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
     $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_APPROVE]);
     $runId = postImportPreview($this, userImportFile([
-        userImportRow(['civil_id' => 'P1234567', 'civil_id_type' => 'passport']),
+        userImportRow(['provision_moodle' => 'true', 'civil_id' => 'P1234567', 'civil_id_type' => 'passport']),
         userImportRow([
             'phone'    => '09120000000', 'email' => 'second@example.com',
             'civil_id' => 'P7654321', 'civil_id_type' => 'passport',
@@ -165,6 +213,8 @@ it('rolls back every local mutation when one valid row cannot be persisted', fun
     });
 
     postImportApproval($this, $runId)->assertServerError();
+
+    Illuminate\Support\Facades\Queue::assertNothingPushed();
 
     expect(User::query()->whereIn('phone', ['09123456789', '09120000000'])->exists())->toBeFalse()
         ->and(ImportRun::query()->where('uuid', $runId)->value('status'))->toBe(ImportRunStatusEnum::PREVIEW_READY);

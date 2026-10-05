@@ -12,6 +12,11 @@ final class ImportRunPolicy
 {
     use HandlesAuthorization;
 
+    public function viewResults(Staff $staff): bool
+    {
+        return $staff->can(PermissionEnum::IMPORT_RESULTS->value);
+    }
+
     public function preview(Staff $staff): bool
     {
         return $staff->can(PermissionEnum::IMPORT_PREVIEW->value);

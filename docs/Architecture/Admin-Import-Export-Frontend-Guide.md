@@ -276,7 +276,8 @@ Provider request columns are additive and appear in the template when supported:
 ```text
 provision_moodle
 provision_ims
-provision_spotplayer
+provision_niliroom
+provision_skyroom
 ```
 
 Accepted boolean values include:

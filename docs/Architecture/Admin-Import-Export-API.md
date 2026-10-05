@@ -38,10 +38,11 @@ Initial provider request columns are additive:
 ```text
 provision_moodle
 provision_ims
-provision_spotplayer
+provision_niliroom
+provision_skyroom
 ```
 
-An absent, blank, or false column means no provider operation. True means ensure that provider account exists. Import never disables or deletes provider accounts.
+An absent, blank, or false column means no provider operation. True means ensure that provider account exists. Import never disables or deletes provider accounts and never enrolls users. Only services with a standalone account capability appear in the template; SpotPlayer is excluded. Moodle/Skyroom reconcile existing identities and Niliroom upserts its stable identity. Ambiguous IMS creates require manual verification, because the client has no safe reconciliation operation.
 
 ## Preview
 
@@ -124,7 +125,7 @@ The approval action:
 
 Invalid rows are never mutated or sent to providers. If local persistence fails, the transaction rolls back and no provider jobs are dispatched.
 
-The approval response does not contain final provider outcomes because provider jobs have only been queued at that point. It returns the local commit result and initial queued state:
+The approval response does not contain final provider outcomes because provider jobs have only been queued at that point. It returns the local commit result and initial queued state (`completed` immediately when no provider operations were requested):
 
 ```json
 {
@@ -201,7 +202,7 @@ Provider status is independent per row/provider. The approval response reports q
 }
 ```
 
-Transient provider failures receive bounded automatic retries through a separate job. Retries target only failed provider operations and use per-user/provider idempotency keys. A future manual retry endpoint may retry failed provider operations from the same Import Run; re-uploading a file is not the normal retry mechanism.
+Safe transient provider failures receive at most three attempts through a separate job, with 60- and 180-second backoff. Unsafe or ambiguous IMS student creation failures are terminal and require manual verification. Retries target only failed provider operations and use per-user/provider idempotency keys. A future manual retry endpoint may retry failed provider operations from the same Import Run; re-uploading a file is not the normal retry mechanism.
 
 ## Run statuses
 

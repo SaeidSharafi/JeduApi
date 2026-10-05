@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Contracts\ImportExport;
 
+use App\Data\ImportExport\ImportRowCommitResult;
 use App\Data\ImportExport\ImportRowResult;
 use App\Data\ImportExport\SpreadsheetColumnDefinition;
 use App\Enums\ImportExport\ImportIdentityKeyEnum;
 use App\Enums\ImportExport\SpreadsheetResourceEnum;
-use App\Enums\ProvisioningProviderEnum;
+use App\Enums\ImportExport\UserProvisioningProviderEnum;
 
 /**
  * Resource owned contract consumed by the central import engine.
@@ -35,7 +36,7 @@ interface ImportResourceContract
     /**
      * Providers this resource can request additive user provisioning for.
      *
-     * @return list<ProvisioningProviderEnum>
+     * @return list<UserProvisioningProviderEnum>
      */
     public function providerCapabilities(): array;
 
@@ -50,5 +51,5 @@ interface ImportResourceContract
     /**
      * Persist one previously validated row inside the engine's transaction.
      */
-    public function importRow(ImportRowResult $row): void;
+    public function importRow(ImportRowResult $row): ImportRowCommitResult;
 }

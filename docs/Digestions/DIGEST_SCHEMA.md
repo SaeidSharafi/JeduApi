@@ -628,7 +628,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - uuid (UUID, unique) — public identifier
   - resource (VARCHAR, indexed) — registered spreadsheet resource (`users`)
   - identity_key (VARCHAR) — `phone` | `email`
-  - status (VARCHAR, indexed) — currently `preview_ready` | `processing`; provider-processing tickets add `approved` | `completed` | `completed_with_provider_failures` | `failed` | `expired`
+  - status (VARCHAR, indexed) — `preview_ready` | `processing` | `completed` | `completed_with_provider_failures`; `approved`/`failed`/`expired` remain future lifecycle extensions
   - staff_id (BIGINT nullable) FK -> staff(id) SET NULL
   - original_filename (VARCHAR), file_path (VARCHAR), file_size (BIGINT nullable), file_checksum (VARCHAR(64) nullable)
   - rows_total / rows_valid / rows_invalid (INTEGER, default 0)
@@ -647,9 +647,17 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - action (VARCHAR nullable) — `create` | `update`
   - is_valid (BOOLEAN)
   - errors (JSONB nullable) — `[{field, code, message}]`
-  - data (JSONB) — normalized resource-owned values (no credentials)
+  - data (JSONB) — immutable normalized resource-owned preview (no credentials)
+  - local_resource_id (VARCHAR nullable) — resource ID created/updated at approval, separate from the preview target
+  - local_result_data (JSONB nullable) — safe committed resource payload, including User ID; no password
+  - providers (JSONB nullable) — provider-keyed `{status, message, attempts}` outcomes
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: PK(id), UNIQUE(import_run_id, row_number), INDEX(import_run_id, identity_value), INDEX(import_run_id)
+
+### Table: `user_provider_accounts`
+- Purpose: Durable per-User/provider standalone account outcome used across Import Runs.
+- Columns: id (BIGINT PK), user_id (BIGINT FK -> users(id) CASCADE), provider (VARCHAR: moodle/ims/niliroom/skyroom), idempotency_key (VARCHAR), status (VARCHAR: pending/processing/succeeded/ambiguous), created_at/updated_at (TIMESTAMPS).
+- Indexes/constraints: PK(id), UNIQUE(user_id, provider), UNIQUE(idempotency_key), INDEX(status). All enum-like values use strings, not native database enums.
 
 ### Table: `reviews`
 - Purpose: User reviews for entities.

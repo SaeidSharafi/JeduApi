@@ -46,7 +46,7 @@ if (! function_exists('userImportHeadings')) {
         return [
             'first_name', 'last_name', 'phone', 'email', 'phone2', 'civil_id', 'civil_id_type',
             'date_of_birth', 'father_name', 'gender', 'education_level', 'field_of_study',
-            'education_status', 'password', 'provision_moodle', 'provision_ims', 'provision_spotplayer',
+            'education_status', 'password', 'provision_moodle', 'provision_ims', 'provision_niliroom', 'provision_skyroom',
         ];
     }
 }
@@ -62,7 +62,7 @@ if (! function_exists('userImportPersianHeadings')) {
         return [
             'نام', 'نام خانوادگی', 'تلفن همراه', 'پست الکترونیکی', 'تلفن همراه دوم', 'کد شناسایی', 'نوع کد شناسایی',
             'تاریخ تولد (شمسی)', 'نام پدر', 'جنسیت', 'مقطع تحصیلی', 'رشته تحصیلی',
-            'وضعیت تحصیلی', 'رمز عبور', 'ساخت حساب مودل', 'ساخت حساب آی‌ام‌اس', 'ساخت حساب اسپات‌پلیر',
+            'وضعیت تحصیلی', 'رمز عبور', 'ساخت حساب مودل', 'ساخت حساب آی‌ام‌اس', 'ساخت حساب نیلی‌روم', 'ساخت حساب اسکای‌روم',
         ];
     }
 }
@@ -77,23 +77,24 @@ if (! function_exists('userImportValues')) {
     function userImportValues(array $overrides = []): array
     {
         return array_merge([
-            'first_name'           => 'علی',
-            'last_name'            => 'محمدی',
-            'phone'                => '09123456789',
-            'email'                => 'ali@example.com',
-            'phone2'               => '',
-            'civil_id'             => '0000000019',
-            'civil_id_type'        => 'national_code',
-            'date_of_birth'        => '1370-01-01',
-            'father_name'          => 'حسن',
-            'gender'               => 'male',
-            'education_level'      => 'bachelor',
-            'field_of_study'       => 'مهندسی کامپیوتر',
-            'education_status'     => 'graduated',
-            'password'             => '',
-            'provision_moodle'     => '',
-            'provision_ims'        => '',
-            'provision_spotplayer' => '',
+            'first_name'         => 'علی',
+            'last_name'          => 'محمدی',
+            'phone'              => '09123456789',
+            'email'              => 'ali@example.com',
+            'phone2'             => '',
+            'civil_id'           => '0000000019',
+            'civil_id_type'      => 'national_code',
+            'date_of_birth'      => '1370-01-01',
+            'father_name'        => 'حسن',
+            'gender'             => 'male',
+            'education_level'    => 'bachelor',
+            'field_of_study'     => 'مهندسی کامپیوتر',
+            'education_status'   => 'graduated',
+            'password'           => '',
+            'provision_moodle'   => '',
+            'provision_ims'      => '',
+            'provision_niliroom' => '',
+            'provision_skyroom'  => '',
         ], $overrides);
     }
 }

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Services\ImportExport\Resources;
 
 use App\Contracts\ImportExport\ImportResourceContract;
+use App\Data\ImportExport\ImportRowCommitResult;
 use App\Data\ImportExport\ImportRowResult;
 use App\Data\ImportExport\SpreadsheetColumnDefinition;
 use App\Enums\ImportExport\ImportIdentityKeyEnum;
 use App\Enums\ImportExport\SpreadsheetResourceEnum;
-use App\Enums\ProvisioningProviderEnum;
+use App\Enums\ImportExport\UserProvisioningProviderEnum;
 use App\Enums\User\CivilIdTypeEnum;
 use App\Enums\User\EducationLevelEnum;
 use App\Enums\User\EducationStatusEnum;
@@ -197,12 +198,20 @@ final readonly class UserImportResource implements ImportResourceContract
                 guidanceKey: 'imports.guidance.provision_ims',
             ),
             new SpreadsheetColumnDefinition(
-                key: 'provision_spotplayer',
-                headingKey: 'imports.columns.provision_spotplayer',
-                aliases: ['spotplayer', 'spot player', 'spotplayer account', 'اسپات پلیر', 'ساخت حساب اسپات پلیر'],
+                key: 'provision_niliroom',
+                headingKey: 'imports.columns.provision_niliroom',
+                aliases: ['niliroom', 'niloo', 'niliroom account', 'نیلی روم', 'ساخت حساب نیلی روم'],
                 required: false,
                 example: 'true',
-                guidanceKey: 'imports.guidance.provision_spotplayer',
+                guidanceKey: 'imports.guidance.provision_niliroom',
+            ),
+            new SpreadsheetColumnDefinition(
+                key: 'provision_skyroom',
+                headingKey: 'imports.columns.provision_skyroom',
+                aliases: ['skyroom', 'skyroom account', 'اسکای روم', 'ساخت حساب اسکای روم'],
+                required: false,
+                example: 'true',
+                guidanceKey: 'imports.guidance.provision_skyroom',
             ),
         ];
     }
@@ -222,14 +231,15 @@ final readonly class UserImportResource implements ImportResourceContract
     }
 
     /**
-     * @return list<ProvisioningProviderEnum>
+     * @return list<UserProvisioningProviderEnum>
      */
     public function providerCapabilities(): array
     {
         return [
-            ProvisioningProviderEnum::MOODLE,
-            ProvisioningProviderEnum::IMS,
-            ProvisioningProviderEnum::SPOTPLAYER,
+            UserProvisioningProviderEnum::MOODLE,
+            UserProvisioningProviderEnum::IMS,
+            UserProvisioningProviderEnum::NILIROOM,
+            UserProvisioningProviderEnum::SKYROOM,
         ];
     }
 
@@ -256,7 +266,7 @@ final readonly class UserImportResource implements ImportResourceContract
             : ImportRowResult::update((string) $identity, $data, (string) $existing->getKey(), $sensitiveData);
     }
 
-    public function importRow(ImportRowResult $row): void
+    public function importRow(ImportRowResult $row): ImportRowCommitResult
     {
         $attributes = array_filter(
             $row->data,
@@ -269,16 +279,18 @@ final readonly class UserImportResource implements ImportResourceContract
         }
 
         if ($row->action === \App\Enums\ImportExport\ImportRowActionEnum::CREATE) {
-            User::create($attributes);
+            $user = User::create($attributes);
 
-            return;
+            return new ImportRowCommitResult((string) $user->getKey(), [...$row->data, 'id' => $user->id]);
         }
 
-        User::query()
+        $user = User::query()
             ->whereKey($row->targetResourceId)
             ->lockForUpdate()
-            ->firstOrFail()
-            ->update($attributes);
+            ->firstOrFail();
+        $user->update($attributes);
+
+        return new ImportRowCommitResult((string) $user->getKey(), [...$row->data, 'id' => $user->id]);
     }
 
     /**

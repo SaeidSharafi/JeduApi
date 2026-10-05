@@ -42,7 +42,7 @@ final class NiliroomService extends AbstractIntegrationService implements Niliro
     {
         $this->assertConfigured();
 
-        $identityId = $this->syncUser($user);
+        $identityId = $this->ensureUser($user);
         $this->enroll($identityId, $roomId, self::TEACHER_ROLE);
 
         return $this->issueLoginGrant($identityId, $roomId);
@@ -52,12 +52,34 @@ final class NiliroomService extends AbstractIntegrationService implements Niliro
     {
         $this->assertConfigured();
 
-        $identityId = $this->syncUser($user);
+        $identityId = $this->ensureUser($user);
         $this->enroll($identityId, $roomId, self::STUDENT_ROLE);
 
         $meetingId = $this->startOrGetRoomMeeting($roomId);
 
         return $this->issueMeetingJoinGrant($identityId, $meetingId);
+    }
+
+    /**
+     * Returns the provider's opaque user identity public ID that the follow-up calls address.
+     */
+    public function ensureUser(User $user): string
+    {
+        $this->assertConfigured();
+
+        $endpoint = sprintf('%s/users/%s/user-%d', self::API_PREFIX, self::PROVIDER, $user->id);
+
+        $data = $this->send(
+            fn (PendingRequest $request): Response => $request->put($endpoint, [
+                'name'  => $this->displayName($user),
+                'phone' => (string) $user->phone,
+            ]),
+            $endpoint,
+        );
+
+        $identityId = $this->requiredString($data, 'id', 'user_identity_missing');
+
+        return $identityId;
     }
 
     protected function getSettingKey(): SettingKeyEnum
@@ -73,26 +95,6 @@ final class NiliroomService extends AbstractIntegrationService implements Niliro
     protected function validateConfig(): bool
     {
         return ! empty($this->config['base_url']) && ! empty($this->config['api_token']);
-    }
-
-    /**
-     * Returns the provider's opaque user identity public ID that the follow-up calls address.
-     */
-    private function syncUser(User $user): string
-    {
-        $endpoint = sprintf('%s/users/%s/user-%d', self::API_PREFIX, self::PROVIDER, $user->id);
-
-        $data = $this->send(
-            fn (PendingRequest $request): Response => $request->put($endpoint, [
-                'name'  => $this->displayName($user),
-                'phone' => (string) $user->phone,
-            ]),
-            $endpoint,
-        );
-
-        $identityId = $this->requiredString($data, 'id', 'user_identity_missing');
-
-        return $identityId;
     }
 
     /**
