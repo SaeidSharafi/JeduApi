@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\AdminActionLog;
-use App\Models\ImportRun;
 use App\Services\ImportExport\SpreadsheetAuditContext;
 use App\Services\ImportExport\SpreadsheetAuditLogger;
 use Closure;
@@ -38,11 +37,6 @@ final class AdminAuditMiddleware
         if ($spreadsheetOperation !== null && $adminId !== null) {
             $this->spreadsheetAuditContext->reset();
             $this->spreadsheetAuditContext->begin($spreadsheetOperation, (int) $adminId, $startTime);
-        }
-
-        if ($spreadsheetOperation === 'import_approve' && $adminId !== null) {
-            $wasAlreadyApproved = ImportRun::query()->where('uuid', $request->route('run'))->value('approved_at') !== null;
-            $this->spreadsheetAuditContext->recordApprovalState($wasAlreadyApproved);
         }
 
         $response = $next($request);

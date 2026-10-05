@@ -350,4 +350,38 @@ return [
         'suspended' => 'Suspended',
         'closed'    => 'Closed',
     ],
+    'ImportIdentityKeyEnum' => [
+        'phone' => 'Mobile phone',
+        'email' => 'Email',
+    ],
+    'ImportRowActionEnum' => [
+        'create' => 'Create',
+        'update' => 'Update',
+    ],
+    'ImportRowStatusEnum' => [
+        'valid'   => 'Valid',
+        'invalid' => 'Invalid',
+    ],
+    'ImportRunStatusEnum' => [
+        'preview_ready'                    => 'Preview ready',
+        'processing'                       => 'Processing',
+        'completed'                        => 'Completed',
+        'completed_with_provider_failures' => 'Completed with provider failures',
+    ],
+    'ProviderOutcomeStatusEnum' => [
+        'queued'           => 'Queued',
+        'processing'       => 'Processing',
+        'succeeded'        => 'Succeeded',
+        'failed'           => 'Failed',
+        'retryable_failed' => 'Failed, retry available',
+    ],
+    'SpreadsheetResourceEnum' => [
+        'users' => 'Users',
+    ],
+    'UserProvisioningProviderEnum' => [
+        'moodle'   => 'Moodle',
+        'ims'      => 'IMS',
+        'niliroom' => 'Niliroom',
+        'skyroom'  => 'Skyroom',
+    ],
 ];

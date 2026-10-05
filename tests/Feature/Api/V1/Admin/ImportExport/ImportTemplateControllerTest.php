@@ -4,14 +4,8 @@ declare(strict_types=1);
 
 use App\Actions\Admin\ImportExport\BuildImportTemplateAction;
 use App\Enums\PermissionEnum;
-use App\Services\ImportExport\ImportTemplateExport;
-use App\Services\ImportExport\SpreadsheetResourceRegistry;
 
-covers([
-    BuildImportTemplateAction::class,
-    ImportTemplateExport::class,
-    SpreadsheetResourceRegistry::class,
-]);
+covers(BuildImportTemplateAction::class);
 
 describe('authorization', function (): void {
     it('rejects guests', function (): void {

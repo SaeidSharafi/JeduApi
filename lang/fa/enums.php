@@ -355,4 +355,38 @@ return [
         'available'   => 'در دسترس',
         'unavailable' => 'غیرقابل دسترس',
     ],
+    'ImportIdentityKeyEnum' => [
+        'phone' => 'شماره همراه',
+        'email' => 'رایانامه',
+    ],
+    'ImportRowActionEnum' => [
+        'create' => 'ایجاد',
+        'update' => 'به‌روزرسانی',
+    ],
+    'ImportRowStatusEnum' => [
+        'valid'   => 'معتبر',
+        'invalid' => 'نامعتبر',
+    ],
+    'ImportRunStatusEnum' => [
+        'preview_ready'                    => 'پیش‌نمایش آماده',
+        'processing'                       => 'در حال پردازش',
+        'completed'                        => 'تکمیل شده',
+        'completed_with_provider_failures' => 'تکمیل شده با خطای سرویس‌دهنده',
+    ],
+    'ProviderOutcomeStatusEnum' => [
+        'queued'           => 'در صف',
+        'processing'       => 'در حال پردازش',
+        'succeeded'        => 'موفق',
+        'failed'           => 'ناموفق',
+        'retryable_failed' => 'ناموفق، قابل تلاش دوباره',
+    ],
+    'SpreadsheetResourceEnum' => [
+        'users' => 'کاربران',
+    ],
+    'UserProvisioningProviderEnum' => [
+        'moodle'   => 'مودل',
+        'ims'      => 'IMS',
+        'niliroom' => 'نیلی‌روم',
+        'skyroom'  => 'اسکای‌روم',
+    ],
 ];

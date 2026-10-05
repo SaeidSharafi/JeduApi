@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\ImportExport;
 
 use App\Enums\ImportExport\ImportRunStatusEnum;
+use App\Enums\ImportExport\ProviderOutcomeStatusEnum;
 use App\Enums\ImportExport\UserProvisioningProviderEnum;
 use App\Models\ImportRun;
 use App\Models\ImportRunRow;
@@ -37,11 +38,8 @@ final readonly class BuildImportErrorReportAction
             $records = $this->records($run, $rows->all());
 
             if ($records === []) {
-                $oldPath = $run->error_report_path;
+                $this->deletePreviousReport($run);
                 $run->update(['error_report_path' => null, 'error_report_fingerprint' => null]);
-                if ($oldPath !== null) {
-                    DB::afterCommit(static fn () => Storage::disk(self::DISK)->delete($oldPath));
-                }
 
                 return null;
             }
@@ -53,6 +51,8 @@ final readonly class BuildImportErrorReportAction
                 && $disk->exists($run->error_report_path)) {
                 return $run->error_report_path;
             }
+
+            $this->deletePreviousReport($run);
 
             $path          = "imports/{$run->uuid}/errors-{$fingerprint}.xlsx";
             $temporaryPath = tempnam(sys_get_temp_dir(), 'import-errors-');
@@ -66,11 +66,7 @@ final readonly class BuildImportErrorReportAction
                 if ($contents === false || ! $disk->put($path, $contents, 'private')) {
                     throw new RuntimeException('Could not store the import error report.');
                 }
-                $oldPath = $run->error_report_path;
                 $run->update(['error_report_path' => $path, 'error_report_fingerprint' => $fingerprint]);
-                if ($oldPath !== null && $oldPath !== $path) {
-                    DB::afterCommit(static fn () => $disk->delete($oldPath));
-                }
             } catch (Throwable $exception) {
                 $disk->delete($path);
                 throw $exception;
@@ -80,6 +76,19 @@ final readonly class BuildImportErrorReportAction
 
             return $path;
         });
+    }
+
+    private function deletePreviousReport(ImportRun $run): void
+    {
+        $path = $run->error_report_path;
+        if ($path === null) {
+            return;
+        }
+
+        $disk = Storage::disk(self::DISK);
+        if ($disk->exists($path) && ! $disk->delete($path)) {
+            throw new RuntimeException('Could not delete the previous import error report.');
+        }
     }
 
     /** @param list<ImportRunRow> $rows
@@ -108,7 +117,7 @@ final readonly class BuildImportErrorReportAction
                 continue;
             }
             foreach ($row->providers ?? [] as $provider => $outcome) {
-                if (! in_array($outcome['status'] ?? null, ['failed', 'retryable_failed'], true)) {
+                if (! (ProviderOutcomeStatusEnum::tryFrom($outcome['status'] ?? '')?->isFailure() ?? false)) {
                     continue;
                 }
                 $records[] = [

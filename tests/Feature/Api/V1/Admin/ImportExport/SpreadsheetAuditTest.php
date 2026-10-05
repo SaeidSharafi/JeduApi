@@ -177,3 +177,33 @@ it('audits preview approval replay and exports once with allowlisted spreadsheet
         ->not->toContain('arbitrary-query-secret')
         ->not->toContain('signature=');
 });
+
+it('audits replay when another approval commits after the request begins', function (): void {
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_APPROVE]);
+    $runId = postImportPreview($this, userImportFile([userImportRow()]))->json('data.run_id');
+    AdminActionLog::query()->delete();
+    $middleware = new class
+    {
+        public function handle(Illuminate\Http\Request $request, Closure $next): Symfony\Component\HttpFoundation\Response
+        {
+            app(App\Actions\Admin\ImportExport\ApproveImportRunAction::class)->handle(
+                $request->route('resource'), $request->route('run'),
+                App\Data\Admin\ImportExport\ImportApprovalRequestData::from([]),
+            );
+
+            return $next($request);
+        }
+    };
+    $this->app->instance('test.competing-import-approval', $middleware);
+    $router = $this->app->make('router');
+    $router->aliasMiddleware('competing-import-approval', 'test.competing-import-approval');
+    $router->getRoutes()->getByName('api.v1.admin.imports.approve')->middleware('competing-import-approval');
+
+    postImportApproval($this, $runId)->assertSuccessful();
+
+    $log = AdminActionLog::query()->sole();
+    expect($log->metadata['request_outcome'])->toBe('approval_replay')
+        ->and($log->metadata['approval_replay'])->toBeTrue()
+        ->and($log->metadata['created_count'])->toBe(1);
+    expect(User::query()->where('phone', '09123456789')->count())->toBe(1);
+});

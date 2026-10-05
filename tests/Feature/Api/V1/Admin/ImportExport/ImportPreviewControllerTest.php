@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\ImportExport\CreateImportPreviewAction;
-use App\Data\ImportExport\ImportRowResult;
 use App\Enums\ImportExport\ImportIdentityKeyEnum;
 use App\Enums\ImportExport\ImportRowActionEnum;
 use App\Enums\ImportExport\ImportRowStatusEnum;
@@ -14,24 +13,11 @@ use App\Enums\User\GenderEnum;
 use App\Models\ImportRun;
 use App\Models\ImportRunRow;
 use App\Models\User;
-use App\Services\ImportExport\HeadingNormalizer;
-use App\Services\ImportExport\ImportPreviewEngine;
-use App\Services\ImportExport\Resources\UserImportResource;
-use App\Services\ImportExport\SpreadsheetImportReader;
-use App\Services\ImportExport\SpreadsheetResourceRegistry;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
-covers([
-    CreateImportPreviewAction::class,
-    HeadingNormalizer::class,
-    ImportPreviewEngine::class,
-    ImportRowResult::class,
-    SpreadsheetImportReader::class,
-    SpreadsheetResourceRegistry::class,
-    UserImportResource::class,
-]);
+covers(CreateImportPreviewAction::class);
 
 beforeEach(function (): void {
     Storage::fake('local');

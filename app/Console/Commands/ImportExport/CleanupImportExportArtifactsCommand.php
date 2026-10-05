@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\ImportExport;
 
 use App\Enums\ImportExport\ImportRunStatusEnum;
+use App\Enums\ImportExport\ProviderOutcomeStatusEnum;
 use App\Enums\ImportExport\SpreadsheetResourceEnum;
 use App\Enums\ImportExport\UserProvisioningProviderEnum;
 use App\Models\ImportExportArtifact;
@@ -82,7 +83,7 @@ final class CleanupImportExportArtifactsCommand extends Command
                             continue;
                         }
                         $status = $outcome['status'] ?? null;
-                        if (! in_array($status, ['queued', 'processing', 'succeeded', 'failed', 'retryable_failed'], true)) {
+                        if (ProviderOutcomeStatusEnum::tryFrom($status ?? '') === null) {
                             continue;
                         }
                         $safeProviders[$provider] = [

@@ -7,6 +7,7 @@ namespace App\Actions\Admin\ImportExport;
 use App\Data\Admin\ImportExport\ImportRunData;
 use App\Data\Admin\ImportExport\ImportRunRowData;
 use App\Data\Admin\ImportExport\ImportRunSummaryData;
+use App\Enums\ImportExport\ProviderOutcomeStatusEnum;
 use App\Models\ImportRun;
 use App\Services\ImportExport\SpreadsheetResourceRegistry;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,7 @@ final class GetImportRunAction
             foreach ($row->providers ?? [] as $provider => $outcome) {
                 $providers[$provider] = ['status' => $outcome['status'], 'message' => $expired ? null : ($outcome['message'] ?? null)];
                 $successes += (int) ($outcome['status'] === 'succeeded');
-                $failures  += (int) in_array($outcome['status'], ['failed', 'retryable_failed'], true);
+                $failures  += (int) ProviderOutcomeStatusEnum::from($outcome['status'])->isFailure();
                 $retryable += (int) ($outcome['status'] === 'retryable_failed');
             }
             $rows[] = new ImportRunRowData(

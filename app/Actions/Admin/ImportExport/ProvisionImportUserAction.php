@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\ImportExport;
 
 use App\Enums\ImportExport\ImportRunStatusEnum;
+use App\Enums\ImportExport\ProviderOutcomeStatusEnum;
 use App\Enums\ImportExport\UserProvisioningProviderEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
@@ -32,7 +33,7 @@ final readonly class ProvisionImportUserAction
         $idempotencyKey = 'import-user:'.$row->local_resource_id.':'.$provider->value;
         Cache::lock($idempotencyKey, 75)->block(2, function () use ($row, $provider, $idempotencyKey): void {
             $row->refresh();
-            if (! $row->is_valid || $row->importRun->approved_at === null || ! in_array($row->providers[$provider->value]['status'] ?? null, ['queued', 'processing'], true)) {
+            if (! $row->is_valid || $row->importRun->approved_at === null || ! (ProviderOutcomeStatusEnum::tryFrom($row->providers[$provider->value]['status'] ?? '')?->isPending() ?? false)) {
                 return;
             }
             $user    = User::query()->findOrFail($row->local_resource_id);
@@ -86,7 +87,7 @@ final readonly class ProvisionImportUserAction
         DB::transaction(function () use ($row, $provider, $exception): void {
             ImportRun::query()->lockForUpdate()->findOrFail($row->import_run_id);
             $row->refresh();
-            if (! in_array($row->providers[$provider->value]['status'] ?? null, ['queued', 'processing'], true)) {
+            if (! (ProviderOutcomeStatusEnum::tryFrom($row->providers[$provider->value]['status'] ?? '')?->isPending() ?? false)) {
                 return;
             }
             $retryable = $this->providers->resolve($provider)->canReplay()
@@ -109,8 +110,8 @@ final readonly class ProvisionImportUserAction
             $pending = $failed = false;
             foreach ($run->rows()->pluck('providers') as $providerOutcomes) {
                 foreach ($providerOutcomes ?? [] as $outcome) {
-                    $pending = $pending || in_array($outcome['status'], ['queued', 'processing'], true);
-                    $failed  = $failed  || in_array($outcome['status'], ['failed', 'retryable_failed'], true);
+                    $pending = $pending || ProviderOutcomeStatusEnum::from($outcome['status'])->isPending();
+                    $failed  = $failed  || ProviderOutcomeStatusEnum::from($outcome['status'])->isFailure();
                 }
             }
             $status = $pending ? ImportRunStatusEnum::PROCESSING : ($failed ? ImportRunStatusEnum::COMPLETED_WITH_PROVIDER_FAILURES : ImportRunStatusEnum::COMPLETED);

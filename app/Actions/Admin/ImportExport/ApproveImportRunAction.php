@@ -11,10 +11,12 @@ use App\Data\Admin\ImportExport\ImportApprovalSummaryData;
 use App\Data\ImportExport\ImportRowResult;
 use App\Enums\ImportExport\ImportRowActionEnum;
 use App\Enums\ImportExport\ImportRunStatusEnum;
+use App\Enums\ImportExport\ProviderOutcomeStatusEnum;
 use App\Jobs\Provisioning\ProvisionImportUserProviderJob;
 use App\Models\ImportRun;
 use App\Models\ImportRunRow;
 use App\Services\ImportExport\ImportPreviewEngine;
+use App\Services\ImportExport\SpreadsheetAuditContext;
 use App\Services\ImportExport\SpreadsheetResourceRegistry;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -30,6 +32,7 @@ final readonly class ApproveImportRunAction
     public function __construct(
         private SpreadsheetResourceRegistry $registry,
         private ImportPreviewEngine $engine,
+        private SpreadsheetAuditContext $auditContext,
     ) {}
 
     public function handle(string $resource, string $runUuid, ImportApprovalRequestData $data): ImportApprovalData
@@ -40,6 +43,8 @@ final readonly class ApproveImportRunAction
                 ->where('resource', $resource)
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            $this->auditContext->recordApprovalState($run->approved_at !== null);
 
             if ($run->approved_at !== null) {
                 return $this->present($run);
@@ -85,7 +90,7 @@ final readonly class ApproveImportRunAction
                     if (($result->data['provision_'.$provider->value] ?? false) !== true) {
                         continue;
                     }
-                    $providers[$provider->value] = ['status' => 'queued', 'message' => null, 'attempts' => 0];
+                    $providers[$provider->value] = ['status' => ProviderOutcomeStatusEnum::QUEUED->value, 'message' => null, 'attempts' => 0];
                     $queued++;
                     DB::afterCommit(static function () use ($storedRow, $provider): void {
                         ProvisionImportUserProviderJob::dispatch($storedRow->id, $provider);

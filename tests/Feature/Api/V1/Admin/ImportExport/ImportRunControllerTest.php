@@ -231,3 +231,53 @@ it('reports completion after the account job succeeds and does not create the ac
         ->assertJsonPath('data.summary.provider_success_count', 1)
         ->assertJsonPath('data.rows.0.providers.moodle', ['status' => 'succeeded', 'message' => null]);
 });
+
+it('preserves a report reference after deletion fails and retries safely', function (bool $removeErrors): void {
+    Storage::fake('local');
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_RESULTS]);
+    $runId = postImportPreview($this, userImportFile([userImportRow(['first_name' => null])]))->json('data.run_id');
+    $this->getJson('/api/v1/admin/users/import/'.$runId)->assertJsonPath('data.error_report.available', true);
+    $run            = App\Models\ImportRun::query()->where('uuid', $runId)->firstOrFail();
+    $oldPath        = $run->error_report_path;
+    $oldFingerprint = $run->error_report_fingerprint;
+    $row            = $run->rows()->sole();
+    $row->update(['is_valid' => ! $removeErrors ? false : true, 'errors' => $removeErrors ? [] : [
+        ['field' => 'phone', 'code' => 'invalid', 'message' => 'Invalid phone'],
+    ]]);
+    $root    = Storage::disk('local')->path('');
+    $adapter = new class($root) extends League\Flysystem\Local\LocalFilesystemAdapter
+    {
+        public bool $failDeletion = true;
+
+        public function delete(string $path): void
+        {
+            if ($this->failDeletion) {
+                throw League\Flysystem\UnableToDeleteFile::atLocation($path);
+            }
+
+            parent::delete($path);
+        }
+    };
+    Storage::set('local', new Illuminate\Filesystem\FilesystemAdapter(
+        new League\Flysystem\Filesystem($adapter), $adapter, ['root' => $root],
+    ));
+
+    $this->getJson('/api/v1/admin/users/import/'.$runId)->assertSuccessful()
+        ->assertJsonPath('data.error_report.available', false);
+
+    expect($run->fresh()->error_report_path)->toBe($oldPath)
+        ->and($run->fresh()->error_report_fingerprint)->toBe($oldFingerprint);
+    Storage::disk('local')->assertExists($oldPath);
+    $adapter->failDeletion = false;
+
+    $this->getJson('/api/v1/admin/users/import/'.$runId)->assertSuccessful()
+        ->assertJsonPath('data.error_report.available', ! $removeErrors);
+
+    Storage::disk('local')->assertMissing($oldPath);
+    if ($removeErrors) {
+        expect($run->fresh()->error_report_path)->toBeNull();
+    } else {
+        expect($run->fresh()->error_report_path)->not->toBe($oldPath);
+        Storage::disk('local')->assertExists($run->fresh()->error_report_path);
+    }
+})->with(['replacement' => false, 'removal' => true]);
