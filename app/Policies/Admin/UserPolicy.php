@@ -13,6 +13,11 @@ final class UserPolicy
 {
     use HandlesAuthorization;
 
+    public function export(Staff $staff): bool
+    {
+        return $staff->can(PermissionEnum::USER_EXPORT->value);
+    }
+
     public function viewAny(Staff $staff): bool
     {
         return $staff->can(PermissionEnum::USER_VIEW_ANY->value);

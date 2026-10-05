@@ -86,6 +86,7 @@ enum PermissionEnum: string
     case HOME_PAGE_BLOCK_UPDATE                   = 'home_page_blocks.update';
     case HOME_PAGE_BLOCK_VIEW                     = 'home_page_blocks.view';
     case HOME_PAGE_BLOCK_VIEW_ANY                 = 'home_page_blocks.view_any';
+    case USER_EXPORT                              = 'users.export';
     case IMPORT_APPROVE                           = 'imports.approve';
     case IMPORT_PREVIEW                           = 'imports.preview';
     case IMPORT_RESULTS                           = 'imports.results';

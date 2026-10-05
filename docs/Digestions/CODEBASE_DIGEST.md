@@ -4,7 +4,7 @@
 
 Headless Laravel API for educational commerce. Admin and shop interfaces share Actions/Services. Controllers delegate business logic; `app/Data/` uses `spatie/laravel-data` DTOs for request/response contracts. API responses use `apiResponse()`. Admin authenticates staff; shop authenticates customers through separate guards.
 
-Admin spreadsheet imports enter through `app/Actions/Admin/ImportExport/`: preview, explicit atomic local approval, post-commit standalone provider-account jobs, and run polling. Account capabilities are separate from Enrollment provisioning. The [core logic digest](DIGEST_CORE_LOGIC.md#spreadsheet-importexport-engine-appservicesimportexport) owns this workflow; [API interfaces](DIGEST_API_INTERFACES.md#importexport-controllers-apphttpcontrollersapiadminimportexport) owns request/result contracts.
+Admin spreadsheet imports and private User exports enter through `app/Actions/Admin/ImportExport/`: preview, explicit atomic local approval, post-commit standalone provider-account jobs, run polling, and synchronous filtered export generation/authenticated download. `UserQueryDefinition` shares list/export filters and deterministic ordering. Account capabilities are separate from Enrollment provisioning. The [core logic digest](DIGEST_CORE_LOGIC.md#spreadsheet-importexport-engine-appservicesimportexport) owns this workflow; [API interfaces](DIGEST_API_INTERFACES.md#importexport-controllers-apphttpcontrollersapiadminimportexport) owns request/result contracts.
 
 Catalog separates content (`Course`, `Seminar`, `DigitalAsset`, `Bundle`), commercial `Product`, and buyable `ProductDeliveryOption`. Checkout creates orders with purchase snapshots; payment and enrollment provisioning have separate lifecycles.
 

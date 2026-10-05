@@ -14,11 +14,9 @@ use App\Data\Admin\User\UserListItemData;
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\ImportExport\UserQueryDefinition;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
-use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\QueryBuilder;
 use Throwable;
 
 /**
@@ -47,40 +45,10 @@ final class UserController extends Controller
      * @responseFile 200 resources/responses/admin/user/index.json
      * @responseFile 403 resources/responses/403.json
      */
-    public function index(): ApiResponseInterface
+    public function index(UserQueryDefinition $query): ApiResponseInterface
     {
         Gate::authorize('viewAny', User::class);
-        $user = QueryBuilder::for(User::class)
-            ->allowedFilters([
-                AllowedFilter::callback('name', function ($query, $value): void {
-                    $query->whereRaw("concat(first_name, ' ', last_name) like ?", '%'.$value.'%');
-                }),
-                AllowedFilter::partial('email'),
-                AllowedFilter::partial('phone'),
-                AllowedFilter::partial('civil_id'),
-                AllowedFilter::exact('wallet_status', 'wallet.status'),
-                AllowedFilter::exact('civil_id_type'),
-                AllowedFilter::callback('date_of_birth_from',
-                    function (Builder $query, $value): void {
-                        $query->whereJalaiDate('date_of_birth', '>=', $value);
-                    },
-                ),
-                AllowedFilter::callback('date_of_birth_to',
-                    function (Builder $query, $value): void {
-                        $query->whereJalaiDate('date_of_birth', '<=', $value);
-                    },
-                ),
-            ])
-            ->allowedSorts([
-                'first_name',
-                'last_name',
-                'email',
-                'phone',
-                'civil_id',
-                'civil_id_type',
-                'date_of_birth',
-            ])
-            ->with('wallet')
+        $user = $query->query()
             ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
