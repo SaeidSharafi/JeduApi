@@ -44,7 +44,8 @@ it('redirects customers to the order details page when the payment is verified',
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id));
+    $response->assertRedirect(gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id)
+        ."?status=successful&payment_id={$payment->uuid}");
 })->group('payment');
 
 it('redirects customers to the order details page when the payment verification fails', function (): void {
@@ -67,7 +68,8 @@ it('redirects customers to the order details page when the payment verification 
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id));
+    $response->assertRedirect(gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id)
+        ."?status=failed&payment_id={$payment->uuid}&error_code=PAYMENT_FAILED&payment={$payment->uuid}&error=PAYMENT_FAILED");
 })->group('payment');
 
 it('redirects customers to the wallet topup details page when the payment is verified', function (): void {
@@ -90,7 +92,8 @@ it('redirects customers to the wallet topup details page when the payment is ver
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(gatewayCallbackControllerRedirect(config('payments.redirect.topup'), $payment->uuid));
+    $response->assertRedirect(gatewayCallbackControllerRedirect(config('payments.redirect.topup'), $payment->uuid)
+        ."?status=successful&payment_id={$payment->uuid}");
 })->group('payment');
 
 it('redirects customers to the order details page with an error when verification throws', function (): void {
@@ -115,7 +118,7 @@ it('redirects customers to the order details page with an error when verificatio
 
     $response->assertRedirect(
         gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id)
-        ."?payment={$payment->uuid}&error=UNKNOWN_ERROR"
+        ."?status=unknown&payment_id={$payment->uuid}&error_code=UNKNOWN_ERROR&payment={$payment->uuid}&error=UNKNOWN_ERROR"
     );
 })->group('payment');
 
@@ -144,6 +147,6 @@ it('redirects customers to the order details page with an error code when gatewa
 
     $response->assertRedirect(
         gatewayCallbackControllerRedirect(config('payments.redirect.order'), $payment->order->increment_id)
-        ."?payment={$payment->uuid}&error=DUPLICATE_PAYMENT"
+        ."?status=failed&payment_id={$payment->uuid}&error_code=DUPLICATE_PAYMENT&payment={$payment->uuid}&error=DUPLICATE_PAYMENT"
     );
 })->group('payment');

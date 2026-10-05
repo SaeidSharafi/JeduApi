@@ -1,0 +1,20 @@
+{
+  "message": "Payment completed successfully.",
+  "data": {
+    "redirect_url": null,
+    "redirect_data": null,
+    "redirect_method": "GET",
+    "requires_redirect": false,
+    "payment": {
+      "id": 1,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "amount": 900000,
+      "method": "wallet",
+      "status": "completed",
+      "purpose": "order",
+      "last_gateway_reference": null,
+      "attempt_count": 1
+    }
+  },
+  "metadata": {}
+}

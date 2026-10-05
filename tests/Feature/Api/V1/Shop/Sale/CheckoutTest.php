@@ -25,6 +25,61 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+test('gateway initiation failure returns the saved order and payment in data with 502', function (): void {
+    $this->customer();
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    $soap = Mockery::mock(SoapClient::class);
+    $soap->shouldReceive('bpPayRequest')->andReturn((object) ['return' => '12']);
+    $this->mock(App\Services\Payment\SoapClientFactory::class)
+        ->shouldReceive('create')->andReturn($soap);
+
+    $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => 'mellat_gateway']);
+
+    $response->assertStatus(502)
+        ->assertJsonPath('data.status', 'failed')
+        ->assertJsonPath('data.error_code', 'MELLAT_ERROR_12')
+        ->assertJsonPath('data.can_retry', true)
+        ->assertJsonMissingPath('data.order')
+        ->assertJsonMissingPath('data.payment')
+        ->assertJsonMissingPath('data.requires_redirect')
+        ->assertJsonMissingPath('data.redirect_url');
+    $order = Order::where('customer_id', $this->user->id)->sole();
+    $response->assertJsonPath('data.order_id', $order->increment_id)
+        ->assertJsonPath('data.payment_id', $order->payments()->sole()->uuid);
+    expect($this->user->cart()->exists())->toBeFalse();
+    expect($order->status)->toBe(OrderStatusEnum::PENDING);
+});
+
+test('free checkout retains order recovery data when completion throws after order creation', function (): void {
+    $this->customer();
+    $this->deliveryOption->update(['price' => 0]);
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+    Event::listen(App\Events\PaymentCompletedEvent::class, function (): void {
+        throw new RuntimeException('internal completion details must not be exposed');
+    });
+
+    $response = postJson(route('api.v1.shop.checkout'));
+
+    $response->assertInternalServerError()
+        ->assertJsonPath('data.status', 'unknown')
+        ->assertJsonPath('data.payment_id', null)
+        ->assertJsonPath('data.can_retry', false)
+        ->assertJsonPath('data.error_code', 'UNKNOWN_ERROR')
+        ->assertDontSee('internal completion details must not be exposed');
+    $order = Order::where('customer_id', $this->user->id)->sole();
+    $response->assertJsonPath('data.order_id', $order->increment_id);
+    expect($order->payments()->exists())->toBeFalse();
+    expect($this->user->cart()->exists())->toBeFalse();
+});
+
 beforeEach(function (): void {
     Queue::fake([
         ProvisionEnrollmentProviderJob::class,
@@ -92,6 +147,12 @@ describe('Checkout Success', function (): void {
             ],
         ]);
         $response->assertCreated()
+            ->assertJsonPath('data.requires_redirect', false)
+            ->assertJsonMissingPath('data.status')
+            ->assertJsonMissingPath('data.error_code')
+            ->assertJsonMissingPath('data.can_retry')
+            ->assertJsonMissingPath('data.message')
+            ->assertJsonMissingPath('data.payment')
             ->assertJsonStructure([
                 'message',
                 'data' => [
@@ -511,8 +572,12 @@ test('checkout fails with insufficient wallet balance', function (): void {
         'payment_method' => 'wallet',
     ]);
 
-    $response->assertStatus(422)
-        ->assertJsonPath('metadata.error_code', 'INSUFFICIENT_WALLET_BALANCE');
+    $response->assertConflict()
+        ->assertJsonPath('data.status', 'failed')
+        ->assertJsonPath('data.error_code', 'INSUFFICIENT_WALLET_BALANCE')
+        ->assertJsonPath('data.can_retry', true)
+        ->assertJsonMissingPath('metadata.error_code')
+        ->assertJsonMissingPath('metadata.order_id');
 
     $this->assertDatabaseHas(Order::class, [
         'customer_id' => $this->user->id,

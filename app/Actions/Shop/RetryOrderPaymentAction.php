@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Actions\Shop;
 
 use App\Actions\Payment\PreparePendingPaymentAction;
+use App\Actions\Shop\Payment\ProcessShopPaymentAction;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -19,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 final readonly class RetryOrderPaymentAction
 {
     public function __construct(
-        private PaymentProcessorFactory $processorFactory,
+        private ProcessShopPaymentAction $processShopPayment,
     ) {}
 
     /**
@@ -84,9 +84,7 @@ final readonly class RetryOrderPaymentAction
             );
         });
 
-        $processor = $this->processorFactory->make($paymentMethod);
-
-        return $processor->process($payment);
+        return $this->processShopPayment->handle($payment);
     }
 
     /**

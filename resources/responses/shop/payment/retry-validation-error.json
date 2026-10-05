@@ -1,0 +1,16 @@
+{
+    "message": "Validation error.",
+    "data": {
+        "status": "failed",
+        "order_id": "100000001",
+        "payment_id": null,
+        "error_code": "PAYMENT_VALIDATION_FAILED",
+        "can_retry": false
+    },
+    "metadata": {},
+    "errors": {
+        "order": [
+            "This order is not eligible for payment retry."
+        ]
+    }
+}

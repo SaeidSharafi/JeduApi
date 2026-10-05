@@ -89,12 +89,13 @@ final class ApiResponseService
      * Generic error response (Default: 400 Bad Request)
      *
      * @param  array<string, string>  $headers
+     * @param  array<string, mixed>  $metadata
      */
-    public function error(string $message = '', int $status = HttpStatus::HTTP_BAD_REQUEST, mixed $errors = null, array $headers = []): ApiResponseInterface
+    public function error(string $message = '', int $status = HttpStatus::HTTP_BAD_REQUEST, mixed $errors = null, array $headers = [], mixed $data = null, array $metadata = []): ApiResponseInterface
     {
         $message = $message ?: (string) __('messages.error');
 
-        return new ApiFailResponse($message, $errors, $status, [], $headers);
+        return new ApiFailResponse($message, $errors, $status, $metadata, $headers, $data);
     }
 
     /**
@@ -113,12 +114,12 @@ final class ApiResponseService
     /**
      * @param  array<string, mixed>|null  $metadata
      */
-    public function validationErrors(mixed $errors, ?string $message = null, ?array $metadata = []): ApiResponseInterface
+    public function validationErrors(mixed $errors, ?string $message = null, ?array $metadata = [], mixed $data = null): ApiResponseInterface
     {
         $errorPayload = ($errors instanceof Validator) ? $errors->errors()->toArray() : $errors;
         $message ??= (string) __('messages.validation_error');
 
-        return new ApiFailResponse($message, $errorPayload, HttpStatus::HTTP_UNPROCESSABLE_ENTITY, $metadata);
+        return new ApiFailResponse($message, $errorPayload, HttpStatus::HTTP_UNPROCESSABLE_ENTITY, $metadata, data: $data);
     }
 
     /**

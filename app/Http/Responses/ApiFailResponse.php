@@ -20,7 +20,8 @@ final readonly class ApiFailResponse implements ApiResponseInterface
         private mixed $errors,
         private int $code = Response::HTTP_BAD_REQUEST,
         private array $metadata = [],
-        private array $headers = []
+        private array $headers = [],
+        private mixed $data = null,
     ) {}
 
     /**
@@ -35,6 +36,7 @@ final readonly class ApiFailResponse implements ApiResponseInterface
                 'message'  => $this->message,
                 'errors'   => $this->errors,
                 'metadata' => $this->metadata,
+                ...($this->data === null ? [] : ['data' => $this->data]),
             ],
             $this->code,
             $this->headers

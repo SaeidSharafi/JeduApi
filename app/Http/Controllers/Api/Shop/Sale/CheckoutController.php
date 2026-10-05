@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Sale;
 
 use App\Actions\Shop\CreateOrderFromCartAction;
+use App\Actions\Shop\Payment\BuildPaymentResponseAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Cart\CheckoutData;
-use App\Data\Shop\Cart\CheckoutResponseData;
-use App\Data\Shop\Student\Order\OrderData;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;
 
@@ -31,7 +30,7 @@ final class CheckoutController extends Controller
      * - **Online Gateway:** Returns redirect_url to payment gateway, order pending until callback verification
      *
      * The cart items are validated for availability and capacity before the order is created.
-     * Upon successful checkout, the user's cart is automatically deleted.
+     * Once the order is saved, the cart is deleted. Payment-stage failures return the saved order identifier in data.
      *
      * **Multi-Step Payment Gateways:**
      * When using payment methods that require redirect (e.g., mellat_gateway), the response will include:
@@ -39,23 +38,16 @@ final class CheckoutController extends Controller
      * - `redirect_method`: HTTP method to use (GET or POST)
      * - `redirect_data`: Optional form data to submit (for POST redirects)
      *
-     * @responseFile resources/responses/shop/checkout/show.json
-     *
-     * @response 422 scenario="insufficient wallet balance" {
-     *   "message": "Validation error.",
-     *   "errors": {
-     *     "wallet_balance": "Insufficient wallet balance."
-     *    },
-     *   "metadata": {
-     *     "error_code": "INSUFFICIENT_WALLET_BALANCE",
-     *     "available_balance": 500000,
-     *     "required_balance": 1000000,
-     *     "shortfall": 500000,
-     *     "order_id": "100001"
-     *   }
-     * }
+     * @responseFile 201 resources/responses/shop/checkout/show.json
+     * @responseFile 201 scenario="payment completed without gateway redirect" resources/responses/shop/payment/checkout-payment-successful.json
+     * @responseFile 422 scenario="validation rejected before payment processing" resources/responses/shop/payment/payment-validation-error.json
+     * @responseFile 409 scenario="saved order payment rejected" resources/responses/shop/payment/order-payment-conflict.json
+     * @responseFile 502 scenario="gateway initiation rejected" resources/responses/shop/payment/order-gateway-rejected.json
+     * @responseFile 504 scenario="gateway timeout; outcome unknown" resources/responses/shop/payment/order-gateway-timeout.json
+     * @responseFile 500 scenario="unexpected processing failure with saved recovery data" resources/responses/shop/payment/order-processing-error.json
+     * @responseFile 500 scenario="free order completion rolled back; order saved" resources/responses/shop/payment/free-order-processing-error.json
      */
-    public function __invoke(CheckoutData $data, CreateOrderFromCartAction $action): ApiResponseInterface
+    public function __invoke(CheckoutData $data, CreateOrderFromCartAction $action, BuildPaymentResponseAction $responseAction): ApiResponseInterface
     {
         if (! auth('user')->check()) {
             throw ValidationException::withMessages([
@@ -65,23 +57,6 @@ final class CheckoutController extends Controller
 
         $result = $action->handle($data, auth()->user());
 
-        // Build response with order data and optional redirect information
-        $order     = $result->payment->order->fresh(['items.productDeliveryOption.product', 'standaloneItems.productDeliveryOption', 'bundlePurchases.components.enrollment', 'customer', 'payments.transactions']);
-        $orderData = OrderData::fromModel($order);
-
-        if ($result->redirect_url) {
-            // Multi-step payment requiring redirect
-            $responseData = CheckoutResponseData::withRedirect(
-                order: $orderData,
-                redirectUrl: $result->redirect_url,
-                redirectData: $result->redirect_data,
-                method: $result->redirect_method
-            );
-        } else {
-            // Single-step payment completed
-            $responseData = CheckoutResponseData::completed($orderData);
-        }
-
-        return apiResponse()->created($responseData);
+        return apiResponse()->created($responseAction->checkoutResponse($result), $responseAction->initiationMessage($result));
     }
 }

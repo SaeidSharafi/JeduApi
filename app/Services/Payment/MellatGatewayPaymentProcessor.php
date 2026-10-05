@@ -340,7 +340,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             $soap     = $this->soapClientFactory->create($this->getWsdlUrl());
             $response = $soap->bpPayRequest($params);
         } catch (SoapFault $e) {
-            throw new CustomValidationException(__('validation.custom.checkout.payment.gateway_connection_error'));
+            throw new CustomValidationException(__('validation.custom.checkout.payment.gateway_connection_error'), previous: $e);
         }
 
         // Extract result from response
@@ -354,7 +354,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         $statusCode = $parts[0] ?? null;
         $refId      = $parts[1] ?? null;
 
-        if ($statusCode !== '0' ) {
+        if ($statusCode !== '0') {
             // Error code returned instead of RefId
             throw new MellatException($statusCode);
         }

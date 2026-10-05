@@ -1,0 +1,12 @@
+{
+    "message": "An internal server error occurred. Please try again later.",
+    "data": {
+        "status": "unknown",
+        "order_id": null,
+        "payment_id": "550e8400-e29b-41d4-a716-446655440000",
+        "error_code": "UNKNOWN_ERROR",
+        "can_retry": false
+    },
+    "metadata": {},
+    "errors": null
+}

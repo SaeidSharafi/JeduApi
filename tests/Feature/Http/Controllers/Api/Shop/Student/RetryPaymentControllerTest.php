@@ -33,14 +33,18 @@ it('returns structured error when wallet balance is insufficient', function (): 
         ['payment_method' => PaymentMethodEnum::WALLET->value]
     );
 
-    $response->assertStatus(422);
+    $response->assertConflict()
+        ->assertJsonPath('data.status', 'failed')
+        ->assertJsonPath('data.error_code', 'INSUFFICIENT_WALLET_BALANCE')
+        ->assertJsonPath('data.can_retry', true)
+        ->assertJsonMissingPath('metadata.error_code')
+        ->assertJsonMissingPath('metadata.order_id');
     $response->assertJsonStructure([
         'message',
         'errors' => [
             'wallet_balance',
         ],
         'metadata' => [
-            'error_code',
             'available_balance',
             'required_balance',
             'shortfall',
@@ -52,7 +56,6 @@ it('returns structured error when wallet balance is insufficient', function (): 
             'wallet_balance' => __('validation.custom.insufficient_balance'),
         ],
         'metadata' => [
-            'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
             'available_balance' => 500000,
             'required_balance'  => 1000000,
             'shortfall'         => 500000,
@@ -80,7 +83,6 @@ it('processes payment successfully when wallet has sufficient balance', function
     $response->assertJsonStructure([
         'message',
         'data' => [
-            'message',
             'payment',
             'requires_redirect',
         ],
@@ -107,15 +109,19 @@ it('provides exact shortfall amount in error response', function (): void {
         ['payment_method' => PaymentMethodEnum::WALLET->value]
     );
 
-    $response->assertStatus(422);
+    $response->assertConflict()
+        ->assertJsonPath('data.status', 'failed')
+        ->assertJsonPath('data.error_code', 'INSUFFICIENT_WALLET_BALANCE')
+        ->assertJsonPath('data.can_retry', true)
+        ->assertJsonMissingPath('metadata.error_code')
+        ->assertJsonMissingPath('metadata.order_id');
 
     $response->assertJson([
-        'message' => __('messages.validation_error'),
+        'message' => __('validation.custom.insufficient_balance'),
         'errors'  => [
             'wallet_balance' => __('validation.custom.insufficient_balance'),
         ],
         'metadata' => [
-            'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
             'available_balance' => 750000,
             'required_balance'  => 1000000,
             'shortfall'         => 250000,
@@ -138,14 +144,18 @@ it('returns error when wallet balance is zero', function (): void {
         ['payment_method' => PaymentMethodEnum::WALLET->value]
     );
 
-    $response->assertStatus(422);
+    $response->assertConflict()
+        ->assertJsonPath('data.status', 'failed')
+        ->assertJsonPath('data.error_code', 'INSUFFICIENT_WALLET_BALANCE')
+        ->assertJsonPath('data.can_retry', true)
+        ->assertJsonMissingPath('metadata.error_code')
+        ->assertJsonMissingPath('metadata.order_id');
     $response->assertJson([
-        'message' => __('messages.validation_error'),
+        'message' => __('validation.custom.insufficient_balance'),
         'errors'  => [
             'wallet_balance' => __('validation.custom.insufficient_balance'),
         ],
         'metadata' => [
-            'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
             'available_balance' => 0,
             'required_balance'  => 1000000,
             'shortfall'         => 1000000,

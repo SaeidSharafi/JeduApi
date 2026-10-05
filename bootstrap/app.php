@@ -153,7 +153,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->renderable(function (ValidationException $e, Request $request) use ($isApiRequest): ?ApiResponseInterface {
             if ($isApiRequest($request)) {
                 // Use your specific macro for validation errors
-                return apiResponse()->validationErrors($e->errors());
+                return apiResponse()->validationErrors(
+                    $e->errors(),
+                    data: app(App\Actions\Shop\Payment\BuildPaymentResponseAction::class)->validationFailure($request, $e),
+                );
             }
 
             return null;

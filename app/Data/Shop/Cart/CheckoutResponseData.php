@@ -16,6 +16,7 @@ final class CheckoutResponseData extends Data
         public readonly ?array $redirect_data = null,
         #[In(['GET', 'POST'])]
         public readonly string $redirect_method = 'GET',
+        public readonly bool $requires_redirect = false,
     ) {}
 
     /**
@@ -44,7 +45,8 @@ final class CheckoutResponseData extends Data
             order: $order,
             redirect_url: $redirectUrl,
             redirect_data: $redirectData,
-            redirect_method: $method
+            redirect_method: $method,
+            requires_redirect: true,
         );
     }
 }

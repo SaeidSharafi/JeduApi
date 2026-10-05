@@ -8,14 +8,14 @@
       "method": "mellat_gateway",
       "status": "pending",
       "purpose": "wallet_topup",
-      "order_id": null
+      "last_gateway_reference": null,
+      "attempt_count": 0
     },
     "requires_redirect": true,
     "redirect_url": "https://gateway.mellat.ir/...",
     "redirect_data": {
       "RefId": "123456789"
     },
-    "redirect_method": "POST",
-    "message": "Redirecting to payment gateway..."
+    "redirect_method": "POST"
   }
 }

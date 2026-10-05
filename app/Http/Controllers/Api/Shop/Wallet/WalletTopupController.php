@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Wallet;
 
 use App\Actions\Payment\PreparePendingPaymentAction;
+use App\Actions\Shop\Payment\BuildPaymentResponseAction;
+use App\Actions\Shop\Payment\ProcessShopPaymentAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Wallet\WalletTopupRequestData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Http\Controllers\Controller;
-use App\Services\Payment\PaymentProcessorFactory;
 
 /**
  * @group Shop - Wallet
@@ -24,11 +25,16 @@ final class WalletTopupController extends Controller
      *
      * This endpoint allows an authenticated user to add funds to their wallet.
      *
-     * @responseFile resources/responses/shop/wallet/topup-result.json
+     * @responseFile 201 resources/responses/shop/wallet/topup-result.json
+     * @responseFile 422 scenario="validation rejected before payment processing" resources/responses/shop/payment/payment-validation-error.json
+     * @responseFile 502 scenario="gateway initiation rejected" resources/responses/shop/payment/topup-gateway-rejected.json
+     * @responseFile 504 scenario="gateway timeout; outcome unknown" resources/responses/shop/payment/topup-gateway-timeout.json
+     * @responseFile 500 scenario="unexpected processing failure with saved recovery data" resources/responses/shop/payment/topup-processing-error.json
      */
     public function topup(
         WalletTopupRequestData $data,
-        PaymentProcessorFactory $processorFactory,
+        ProcessShopPaymentAction $processAction,
+        BuildPaymentResponseAction $responseAction,
         PreparePendingPaymentAction $prepareAction,
     ): ApiResponseInterface {
         $user = auth()->user();
@@ -47,19 +53,8 @@ final class WalletTopupController extends Controller
             amount: $data->amount,
         );
 
-        // Process payment via the appropriate gateway
-        $processor = $processorFactory->make($method);
-        $result    = $processor->process($payment);
+        $result = $processAction->handle($payment);
 
-        return apiResponse()->created([
-            'payment'           => $result->payment,
-            'requires_redirect' => $result->requiresRedirect(),
-            'redirect_url'      => $result->redirect_url,
-            'redirect_data'     => $result->redirect_data,
-            'redirect_method'   => $result->redirect_method,
-            'message'           => $result->requiresRedirect()
-                ? __('messages.wallet.redirecting_to_gateway')
-                : __('messages.wallet.payment_pending_verification'),
-        ]);
+        return apiResponse()->created($responseAction->initiationResponse($result), $responseAction->initiationMessage($result));
     }
 }

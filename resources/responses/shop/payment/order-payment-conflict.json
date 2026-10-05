@@ -1,0 +1,18 @@
+{
+    "message": "Insufficient wallet balance for this transaction.",
+    "data": {
+        "status": "failed",
+        "order_id": "100000001",
+        "payment_id": "550e8400-e29b-41d4-a716-446655440000",
+        "error_code": "INSUFFICIENT_WALLET_BALANCE",
+        "can_retry": true
+    },
+    "metadata": {
+        "available_balance": 100000,
+        "required_balance": 900000,
+        "shortfall": 800000
+    },
+    "errors": {
+        "wallet_balance": "Insufficient wallet balance for this transaction."
+    }
+}

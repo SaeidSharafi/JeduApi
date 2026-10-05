@@ -1,0 +1,16 @@
+{
+    "message": "Validation error.",
+    "data": {
+        "status": "failed",
+        "order_id": null,
+        "payment_id": null,
+        "error_code": "PAYMENT_VALIDATION_FAILED",
+        "can_retry": false
+    },
+    "metadata": {},
+    "errors": {
+        "payment_method": [
+            "The selected payment method is invalid."
+        ]
+    }
+}

@@ -6,6 +6,7 @@ namespace App\Actions\Shop;
 
 use App\Actions\Admin\Order\CreateOrderAction;
 use App\Actions\Payment\CompleteFreeOrderPaymentAction;
+use App\Actions\Shop\Payment\ProcessShopPaymentAction;
 use App\Contracts\Payment\PendingPaymentPreparerContract;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
@@ -17,6 +18,7 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Product\BundleUnavailableReasonEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Exceptions\ShopPaymentProcessingException;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
@@ -28,6 +30,7 @@ use App\Services\Discounts\OrderCalculationService;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 use ValueError;
 
 final readonly class CreateOrderFromCartAction
@@ -40,6 +43,7 @@ final readonly class CreateOrderFromCartAction
         private CompleteFreeOrderPaymentAction $completeFreeOrderPayment,
         private PendingPaymentPreparerContract $preparePendingPayment,
         private BundleAvailabilityService $bundleAvailability,
+        private ProcessShopPaymentAction $processShopPayment,
     ) {}
 
     /**
@@ -202,15 +206,17 @@ final readonly class CreateOrderFromCartAction
     ): PaymentProcessResultData {
         // Handle free orders automatically with NO_PAYMENT
         if ($order->grand_total <= 0) {
-            return $this->createFreeOrderPayment($order, $user);
+            try {
+                return $this->createFreeOrderPayment($order, $user);
+            } catch (Throwable $exception) {
+                throw new ShopPaymentProcessingException(payment: null, cause: $exception, order: $order->fresh());
+            }
         }
 
         $paymentMethod ??= $this->resolvePaymentMethod($checkoutData);
 
         // Get the appropriate payment processor
-        $processor = $this->processorFactory->make($paymentMethod);
-
-        return $processor->process($payment);
+        return $this->processShopPayment->handle($payment);
     }
 
     /**

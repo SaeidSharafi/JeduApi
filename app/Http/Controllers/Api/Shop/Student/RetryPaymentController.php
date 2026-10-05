@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Student;
 
+use App\Actions\Shop\Payment\BuildPaymentResponseAction;
 use App\Actions\Shop\RetryOrderPaymentAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Student\Order\RetryOrderPaymentData;
@@ -24,12 +25,19 @@ final class RetryPaymentController extends Controller
      * with failed or incomplete payment attempts. The order must belong to the authenticated
      * user and have an outstanding balance.
      *
-     * @responseFile resources/responses/shop/order/retry-payment.json
+     * @responseFile 200 resources/responses/shop/order/retry-payment.json
+     * @responseFile 200 scenario="payment completed without gateway redirect" resources/responses/shop/payment/retry-payment-successful.json
+     * @responseFile 422 scenario="validation rejected before payment processing" resources/responses/shop/payment/retry-validation-error.json
+     * @responseFile 409 scenario="saved order payment rejected" resources/responses/shop/payment/order-payment-conflict.json
+     * @responseFile 502 scenario="gateway initiation rejected" resources/responses/shop/payment/order-gateway-rejected.json
+     * @responseFile 504 scenario="gateway timeout; outcome unknown" resources/responses/shop/payment/order-gateway-timeout.json
+     * @responseFile 500 scenario="unexpected processing failure with saved recovery data" resources/responses/shop/payment/order-processing-error.json
      */
     public function __invoke(
         string $incrementId,
         RetryOrderPaymentData $data,
-        RetryOrderPaymentAction $action
+        RetryOrderPaymentAction $action,
+        BuildPaymentResponseAction $responseAction,
     ): ApiResponseInterface {
         $user = Auth::guard('user')->user();
 
@@ -45,22 +53,6 @@ final class RetryPaymentController extends Controller
             amountToPay: $order->grand_total
         );
 
-        // Return response based on payment type
-        if ($result->requiresRedirect()) {
-            return apiResponse()->success([
-                'message'           => __('messages.payment.initiated'),
-                'payment'           => $result->payment,
-                'requires_redirect' => true,
-                'redirect_url'      => $result->redirect_url,
-                'redirect_data'     => $result->redirect_data,
-                'redirect_method'   => $result->redirect_method,
-            ]);
-        }
-
-        return apiResponse()->success([
-            'message'           => __('messages.payment.completed_successfully'),
-            'payment'           => $result->payment,
-            'requires_redirect' => false,
-        ]);
+        return apiResponse()->success($responseAction->initiationResponse($result), $responseAction->initiationMessage($result));
     }
 }

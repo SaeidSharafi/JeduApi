@@ -1,12 +1,12 @@
 {
-  "message": "Payment initiated. Please complete payment at the gateway.",
+  "message": "Payment completed successfully.",
   "data": {
     "order": {
       "id": 1,
       "increment_id": "100000001",
       "status": {
-        "value": "pending",
-        "label": "enums.OrderStatusEnum.pending"
+        "value": "completed",
+        "label": "Completed"
       },
       "customer_email": "customer@example.com",
       "customer_phone": "09123456789",
@@ -18,12 +18,12 @@
       "discount_amount": 100000,
       "tax_amount": 0,
       "grand_total": 900000,
-      "total_paid": 0,
-      "balance_due": 900000,
+      "total_paid": 900000,
+      "balance_due": 0,
       "currency_code": "IRR",
       "payment_status": {
-        "value": "pending",
-        "label": "Pending"
+        "value": "paid",
+        "label": "Paid"
       },
       "applied_coupon_code": null,
       "admin_notes": null,
@@ -97,12 +97,12 @@
           "uuid": "550e8400-e29b-41d4-a716-446655440000",
           "amount": 900000,
           "method": {
-            "value": "mellat_gateway",
-            "label": "Mellat gateway"
+            "value": "wallet",
+            "label": "Wallet"
           },
           "status": {
-            "value": "pending",
-            "label": "Pending"
+            "value": "completed",
+            "label": "Completed"
           },
           "purpose": {
             "value": "order",

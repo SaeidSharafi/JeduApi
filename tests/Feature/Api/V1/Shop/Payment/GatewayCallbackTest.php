@@ -48,7 +48,8 @@ describe('Gateway callback with wallet topup', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid)
+            ."?status=successful&payment_id={$payment->uuid}");
     })->group('payment', 'wallet');
 
     it('redirects to the topup details page for failed Mellat topup', function (): void {
@@ -69,7 +70,8 @@ describe('Gateway callback with wallet topup', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid)
+            ."?status=failed&payment_id={$payment->uuid}&error_code=PAYMENT_FAILED&payment={$payment->uuid}&error=PAYMENT_FAILED");
     })->group('payment', 'wallet');
 
     it('redirects to the topup details page for completed Digipay topup', function (): void {
@@ -96,7 +98,8 @@ describe('Gateway callback with wallet topup', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid)
+            ."?status=successful&payment_id={$payment->uuid}");
     })->group('payment', 'wallet');
 
     it('redirects to the topup details page for failed Digipay topup', function (): void {
@@ -123,7 +126,8 @@ describe('Gateway callback with wallet topup', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid)
+            ."?status=failed&payment_id={$payment->uuid}&error_code=PAYMENT_FAILED&payment={$payment->uuid}&error=PAYMENT_FAILED");
     })->group('payment', 'wallet');
 
 });
@@ -157,7 +161,8 @@ describe('Gateway callback amount mismatch', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid)
+            ."?status=failed&payment_id={$payment->uuid}&error_code=PAYMENT_FAILED&payment={$payment->uuid}&error=PAYMENT_FAILED");
     })->group('payment', 'wallet');
 
     it('handles Digipay amount mismatch via verify action', function (): void {
@@ -186,7 +191,8 @@ describe('Gateway callback amount mismatch', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid));
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.topup'), $payment->uuid)
+            ."?status=failed&payment_id={$payment->uuid}&error_code=PAYMENT_FAILED&payment={$payment->uuid}&error=PAYMENT_FAILED");
     })->group('payment', 'wallet');
 
 });
@@ -211,7 +217,8 @@ describe('Gateway callback with order payments', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.order'), $payment->order->increment_id));
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.order'), $payment->order->increment_id)
+            ."?status=successful&payment_id={$payment->uuid}");
     })->group('payment', 'wallet');
 
     it('redirects to the order details page for completed Digipay order payment', function (): void {
@@ -238,7 +245,8 @@ describe('Gateway callback with order payments', function (): void {
 
         $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.order'), $payment->order->increment_id));
+        $response->assertRedirect(gatewayCallbackRedirect(config('payments.redirect.order'), $payment->order->increment_id)
+            ."?status=successful&payment_id={$payment->uuid}");
     })->group('payment', 'wallet');
 
 });

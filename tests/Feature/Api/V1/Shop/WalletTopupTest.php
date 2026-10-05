@@ -69,7 +69,6 @@ describe('authenticated wallet topup', function (): void {
                 'redirect_url',
                 'redirect_data',
                 'redirect_method',
-                'message',
             ],
         ]);
         $response->assertJson([

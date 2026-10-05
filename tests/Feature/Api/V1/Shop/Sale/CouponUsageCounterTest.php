@@ -220,7 +220,7 @@ describe('Coupon usage counters move to order completion', function (): void {
         ])->assertRedirect(
             mb_rtrim(config('payments.redirect.shopdomain'), '/')
             .'/'.mb_trim(config('payments.redirect.order'), '/')
-            ."/{$response->json('data.order.increment_id')}"
+            ."/{$response->json('data.order.increment_id')}?status=failed&payment_id={$payment->uuid}&error_code=PAYMENT_FAILED&payment={$payment->uuid}&error=PAYMENT_FAILED"
         );
 
         assertDatabaseHas('orders', [
