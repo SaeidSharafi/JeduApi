@@ -38,7 +38,7 @@ final class CheckoutController extends Controller
      * - `redirect_method`: HTTP method to use (GET or POST)
      * - `redirect_data`: Optional form data to submit (for POST redirects)
      *
-     * @responseFile 201 resources/responses/shop/checkout/show.json
+     * @responseFile 201 scenario="gateway redirect required" resources/responses/shop/checkout/show.json
      * @responseFile 201 scenario="payment completed without gateway redirect" resources/responses/shop/payment/checkout-payment-successful.json
      * @responseFile 422 scenario="validation rejected before payment processing" resources/responses/shop/payment/payment-validation-error.json
      * @responseFile 409 scenario="saved order payment rejected" resources/responses/shop/payment/order-payment-conflict.json

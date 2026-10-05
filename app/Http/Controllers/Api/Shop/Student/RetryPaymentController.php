@@ -25,7 +25,7 @@ final class RetryPaymentController extends Controller
      * with failed or incomplete payment attempts. The order must belong to the authenticated
      * user and have an outstanding balance.
      *
-     * @responseFile 200 resources/responses/shop/order/retry-payment.json
+     * @responseFile 200 scenario="gateway redirect required" resources/responses/shop/order/retry-payment.json
      * @responseFile 200 scenario="payment completed without gateway redirect" resources/responses/shop/payment/retry-payment-successful.json
      * @responseFile 422 scenario="validation rejected before payment processing" resources/responses/shop/payment/retry-validation-error.json
      * @responseFile 409 scenario="saved order payment rejected" resources/responses/shop/payment/order-payment-conflict.json

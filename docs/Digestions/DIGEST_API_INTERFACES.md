@@ -22,7 +22,7 @@ Reference for uploaded-doc chat: routes, auth, documented request/response contr
 ## Admin API Interface (`/api/v1/admin/*`)
 **Authentication:** `auth:staff` guard with `admin.audit` middleware  
 **Response Pattern:** All responses use `spatie/laravel-data` DTOs via `ResponseService`.
-**Scribe Response Files:** Stored in `resources/responses/` (version-controlled). All `@responseFile` paths reference this directory.
+**Scribe Response Files:** Stored in `resources/responses/` (version-controlled). All `@responseFile` paths reference this directory. `App\Scribe\OpenApi\AddResponseExamples` exports same-status JSON scenarios as named OpenAPI media-type examples so the Scalar viewer can select each example; generated schemas are preserved.
 
 ### StaffController (`app/Http/Controllers/Api/Admin/StaffController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/staff` - **Delegates to:** Staff listing action - **Response DTO:** StaffData collection
