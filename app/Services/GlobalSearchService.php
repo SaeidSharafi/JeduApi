@@ -27,8 +27,10 @@ final class GlobalSearchService
 {
     private Client $typesenseClient;
 
-    public function __construct(private readonly CacheStore $cache)
-    {
+    public function __construct(
+        private readonly CacheStore $cache,
+        private readonly SearchQueryPreparer $queryPreparer = new SearchQueryPreparer(),
+    ) {
         $this->typesenseClient = new Client(config('scout.typesense.client-settings'));
     }
 
@@ -114,63 +116,67 @@ final class GlobalSearchService
     private function searchWithTypesense(SearchData $searchData): LengthAwarePaginator
     {
         $page = LengthAwarePaginator::resolveCurrentPage();
-        $hash = md5($searchData->q.json_encode($searchData->toArray()).$searchData->per_page.$page);
+        $hash = md5('strict-semantic-v2'.$searchData->q.json_encode($searchData->toArray()).$searchData->per_page.$page);
 
         return $this->cache->flexible(CacheKey::Search, ['hash' => $hash], function () use ($searchData, $page): LengthAwarePaginator {
             $productFilters = $this->buildProductFilters($searchData);
             $blogFilters    = $this->buildBlogFilters($searchData);
 
-            $prefix        = config('scout.prefix', '');
-            $productIndex  = $prefix.(new Product())->searchableAs();
-            $blogPostIndex = $prefix.(new BlogPost())->searchableAs();
-
-            // Determine which types to search based on result_types filter
+            $prefix          = config('scout.prefix', '');
+            $productIndex    = $prefix.(new Product())->searchableAs();
+            $blogPostIndex   = $prefix.(new BlogPost())->searchableAs();
             $searchProducts  = empty($searchData->result_types) || in_array('product', $searchData->result_types);
             $searchBlogPosts = empty($searchData->result_types) || in_array('blog_post', $searchData->result_types);
-            $searches        = [];
-            if ($searchProducts) {
-                $searches[] = [
-                    'collection'            => $productIndex,
-                    'q'                     => $searchData->q,
-                    'query_by'              => 'embedding, name, short_name, productable_full_name, productable_short_name, short_description, productable_description',
-                    'query_by_weights'      => '0, 10, 8, 8, 5, 2, 4',
-                    'rerank_hybrid_matches' => true,
-                    'vector_query'          => 'embedding:([], alpha: 0.3, distance_threshold: 0.25)',
-                    'include_fields'        => 'id',
-                    'sort_by'               => '_text_match:desc,created_at:desc',
-                    'filter_by'             => $productFilters,
-                    'facet_by'              => 'productable_type,has_discount,category_slugs,difficulty_level,fulfillment_types',
-                    'max_facet_values'      => 100,
-                ];
-            }
 
-            if ($searchBlogPosts) {
-                $searches[] = [
-                    'collection'            => $blogPostIndex,
-                    'q'                     => $searchData->q,
-                    'query_by'              => 'embedding, title, body, excerpt',
-                    'query_by_weights'      => '0, 10, 5, 2',
-                    'rerank_hybrid_matches' => true,
-                    'vector_query'          => 'embedding:([], alpha: 0.3, distance_threshold: 0.25)',
-                    'sort_by'               => '_text_match:desc,created_at:desc',
-                    'include_fields'        => 'id',
-                    'filter_by'             => $blogFilters,
-                ];
-            }
+            $rawResults = $this->performSearch(
+                $searchData,
+                $page,
+                $productIndex,
+                $blogPostIndex,
+                $productFilters,
+                $blogFilters,
+                $searchProducts,
+                $searchBlogPosts,
+                useSemanticSearch: false,
+            );
+            $usedVector              = false;
+            $vectorDistanceThreshold = null;
 
-            $searchRequests = [
-                'union'    => true,
-                'page'     => $page,
-                'per_page' => $searchData->per_page,
-                'searches' => $searches,
-            ];
+            if (($rawResults['found'] ?? 0) < (int) config('search.min_keyword_results', 1)
+                && $this->shouldUseVectorSearch($searchData->q)) {
+                $vectorDistanceThreshold = (float) config('search.vector_distance_threshold', 0.15);
+                $rawResults              = $this->performSearch(
+                    $searchData,
+                    $page,
+                    $productIndex,
+                    $blogPostIndex,
+                    $productFilters,
+                    $blogFilters,
+                    $searchProducts,
+                    $searchBlogPosts,
+                    useSemanticSearch: true,
+                    vectorDistanceThreshold: $vectorDistanceThreshold,
+                );
+                $usedVector = true;
 
-            $multiSearch = $this->typesenseClient->getMultiSearch();
-            $rawResults  = $multiSearch->perform($searchRequests);
-
-            // Check for errors
-            if (isset($rawResults['error'])) {
-                throw new CustomValidationException(__('messages.search.typesense_error'));
+                $retryDistanceThreshold = (float) config('search.vector_retry_distance_threshold', 0.16);
+                if (($rawResults['found'] ?? 0) < (int) config('search.min_keyword_results', 1)
+                    && $retryDistanceThreshold > $vectorDistanceThreshold) {
+                    $vectorDistanceThreshold = $retryDistanceThreshold;
+                    $rawResults              = $this->performSearch(
+                        $searchData,
+                        $page,
+                        $productIndex,
+                        $blogPostIndex,
+                        $productFilters,
+                        $blogFilters,
+                        $searchProducts,
+                        $searchBlogPosts,
+                        useSemanticSearch: true,
+                        vectorDistanceThreshold: $vectorDistanceThreshold,
+                        reverseSemanticTerms: true,
+                    );
+                }
             }
 
             $hits      = $rawResults['hits']  ?? [];
@@ -178,10 +184,12 @@ final class GlobalSearchService
 
             // Log search analytic
             Log::channel('daily')->info('Search performed', [
-                'query'         => $searchData->q,
-                'results_count' => $totalHits,
-                'filters'       => $searchData->toArray(),
-                'user_id'       => auth()->id(),
+                'query'                     => $searchData->q,
+                'results_count'             => $totalHits,
+                'vector'                    => $usedVector,
+                'vector_distance_threshold' => $vectorDistanceThreshold,
+                'filters'                   => $searchData->toArray(),
+                'user_id'                   => auth()->id(),
             ]);
 
             $models = $this->hydrateModels($hits);
@@ -193,6 +201,99 @@ final class GlobalSearchService
                 $page
             );
         });
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function performSearch(
+        SearchData $searchData,
+        int $page,
+        string $productIndex,
+        string $blogPostIndex,
+        string $productFilters,
+        string $blogFilters,
+        bool $searchProducts,
+        bool $searchBlogPosts,
+        bool $useSemanticSearch,
+        ?float $vectorDistanceThreshold = null,
+        bool $reverseSemanticTerms = false,
+    ): array {
+        $query = $useSemanticSearch
+            ? $this->queryPreparer->forSemanticSearch($searchData->q, $reverseSemanticTerms)
+            : $this->queryPreparer->forKeywordSearch($searchData->q);
+        $searches = [];
+
+        if ($searchProducts) {
+            $search = [
+                'collection' => $productIndex,
+                'q'          => $query,
+                'query_by'   => $useSemanticSearch
+                    ? 'embedding'
+                    : 'name, short_name, productable_full_name, productable_short_name, short_description, productable_description',
+                'query_by_weights'      => $useSemanticSearch ? '0' : '10, 8, 8, 5, 2, 4',
+                'prefix'                => $useSemanticSearch ? 'false' : 'true,true,true,true,false,false',
+                'num_typos'             => $useSemanticSearch ? '0' : '2,2,2,2,1,1',
+                'drop_tokens_threshold' => 0,
+                'include_fields'        => 'id',
+                'filter_by'             => $productFilters,
+                'facet_by'              => 'productable_type,has_discount,category_slugs,difficulty_level,fulfillment_types',
+                'max_facet_values'      => 100,
+            ];
+
+            if ($useSemanticSearch) {
+                $search['vector_query'] = sprintf(
+                    'embedding:([], alpha: 1.0, k: %d, distance_threshold: %s)',
+                    (int) config('search.vector_k', 6),
+                    $vectorDistanceThreshold,
+                );
+            } else {
+                $search['sort_by'] = '_text_match:desc,created_at:desc';
+            }
+
+            $searches[] = $search;
+        }
+
+        if ($searchBlogPosts) {
+            $search = [
+                'collection'            => $blogPostIndex,
+                'q'                     => $query,
+                'query_by'              => $useSemanticSearch ? 'embedding' : 'title, body, excerpt',
+                'query_by_weights'      => $useSemanticSearch ? '0' : '10, 5, 2',
+                'prefix'                => $useSemanticSearch ? 'false' : 'true,false,false',
+                'num_typos'             => $useSemanticSearch ? '0' : '2,1,1',
+                'drop_tokens_threshold' => 0,
+                'include_fields'        => 'id',
+                'filter_by'             => $blogFilters,
+            ];
+
+            if ($useSemanticSearch) {
+                $search['vector_query'] = sprintf(
+                    'embedding:([], alpha: 1.0, k: %d, distance_threshold: %s)',
+                    (int) config('search.vector_k', 6),
+                    $vectorDistanceThreshold,
+                );
+            } else {
+                $search['sort_by'] = '_text_match:desc,created_at:desc';
+            }
+
+            $searches[] = $search;
+        }
+
+        $searchRequests = [
+            'union'    => true,
+            'page'     => $page,
+            'per_page' => $searchData->per_page,
+            'searches' => $searches,
+        ];
+
+        $rawResults = $this->typesenseClient->getMultiSearch()->perform($searchRequests);
+
+        if (isset($rawResults['error'])) {
+            throw new CustomValidationException(__('messages.search.typesense_error'));
+        }
+
+        return $rawResults;
     }
 
     /**
@@ -293,7 +394,11 @@ final class GlobalSearchService
                     'categories:id,name,slug',
                     'productDeliveryOptions' => function ($q): void {
                         $q->where('status', PublicationStatusEnum::PUBLISHED)
-                            ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate']);
+                            ->with([
+                                'product:id,productable_type',
+                                'productDeliveryOptionDiscountPrice',
+                                'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate',
+                            ]);
                     },
                     'productable',
                 ])
@@ -372,18 +477,17 @@ final class GlobalSearchService
         return implode(' && ', $baseFilters);
     }
 
+    private function shouldUseVectorSearch(?string $query): bool
+    {
+        return mb_strlen($this->queryPreparer->forKeywordSearch($query)) >= 4;
+    }
+
     /**
      * Check if Typesense is configured and available.
      */
     private function isTypesenseAvailable(): bool
     {
-        static $available = null;
-
-        if ($available === null) {
-            $available = config('scout.driver') === 'typesense'
-                && ! empty(config('scout.typesense.client-settings.api_key'));
-        }
-
-        return $available;
+        return config('scout.driver') === 'typesense'
+            && ! empty(config('scout.typesense.client-settings.api_key'));
     }
 }
