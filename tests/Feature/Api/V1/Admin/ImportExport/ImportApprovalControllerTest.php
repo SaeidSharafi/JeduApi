@@ -196,6 +196,25 @@ it('uses the durable approval marker for idempotency after status changes', func
         ->and(User::query()->where('phone', '09123456789')->count())->toBe(1);
 });
 
+it('rejects an expired preview inside approval while preserving approved retries', function (): void {
+    $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_APPROVE]);
+    $expiredRunId = postImportPreview($this, userImportFile([userImportRow()]))->json('data.run_id');
+    $expiredRun   = ImportRun::query()->where('uuid', $expiredRunId)->firstOrFail();
+    $this->travelTo($expiredRun->artifacts_expires_at);
+
+    postImportApproval($this, $expiredRunId)->assertUnprocessable()->assertJsonValidationErrors('run');
+    expect(User::query()->where('phone', '09123456789')->exists())->toBeFalse();
+
+    $this->travelBack();
+    $approvedRunId = postImportPreview($this, userImportFile([userImportRow()]))->json('data.run_id');
+    postImportApproval($this, $approvedRunId)->assertSuccessful();
+    $approvedRun = ImportRun::query()->where('uuid', $approvedRunId)->firstOrFail();
+    $this->travelTo($approvedRun->artifacts_expires_at->addSecond());
+
+    postImportApproval($this, $approvedRunId)->assertSuccessful()->assertJsonPath('data.summary.created_count', 1);
+    expect(User::query()->where('phone', '09123456789')->count())->toBe(1);
+});
+
 it('rolls back every local mutation when one valid row cannot be persisted', function (): void {
     Illuminate\Support\Facades\Queue::fake();
     $this->authorized_user([PermissionEnum::IMPORT_PREVIEW, PermissionEnum::IMPORT_APPROVE]);

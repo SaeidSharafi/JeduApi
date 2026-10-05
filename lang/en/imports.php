@@ -72,6 +72,7 @@ return [
     ],
 
     'errors' => [
+        'expired'                     => 'This import preview has expired. Upload the spreadsheet again to continue.',
         'empty'                       => 'The worksheet does not contain any data row.',
         'too_many_rows'               => 'At most :max data rows are allowed per file.',
         'unknown_columns'             => 'Unknown headings: :columns',

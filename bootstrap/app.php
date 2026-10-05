@@ -53,6 +53,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->hourly()
             ->withoutOverlapping();
 
+        $schedule->command('imports:cleanup-artifacts')
+            ->hourly()
+            ->withoutOverlapping();
+
         $schedule->command('horizon:snapshot')
             ->everyFiveMinutes()
             ->onOneServer()

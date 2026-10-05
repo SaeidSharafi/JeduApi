@@ -19,16 +19,17 @@ final class ImportRunFactory extends Factory
     public function definition(): array
     {
         return [
-            'resource'          => SpreadsheetResourceEnum::USERS,
-            'identity_key'      => ImportIdentityKeyEnum::PHONE,
-            'status'            => ImportRunStatusEnum::PREVIEW_READY,
-            'staff_id'          => Staff::factory(),
-            'original_filename' => 'users.xlsx',
-            'file_path'         => 'imports/'.fake()->uuid().'/users.xlsx',
-            'file_size'         => 2048,
-            'rows_total'        => 0,
-            'rows_valid'        => 0,
-            'rows_invalid'      => 0,
+            'resource'             => SpreadsheetResourceEnum::USERS,
+            'identity_key'         => ImportIdentityKeyEnum::PHONE,
+            'status'               => ImportRunStatusEnum::PREVIEW_READY,
+            'staff_id'             => Staff::factory(),
+            'original_filename'    => 'users.xlsx',
+            'file_path'            => 'imports/'.fake()->uuid().'/users.xlsx',
+            'file_size'            => 2048,
+            'artifacts_expires_at' => now()->addDay(),
+            'rows_total'           => 0,
+            'rows_valid'           => 0,
+            'rows_invalid'         => 0,
         ];
     }
 }

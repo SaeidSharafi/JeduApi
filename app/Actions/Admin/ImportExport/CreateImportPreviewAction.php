@@ -85,18 +85,19 @@ final readonly class CreateImportPreviewAction
         $invalid = $total - $valid;
 
         $run = ImportRun::create([
-            'uuid'              => $uuid,
-            'resource'          => $resource,
-            'identity_key'      => $identityKey,
-            'status'            => ImportRunStatusEnum::PREVIEW_READY,
-            'staff_id'          => $staff?->getKey(),
-            'original_filename' => $this->originalFilename($file),
-            'file_path'         => $filePath,
-            'file_size'         => (int) $file->getSize(),
-            'file_checksum'     => hash_file('sha256', Storage::disk(self::DISK)->path($filePath)),
-            'rows_total'        => $total,
-            'rows_valid'        => $valid,
-            'rows_invalid'      => $invalid,
+            'uuid'                 => $uuid,
+            'resource'             => $resource,
+            'identity_key'         => $identityKey,
+            'status'               => ImportRunStatusEnum::PREVIEW_READY,
+            'staff_id'             => $staff?->getKey(),
+            'original_filename'    => $this->originalFilename($file),
+            'file_path'            => $filePath,
+            'file_size'            => (int) $file->getSize(),
+            'file_checksum'        => hash_file('sha256', Storage::disk(self::DISK)->path($filePath)),
+            'rows_total'           => $total,
+            'rows_valid'           => $valid,
+            'rows_invalid'         => $invalid,
+            'artifacts_expires_at' => now()->addHours((int) config('import-export.retention_hours', 24)),
         ]);
 
         $run->rows()->createMany(array_map(
@@ -147,7 +148,9 @@ final readonly class CreateImportPreviewAction
                 provider_provisioning_request_count: $this->providerRequestCount($run),
             ),
             rows: $rows,
-            can_approve: $run->status === ImportRunStatusEnum::PREVIEW_READY && $run->rows_valid > 0,
+            can_approve: $run->status === ImportRunStatusEnum::PREVIEW_READY
+                && $run->rows_valid > 0
+                && $run->artifacts_expires_at?->isFuture() === true,
             approval_warning: (string) __('imports.approval_warning'),
         );
     }

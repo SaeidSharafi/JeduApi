@@ -241,6 +241,8 @@ The run-status response must use this canonical shape:
 
 The URL uses the authenticated results endpoint. The XLSX contains one row per validation error or final provider failure with `row_number`, `field`, `code`, `message`, and `provider` columns. Validation-only reports may be available during processing; final provider failures appear after processing ends. Messages are localized and value-free. If no report is available, `download_url` is null. A stale or unavailable direct download returns 404.
 
+Preview and snapshot retention defaults to 24 hours and is configurable with `IMPORT_EXPORT_RETENTION_HOURS`. The preview response keeps the same envelope; `can_approve` becomes false at expiry, and approval returns a 422 validation error with a safe expiry message. Repeated approval after an earlier successful approval remains idempotent. Once an approved run becomes terminal, its remaining artifacts receive a fresh retention window. Processing runs are retained until provider work ends. At expiry, polling remains available with original status and summary counters, while row `data` and `errors` are empty and provider statuses remain visible. The error report becomes unavailable immediately, before physical cleanup. Exports are private and their signed link lifetime matches the persisted expiry. The scheduled cleanup redacts expired snapshots and removes import, report, and export files in bounded batches.
+
 For `preview_ready`, use `valid_rows`, `invalid_rows`, `create_count`, and `update_count`. After approval, use `created_count`, `updated_count`, `local_failure_count`, `provider_success_count`, `provider_failure_count`, and `retryable_provider_failure_count`. Do not rename these fields to a generic `success_count`.
 
 ### Error response shape

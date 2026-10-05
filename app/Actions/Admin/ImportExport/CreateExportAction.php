@@ -6,6 +6,7 @@ namespace App\Actions\Admin\ImportExport;
 
 use App\Data\Admin\ImportExport\ExportArtifactData;
 use App\Data\Admin\ImportExport\ExportRequestData;
+use App\Models\ImportExportArtifact;
 use App\Services\ImportExport\ResourceSpreadsheetExport;
 use App\Services\ImportExport\SpreadsheetResourceRegistry;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +27,7 @@ final readonly class CreateExportAction
         $contract->authorize();
         $artifact = (string) Str::uuid();
         $path     = "exports/{$resource}/{$artifact}.xlsx";
-        $expires  = now()->addDay();
+        $expires  = now()->addHours((int) config('import-export.retention_hours', 24));
 
         try {
             $stored = Excel::store(
@@ -40,6 +41,12 @@ final readonly class CreateExportAction
             if ($stored !== true) {
                 throw new RuntimeException('Unable to store the export artifact.');
             }
+            ImportExportArtifact::query()->create([
+                'resource'      => $resource,
+                'artifact_uuid' => $artifact,
+                'path'          => $path,
+                'expires_at'    => $expires,
+            ]);
         } catch (Throwable $exception) {
             Storage::disk('local')->delete($path);
 

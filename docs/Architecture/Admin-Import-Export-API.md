@@ -123,6 +123,8 @@ The approval action:
 3. commits the local transaction;
 4. dispatches independent provider provisioning operations only for committed rows whose provider flag is true.
 
+Private import files and row snapshots default to 24 hours (`IMPORT_EXPORT_RETENTION_HOURS`). Each preview stores its absolute deadline. An unapproved run expires at that deadline and approval returns the normal 422 validation envelope with an expiry message, even if its upload still exists. `can_approve` becomes false at the deadline. Approval checks expiry while holding the run lock. An already-approved retry remains idempotent after expiry. When provider work finishes, the run receives a new configured retention window; active `processing` runs are excluded from cleanup.
+
 Invalid rows are never mutated or sent to providers. If local persistence fails, the transaction rolls back and no provider jobs are dispatched.
 
 The approval response does not contain final provider outcomes because provider jobs have only been queued at that point. It returns the local commit result and initial queued state (`completed` immediately when no provider operations were requested):
@@ -208,21 +210,20 @@ Safe transient provider failures receive at most three attempts through a separa
 
 ```text
 preview_ready
-approved
 processing
 completed
 completed_with_provider_failures
-failed
-expired
 ```
 
 `processing` means local users have been committed and provider jobs are queued or running. `completed_with_provider_failures` means the local import completed but one or more provider operations remain unsuccessful.
 
 Import-specific row errors use stable `row_number`, `field`, `code`, and `message` keys. `code` is for frontend behavior; `message` is displayable text. Standard application error envelopes remain authoritative for request-level errors.
 
-## Error report and retention
+## Error reports and retention
 
-`GET /users/import/{run}/errors` downloads a private XLSX attachment with `row_number`, `field`, `code`, `message`, and `provider` columns. It requires staff authentication and `imports.results`; the run lookup is scoped by both registered resource and UUID. Responses use `Cache-Control: private, no-store`. Validation errors are available immediately; final failed provider outcomes are included once the run leaves `processing`. The report is built only from persisted outcomes and contains value-free localized messages, never cell values, identities, credentials, raw exceptions, or provider payloads. Polling fills the existing `error_report` object with this authenticated endpoint only while a current report exists. The private reference and fingerprint are persisted on the run; unchanged reports reuse the artifact and changed outcomes replace it. Retention/expiry cleanup is handled by the follow-up retention work.
+`GET /users/import/{run}/errors` downloads a private XLSX attachment with `row_number`, `field`, `code`, `message`, and `provider` columns. It requires staff authentication and `imports.results`; the run lookup is scoped by both registered resource and UUID. Responses use `Cache-Control: private, no-store`. Validation errors are available immediately; final failed provider outcomes are included once the run leaves `processing`. The report is built only from persisted outcomes and contains value-free localized messages, never cell values, identities, credentials, raw exceptions, or provider payloads. Polling fills the existing `error_report` object only while the report is usable. Report regeneration inherits the run deadline. At expiry, polling immediately suppresses row data/errors and report metadata; direct report access returns 404. Cleanup retains row shells and summary/provider outcome counts, clears personal values and messages, and deletes private files. `IMPORT_EXPORT_RETENTION_HOURS` defaults to 24 hours; changing it does not change existing deadlines. Private exports use persisted inventory and the same lifetime; downloads require both an unexpired signed URL and an unexpired inventory record.
+
+`imports:cleanup-artifacts` runs hourly with scheduler overlap protection and processes bounded batches (default 100, maximum 500). It locks each run while deleting artifacts and redacting snapshots, skips active provider runs, retries failed deletions, and continues after individual failures. Successful run cleanup records `artifacts_redacted_at`, removing it from future batches. Failed cleanup records a retry deadline so untouched expired artifacts are processed before another attempt. Exports are cleaned from the persisted artifact inventory created with each export.
 
 ## Deferred features
 

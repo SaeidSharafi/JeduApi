@@ -113,7 +113,13 @@ final readonly class ProvisionImportUserAction
                     $failed  = $failed  || in_array($outcome['status'], ['failed', 'retryable_failed'], true);
                 }
             }
-            $run->update(['status' => $pending ? ImportRunStatusEnum::PROCESSING : ($failed ? ImportRunStatusEnum::COMPLETED_WITH_PROVIDER_FAILURES : ImportRunStatusEnum::COMPLETED)]);
+            $status = $pending ? ImportRunStatusEnum::PROCESSING : ($failed ? ImportRunStatusEnum::COMPLETED_WITH_PROVIDER_FAILURES : ImportRunStatusEnum::COMPLETED);
+            $run->update([
+                'status'               => $status,
+                'artifacts_expires_at' => $run->status === ImportRunStatusEnum::PROCESSING && $status !== ImportRunStatusEnum::PROCESSING
+                    ? now()->addHours((int) config('import-export.retention_hours', 24))
+                    : $run->artifacts_expires_at,
+            ]);
         });
     }
 }

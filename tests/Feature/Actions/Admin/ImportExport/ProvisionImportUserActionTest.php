@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\Admin\ImportExport\ProvisionImportUserAction;
 use App\Contracts\Integrations\MoodleClientContract;
+use App\Enums\ImportExport\ImportRunStatusEnum;
 use App\Enums\ImportExport\UserProvisioningProviderEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Jobs\Provisioning\ProvisionImportUserProviderJob;
@@ -54,8 +55,12 @@ it('requires manual verification for a previous uncertain IMS attempt in another
 
 it('reconciles a replay-safe account after an interrupted processing attempt', function (): void {
     $user = User::factory()->create();
-    $run  = ImportRun::factory()->create(['approved_at' => now()]);
-    $row  = ImportRunRow::factory()->for($run)->create([
+    $run  = ImportRun::factory()->create([
+        'approved_at'          => now(),
+        'status'               => ImportRunStatusEnum::PROCESSING,
+        'artifacts_expires_at' => now()->subDay(),
+    ]);
+    $row = ImportRunRow::factory()->for($run)->create([
         'local_resource_id' => (string) $user->id,
         'providers'         => ['moodle' => ['status' => 'processing', 'message' => null, 'attempts' => 1]],
     ]);
@@ -68,6 +73,7 @@ it('reconciles a replay-safe account after an interrupted processing attempt', f
     $this->app->call([new ProvisionImportUserProviderJob($row->id, UserProvisioningProviderEnum::MOODLE), 'handle']);
 
     expect($row->fresh()->providers['moodle']['status'])->toBe('succeeded');
+    expect($run->fresh()->artifacts_expires_at->isFuture())->toBeTrue();
 });
 
 it('does not exceed the persisted attempt limit after interrupted work', function (): void {
@@ -99,7 +105,7 @@ it('records exhausted replay-safe worker timeouts as retryable failures', functi
 });
 
 it('ignores a late failure callback after a provider has already succeeded', function (): void {
-    $run = ImportRun::factory()->create(['approved_at' => now(), 'status' => App\Enums\ImportExport\ImportRunStatusEnum::COMPLETED]);
+    $run = ImportRun::factory()->create(['approved_at' => now(), 'status' => ImportRunStatusEnum::COMPLETED]);
     $row = ImportRunRow::factory()->for($run)->create([
         'providers' => ['moodle' => ['status' => 'succeeded', 'message' => null]],
     ]);

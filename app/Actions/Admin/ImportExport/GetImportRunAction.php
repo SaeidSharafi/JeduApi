@@ -9,6 +9,7 @@ use App\Data\Admin\ImportExport\ImportRunRowData;
 use App\Data\Admin\ImportExport\ImportRunSummaryData;
 use App\Models\ImportRun;
 use App\Services\ImportExport\SpreadsheetResourceRegistry;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -21,14 +22,19 @@ final class GetImportRunAction
 
     public function handle(string $resource, string $uuid): ImportRunData
     {
-        $run       = ImportRun::query()->where('resource', $resource)->where('uuid', $uuid)->with('rows')->firstOrFail();
+        $run = DB::transaction(function () use ($resource, $uuid): ImportRun {
+            $run = ImportRun::query()->where('resource', $resource)->where('uuid', $uuid)->lockForUpdate()->with('rows')->firstOrFail();
+
+            return $run;
+        });
+        $expired   = $run->artifacts_expires_at->lessThanOrEqualTo(now());
         $rows      = [];
         $successes = $failures = $retryable = 0;
         $contract  = $this->registry->import($resource);
         foreach ($run->rows->sortBy('row_number') as $row) {
             $providers = [];
             foreach ($row->providers ?? [] as $provider => $outcome) {
-                $providers[$provider] = ['status' => $outcome['status'], 'message' => $outcome['message']];
+                $providers[$provider] = ['status' => $outcome['status'], 'message' => $expired ? null : ($outcome['message'] ?? null)];
                 $successes += (int) ($outcome['status'] === 'succeeded');
                 $failures  += (int) in_array($outcome['status'], ['failed', 'retryable_failed'], true);
                 $retryable += (int) ($outcome['status'] === 'retryable_failed');
@@ -39,13 +45,13 @@ final class GetImportRunAction
                 operation: $run->approved_at === null ? $row->action?->value : match ($row->action?->value) {
                     'create' => 'created', 'update' => 'updated', default => null,
                 },
-                data: $row->local_result_data ?? $row->data,
+                data: $expired ? [] : ($row->local_result_data ?? $row->data ?? []),
                 providers: $providers,
                 errors: array_map(static function (array $error) use ($contract): array {
                     $error['message'] = $contract->errorReportMessage((string) ($error['code'] ?? 'invalid'));
 
                     return $error;
-                }, $row->errors ?? []),
+                }, $expired ? [] : ($row->errors ?? [])),
             );
         }
 

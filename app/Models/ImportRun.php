@@ -32,6 +32,9 @@ final class ImportRun extends Model
         'file_path',
         'file_size',
         'file_checksum',
+        'artifacts_expires_at',
+        'artifacts_redacted_at',
+        'artifacts_cleanup_retry_after',
         'rows_total',
         'rows_valid',
         'rows_invalid',
@@ -65,17 +68,20 @@ final class ImportRun extends Model
     protected function casts(): array
     {
         return [
-            'resource'              => SpreadsheetResourceEnum::class,
-            'identity_key'          => ImportIdentityKeyEnum::class,
-            'status'                => ImportRunStatusEnum::class,
-            'file_size'             => 'integer',
-            'rows_total'            => 'integer',
-            'rows_valid'            => 'integer',
-            'rows_invalid'          => 'integer',
-            'created_count'         => 'integer',
-            'updated_count'         => 'integer',
-            'provider_queued_count' => 'integer',
-            'approved_at'           => 'datetime',
+            'resource'                      => SpreadsheetResourceEnum::class,
+            'identity_key'                  => ImportIdentityKeyEnum::class,
+            'status'                        => ImportRunStatusEnum::class,
+            'file_size'                     => 'integer',
+            'rows_total'                    => 'integer',
+            'rows_valid'                    => 'integer',
+            'rows_invalid'                  => 'integer',
+            'created_count'                 => 'integer',
+            'updated_count'                 => 'integer',
+            'provider_queued_count'         => 'integer',
+            'approved_at'                   => 'datetime',
+            'artifacts_expires_at'          => 'datetime',
+            'artifacts_redacted_at'         => 'datetime',
+            'artifacts_cleanup_retry_after' => 'datetime',
         ];
     }
 }

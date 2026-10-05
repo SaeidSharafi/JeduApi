@@ -45,6 +45,12 @@ final readonly class ApproveImportRunAction
                 return $this->present($run);
             }
 
+            if ($run->artifacts_expires_at->lessThanOrEqualTo(now())) {
+                throw ValidationException::withMessages([
+                    'run' => __('imports.errors.expired'),
+                ]);
+            }
+
             if ($run->rows_valid === 0) {
                 throw ValidationException::withMessages([
                     'run' => __('imports.errors.no_valid_rows'),
@@ -96,6 +102,7 @@ final readonly class ApproveImportRunAction
                 'created_count'         => $created,
                 'updated_count'         => $updated,
                 'approved_at'           => now(),
+                'artifacts_expires_at'  => now()->addHours((int) config('import-export.retention_hours', 24)),
             ]);
 
             return $this->present($run->refresh());

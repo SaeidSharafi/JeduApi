@@ -18,13 +18,16 @@ return new class extends Migration
             $table->string('status')->index();
             $table->foreignId('staff_id')->nullable()->constrained('staff')->nullOnDelete();
             $table->string('original_filename');
-            $table->string('file_path');
+            $table->string('file_path')->nullable();
             $table->unsignedBigInteger('file_size')->nullable();
             $table->unsignedInteger('rows_total')->default(0);
             $table->unsignedInteger('rows_valid')->default(0);
             $table->unsignedInteger('rows_invalid')->default(0);
             $table->string('error_report_path')->nullable();
             $table->string('error_report_fingerprint', 64)->nullable();
+            $table->timestamp('artifacts_expires_at')->index();
+            $table->timestamp('artifacts_redacted_at')->nullable()->index();
+            $table->timestamp('artifacts_cleanup_retry_after')->nullable()->index();
             $table->timestamps();
 
             $table->index(['resource', 'status']);

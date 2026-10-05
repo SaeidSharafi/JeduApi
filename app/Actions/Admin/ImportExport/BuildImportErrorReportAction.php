@@ -29,7 +29,10 @@ final readonly class BuildImportErrorReportAction
     public function handle(string $resource, string $uuid): ?string
     {
         return DB::transaction(function () use ($resource, $uuid): ?string {
-            $run     = ImportRun::query()->where('resource', $resource)->where('uuid', $uuid)->lockForUpdate()->firstOrFail();
+            $run = ImportRun::query()->where('resource', $resource)->where('uuid', $uuid)->lockForUpdate()->firstOrFail();
+            if ($run->artifacts_expires_at->lessThanOrEqualTo(now())) {
+                return null;
+            }
             $rows    = $run->rows()->orderBy('row_number')->get();
             $records = $this->records($run, $rows->all());
 

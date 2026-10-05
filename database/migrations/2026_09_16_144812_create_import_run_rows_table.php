@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('action')->nullable()->index();
             $table->boolean('is_valid');
             $table->jsonb('errors')->nullable();
-            $table->jsonb('data');
+            $table->jsonb('data')->nullable();
             $table->timestamps();
 
             $table->unique(['import_run_id', 'row_number']);
