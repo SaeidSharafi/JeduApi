@@ -8,6 +8,7 @@ use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\Product\Course\ProductFilterData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Data\Shop\Search\SearchData;
+use App\Data\Shop\Search\SearchSuggestionData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\System\CacheKey;
@@ -68,16 +69,14 @@ final class GlobalSearchService
      *
      * @codeCoverageIgnore we cannot reliably test caching behavior; tested via integration tests
      */
-    /**
-     * @return array<int, string>
-     */
+    /** @return array<int, SearchSuggestionData> */
     public function suggest(string $query, int $limit = 5): array
     {
         if (! $this->isTypesenseAvailable()) {
             return [];
         }
 
-        return $this->cache->flexible(CacheKey::SearchSuggest, ['hash' => md5($query.$limit)], function () use ($query, $limit) {
+        return $this->cache->flexible(CacheKey::SearchSuggest, ['hash' => md5('product-suggestions-v1'.$query.$limit)], function () use ($query, $limit) {
             try {
                 $results = Product::search($query)
                     ->where('status', PublicationStatusEnum::PUBLISHED->value)
@@ -86,9 +85,9 @@ final class GlobalSearchService
                     ->take($limit * 2)->get();
 
                 return $results
-                    ->pluck('name')
-                    ->unique()
+                    ->unique('slug')
                     ->take($limit)
+                    ->map(static fn (Product $product): SearchSuggestionData => SearchSuggestionData::fromProduct($product))
                     ->values()
                     ->all();
             } // @codeCoverageIgnoreStart

@@ -1,9 +1,30 @@
 {
   "message": "عملیات با موفقیت انجام شد.",
   "data": [
-    "Laptop Gaming",
-    "Laptop Business",
-    "Laptop HP"
+    {
+      "name": "Laptop Gaming",
+      "slug": "laptop-gaming",
+      "product_type": {
+        "value": "course",
+        "label": "دوره"
+      }
+    },
+    {
+      "name": "Laptop Business",
+      "slug": "laptop-business",
+      "product_type": {
+        "value": "course",
+        "label": "دوره"
+      }
+    },
+    {
+      "name": "Laptop HP",
+      "slug": "laptop-hp",
+      "product_type": {
+        "value": "digital_asset",
+        "label": "دارایی دیجیتال"
+      }
+    }
   ],
   "metadata": []
 }
