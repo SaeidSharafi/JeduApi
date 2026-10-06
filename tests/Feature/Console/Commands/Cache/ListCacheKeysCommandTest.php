@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Console\Commands\Cache\ListCacheKeysCommand;
 
-covers(ListCacheKeysCommand::class);
+mutates(ListCacheKeysCommand::class);
 
 it('lists every registry case with its template, durations and group', function (): void {
     $this->artisan('cache:keys')

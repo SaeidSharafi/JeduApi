@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-covers(StaffPasswordLoginController::class, StaffOtpAuthenticationController::class);
+mutates(StaffPasswordLoginController::class, StaffOtpAuthenticationController::class);
 
 /**
  * The staff permission list is read from the database on every login, so a

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Actions\Admin\ImportExport\BuildImportTemplateAction;
 use App\Enums\PermissionEnum;
 
-covers(BuildImportTemplateAction::class);
+mutates(BuildImportTemplateAction::class);
 
 describe('authorization', function (): void {
     it('rejects guests', function (): void {

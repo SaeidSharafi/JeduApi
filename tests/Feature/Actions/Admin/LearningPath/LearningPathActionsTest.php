@@ -25,7 +25,7 @@ use Plank\Mediable\Media;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 
-covers(
+mutates(
     ArchiveLearningPathAction::class,
     CreateLearningPathAction::class,
     DeleteLearningPathAction::class,

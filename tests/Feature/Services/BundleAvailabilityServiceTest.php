@@ -61,7 +61,7 @@ function makeComponent(?int $capacity, int $enrolled = 0): ProductDeliveryOption
     ]);
 }
 
-covers(BundleAvailabilityService::class);
+mutates(BundleAvailabilityService::class);
 
 it('uses the least finite component capacity and ignores unlimited components', function (): void {
     [, , $parent] = makeBundleOffer();

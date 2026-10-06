@@ -20,7 +20,7 @@ use App\Services\BundleAvailabilityService;
 use App\Services\Discounts\ProductDiscountIndexer;
 use App\Services\ProductPriceService;
 
-covers(
+mutates(
     UpdateProductPricingJob::class,
     UpdateProductAvailabilityJob::class,
     ProductDiscountIndexer::class,

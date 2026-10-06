@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Sms\SmsNotificationOptionEnum;
 
-covers(SmsNotificationOptionEnum::class);
+mutates(SmsNotificationOptionEnum::class);
 
 describe('SmsNotificationOptionEnum', function (): void {
     it('maps every option to the outgoing message type it governs', function (): void {

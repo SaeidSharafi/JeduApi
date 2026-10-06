@@ -11,7 +11,7 @@ use Mockery as m;
 
 use function Pest\Laravel\postJson;
 
-covers(GatewayCallbackController::class);
+mutates(GatewayCallbackController::class);
 
 /**
  * Build the shop redirect URL the callback controller produces:

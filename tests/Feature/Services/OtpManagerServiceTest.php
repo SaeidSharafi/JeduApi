@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\Fakes\FakeOtpGenerator;
 
-covers(OtpManagerService::class);
+mutates(OtpManagerService::class);
 
 describe('OtpManagerService', function (): void {
     beforeEach(function (): void {

@@ -137,4 +137,57 @@ describe('RetryProvisioningController', function (): void {
 
         $response->assertForbidden();
     });
+
+    it('retries only the requested failed provider', function (): void {
+        $this->authorized_user([PermissionEnum::ENROLLMENT_RETRY_PROVISION->value]);
+        $pdo = ProductDeliveryOption::factory()->create([
+            'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
+            'details_json'    => ['ims_course_code' => 'IMS-123'],
+        ]);
+        $enrollment = Enrollment::factory()->create([
+            'product_delivery_option_id' => $pdo->id,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+            'provisioning_plan'          => ['version' => 1, 'providers' => [
+                ['provider' => 'ims', 'applicable' => true, 'readiness' => 'ready'],
+                ['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready'],
+            ]],
+            'provisioning_data' => ['providers' => [
+                'ims'    => ['status' => 'failed'],
+                'moodle' => ['status' => 'failed'],
+            ]],
+        ]);
+
+        $this->postJson(route('api.v1.admin.enrollments.retry-provisioning.provider', [
+            'enrollment' => $enrollment->id,
+            'provider'   => 'moodle',
+        ]))
+            ->assertOk()
+            ->assertJsonPath('data.providers', ['moodle']);
+
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 1);
+    });
+
+    it('returns 422 and leaves provisioning unchanged when the selected provider is not failed', function (): void {
+        $this->authorized_user([PermissionEnum::ENROLLMENT_RETRY_PROVISION->value]);
+        $enrollment = Enrollment::factory()->create([
+            'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
+            'provisioning_plan' => ['version' => 1, 'providers' => [
+                ['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready'],
+            ]],
+            'provisioning_data' => ['providers' => [
+                'moodle' => ['status' => 'success'],
+            ]],
+        ]);
+        $before = $enrollment->provisioning_data;
+
+        $this->postJson(route('api.v1.admin.enrollments.retry-provisioning.provider', [
+            'enrollment' => $enrollment->id,
+            'provider'   => 'moodle',
+        ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['provider']);
+
+        expect($enrollment->fresh()->provisioning_data)->toEqual($before);
+        Queue::assertNotPushed(ProvisionEnrollmentProviderJob::class);
+    });
 });

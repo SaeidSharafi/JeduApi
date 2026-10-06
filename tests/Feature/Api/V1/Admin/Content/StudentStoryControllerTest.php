@@ -6,7 +6,7 @@ use App\Enums\System\MorphTypeEnum;
 use App\Http\Controllers\Api\Admin\Content\StudentStoryController;
 use App\Models\StudentStory;
 
-covers(StudentStoryController::class);
+mutates(StudentStoryController::class);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 

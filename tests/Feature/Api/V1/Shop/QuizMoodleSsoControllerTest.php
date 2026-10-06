@@ -9,7 +9,7 @@ use App\Services\Integrations\MoodleService;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(GenerateQuizMoodleSsoUrlAction::class);
+mutates(GenerateQuizMoodleSsoUrlAction::class);
 
 it('issues student quiz SSO without a Shop enrollment', function (): void {
     $this->customer();

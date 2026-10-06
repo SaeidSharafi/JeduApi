@@ -11,7 +11,7 @@ use App\Models\Category;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(UpdateCategoryAction::class);
+mutates(UpdateCategoryAction::class);
 
 it('clears cached search results and suggestions when a category slug changes', function (): void {
     $this->authorized_user([PermissionEnum::CATEGORY_UPDATE->value]);

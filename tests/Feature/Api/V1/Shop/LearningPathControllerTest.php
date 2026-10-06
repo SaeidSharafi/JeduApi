@@ -14,7 +14,7 @@ use App\Models\Product;
 use App\Models\Seminar;
 use Tests\Support\Traits\ProductTestTrait;
 
-covers(LearningPathController::class);
+mutates(LearningPathController::class);
 
 describe('Shop Learning Path API', function (): void {
     uses(ProductTestTrait::class);

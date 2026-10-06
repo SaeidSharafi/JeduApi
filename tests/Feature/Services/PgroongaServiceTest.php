@@ -7,7 +7,7 @@ use App\Enums\System\CacheKey;
 use App\Services\PgroongaService;
 use Illuminate\Support\Facades\DB;
 
-covers(PgroongaService::class);
+mutates(PgroongaService::class);
 
 it('serves the PGroonga probe through the cache gateway', function (): void {
     app(CacheStore::class)->put(CacheKey::PgroongaEnabled, [], true);

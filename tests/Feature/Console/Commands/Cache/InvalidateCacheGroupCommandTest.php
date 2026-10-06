@@ -7,7 +7,7 @@ use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheKey;
 use App\Enums\System\CacheTag;
 
-covers(InvalidateCacheGroupCommand::class);
+mutates(InvalidateCacheGroupCommand::class);
 
 it('invalidates exactly the requested group and leaves the others untouched', function (): void {
     $cache = app(CacheStore::class);

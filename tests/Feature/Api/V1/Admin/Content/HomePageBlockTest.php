@@ -10,7 +10,7 @@ use App\Enums\PermissionEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\HomePageBlock;
 
-covers(DynamicListBlockContentData::class);
+mutates(DynamicListBlockContentData::class);
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
 beforeEach(function (): void {

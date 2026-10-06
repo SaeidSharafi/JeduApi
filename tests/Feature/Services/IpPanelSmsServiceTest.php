@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-covers(IpPanelSmsService::class);
+mutates(IpPanelSmsService::class);
 
 // Test setup common to both test groups
 beforeEach(function (): void {

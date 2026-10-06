@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Exceptions;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(GetJoinUrlAction::class, JoinUrlController::class);
+mutates(GetJoinUrlAction::class, JoinUrlController::class);
 
 beforeEach(function (): void {
     $this->customer();

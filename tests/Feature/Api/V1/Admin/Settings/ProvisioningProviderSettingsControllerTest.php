@@ -19,7 +19,7 @@ use App\Services\SettingSecretRedactor;
 use Database\Seeders\SettingsSeeder;
 use Illuminate\Support\Facades\Crypt;
 
-covers(
+mutates(
     ProvisioningProviderSettingsController::class,
     BuildProvisioningProviderSettingAction::class,
     UpdateProvisioningProviderSettingAction::class,

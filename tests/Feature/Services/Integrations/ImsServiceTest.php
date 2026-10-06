@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\System\SettingKeyEnum;
 use App\Enums\User\CivilIdTypeEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
@@ -24,6 +25,8 @@ beforeEach(function (): void {
         ]);
     $this->imsService = app(ImsService::class);
 });
+
+mutates(ImsService::class);
 
 it('storeStudent succeeds on 200', function (): void {
     Http::fake([
@@ -65,6 +68,61 @@ it('storeStudent returns array on success', function (): void {
 
     expect($response)->toBeArray()
         ->and($response['id'])->toBe(42);
+});
+
+it('storeGrade submits the teacher identity and returns the IMS response', function (): void {
+    config(['provisioning.providers.ims' => [
+        'enabled'  => true,
+        'base_url' => 'https://ims.test',
+        'api_key'  => 'ims-key',
+        'timeout'  => 15,
+    ]]);
+    Http::fake([
+        'https://ims.test/api/v2/teacher/course/IMS-7/grade' => Http::response([
+            'status' => true,
+            'data'   => ['grade_id' => 82, 'score' => 91.5],
+        ]),
+    ]);
+    $service = new ImsService(new SettingsService(app(CacheStore::class)));
+    $payload = ['grades' => [['student_id' => 41, 'grade' => 91.5]]];
+
+    $response = $service->storeGrade('IMS-7', '1234567890', CivilIdTypeEnum::NATIONAL_CODE, $payload);
+
+    expect($response)->toBe(['status' => true, 'data' => ['grade_id' => 82, 'score' => 91.5]]);
+    Http::assertSent(fn ($request): bool => $request->method() === 'POST'
+        && $request->url()                                     === 'https://ims.test/api/v2/teacher/course/IMS-7/grade'
+        && $request->hasHeader('Authorization', 'Bearer ims-key')
+        && $request->hasHeader('X-Teacher-Civil-Id', '1234567890')
+        && $request->hasHeader('X-Teacher-Civil-Id-Type', CivilIdTypeEnum::NATIONAL_CODE->value)
+        && $request->data() === $payload);
+});
+
+it('maps storeGrade validation failures to the grade endpoint without sending another request', function (): void {
+    config(['provisioning.providers.ims' => [
+        'enabled'  => true,
+        'base_url' => 'https://ims.test',
+        'api_key'  => 'ims-key',
+        'timeout'  => 15,
+    ]]);
+    Http::fake([
+        'https://ims.test/api/v2/teacher/course/IMS-7/grade' => Http::response([
+            'errors' => ['grades.0.grade' => ['The grade must be between 0 and 100.']],
+        ], 422),
+    ]);
+    $service = new ImsService(new SettingsService(app(CacheStore::class)));
+
+    try {
+        $service->storeGrade('IMS-7', '1234567890', CivilIdTypeEnum::NATIONAL_CODE, ['grades' => [['grade' => 101]]]);
+        $this->fail('Expected UnrecoverableProvisioningException.');
+    } catch (UnrecoverableProvisioningException $exception) {
+        expect($exception->metaData)->toMatchArray([
+            'http_status'       => 422,
+            'endpoint'          => '/api/v2/teacher/course/IMS-7/grade',
+            'validation_errors' => ['grades.0.grade' => ['The grade must be between 0 and 100.']],
+        ]);
+    }
+
+    Http::assertSentCount(1);
 });
 
 it('storeStudent throws with metadata on 422', function (): void {

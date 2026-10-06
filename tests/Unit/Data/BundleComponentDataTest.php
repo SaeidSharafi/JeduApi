@@ -7,7 +7,7 @@ use App\Enums\Product\DeliveryMethodEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 
-covers(BundleComponentData::class);
+mutates(BundleComponentData::class);
 
 it('presents each delivery method by its provider while keeping the persisted method value', function (
     DeliveryMethodEnum $deliveryMethod,

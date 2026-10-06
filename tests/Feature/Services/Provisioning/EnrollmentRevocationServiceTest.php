@@ -18,7 +18,7 @@ use App\Services\Provisioning\EnrollmentRevocationService;
 use App\Services\Provisioning\ProvisioningAttemptService;
 use Illuminate\Support\Facades\Queue;
 
-covers(EnrollmentRevocationService::class);
+mutates(EnrollmentRevocationService::class);
 
 /** @param list<string> $providers */
 function revocationEnrollment(array $providers): Enrollment

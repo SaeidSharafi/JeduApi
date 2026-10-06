@@ -23,6 +23,7 @@ use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 use App\Models\Refund;
 use App\Models\User;
+use App\Services\BundlePurchaseRefundGuard;
 use App\Services\Payment\Digipay\Data\RefundResponse;
 use App\Services\Payment\Digipay\DigipayAdminService;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,7 @@ use Mockery\MockInterface;
 
 use function Pest\Laravel\assertDatabaseCount;
 
-covers(RefundBundlePurchaseAction::class);
+mutates(RefundBundlePurchaseAction::class);
 
 /**
  * @param  array{provider?: string}  $options
@@ -442,4 +443,65 @@ it('does not double count the bundle purchase against running order totals', fun
         ->and($scenario['order']->fresh()->total_refunded)->toBe(100000);
     expect((int) DB::table('order_items')->where('bundle_purchase_id', $scenario['purchase']->id)->sum('total'))
         ->toBe(100000);
+});
+
+describe('BundlePurchaseRefundGuard', function (): void {
+    it('rejects bundles without commercial components and does not consider them handled', function (): void {
+        $purchase = (new BundlePurchase)->setRelation('components', collect());
+        $guard    = app(BundlePurchaseRefundGuard::class);
+
+        expect(fn () => $guard->assertRefundable($purchase))
+            ->toThrow(RefundValidationException::class, __('messages.order.refund.bundle_purchase_not_refundable'));
+        expect($guard->isFullyHandled($purchase))->toBeFalse();
+    });
+
+    it('rejects closed bundle components with the appropriate refund reason', function (OrderItemStatusEnum $status, string $reason): void {
+        $component = (new OrderItem(['status' => $status]))->setRelation('refunds', collect());
+        $purchase  = (new BundlePurchase)->setRelation('components', collect([$component]));
+        $guard     = app(BundlePurchaseRefundGuard::class);
+
+        expect(fn () => $guard->assertRefundable($purchase))->toThrow(RefundValidationException::class, __($reason));
+        expect($guard->isFullyHandled($purchase))->toBeTrue();
+    })->with([
+        'refunded'  => [OrderItemStatusEnum::REFUNDED, 'messages.order.refund.already_refunded'],
+        'cancelled' => [OrderItemStatusEnum::CANCELLED, 'messages.order.refund.bundle_purchase_not_refundable'],
+    ]);
+
+    it('rejects an active component refund to prevent duplicate bundle reimbursements', function (RefundStatusEnum $status): void {
+        $component = (new OrderItem(['status' => OrderItemStatusEnum::COMPLETED]))
+            ->setRelation('refunds', collect([new Refund(['status' => $status])]));
+        $purchase = (new BundlePurchase)->setRelation('components', collect([$component]));
+        $guard    = app(BundlePurchaseRefundGuard::class);
+
+        expect(fn () => $guard->assertRefundable($purchase))
+            ->toThrow(RefundValidationException::class, __('messages.order.refund.refund_request_exists'));
+        expect($guard->isFullyHandled($purchase))->toBeTrue();
+    })->with([RefundStatusEnum::PENDING, RefundStatusEnum::PROCESSING, RefundStatusEnum::COMPLETED]);
+
+    it('keeps a failed component refund eligible for retry', function (): void {
+        $component = (new OrderItem(['status' => OrderItemStatusEnum::COMPLETED]))
+            ->setRelation('refunds', collect([new Refund(['status' => RefundStatusEnum::FAILED])]));
+        $purchase = (new BundlePurchase)->setRelation('components', collect([$component]));
+
+        app(BundlePurchaseRefundGuard::class)->assertRefundable($purchase);
+
+        expect(app(BundlePurchaseRefundGuard::class)->isFullyHandled($purchase))->toBeFalse();
+    });
+
+    it('checks later components for active refunds while a failed refund stays retryable', function (): void {
+        $failedRefundComponent = (new OrderItem(['status' => OrderItemStatusEnum::COMPLETED]))
+            ->setRelation('refunds', collect([new Refund(['status' => RefundStatusEnum::FAILED])]));
+        $activeRefundComponent = (new OrderItem(['status' => OrderItemStatusEnum::COMPLETED]))
+            ->setRelation('refunds', collect([new Refund(['status' => RefundStatusEnum::PENDING])]));
+        $purchase = (new BundlePurchase)->setRelation('components', collect([
+            $failedRefundComponent,
+            $activeRefundComponent,
+        ]));
+        $guard = app(BundlePurchaseRefundGuard::class);
+
+        expect(fn () => $guard->assertRefundable($purchase))
+            ->toThrow(RefundValidationException::class, __('messages.order.refund.refund_request_exists'));
+
+        expect($guard->isFullyHandled($purchase))->toBeFalse();
+    });
 });

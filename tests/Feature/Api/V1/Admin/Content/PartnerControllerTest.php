@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\Admin\Content\PartnerController;
 use App\Models\Partner;
 use Plank\Mediable\Media;
 
-covers(PartnerController::class);
+mutates(PartnerController::class);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {

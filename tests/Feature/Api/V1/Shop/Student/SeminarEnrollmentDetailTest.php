@@ -9,7 +9,7 @@ use App\Models\ProductDeliveryOption;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(GetEnrollmentDetailAction::class);
+mutates(GetEnrollmentDetailAction::class);
 
 beforeEach(function (): void {
     $this->customer();

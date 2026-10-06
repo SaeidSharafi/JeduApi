@@ -10,7 +10,7 @@ use Illuminate\Support\Defer\DeferredCallbackCollection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-covers(LaravelCacheStore::class);
+mutates(LaravelCacheStore::class);
 
 /**
  * The gateway contract runs on the array store, the driver the suite uses.

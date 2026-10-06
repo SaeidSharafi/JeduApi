@@ -6,7 +6,7 @@ use App\Console\Commands\Cache\ShowCacheVersionsCommand;
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheTag;
 
-covers(ShowCacheVersionsCommand::class);
+mutates(ShowCacheVersionsCommand::class);
 
 it('prints the current version of every group', function (): void {
     $this->artisan('cache:versions')

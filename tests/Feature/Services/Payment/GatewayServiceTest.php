@@ -10,7 +10,7 @@ use App\Services\Payment\GatewayService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Cache;
 
-covers(GatewayService::class);
+mutates(GatewayService::class);
 
 /**
  * Build a gateway Setting value with the exact keys GatewayData expects.

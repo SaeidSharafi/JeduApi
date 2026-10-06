@@ -37,7 +37,8 @@ use App\Services\Provisioning\ProvisioningProviderRegistry;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Queue;
 
-covers(ProvisionEnrollmentProviderJob::class);
+mutates(ProvisionEnrollmentProviderJob::class);
+mutates(ProvisioningAttemptService::class);
 
 function reconciliationEnrollment(string $provider, array $data = []): Enrollment
 {
@@ -532,4 +533,80 @@ it('drops the customer quiz list after a successful provision without touching t
 
     expect($cache->get(CacheKey::StudentQuizzes, ['userId' => $enrollment->customer_id]))->toBeNull()
         ->and($cache->get(CacheKey::TeacherQuizzes, ['userId' => $enrollment->customer_id]))->not->toBeNull();
+});
+
+it('reuses active provisioning attempts and starts a new sequence after success', function (): void {
+    $enrollment = Enrollment::factory()->create();
+    $attempts   = app(ProvisioningAttemptService::class);
+
+    $queued = $attempts->queue($enrollment, ProvisioningTriggerEnum::PAYMENT);
+    expect($attempts->queue($enrollment, ProvisioningTriggerEnum::RETRY)->is($queued))->toBeTrue();
+
+    $running = $attempts->start($queued->id);
+    expect($running)->not->toBeNull();
+    $attempts->scheduleRetry($running);
+    $retry = $attempts->queue($enrollment, ProvisioningTriggerEnum::RETRY);
+    expect($retry->is($queued))->toBeTrue()
+        ->and($retry->status)->toBe(ProvisioningAttemptStatusEnum::RETRY_SCHEDULED);
+
+    $runningRetry = $attempts->start($retry->id);
+    expect($runningRetry)->not->toBeNull();
+    $attempts->succeed($runningRetry, ['moodle_user_id' => 42, 'moodle_course_id' => 99]);
+
+    $next = $attempts->queue($enrollment, ProvisioningTriggerEnum::RETRY);
+    expect($next->id)->not->toBe($queued->id)
+        ->and($next->sequence)->toBe(2)
+        ->and($attempts->start($queued->id))->toBeNull();
+});
+
+it('keeps newer provider references when an older running attempt reports a late result', function (): void {
+    $enrollment = Enrollment::factory()->create([
+        'provisioning_plan' => ['providers' => [['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready']]],
+    ]);
+    $attempts = app(ProvisioningAttemptService::class);
+    $older    = $attempts->queue($enrollment, ProvisioningTriggerEnum::PAYMENT);
+    $older->forceFill(['status' => ProvisioningAttemptStatusEnum::FAILED])->save();
+    $newer        = $attempts->queue($enrollment, ProvisioningTriggerEnum::RETRY);
+    $newerRunning = $attempts->start($newer->id);
+    expect($newerRunning)->not->toBeNull();
+    $attempts->succeed($newerRunning ?? throw new RuntimeException('New attempt did not start.'), [
+        'moodle_user_id' => 84, 'moodle_course_id' => 99,
+    ]);
+
+    $older->forceFill(['status' => ProvisioningAttemptStatusEnum::RUNNING])->save();
+    $attempts->fail($older, new RuntimeException('late provider failure'));
+    expect(data_get($enrollment->fresh()->provisioning_data, 'providers.moodle'))
+        ->toMatchArray(['attempt_sequence' => 2, 'status' => 'success', 'data' => ['moodle_user_id' => 84, 'moodle_course_id' => 99]]);
+
+    $older->forceFill(['status' => ProvisioningAttemptStatusEnum::RUNNING])->save();
+    $attempts->succeed($older, ['moodle_user_id' => 11, 'moodle_course_id' => 12]);
+    expect(data_get($enrollment->fresh()->provisioning_data, 'providers.moodle'))
+        ->toMatchArray(['attempt_sequence' => 2, 'status' => 'success', 'data' => ['moodle_user_id' => 84, 'moodle_course_id' => 99]]);
+});
+
+it('marks aggregate provisioning degraded and keeps only safe failure metadata', function (): void {
+    $enrollment = Enrollment::factory()->create([
+        'provisioning_plan' => ['providers' => [
+            ['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready'],
+            ['provider' => 'skyroom', 'applicable' => true, 'readiness' => 'ready'],
+        ]],
+    ]);
+    $attempts = app(ProvisioningAttemptService::class);
+    $attempt  = $attempts->queue($enrollment, ProvisioningTriggerEnum::PAYMENT);
+    $running  = $attempts->start($attempt->id);
+    expect($running)->not->toBeNull();
+
+    $attempts->fail(
+        $running ?? throw new RuntimeException('Provisioning attempt did not start.'),
+        new RuntimeException('Provider rejected enrollment'),
+        metadata: ['http_status' => 503, 'endpoint' => '/enroll', 'private_token' => 'do-not-store',
+            'validation_errors'  => ['course' => ['not found']]],
+    );
+
+    expect($attempt->fresh()->status)->toBe(ProvisioningAttemptStatusEnum::FAILED)
+        ->and($attempt->fresh()->failure_metadata)->toBe([
+            'endpoint' => '/enroll', 'http_status' => 503, 'validation_errors' => ['course' => '["not found"]'],
+        ]);
+    expect($enrollment->fresh()->provisioning_status)->toBe(ProvisioningStatusEnum::DEGRADED)
+        ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.moodle.status'))->toBe('failed');
 });

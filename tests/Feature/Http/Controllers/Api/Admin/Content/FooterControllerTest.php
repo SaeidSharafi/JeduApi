@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(
+mutates(
     App\Http\Controllers\Api\Admin\Content\FooterController::class,
     App\Actions\Admin\Settings\UpdateFooterSettingAction::class,
 );

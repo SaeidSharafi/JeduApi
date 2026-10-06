@@ -83,4 +83,23 @@ describe('UpdateEnrollmentAction', function (): void {
             ->and($result->notes)->toBe('Updated notes')
             ->and($result->wasRecentlyCreated)->toBeFalse();
     });
+
+    it('appends the reason to enrollment notes without changing access dates', function (): void {
+        $enrollment = Enrollment::factory()->create([
+            'access_start_date' => '2025-01-01',
+            'access_end_date'   => '2025-12-31',
+            'notes'             => 'Existing notes',
+        ]);
+
+        $result = $this->action->handle($enrollment, EnrollmentUpdateData::from([
+            'access_start_date' => '1403-10-12',
+            'access_end_date'   => '1404-10-10',
+            'notes'             => 'Existing notes',
+            'reason'            => 'Customer requested an extension.',
+        ]));
+
+        expect($result->notes)->toContain('Existing notes', 'Customer requested an extension.')
+            ->and($result->access_start_date->format('Y-m-d'))->toBe('2025-01-01')
+            ->and($result->access_end_date->format('Y-m-d'))->toBe('2025-12-31');
+    });
 });

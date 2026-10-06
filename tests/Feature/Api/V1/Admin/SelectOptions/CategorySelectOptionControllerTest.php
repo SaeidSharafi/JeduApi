@@ -7,8 +7,8 @@ use App\Http\Controllers\Api\Admin\SelectOptions\CategorySelectOptionController;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(CategorySelectOptionController::class);
-covers(CategorySelectOptionData::class);
+mutates(CategorySelectOptionController::class);
+mutates(CategorySelectOptionData::class);
 
 describe('Admin Category Select Option API', function (): void {
     it('returns filtered category select options', function (): void {

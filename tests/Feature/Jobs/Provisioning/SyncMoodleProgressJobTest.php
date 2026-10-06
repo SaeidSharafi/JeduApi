@@ -19,7 +19,7 @@ use App\Services\Integrations\MoodleService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
-covers(SyncMoodleProgressJob::class);
+mutates(SyncMoodleProgressJob::class);
 
 it('returns when enrollment does not exist', function (): void {
     $service = $this->mock(MoodleService::class);

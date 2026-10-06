@@ -10,7 +10,7 @@ use App\Models\Bundle;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 
-covers(App\Http\Controllers\Api\Shop\Product\BundleController::class, App\Query\ProductQueryService::class);
+mutates(App\Http\Controllers\Api\Shop\Product\BundleController::class, App\Query\ProductQueryService::class);
 
 function makeBundleStorefrontFixture(array $parentOverrides = []): array
 {

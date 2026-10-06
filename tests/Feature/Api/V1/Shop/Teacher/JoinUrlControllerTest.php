@@ -15,7 +15,7 @@ use Illuminate\Support\Carbon;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(GetTeacherJoinUrlAction::class, TeacherJoinUrlController::class);
+mutates(GetTeacherJoinUrlAction::class, TeacherJoinUrlController::class);
 
 beforeEach(function (): void {
     $this->customer();

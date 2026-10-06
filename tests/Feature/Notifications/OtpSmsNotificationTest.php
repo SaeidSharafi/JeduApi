@@ -7,7 +7,7 @@ use App\Notifications\Auth\OtpSmsNotification;
 use App\Notifications\SmsChannel;
 use App\Notifications\SmsMessage;
 
-covers(OtpSmsNotification::class);
+mutates(OtpSmsNotification::class);
 
 beforeEach(function (): void {
     Notification::fake();

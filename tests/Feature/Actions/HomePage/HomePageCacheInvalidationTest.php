@@ -33,7 +33,7 @@ use App\Enums\System\CacheKey;
 use App\Models\Course;
 use App\Models\Slider;
 
-covers(
+mutates(
     CreateSliderAction::class,
     UpdateSliderAction::class,
     UpdateSliderStatusAction::class,

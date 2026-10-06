@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Cache\CacheStore;
 use App\Enums\MoodleActivityStateEnum;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
@@ -27,6 +28,8 @@ beforeEach(function (): void {
 
     $this->moodleService = app(MoodleService::class);
 });
+
+mutates(MoodleService::class);
 
 it('returns existing moodle user id when found by email', function (): void {
     $user = User::factory()->create([
@@ -211,6 +214,31 @@ it('uses the stored auth_userkey_token when no token is given', function (): voi
             && $request->data()['user']['username'] === '1122334';
     });
 });
+
+it('appends relative or absolute wantsUrl to the generated SSO URL', function (string $wantsUrl, string $expectedDestination): void {
+    config(['provisioning.providers.moodle' => [
+        'base_url'           => 'https://moodle.test/',
+        'token'              => 'moodle-token',
+        'auth_userkey_token' => 'AUTH_USER_KEY',
+    ]]);
+    Http::fake([
+        'https://moodle.test/webservice/rest/server.php' => Http::response([
+            'loginurl' => 'https://moodle.test/login?key=login-key',
+        ]),
+    ]);
+    $service = new MoodleService(new SettingsService(app(CacheStore::class)));
+
+    $result = $service->generateSsoUrl('1122334', $wantsUrl);
+
+    expect($result?->url)->toBe('https://moodle.test/login?key=login-key&wantsurl='.$expectedDestination)
+        ->and($result?->wantsurl)->toBe($wantsUrl);
+    Http::assertSent(fn (Request $request): bool => $request->data()['wsfunction'] === 'auth_userkey_request_login_url'
+        && $request->data()['wstoken']                                             === 'AUTH_USER_KEY'
+        && $request->data()['user']['username']                                    === '1122334');
+})->with([
+    'relative destination' => ['/course/view.php?id=77', 'https%3A%2F%2Fmoodle.test%2Fcourse%2Fview.php%3Fid%3D77'],
+    'absolute destination' => ['https://courses.example.test/welcome?from=sso', 'https%3A%2F%2Fcourses.example.test%2Fwelcome%3Ffrom%3Dsso'],
+]);
 
 it('throws when user key missing from moodle response', function (): void {
     Http::fake([

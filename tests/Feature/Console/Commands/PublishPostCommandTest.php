@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Content\PublicationStatusEnum;
 
-covers(App\Console\Commands\PublishPostCommand::class);
+mutates(App\Console\Commands\PublishPostCommand::class);
 
 describe('PublishPostCommand', function (): void {
     beforeEach(function (): void {

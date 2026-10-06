@@ -11,7 +11,7 @@ use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\System\CacheKey;
 use App\Models\DiscountPromotion;
 
-covers(
+mutates(
     CreateDiscountPromotionAction::class,
     UpdateDiscountPromotionAction::class,
     DeleteDiscountPromotionAction::class,

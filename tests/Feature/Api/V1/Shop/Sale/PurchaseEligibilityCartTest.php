@@ -66,7 +66,7 @@ function makeCartEligibilityBundle(ProductDeliveryOption $component): ProductDel
     return $bundleOption;
 }
 
-covers(ValidateNoDuplicatePurchasesAction::class);
+mutates(ValidateNoDuplicatePurchasesAction::class);
 
 it('returns 422 before adding a Bundle whose component Productable the Customer owns', function (): void {
     $customer                  = User::factory()->create(['uuid' => (string) Str::uuid7()]);

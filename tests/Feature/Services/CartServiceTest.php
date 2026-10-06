@@ -71,7 +71,7 @@ function seedCartItem(Cart $cart, ProductDeliveryOption $pdo, ?int $snapshotVers
     ]);
 }
 
-covers(CartService::class);
+mutates(CartService::class);
 
 describe('CartService', function (): void {
 

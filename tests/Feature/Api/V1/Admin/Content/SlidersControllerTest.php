@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\Admin\Content\Slider\UpdateSliderStatusController;
 use App\Models\Slider;
 use Plank\Mediable\Media;
 
-covers(SliderController::class, UpdateSliderStatusController::class);
+mutates(SliderController::class, UpdateSliderStatusController::class);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {

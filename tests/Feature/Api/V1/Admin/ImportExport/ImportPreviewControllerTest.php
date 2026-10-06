@@ -17,7 +17,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
-covers(CreateImportPreviewAction::class);
+mutates(CreateImportPreviewAction::class);
 
 beforeEach(function (): void {
     Storage::fake('local');

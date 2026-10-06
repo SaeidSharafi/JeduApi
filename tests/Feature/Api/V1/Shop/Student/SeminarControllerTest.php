@@ -12,7 +12,7 @@ use App\Models\User;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(ListStudentEnrollmentsAction::class, SeminarController::class);
+mutates(ListStudentEnrollmentsAction::class, SeminarController::class);
 
 beforeEach(function (): void {
     $this->customer();

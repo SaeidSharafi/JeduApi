@@ -17,7 +17,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-covers(SmsChannel::class, SmsNotificationOptionEnum::class);
+mutates(SmsChannel::class, SmsNotificationOptionEnum::class);
 
 describe('SmsChannel Sending Logic', function (): void {
     beforeEach(function (): void {

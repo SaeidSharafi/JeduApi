@@ -23,7 +23,7 @@ use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
-covers(CreateBundlePurchaseAction::class);
+mutates(CreateBundlePurchaseAction::class);
 
 /** @return array{ProductDeliveryOption, ProductDeliveryOption, ProductDeliveryOption} */
 function checkoutBundle(): array

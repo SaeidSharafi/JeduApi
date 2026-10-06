@@ -11,7 +11,7 @@ use App\Services\Payment\Digipay\DigipayConfigRepository;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
 
-covers(DigipayAuthenticator::class);
+mutates(DigipayAuthenticator::class);
 
 beforeEach(function (): void {
     config()->set('payments.digipay.endpoints.sandbox.base_url', 'https://api.digipay.test');

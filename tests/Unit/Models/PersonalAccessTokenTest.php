@@ -7,7 +7,7 @@ use App\Enums\System\CacheKey;
 use App\Models\PersonalAccessToken;
 use App\Models\User;
 
-covers(PersonalAccessToken::class);
+mutates(PersonalAccessToken::class);
 
 it('forgets the cached lookup and user snapshot of every token a model owns', function (): void {
     $user  = User::factory()->create();

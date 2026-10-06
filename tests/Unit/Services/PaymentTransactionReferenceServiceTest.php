@@ -10,7 +10,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Random\Engine;
 use Random\Randomizer;
 
-covers(PaymentTransactionReferenceService::class);
+mutates(PaymentTransactionReferenceService::class);
 
 /** @param list<int> $values */
 function paymentReferenceServiceWithValues(array $values): PaymentTransactionReferenceService

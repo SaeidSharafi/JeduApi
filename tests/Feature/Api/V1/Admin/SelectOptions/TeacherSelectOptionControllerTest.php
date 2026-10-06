@@ -8,8 +8,8 @@ use App\Models\Teacher;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(TeacherSelectOptionController::class);
-covers(TeacherSelectOptionData::class);
+mutates(TeacherSelectOptionController::class);
+mutates(TeacherSelectOptionData::class);
 
 describe('Admin Teacher Select Option API', function (): void {
     it('returns filtered teacher select options', function (): void {

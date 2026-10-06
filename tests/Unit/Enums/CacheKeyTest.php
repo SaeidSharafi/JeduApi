@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\System\CacheKey;
 use App\Enums\System\CacheTag;
 
-covers(CacheKey::class, CacheTag::class);
+mutates(CacheKey::class, CacheTag::class);
 
 it('substitutes named parameters into the key template', function (): void {
     $resolved = CacheKey::GoodForStart->resolve(['slug' => 'math', 'limit' => 12]);

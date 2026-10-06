@@ -12,7 +12,7 @@ use App\Models\Enrollment;
 use App\Models\ProductDeliveryOption;
 use App\Services\Enrollment\ProvisioningPlanResolver;
 
-covers(ProvisioningPlanResolver::class);
+mutates(ProvisioningPlanResolver::class);
 
 function moodleDeliveryOption(): ProductDeliveryOption
 {

@@ -15,7 +15,7 @@ use App\Models\Setting;
 use App\Services\Integrations\AbstractIntegrationService;
 use App\Services\SettingsService;
 
-covers(
+mutates(
     BuildProvisioningProviderSettingAction::class,
     ProvisioningProviderSettingsEnum::class,
     ProvisioningProviderSettingData::class,

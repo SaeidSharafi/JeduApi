@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Helpers\ProvisioningErrorContext;
+use Illuminate\Http\Request;
+use Illuminate\Testing\TestResponse;
 
-covers(ProvisioningErrorContext::class);
+mutates(ProvisioningErrorContext::class);
 
 it('redacts PII patterns and truncates an upstream body', function (): void {
     $body = 'user me@example.com phone 09121234567 id 1234567890';
@@ -56,4 +59,70 @@ it('leaves non-sensitive scalar context untouched and skips empty metadata', fun
         'endpoint'    => '/webservice/rest/server.php',
         'function'    => 'enrol_manual_enrol_users',
     ])->and(ProvisioningErrorContext::sanitize([]))->toBe([]);
+});
+
+describe('Provisioning API error disclosure', function (): void {
+    it('hides all upstream context from API errors when debug is disabled', function (): void {
+        config(['app.debug' => false]);
+        $failure = new RecoverableProvisioningException('Provisioning failed', metaData: [
+            'http_status'  => 502,
+            'wstoken'      => 'upstream-token-secret',
+            'password'     => 'student-password',
+            'license_key'  => 'license-secret',
+            'raw_response' => ['message' => 'student@example.test used phone 09121234567 and id 1234567890'],
+        ]);
+
+        $response = $failure->render(Request::create('/api/v1/provisioning', 'GET', server: [
+            'HTTP_ACCEPT' => 'application/json',
+        ]));
+
+        expect($response)->not->toBeNull();
+        TestResponse::fromBaseResponse($response)
+            ->assertStatus(503)
+            ->assertJsonPath('message', 'Provisioning failed')
+            ->assertJsonPath('errors', null)
+            ->assertJsonPath('metadata', [])
+            ->assertDontSee('upstream-token-secret')
+            ->assertDontSee('student-password')
+            ->assertDontSee('license-secret')
+            ->assertDontSee('student@example.test');
+    });
+
+    it('returns scrubbed safe context in API errors when debug is enabled', function (): void {
+        config(['app.debug' => true]);
+        $failure = new RecoverableProvisioningException('Provisioning failed', metaData: [
+            'http_status'  => 502,
+            'endpoint'     => '/webservice/rest/server.php',
+            'wstoken'      => 'upstream-token-secret',
+            'password'     => 'student-password',
+            'license_key'  => 'license-secret',
+            'raw_response' => ['message' => 'student@example.test used phone 09121234567 and id 1234567890'],
+        ]);
+
+        $response = $failure->render(Request::create('/api/v1/provisioning', 'GET', server: [
+            'HTTP_ACCEPT' => 'application/json',
+        ]));
+
+        expect($response)->not->toBeNull();
+        TestResponse::fromBaseResponse($response)
+            ->assertStatus(503)
+            ->assertJsonPath('errors.debug.http_status', 502)
+            ->assertJsonPath('errors.debug.endpoint', '/webservice/rest/server.php')
+            ->assertJsonPath('errors.debug.wstoken', '[REDACTED]')
+            ->assertJsonPath('errors.debug.password', '[REDACTED]')
+            ->assertJsonPath('errors.debug.license_key', '[REDACTED]')
+            ->assertJsonPath('errors.debug.raw_response', '{"message":"[REDACTED] used phone [REDACTED] and id [REDACTED]"}')
+            ->assertDontSee('upstream-token-secret')
+            ->assertDontSee('student-password')
+            ->assertDontSee('license-secret')
+            ->assertDontSee('student@example.test')
+            ->assertDontSee('09121234567')
+            ->assertDontSee('1234567890');
+    });
+
+    it('falls through to the normal HTML error handler for non-API web requests', function (): void {
+        $failure = new RecoverableProvisioningException('Provisioning failed');
+
+        expect($failure->render(Request::create('/dashboard', 'GET')))->toBeNull();
+    });
 });

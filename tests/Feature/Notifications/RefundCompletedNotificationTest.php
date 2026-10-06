@@ -13,7 +13,7 @@ use App\Notifications\SmsChannel;
 use App\Notifications\SmsMessage;
 use Illuminate\Support\Facades\Http;
 
-covers(RefundCompletedNotification::class);
+mutates(RefundCompletedNotification::class);
 
 /**
  * Build a complete refund graph: Order → OrderItem → Refund,

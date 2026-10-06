@@ -9,7 +9,7 @@ use App\Models\Staff;
 use App\Services\SettingSecretRedactor;
 use App\Services\SettingsService;
 
-covers(SettingSecretRedactor::class);
+mutates(SettingSecretRedactor::class);
 
 /**
  * Every secret field of every integration setting, with a representative

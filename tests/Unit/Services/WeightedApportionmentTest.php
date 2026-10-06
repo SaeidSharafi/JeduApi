@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Services\WeightedApportionment;
 
-covers(WeightedApportionment::class);
+mutates(WeightedApportionment::class);
 
 beforeEach(function (): void {
     $this->apportionment = new WeightedApportionment();

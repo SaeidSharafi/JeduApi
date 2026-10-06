@@ -27,7 +27,7 @@ use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Review;
 
-covers(
+mutates(
     UpdateCategoryAction::class,
     UpdateDigitalAssetAction::class,
     UpdateBundleAction::class,

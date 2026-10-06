@@ -20,7 +20,7 @@ describe('RetryProvisioningAction', function (): void {
             app(ProvisioningPlanResolver::class),
             app(App\Services\Provisioning\ProvisioningAttemptService::class),
         );
-        Queue::fake();
+        Queue::fake([ProvisionEnrollmentProviderJob::class]);
     });
 
     it('throws exception when no failed providers found', function (): void {
@@ -230,5 +230,45 @@ describe('RetryProvisioningAction', function (): void {
 
         expect($result['providers'])->toBe(['moodle']);
         Queue::assertPushed(ProvisionEnrollmentProviderJob::class);
+    });
+
+    it('retries only the selected failed provider', function (): void {
+        $pdo = ProductDeliveryOption::factory()->create([
+            'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
+            'details_json'    => ['ims_course_code' => 'IMS-123'],
+        ]);
+        $enrollment = Enrollment::factory()->create([
+            'product_delivery_option_id' => $pdo->id,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+            'provisioning_plan'          => ['version' => 1, 'providers' => [
+                ['provider' => 'ims', 'applicable' => true, 'readiness' => 'ready'],
+                ['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready'],
+            ]],
+            'provisioning_data' => ['providers' => [
+                'ims'    => ['status' => 'failed'],
+                'moodle' => ['status' => 'failed'],
+            ]],
+        ]);
+
+        $result = $this->action->handle($enrollment, 'moodle');
+
+        expect($result['providers'])->toBe(['moodle']);
+        Queue::assertPushed(ProvisionEnrollmentProviderJob::class, 1);
+    });
+
+    it('rejects a selected provider that has no failed attempt without queueing work', function (): void {
+        $enrollment = Enrollment::factory()->create([
+            'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
+            'provisioning_plan' => ['version' => 1, 'providers' => [
+                ['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready'],
+            ]],
+            'provisioning_data' => ['providers' => [
+                'moodle' => ['status' => 'success'],
+            ]],
+        ]);
+
+        expect(fn () => $this->action->handle($enrollment, 'moodle'))
+            ->toThrow(ValidationException::class, 'No failed providers found to retry');
+        Queue::assertNotPushed(ProvisionEnrollmentProviderJob::class);
     });
 });

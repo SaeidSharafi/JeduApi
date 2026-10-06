@@ -16,7 +16,7 @@ use Mockery as m;
 
 use function Pest\Laravel\postJson;
 
-covers(WalletTopupController::class);
+mutates(WalletTopupController::class);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 

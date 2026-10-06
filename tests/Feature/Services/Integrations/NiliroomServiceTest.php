@@ -12,7 +12,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 
-covers(NiliroomService::class);
+mutates(NiliroomService::class);
 
 it('ensures an account without enrolling or issuing grants', function (): void {
     Http::fake(['niliroom.test/api/v1/users/eshop/user-7' => Http::response(['data' => ['id' => 'identity-7']])]);

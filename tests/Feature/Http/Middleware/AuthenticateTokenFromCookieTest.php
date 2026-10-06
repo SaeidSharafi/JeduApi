@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-covers(AuthenticateTokenFromCookie::class);
+mutates(AuthenticateTokenFromCookie::class);
 
 describe('AuthenticateTokenFromCookie', function (): void {
     beforeEach(function (): void {

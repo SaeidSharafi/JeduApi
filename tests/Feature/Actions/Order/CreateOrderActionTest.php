@@ -14,7 +14,11 @@ use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Events\OrderCreatedEvent;
+use App\Models\Bundle;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
 use App\Models\Enrollment;
@@ -952,5 +956,98 @@ describe('CreateOrderAction', function (): void {
             ->and($giftItem->qty_ordered)->toBe(1)
             ->and($giftItem->payment_type)->toBe(OrderItemPaymentTypeEnum::FULL_PAYMENT)
             ->and($giftItem->total)->toBe(0);
+    });
+});
+
+function makeAdminBundleForEligibility(?int $capacity = null, bool $componentPublished = true): array
+{
+    $componentProduct = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+    $component        = ProductDeliveryOption::factory()->create([
+        'product_id' => $componentProduct->id,
+        'price'      => 120000,
+        'capacity'   => 10,
+        'status'     => $componentPublished ? PublicationStatusEnum::PUBLISHED : PublicationStatusEnum::DRAFT,
+    ]);
+    $bundleProduct = Product::factory()->create([
+        'productable_type' => ProductableEnum::BUNDLE->value,
+        'productable_id'   => Bundle::factory()->create([
+            'status'    => PublicationStatusEnum::PUBLISHED,
+            'full_name' => 'Eligibility Bundle',
+        ])->id,
+        'name'   => 'Eligibility Bundle',
+        'status' => PublicationStatusEnum::PUBLISHED,
+    ]);
+    $bundle = ProductDeliveryOption::factory()->create([
+        'product_id'       => $bundleProduct->id,
+        'name'             => 'Eligibility Bundle Option',
+        'price'            => 100000,
+        'capacity'         => $capacity,
+        'fulfillment_type' => FulfillmentTypeEnum::COMPOSITE,
+        'delivery_method'  => DeliveryMethodEnum::BUNDLE,
+        'status'           => PublicationStatusEnum::PUBLISHED,
+    ]);
+    $bundle->bundleComponents()->attach([$component->id => ['allocation' => 100000]]);
+
+    return [$bundle, $component];
+}
+
+function attemptAdminBundleOrder(ProductDeliveryOption $bundle, string $paymentType = 'full_payment', int $quantity = 1, ?int $version = 1): void
+{
+    app(CreateOrderAction::class)->handle(new OrderCreateData(
+        status: OrderStatusEnum::PENDING->value,
+        customer_id: User::factory()->create()->id,
+        items: [new OrderItemCreateData(
+            product_delivery_option_id: $bundle->id,
+            payment_type: $paymentType,
+            qty_ordered: $quantity,
+            composition_version: $version,
+        )],
+    ));
+}
+
+describe('CreateOrderAction bundle eligibility', function (): void {
+    it('rejects a bundle order when its composition version is stale', function (): void {
+        [$bundle] = makeAdminBundleForEligibility();
+        $bundle->update(['composition_version' => 2]);
+
+        expect(fn () => attemptAdminBundleOrder($bundle))
+            ->toThrow(ValidationException::class, __('messages.product.bundle_changed'));
+        $this->assertDatabaseCount('orders', 0);
+    });
+
+    it('rejects a bundle order when requested quantity exceeds remaining capacity', function (): void {
+        [$bundle] = makeAdminBundleForEligibility(capacity: 1);
+        $bundle->update(['reserved_count' => 1]);
+
+        expect(fn () => attemptAdminBundleOrder($bundle))
+            ->toThrow(ValidationException::class, __('messages.order.insufficient_capacity', [
+                'product'   => $bundle->name,
+                'available' => 0,
+            ]));
+        $this->assertDatabaseCount('orders', 0);
+    });
+
+    it('rejects a bundle order when a component is unavailable', function (): void {
+        [$bundle] = makeAdminBundleForEligibility(componentPublished: false);
+
+        expect(fn () => attemptAdminBundleOrder($bundle))
+            ->toThrow(ValidationException::class, __('messages.order.item_not_available', ['product' => $bundle->name]));
+        $this->assertDatabaseCount('orders', 0);
+    });
+
+    it('rejects multiple quantities for a bundle order', function (): void {
+        [$bundle] = makeAdminBundleForEligibility();
+
+        expect(fn () => attemptAdminBundleOrder($bundle, quantity: 2))
+            ->toThrow(ValidationException::class, __('messages.order.prepayment_not_available', ['product' => $bundle->name]));
+        $this->assertDatabaseCount('orders', 0);
+    });
+
+    it('rejects prepayment for a bundle order', function (): void {
+        [$bundle] = makeAdminBundleForEligibility();
+
+        expect(fn () => attemptAdminBundleOrder($bundle, paymentType: OrderItemPaymentTypeEnum::PRE_PAYMENT->value))
+            ->toThrow(ValidationException::class, __('messages.order.prepayment_not_available', ['product' => $bundle->name]));
+        $this->assertDatabaseCount('orders', 0);
     });
 });

@@ -2,13 +2,23 @@
 
 declare(strict_types=1);
 
+use App\Actions\Admin\Bundle\DeleteBundleAction;
+use App\Contracts\Cache\CacheStore;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\PermissionEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\System\CacheTag;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Bundle;
+use App\Models\Product;
+use App\Models\ProductDeliveryOption;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\assertDatabaseHas;
+
+mutates(DeleteBundleAction::class);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
@@ -144,4 +154,54 @@ it('returns bundle media from the admin show endpoint', function (): void {
         ->assertJsonPath('data.id', $bundle->id)
         ->assertJsonPath('data.media.cover.0.id', $this->cover->id)
         ->assertJsonPath('data.media.cover.0.tag', 'cover');
+});
+
+function bundleProductForDeletion(Bundle $bundle): Product
+{
+    return Product::factory()->create([
+        'productable_type' => 'bundle',
+        'productable_id'   => $bundle->id,
+    ]);
+}
+
+function bundleOptionForDeletion(Product $product): ProductDeliveryOption
+{
+    return ProductDeliveryOption::factory()->create([
+        'product_id'       => $product->id,
+        'fulfillment_type' => FulfillmentTypeEnum::COMPOSITE,
+        'delivery_method'  => DeliveryMethodEnum::BUNDLE,
+    ]);
+}
+
+describe('DeleteBundleAction', function (): void {
+    it('archives a Bundle when a delivery option has order history', function (): void {
+        $bundle  = Bundle::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $product = bundleProductForDeletion($bundle);
+        $option  = bundleOptionForDeletion($product);
+        App\Models\OrderItem::factory()->create(['product_delivery_option_id' => $option->id]);
+        $cache         = app(CacheStore::class);
+        $versionBefore = $cache->version(CacheTag::Search);
+
+        app(DeleteBundleAction::class)->handle($bundle);
+
+        expect($bundle->fresh()->status)->toBe(PublicationStatusEnum::ARCHIVED)
+            ->and(Product::query()->whereKey($product->id)->exists())->toBeTrue()
+            ->and(ProductDeliveryOption::query()->whereKey($option->id)->exists())->toBeTrue()
+            ->and($cache->version(CacheTag::Search))->toBeGreaterThan($versionBefore);
+    });
+
+    it('deletes an unused Bundle and its product records while invalidating search', function (): void {
+        $bundle        = Bundle::factory()->create();
+        $product       = bundleProductForDeletion($bundle);
+        $option        = bundleOptionForDeletion($product);
+        $cache         = app(CacheStore::class);
+        $versionBefore = $cache->version(CacheTag::Search);
+
+        app(DeleteBundleAction::class)->handle($bundle);
+
+        expect(Bundle::query()->whereKey($bundle->id)->exists())->toBeFalse()
+            ->and(Product::query()->whereKey($product->id)->exists())->toBeFalse()
+            ->and(ProductDeliveryOption::query()->whereKey($option->id)->exists())->toBeFalse()
+            ->and($cache->version(CacheTag::Search))->toBeGreaterThan($versionBefore);
+    });
 });

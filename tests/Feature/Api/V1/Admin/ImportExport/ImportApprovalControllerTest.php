@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-covers(ApproveImportRunAction::class);
+mutates(ApproveImportRunAction::class);
 
 beforeEach(function (): void {
     Storage::fake('local');

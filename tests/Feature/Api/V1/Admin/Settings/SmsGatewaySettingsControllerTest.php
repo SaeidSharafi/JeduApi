@@ -13,7 +13,7 @@ use App\Models\Setting;
 use App\Services\SettingSecretRedactor;
 use Illuminate\Support\Facades\Crypt;
 
-covers(
+mutates(
     SmsGatewaySettingsController::class,
     SmsGatewaySettingData::class,
     BuildSmsGatewaySettingAction::class,

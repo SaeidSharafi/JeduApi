@@ -23,6 +23,7 @@
             <directory>app</directory>
         </include>
         <exclude>
+            <directory>app/Services/Fakes</directory>
             <file>app/Enums/PermissionEnum.php</file>
             <file>app/Console/Commands/SetupScribe.php</file>
             <file>app/Providers/ScribeServiceProvider.php</file>

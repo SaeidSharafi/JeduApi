@@ -19,7 +19,7 @@ use App\Models\User;
 
 use function Pest\Laravel\assertDatabaseCount;
 
-covers(BundlePurchase::class);
+mutates(BundlePurchase::class);
 
 /** @param  array<int, array{status: OrderItemStatusEnum, enrollment_status?: EnrollmentStatusEnum, provisioning_status?: ProvisioningStatusEnum, revocation_status?: EnrollmentRevocationStatusEnum, no_enrollment?: bool}>  $components */
 function bundlePurchaseWithComponents(array $components, bool $paid = true, bool $orderCancelled = false): BundlePurchase

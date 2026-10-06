@@ -8,8 +8,8 @@ use App\Models\User;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(CustomerSelectOptionController::class);
-covers(UserSelectOptionData::class);
+mutates(CustomerSelectOptionController::class);
+mutates(UserSelectOptionData::class);
 
 describe('Admin Customer Select Option API', function (): void {
     beforeEach(function (): void {

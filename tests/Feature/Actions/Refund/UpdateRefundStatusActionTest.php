@@ -14,11 +14,14 @@ use App\Events\RefundCompletedEvent;
 use App\Exceptions\RefundGatewayException;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
+use App\Services\Payment\Digipay\DigipayAdminService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
+use Mockery\MockInterface;
 
 describe('UpdateRefundStatusAction', function (): void {
     beforeEach(function (): void {
@@ -419,5 +422,51 @@ describe('UpdateRefundStatusAction', function (): void {
 
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);
         Event::assertDispatched(RefundCompletedEvent::class);
+    });
+});
+
+describe('UpdateRefundStatusAction provider failure', function (): void {
+    it('records a failed status and preserves the item when Digipay throws an unexpected error', function (): void {
+        Event::fake([RefundCompletedEvent::class]);
+
+        $order = Order::factory()->withCalculatedTotals([
+            ['price' => 50000, 'total' => 50000, 'status' => OrderItemStatusEnum::PENDING],
+        ])->create();
+        $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::DIGIPAY,
+            'amount'      => 50000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+        $orderItem = $order->items()->firstOrFail();
+        $refund    = Refund::factory()->create([
+            'order_item_id' => $orderItem->id,
+            'status'        => RefundStatusEnum::PENDING,
+            'amount'        => 50000,
+            'admin_notes'   => 'Initial completion attempt',
+        ]);
+
+        $this->mock(DigipayAdminService::class, function (MockInterface $service): void {
+            $service->shouldReceive('refund')
+                ->once()
+                ->withArgs(fn (Payment $payment, ?int $amount): bool => $payment->method === PaymentMethodEnum::DIGIPAY && $amount === 50000)
+                ->andThrow(new RuntimeException('provider unavailable'));
+        });
+
+        $data = new RefundStatusUpdateData(
+            status: RefundStatusEnum::COMPLETED->value,
+            tracking_code: null,
+            admin_notes: null,
+        );
+
+        expect(fn () => resolve(UpdateRefundStatusAction::class)->handle($refund, $data))
+            ->toThrow(RuntimeException::class, 'provider unavailable');
+
+        expect($refund->fresh()->status)->toBe(RefundStatusEnum::FAILED)
+            ->and($refund->fresh()->admin_notes)->toBe("Initial completion attempt\nprovider unavailable");
+        expect($orderItem->fresh()->status)->toBe(OrderItemStatusEnum::PENDING);
+        expect($order->fresh()->total_refunded)->toBe(0);
+        $this->assertDatabaseCount('enrollments', 0);
+        Event::assertNotDispatched(RefundCompletedEvent::class);
     });
 });

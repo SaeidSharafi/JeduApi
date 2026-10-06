@@ -55,7 +55,7 @@ function makeEligibilityBundle(array $components): ProductDeliveryOption
     return $option;
 }
 
-covers(ValidateNoDuplicatePurchasesAction::class);
+mutates(ValidateNoDuplicatePurchasesAction::class);
 
 it('rejects a Bundle when the Customer owns a component Productable through an alternate PDO', function (string $modelClass, ProductableEnum $type): void {
     $customer                        = User::factory()->create();

@@ -11,6 +11,8 @@ use App\Services\SettingsService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
+mutates(SkyroomService::class);
+
 describe('findOrCreateUser', function (): void {
     it('returns skyroom_user_id when getUser finds an existing user', function (): void {
         Http::fake([
@@ -47,6 +49,9 @@ describe('findOrCreateUser', function (): void {
 
         expect(fn (): array => makeSkyroomService()->findOrCreateUser(makeUser(3)))
             ->toThrow(RecoverableProvisioningException::class);
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request): bool => $request->data()['action'] === 'getUser');
     });
 });
 

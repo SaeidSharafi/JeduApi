@@ -7,7 +7,7 @@ use App\Enums\PermissionEnum;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
-covers(CreateExportAction::class);
+mutates(CreateExportAction::class);
 
 it('stores a private filtered export in the same deterministic order as the user list without pagination', function (): void {
     Storage::fake('local');

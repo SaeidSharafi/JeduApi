@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Plank\Mediable\Facades\MediaUploader;
 
-covers(SettingsService::class);
+mutates(SettingsService::class);
 
 test('it retrieves an existing setting from the database', function (): void {
     // Arrange: Create a setting in our fresh, empty database.

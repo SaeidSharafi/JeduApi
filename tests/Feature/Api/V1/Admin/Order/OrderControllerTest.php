@@ -14,8 +14,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Traits\AuthTestTrait;
 
-covers(App\Data\Admin\Order\OrderData::class);
-covers(App\Data\Admin\Order\OrderItemData::class);
+mutates(App\Data\Admin\Order\OrderData::class);
+mutates(App\Data\Admin\Order\OrderItemData::class);
 
 uses(AuthTestTrait::class);
 

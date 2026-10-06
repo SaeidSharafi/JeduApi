@@ -11,7 +11,7 @@ use App\Enums\ImportExport\SpreadsheetResourceEnum;
 use App\Services\ImportExport\ImportPreviewEngine;
 use Illuminate\Validation\ValidationException;
 
-covers(ImportPreviewEngine::class);
+mutates(ImportPreviewEngine::class);
 
 it('previews rows without an identity column or duplicate matching when no key is selected', function (): void {
     $resource = new class implements ImportResourceContract

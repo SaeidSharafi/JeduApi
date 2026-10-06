@@ -22,8 +22,8 @@ use Illuminate\Support\Facades\Event;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(ReviewBundleAction::class);
-covers(ReviewBundleController::class);
+mutates(ReviewBundleAction::class);
+mutates(ReviewBundleController::class);
 
 /**
  * Build a Bundle product with its parent COMPOSITE/BUNDLE delivery option.

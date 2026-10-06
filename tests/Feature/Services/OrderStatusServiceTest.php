@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
+use App\Actions\Admin\Order\UpdateOrderAction;
+use App\Data\Admin\Order\OrderUpdateData;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
@@ -17,6 +19,7 @@ use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Models\Bundle;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
+use App\Models\DiscountPromotionUsage;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -26,6 +29,8 @@ use App\Models\ProductDeliveryOption;
 use App\Services\OrderStatusService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
+
+mutates(UpdateOrderAction::class);
 
 describe('OrderStatusService', function (): void {
 
@@ -394,5 +399,59 @@ describe('OrderStatusService', function (): void {
             'order_item_id'              => $item->id,
             'product_delivery_option_id' => $bundleOption->id,
         ]);
+    });
+});
+
+describe('UpdateOrderAction', function (): void {
+    it('releases only pending reservations and cancels enrollments when closing an order', function (OrderStatusEnum $status): void {
+        $order           = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+        $pendingOption   = ProductDeliveryOption::factory()->create(['reserved_count' => 5]);
+        $completedOption = ProductDeliveryOption::factory()->create(['reserved_count' => 4]);
+        $pending         = OrderItem::factory()->for($order)->create([
+            'product_delivery_option_id' => $pendingOption->id,
+            'qty_ordered'                => 2,
+            'status'                     => OrderItemStatusEnum::PENDING,
+        ]);
+        OrderItem::factory()->for($order)->create([
+            'product_delivery_option_id' => $completedOption->id,
+            'status'                     => OrderItemStatusEnum::COMPLETED,
+        ]);
+        $enrollment = Enrollment::factory()->create([
+            'order_id'                   => $order->id,
+            'order_item_id'              => $pending->id,
+            'customer_id'                => $order->customer_id,
+            'product_delivery_option_id' => $pendingOption->id,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        ]);
+        Event::fake([OrderStatusUpdatedEvent::class]);
+
+        $result = app(UpdateOrderAction::class)->handle(new OrderUpdateData($status->value), $order);
+
+        expect($result->status)->toBe($status);
+        expect($pendingOption->fresh()->reserved_count)->toBe(3);
+        expect($completedOption->fresh()->reserved_count)->toBe(4);
+        expect($enrollment->fresh()->enrollment_status)->toBe(EnrollmentStatusEnum::CANCELLED);
+        Event::assertDispatched(OrderStatusUpdatedEvent::class, fn ($event): bool => $event->order->id === $order->id);
+    })->with([OrderStatusEnum::CANCELLED, OrderStatusEnum::REFUNDED]);
+
+    it('releases a promotion usage slot when an order fails', function (): void {
+        $order     = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+        $promotion = DiscountPromotion::factory()->create();
+        $usage     = DiscountPromotionUsage::query()->create([
+            'discount_promotion_id' => $promotion->id,
+            'customer_id'           => $order->customer_id,
+            'order_id'              => $order->id,
+        ]);
+        Event::fake([OrderStatusUpdatedEvent::class]);
+
+        $result = app(UpdateOrderAction::class)->handle(new OrderUpdateData(OrderStatusEnum::FAILED->value), $order);
+
+        expect($result->status)->toBe(OrderStatusEnum::FAILED)
+            ->and(DiscountPromotionUsage::query()->whereKey($usage->id)->exists())->toBeFalse();
+        Event::assertDispatched(
+            OrderStatusUpdatedEvent::class,
+            fn (OrderStatusUpdatedEvent $event): bool => $event->order->id === $order->id
+                && $event->order->status                                   === OrderStatusEnum::FAILED,
+        );
     });
 });

@@ -10,8 +10,8 @@ use App\Models\DigitalAsset;
 uses(Tests\Support\Traits\AuthTestTrait::class);
 uses(Tests\Support\Traits\FakeMediaTrait::class);
 
-covers(DigitalAssetSelectOptionController::class);
-covers(DigitalAssetSelectOptionData::class);
+mutates(DigitalAssetSelectOptionController::class);
+mutates(DigitalAssetSelectOptionData::class);
 
 describe('Admin Digital Asset Select Option API', function (): void {
     beforeEach(function (): void {

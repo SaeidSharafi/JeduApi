@@ -13,7 +13,7 @@ use App\Services\Integrations\MoodleService;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(GenerateMoodleSsoUrlAction::class);
+mutates(GenerateMoodleSsoUrlAction::class);
 
 beforeEach(function (): void {
     $this->customer();

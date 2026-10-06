@@ -38,7 +38,7 @@ use Mockery\MockInterface;
 
 use function Pest\Laravel\assertDatabaseCount;
 
-covers(RefundOrderAction::class);
+mutates(RefundOrderAction::class);
 
 /**
  * @param  list<array{base: int, paid: int, status?: OrderItemStatusEnum, provider?: string}>  $standalone

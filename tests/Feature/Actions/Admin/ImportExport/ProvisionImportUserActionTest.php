@@ -12,7 +12,7 @@ use App\Models\ImportRun;
 use App\Models\ImportRunRow;
 use App\Models\User;
 
-covers(ProvisionImportUserAction::class);
+mutates(ProvisionImportUserAction::class);
 
 it('exhausts retries after three failures without calling the provider again', function (): void {
     $user = User::factory()->create();

@@ -10,7 +10,7 @@ use App\Models\Vendor;
 
 use function Pest\Laravel\getJson;
 
-covers(App\Data\Admin\Order\OrderItemData::class);
+mutates(App\Data\Admin\Order\OrderItemData::class);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 

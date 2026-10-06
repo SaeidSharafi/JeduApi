@@ -8,8 +8,8 @@ use App\Models\Blog\BlogCategory;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(BlogCategorySelectOptionController::class);
-covers(BlogCategorySelectOptionData::class);
+mutates(BlogCategorySelectOptionController::class);
+mutates(BlogCategorySelectOptionData::class);
 
 describe('Admin Blog Category Select Option API', function (): void {
     beforeEach(function (): void {

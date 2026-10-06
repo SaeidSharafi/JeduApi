@@ -6,6 +6,7 @@ use App\Enums\PermissionEnum;
 use App\Models\Payment;
 use App\Models\Staff;
 use App\Policies\Admin\PaymentPolicy;
+use Spatie\Permission\Models\Role;
 
 describe('PaymentPolicy', function (): void {
     beforeEach(function (): void {
@@ -17,7 +18,7 @@ describe('PaymentPolicy', function (): void {
 
     it('allows view any with permission', function (): void {
         $staff = Staff::factory()->create();
-        $role  = Spatie\Permission\Models\Role::create([
+        $role  = Role::create([
             'name'       => 'test_payment_role',
             'label'      => 'Test Payment Role',
             'guard_name' => 'staff',
@@ -38,7 +39,7 @@ describe('PaymentPolicy', function (): void {
 
     it('allows inquire with permission', function (): void {
         $staff = Staff::factory()->create();
-        $role  = Spatie\Permission\Models\Role::create([
+        $role  = Role::create([
             'name'       => 'test_payment_role',
             'label'      => 'Test Payment Role',
             'guard_name' => 'staff',
@@ -59,7 +60,7 @@ describe('PaymentPolicy', function (): void {
 
     it('allows refund with update permission', function (): void {
         $staff = Staff::factory()->create();
-        $role  = Spatie\Permission\Models\Role::create([
+        $role  = Role::create([
             'name'       => 'test_payment_role',
             'label'      => 'Test Payment Role',
             'guard_name' => 'staff',
@@ -80,7 +81,7 @@ describe('PaymentPolicy', function (): void {
 
     it('allows deliver with update permission', function (): void {
         $staff = Staff::factory()->create();
-        $role  = Spatie\Permission\Models\Role::create([
+        $role  = Role::create([
             'name'       => 'test_payment_role',
             'label'      => 'Test Payment Role',
             'guard_name' => 'staff',
@@ -101,7 +102,7 @@ describe('PaymentPolicy', function (): void {
 
     it('allows reverse with delete permission', function (): void {
         $staff = Staff::factory()->create();
-        $role  = Spatie\Permission\Models\Role::create([
+        $role  = Role::create([
             'name'       => 'test_payment_role',
             'label'      => 'Test Payment Role',
             'guard_name' => 'staff',
@@ -117,4 +118,52 @@ describe('PaymentPolicy', function (): void {
 
         expect($this->policy->reverse($staff, $this->payment))->toBeFalse();
     });
+});
+
+describe('Payment permission boundaries', function (): void {
+    it('allows payment mutations only with their matching staff permission', function (string $ability, PermissionEnum $permission): void {
+        $staff = Staff::factory()->create();
+        $role  = Role::create([
+            'name'       => 'payment_mutation_'.$ability,
+            'label'      => 'Payment mutation '.$ability,
+            'guard_name' => 'staff',
+        ]);
+        $role->givePermissionTo($permission->value);
+        $staff->assignRole($role);
+        $payment = Payment::factory()->create();
+
+        $policy  = new PaymentPolicy();
+        $allowed = $ability === 'create'
+            ? $policy->create($staff->fresh())
+            : $policy->{$ability}($staff->fresh(), $payment);
+
+        expect($allowed)->toBeTrue();
+    })->with([
+        'create' => ['create', PermissionEnum::PAYMENT_CREATE],
+        'update' => ['update', PermissionEnum::PAYMENT_UPDATE],
+        'delete' => ['delete', PermissionEnum::PAYMENT_DELETE],
+    ]);
+
+    it('denies payment mutations when staff has a different payment permission', function (string $ability, PermissionEnum $unrelatedPermission): void {
+        $staff = Staff::factory()->create();
+        $role  = Role::create([
+            'name'       => 'unrelated_payment_'.$ability,
+            'label'      => 'Unrelated payment '.$ability,
+            'guard_name' => 'staff',
+        ]);
+        $role->givePermissionTo($unrelatedPermission->value);
+        $staff->assignRole($role);
+        $payment = Payment::factory()->create();
+
+        $policy  = new PaymentPolicy();
+        $allowed = $ability === 'create'
+            ? $policy->create($staff->fresh())
+            : $policy->{$ability}($staff->fresh(), $payment);
+
+        expect($allowed)->toBeFalse();
+    })->with([
+        'create with view permission'   => ['create', PermissionEnum::PAYMENT_VIEW],
+        'update with delete permission' => ['update', PermissionEnum::PAYMENT_DELETE],
+        'delete with update permission' => ['delete', PermissionEnum::PAYMENT_UPDATE],
+    ]);
 });

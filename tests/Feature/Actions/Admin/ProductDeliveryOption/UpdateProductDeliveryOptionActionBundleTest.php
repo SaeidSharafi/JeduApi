@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\Admin\ProductDeliveryOption\SyncBundleCompositionAction;
 use App\Actions\Admin\ProductDeliveryOption\UpdateProductDeliveryOptionAction;
+use App\Actions\Admin\ProductDeliveryOption\ValidateBundleCompositionAction;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionUpdateData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
@@ -20,8 +21,8 @@ use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\assertDatabaseHas;
 
-covers(UpdateProductDeliveryOptionAction::class);
-covers(SyncBundleCompositionAction::class);
+mutates(UpdateProductDeliveryOptionAction::class);
+mutates(SyncBundleCompositionAction::class);
 mutates(App\Services\BundleAvailabilityService::class);
 mutates(App\Services\BundleAvailabilityPropagationService::class);
 
@@ -412,4 +413,79 @@ it('normalizes prepayment fields off for any composite PDO', function (): void {
 
     expect($updated->is_prepayment_available)->toBeFalse()
         ->and($updated->prepayment_amount)->toBeNull();
+});
+
+function makeCompositionBundle(int $price): array
+{
+    $bundle  = Bundle::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+    $product = Product::factory()->create([
+        'productable_type' => 'bundle',
+        'productable_id'   => $bundle->id,
+        'status'           => PublicationStatusEnum::PUBLISHED,
+    ]);
+    $option = ProductDeliveryOption::factory()->create([
+        'product_id'       => $product->id,
+        'price'            => $price,
+        'status'           => PublicationStatusEnum::PUBLISHED,
+        'fulfillment_type' => FulfillmentTypeEnum::COMPOSITE,
+        'delivery_method'  => DeliveryMethodEnum::BUNDLE,
+    ]);
+
+    return [$bundle, $option];
+}
+
+function makeCompositionOption(int $price, PublicationStatusEnum $status = PublicationStatusEnum::PUBLISHED): ProductDeliveryOption
+{
+    $course  = Course::factory()->create(['status' => $status]);
+    $product = Product::factory()->withCourse($course)->create([
+        'status'     => $status,
+        'is_visible' => true,
+    ]);
+
+    return ProductDeliveryOption::factory()->create([
+        'product_id' => $product->id,
+        'price'      => $price,
+        'status'     => $status,
+    ]);
+}
+
+describe('ValidateBundleCompositionAction', function (): void {
+    it('rejects a zero component reference', function (): void {
+        [, $bundleOption] = makeCompositionBundle(400_000);
+
+        expect(fn () => app(ValidateBundleCompositionAction::class)->handle($bundleOption, [
+            ['product_delivery_option_id' => 0, 'allocation' => 400_000],
+        ]))
+            ->toThrow(BundleCompositionValidationException::class, __('messages.product.bundle_components_unique_required'));
+    });
+
+    it('rejects missing or self-referential component options', function (int $componentId): void {
+        [, $bundleOption] = makeCompositionBundle(400_000);
+        $componentId      = $componentId === 0 ? $bundleOption->id : 999_999_999;
+
+        expect(fn () => app(ValidateBundleCompositionAction::class)->handle($bundleOption, [
+            ['product_delivery_option_id' => $componentId, 'allocation' => 400_000],
+        ]))->toThrow(BundleCompositionValidationException::class, __('messages.product.bundle_component_reference_invalid'));
+    })->with([
+        'missing option' => [1],
+        'parent option'  => [0],
+    ]);
+
+    it('rejects a component allocation above the option price', function (): void {
+        [, $bundleOption] = makeCompositionBundle(400_000);
+        $component        = makeCompositionOption(300_000);
+
+        expect(fn () => app(ValidateBundleCompositionAction::class)->handle($bundleOption, [
+            ['product_delivery_option_id' => $component->id, 'allocation' => 300_001],
+        ]))->toThrow(BundleCompositionValidationException::class, __('messages.product.bundle_component_allocation_invalid'));
+    });
+
+    it('rejects unpublished components when the Bundle is published', function (): void {
+        [, $bundleOption] = makeCompositionBundle(400_000);
+        $component        = makeCompositionOption(400_000, PublicationStatusEnum::DRAFT);
+
+        expect(fn () => app(ValidateBundleCompositionAction::class)->handle($bundleOption, [
+            ['product_delivery_option_id' => $component->id, 'allocation' => 400_000],
+        ]))->toThrow(BundleCompositionValidationException::class, __('messages.product.bundle_component_status_invalid'));
+    });
 });

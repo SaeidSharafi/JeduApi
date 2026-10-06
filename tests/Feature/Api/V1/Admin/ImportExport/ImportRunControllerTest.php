@@ -7,7 +7,7 @@ use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
-covers(GetImportRunAction::class);
+mutates(GetImportRunAction::class);
 
 it('rejects unauthenticated polling', function (): void {
     $this->getJson('/api/v1/admin/users/import/'.Illuminate\Support\Str::uuid())->assertUnauthorized();

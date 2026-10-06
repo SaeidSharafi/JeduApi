@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Crypt;
 
 use function Pest\Laravel\artisan;
 
-covers(EncryptSettingSecretsCommand::class);
+mutates(EncryptSettingSecretsCommand::class);
 
 // ---------------------------------------------------------------------------
 // Helpers

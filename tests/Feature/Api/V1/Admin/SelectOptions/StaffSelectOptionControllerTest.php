@@ -7,8 +7,8 @@ use App\Http\Controllers\Api\Admin\SelectOptions\StaffSelectOptionController;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(StaffSelectOptionController::class);
-covers(StaffSelectOptionData::class);
+mutates(StaffSelectOptionController::class);
+mutates(StaffSelectOptionData::class);
 
 describe('Admin Staff Select Option API', function (): void {
 

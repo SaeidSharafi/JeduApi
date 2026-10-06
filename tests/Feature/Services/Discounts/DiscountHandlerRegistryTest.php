@@ -9,7 +9,7 @@ use App\Services\Discounts\DiscountHandlerRegistry;
 use Illuminate\Filesystem\Filesystem;
 use Mockery\MockInterface;
 
-covers(DiscountHandlerRegistry::class);
+mutates(DiscountHandlerRegistry::class);
 
 describe('DiscountHandlerRegistry', function (): void {
     it('loads handlers from cache when not in debug mode and cache exists', function (): void {

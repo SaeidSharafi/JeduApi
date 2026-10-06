@@ -20,7 +20,7 @@ use App\Models\Course;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 
-covers(
+mutates(
     ArchiveProductAction::class,
     DeleteProductAction::class,
     DeleteProductDeliveryOptionAction::class,

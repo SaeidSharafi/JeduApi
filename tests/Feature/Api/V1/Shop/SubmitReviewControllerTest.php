@@ -22,7 +22,7 @@ use function Pest\Laravel\postJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(SubmitReviewAction::class, SubmitReviewController::class);
+mutates(SubmitReviewAction::class, SubmitReviewController::class);
 
 beforeEach(function (): void {
     $this->customer();

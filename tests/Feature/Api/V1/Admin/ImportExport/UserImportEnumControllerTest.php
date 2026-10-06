@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\PermissionEnum;
 use App\Services\ImportExport\Resources\UserImportResource;
 
-covers(UserImportResource::class);
+mutates(UserImportResource::class);
 
 it('accepts translated and raw enum values independently of the application locale', function (string $locale, array $values): void {
     app()->setLocale($locale);

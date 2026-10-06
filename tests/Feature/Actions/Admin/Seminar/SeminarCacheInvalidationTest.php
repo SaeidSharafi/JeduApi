@@ -11,7 +11,7 @@ use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\System\CacheKey;
 use App\Models\Seminar;
 
-covers(CreateSeminarAction::class, DeleteSeminarAction::class);
+mutates(CreateSeminarAction::class, DeleteSeminarAction::class);
 
 $warmSearchCache = function (): void {
     app(CacheStore::class)->put(CacheKey::Search, ['hash' => 'query-hash'], ['stale']);

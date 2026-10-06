@@ -12,8 +12,8 @@ use App\Models\Seminar;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(ProductableSelectOptionController::class);
-covers(ProductableSelectOptionData::class);
+mutates(ProductableSelectOptionController::class);
+mutates(ProductableSelectOptionData::class);
 
 describe('Admin Producatable Select Option API', function (): void {
     beforeEach(function (): void {

@@ -7,8 +7,8 @@ use App\Http\Controllers\Api\Admin\SelectOptions\TermSelectOptionController;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(TermSelectOptionController::class);
-covers(TermSelectOptionData::class);
+mutates(TermSelectOptionController::class);
+mutates(TermSelectOptionData::class);
 
 describe('Admin Term Select Option API', function (): void {
     it('returns filtered term select options', function (): void {

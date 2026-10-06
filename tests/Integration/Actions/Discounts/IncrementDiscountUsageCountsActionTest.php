@@ -8,6 +8,8 @@ use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
 use App\Models\Order;
 
+mutates(IncrementDiscountUsageCountsAction::class);
+
 describe('IncrementDiscountUsageCountsAction', function (): void {
     uses()->group('unit', 'actions', 'discounts');
 
@@ -65,6 +67,50 @@ describe('IncrementDiscountUsageCountsAction', function (): void {
         app(IncrementDiscountUsageCountsAction::class)->handle($order);
 
         expect($promotion->fresh()->total_usage_count)->toBe(0)
+            ->and($order->fresh()->discount_usage_incremented_at)->not->toBeNull();
+    });
+});
+
+describe('Historical discount usage', function (): void {
+    it('preserves valid promotion accounting when historical snapshot entries are missing or deleted', function (): void {
+        $promotion = DiscountPromotion::factory()->create();
+        $deleted   = DiscountPromotion::factory()->create();
+        $deletedId = $deleted->id;
+        $deleted->delete();
+        $order = Order::factory()->create([
+            'applied_coupon_code'         => null,
+            'applied_cart_discounts_json' => [
+                ['applied_amount' => 100],
+                ['promotion_id' => $deletedId, 'applied_amount' => 100],
+                ['promotion_id' => $promotion->id, 'applied_amount' => 100],
+            ],
+        ]);
+
+        app(IncrementDiscountUsageCountsAction::class)->handle($order);
+        app(IncrementDiscountUsageCountsAction::class)->handle($order->fresh());
+
+        expect($promotion->fresh()->total_usage_count)->toBe(1);
+        expect($order->fresh()->discount_usage_incremented_at)->not->toBeNull();
+    });
+
+    it('increments a promotion without incrementing a coupon owned by another promotion', function (): void {
+        $snapshotPromotion = DiscountPromotion::factory()->create();
+        $couponOwner       = DiscountPromotion::factory()->create();
+        $coupon            = DiscountCoupon::factory()->for($couponOwner, 'promotion')->create([
+            'code' => 'OTHER-PROMOTION',
+        ]);
+        $order = Order::factory()->create([
+            'applied_coupon_code'         => $coupon->code,
+            'applied_cart_discounts_json' => [
+                ['promotion_id' => $snapshotPromotion->id, 'applied_amount' => 100],
+            ],
+        ]);
+
+        app(IncrementDiscountUsageCountsAction::class)->handle($order);
+
+        expect($snapshotPromotion->fresh()->total_usage_count)->toBe(1)
+            ->and($couponOwner->fresh()->total_usage_count)->toBe(0)
+            ->and($coupon->fresh()->usage_count)->toBe(0)
             ->and($order->fresh()->discount_usage_incremented_at)->not->toBeNull();
     });
 });

@@ -16,7 +16,7 @@ use App\Models\ProductDeliveryOption;
 use App\Services\BundleAvailabilityPropagationService;
 use Illuminate\Support\Facades\Event;
 
-covers(BundleAvailabilityPropagationService::class);
+mutates(BundleAvailabilityPropagationService::class);
 
 it('records every emitted review reason on the parent Bundle when components force a review', function (): void {
     $reasons = array_values(array_filter(

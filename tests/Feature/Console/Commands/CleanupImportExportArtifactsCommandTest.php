@@ -13,7 +13,7 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-covers(CleanupImportExportArtifactsCommand::class);
+mutates(CleanupImportExportArtifactsCommand::class);
 
 beforeEach(function (): void {
     Storage::fake('local');

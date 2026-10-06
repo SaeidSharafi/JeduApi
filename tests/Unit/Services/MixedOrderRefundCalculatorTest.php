@@ -7,7 +7,7 @@ use App\Services\BundleRefundDeductionCalculator;
 use App\Services\MixedOrderRefundCalculator;
 use App\Services\WeightedApportionment;
 
-covers(MixedOrderRefundCalculator::class);
+mutates(MixedOrderRefundCalculator::class);
 
 /**
  * @param  list<array{order_item_id: int, product_delivery_option_id: int, base_price: int, paid_amount: int}>  $components

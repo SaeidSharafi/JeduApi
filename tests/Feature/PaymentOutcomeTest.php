@@ -10,7 +10,7 @@ use App\Services\Payment\SoapClientFactory;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(App\Actions\Shop\Payment\BuildPaymentResponseAction::class);
+mutates(App\Actions\Shop\Payment\BuildPaymentResponseAction::class);
 
 it('uses the same outcome fields for gateway initiation on retry and topup', function (string $flow, string $gatewayOutcome, string $status, int $httpStatus): void {
     $this->customer();

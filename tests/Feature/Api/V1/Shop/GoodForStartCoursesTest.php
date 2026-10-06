@@ -9,7 +9,7 @@ use App\Models\Course;
 use App\Models\Product;
 use App\Models\Seminar;
 
-covers(GoodForStartCoursesController::class);
+mutates(GoodForStartCoursesController::class);
 
 describe('GoodForStartCoursesController', function (): void {
     it('returns a list of good-for-start courses for a given category', function (): void {

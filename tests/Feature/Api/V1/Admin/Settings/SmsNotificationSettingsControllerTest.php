@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\Admin\Settings\SmsNotificationSettingsController;
 use App\Models\Setting;
 use App\Rules\SmsNotificationOptionKeyRule;
 
-covers(
+mutates(
     SmsNotificationSettingsController::class,
     SmsNotificationOptionData::class,
     UpdateSmsNotificationsData::class,

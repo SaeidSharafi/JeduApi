@@ -8,8 +8,8 @@ use App\Models\Vendor;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(VendorSelectOptionController::class);
-covers(VendorSelectOptionData::class);
+mutates(VendorSelectOptionController::class);
+mutates(VendorSelectOptionData::class);
 
 describe('Admin Vendor Select Option API', function (): void {
     it('returns filtered vendor select options', function (): void {

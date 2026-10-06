@@ -5,8 +5,14 @@ declare(strict_types=1);
 use App\Enums\EnrollmentRevocationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\PermissionEnum;
+use App\Enums\ProvisioningAttemptStatusEnum;
+use App\Jobs\Provisioning\RevokeEnrollmentProviderJob;
 use App\Models\Enrollment;
+use App\Models\ProvisioningAttempt;
 use App\Models\User;
+use App\Services\Provisioning\EnrollmentRevocationService;
+use App\Services\Provisioning\ProvisioningAttemptService;
+use Illuminate\Support\Facades\Queue;
 use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
@@ -210,6 +216,54 @@ describe('EnrollmentController', function (): void {
             'access_end_date'   => '2026-12-31',
             'notes'             => 'Updated notes',
         ]);
+    });
+
+    it('records the supplied reason when staff update enrollment notes', function (): void {
+        $this->authorized_user([PermissionEnum::ENROLLMENT_UPDATE->value]);
+        $enrollment = Enrollment::factory()->create([
+            'access_start_date' => '2025-01-01',
+            'access_end_date'   => '2025-12-31',
+            'notes'             => 'Existing notes',
+        ]);
+
+        $response = $this->putJson(route('api.v1.admin.enrollments.update', ['enrollment' => $enrollment->id]), [
+            'access_start_date' => '1403-10-12',
+            'access_end_date'   => '1404-10-10',
+            'notes'             => 'Existing notes',
+            'reason'            => 'Customer requested an extension.',
+        ])->assertOk();
+
+        $this->assertDatabaseHas('enrollments', [
+            'id'                => $enrollment->id,
+            'access_start_date' => '2025-01-01',
+            'access_end_date'   => '2025-12-31',
+        ]);
+        expect($response->json('data.notes'))->toContain('Customer requested an extension.')
+            ->and($enrollment->fresh()->notes)->toContain('Customer requested an extension.');
+    });
+
+    it('retries a failed Moodle revocation', function (): void {
+        $this->authorized_user([PermissionEnum::ENROLLMENT_RETRY_PROVISION->value]);
+        Queue::fake([RevokeEnrollmentProviderJob::class]);
+        $enrollment = Enrollment::factory()->create(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
+        $enrollment->update([
+            'provisioning_plan' => ['version' => 1, 'providers' => [[
+                'provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready', 'configuration_issue' => null,
+            ]], 'status' => 'healthy', 'resolved_at' => now()->toISOString()],
+            'provisioning_data' => ['providers' => [
+                'moodle' => ['status' => 'success', 'data' => ['moodle_user_id' => 12, 'moodle_course_id' => 34]],
+            ]],
+            'provisioning_status' => App\Enums\ProvisioningStatusEnum::HEALTHY,
+        ]);
+        $queuedAttemptIds = app(EnrollmentRevocationService::class)->begin($enrollment);
+        $runningAttempt   = app(ProvisioningAttemptService::class)->start($queuedAttemptIds[0]);
+        app(EnrollmentRevocationService::class)->fail($runningAttempt, new RuntimeException('Provider temporarily unavailable.'));
+
+        $this->postJson(route('api.v1.admin.enrollments.retry-revocation', ['enrollment' => $enrollment->id]))
+            ->assertOk();
+
+        Queue::assertPushed(RevokeEnrollmentProviderJob::class, 1);
+        expect(ProvisioningAttempt::query()->where('enrollment_id', $enrollment->id)->where('status', ProvisioningAttemptStatusEnum::QUEUED->value)->count())->toBe(1);
     });
 
     it('can delete cancelled enrollment with permissions', function (): void {

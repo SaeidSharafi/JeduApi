@@ -10,7 +10,7 @@ use App\Enums\User\GenderEnum;
 use App\Models\Product;
 use App\Models\Seminar;
 
-covers(ProductCardData::class);
+mutates(ProductCardData::class);
 
 describe('ProductCardData', function (): void {
     it('can be created from a Product model', function (): void {
@@ -35,8 +35,10 @@ describe('ProductCardData', function (): void {
             public $thumbnail_url = 'http://example.com/thumbnail.jpg';
 
             public $default_teacher_info = ['John Doe'];
-            public $average_rating        = 4.5;
-            public $review_count          = 10;
+
+            public $average_rating = 4.5;
+
+            public $review_count = 10;
         };
         $product->setRelation('productable', $course);
 

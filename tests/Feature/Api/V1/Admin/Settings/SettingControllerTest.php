@@ -7,9 +7,12 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 use App\Enums\PermissionEnum;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
 use App\Models\Setting;
+use App\Models\Staff;
+use App\Policies\Admin\SettingPolicy;
 use App\Services\SettingSecretRedactor;
+use Spatie\Permission\Models\Role;
 
-covers(SettingController::class);
+mutates(SettingController::class);
 
 it('can get list of settings', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY->value]);
@@ -118,4 +121,38 @@ it('does not redact non-integration settings', function (): void {
     $contactSettings = collect($response->json('data'))->flatten(1)->firstWhere('key', 'contact_info');
     expect($contactSettings)->not->toBeNull()
         ->and($contactSettings['value']['support_email'])->toBe('test@example.com');
+});
+
+describe('Payment settings permission boundaries', function (): void {
+    it('allows viewing payment settings only with the payment view permission', function (PermissionEnum $permission, bool $allowed): void {
+        $staff = Staff::factory()->create();
+        $role  = Role::create([
+            'name'       => 'payment_setting_view_'.$permission->name,
+            'label'      => 'Payment setting view '.$permission->name,
+            'guard_name' => 'staff',
+        ]);
+        $role->givePermissionTo($permission->value);
+        $staff->assignRole($role);
+
+        expect((new SettingPolicy())->viewPayment($staff->fresh()))->toBe($allowed);
+    })->with([
+        'dedicated permission'            => [PermissionEnum::SETTING_PAYMENT_VIEW, true],
+        'general setting view permission' => [PermissionEnum::SETTING_VIEW_ANY, false],
+    ]);
+
+    it('allows updating payment settings only with the payment update permission', function (PermissionEnum $permission, bool $allowed): void {
+        $staff = Staff::factory()->create();
+        $role  = Role::create([
+            'name'       => 'payment_setting_update_'.$permission->name,
+            'label'      => 'Payment setting update '.$permission->name,
+            'guard_name' => 'staff',
+        ]);
+        $role->givePermissionTo($permission->value);
+        $staff->assignRole($role);
+
+        expect((new SettingPolicy())->updatePayment($staff->fresh()))->toBe($allowed);
+    })->with([
+        'dedicated permission'              => [PermissionEnum::SETTING_PAYMENT_UPDATE, true],
+        'general setting update permission' => [PermissionEnum::SETTING_UPDATE, false],
+    ]);
 });

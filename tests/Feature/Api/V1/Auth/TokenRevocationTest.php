@@ -13,7 +13,7 @@ use App\Models\User;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(
+mutates(
     BanUserAction::class,
     DeleteUserAction::class,
     BanStaffAction::class,

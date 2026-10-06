@@ -15,7 +15,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Seminar;
 use App\Models\Vendor;
 
-covers(OrganizationPageController::class);
+mutates(OrganizationPageController::class);
 
 it('returns page content and no courses when no vendor is configured', function (): void {
     $response = $this->getJson(route('api.v1.shop.organization.show'));

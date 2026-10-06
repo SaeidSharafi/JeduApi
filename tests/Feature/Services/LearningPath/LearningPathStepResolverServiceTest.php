@@ -15,7 +15,7 @@ use App\Services\LearningPath\LearningPathStepResolverService;
 use App\Services\LearningPath\ResolvedLearningPathStep;
 use App\Services\ProductPriceService;
 
-covers(LearningPathStepResolverService::class, ResolvedLearningPathStep::class);
+mutates(LearningPathStepResolverService::class, ResolvedLearningPathStep::class);
 
 function indexLearningPathProductPrice(int $productId): void
 {

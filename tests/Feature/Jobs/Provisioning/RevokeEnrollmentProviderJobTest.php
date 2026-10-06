@@ -20,7 +20,7 @@ use App\Services\Provisioning\EnrollmentRevocationService;
 use App\Services\Provisioning\ProvisioningAttemptService;
 use App\Services\Provisioning\ProvisioningProviderRegistry;
 
-covers(RevokeEnrollmentProviderJob::class);
+mutates(RevokeEnrollmentProviderJob::class);
 
 /** @param list<string> $providers */
 function revocationJobEnrollment(array $providers): Enrollment

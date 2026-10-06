@@ -7,7 +7,7 @@ use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheKey;
 use App\Services\Discounts\DiscountHandlerRegistry;
 
-covers(ClearHandlerCache::class);
+mutates(ClearHandlerCache::class);
 
 it('clears the cached handler registry through the gateway', function (): void {
     $cache = app(CacheStore::class);

@@ -9,8 +9,8 @@ use App\Models\Product;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-covers(ProductSelectOptionController::class);
-covers(ProductSelectOptionData::class);
+mutates(ProductSelectOptionController::class);
+mutates(ProductSelectOptionData::class);
 
 describe('Admin Product Select Option API', function (): void {
     beforeEach(function (): void {

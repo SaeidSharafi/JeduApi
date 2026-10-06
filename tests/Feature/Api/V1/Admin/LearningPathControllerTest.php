@@ -17,7 +17,7 @@ use Plank\Mediable\Facades\MediaUploader;
 
 use function Pest\Laravel\assertDatabaseHas;
 
-covers(
+mutates(
     LearningPathController::class,
     ArchiveLearningPathController::class,
 );
