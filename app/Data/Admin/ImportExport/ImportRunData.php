@@ -19,7 +19,7 @@ final class ImportRunData extends Data
         public string $run_id,
         public SpreadsheetResourceEnum $resource,
         public ImportRunStatusEnum $status,
-        public ImportIdentityKeyEnum $identity_key,
+        public ?ImportIdentityKeyEnum $identity_key,
         public ImportRunSummaryData $summary,
         public array $rows,
         public array $error_report = ['available' => false, 'download_url' => null],

@@ -16,6 +16,9 @@ return [
         'failed'              => 'Provider account creation failed.',
     ],
     'columns' => [
+        'id'                 => 'ID',
+        'created_at'         => 'Created at',
+        'updated_at'         => 'Updated at',
         'phone'              => 'Mobile phone',
         'email'              => 'Email',
         'first_name'         => 'First name',

@@ -44,9 +44,9 @@ interface ImportResourceContract
      * Validate and normalize one spreadsheet row.
      *
      * @param  array<string, string|null>  $values  Cell values keyed by column key.
-     * @param  ImportIdentityKeyEnum  $identityKey  Identity the row is matched on.
+     * @param  ImportIdentityKeyEnum|null  $identityKey  Selected matching key, or null for imports without identity matching.
      */
-    public function validateRow(array $values, ImportIdentityKeyEnum $identityKey): ImportRowResult;
+    public function validateRow(array $values, ?ImportIdentityKeyEnum $identityKey): ImportRowResult;
 
     /**
      * Persist one previously validated row inside the engine's transaction.

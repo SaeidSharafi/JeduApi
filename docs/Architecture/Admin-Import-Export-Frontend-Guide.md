@@ -31,7 +31,7 @@ Use the existing authenticated admin API base URL and the resource routes below.
 | Approve valid rows | `POST` | `/api/v1/admin/users/import/{run}/approve` |
 | Download errors | `GET` | `/api/v1/admin/users/import/{run}/errors` |
 
-The available identity keys are currently `phone` and `email`.
+For `users`, the identity key is required and the available values are `phone` and `email`. Other resources without identity matching may omit `identity_key`; hide the identity selector for those resources and treat `identity_key=null` in preview/result responses as no matching key. Courses are not currently registered.
 
 ## Minimal UI
 
@@ -317,9 +317,9 @@ The export action should preserve the current User list filters and sorting. Pag
 
 The exported file contains safe user/profile fields only. Passwords, access tokens, reset tokens, provider credentials, and internal provisioning data are never exported.
 
-Enum values are translated labels, not raw enum codes. Dates are formatted Jalali values, matching the application’s Verta display format.
+Column headings and enum values are translated labels for `locale=fa|en`, defaulting to the application locale. Headings use display labels rather than raw column keys. Dates are formatted Jalali values, matching the application’s Verta display format.
 
-If the backend returns a stored export/run reference instead of a direct file response, the frontend should show a loading state and download the completed private artifact from the provided authenticated endpoint. Do not regenerate the export automatically after a connection interruption.
+The backend returns JSON with `data.resource`, `data.filename`, `data.download_url` and `data.expires_at`, after synchronously generating the private XLSX. Show a loading state through generation and download, then fetch `download_url` with the authenticated admin API client using a blob response and save it as `filename`. Preserve the entire query string (`expires` and `signature`) unchanged; the API base path may be removed when it is already part of the client base URL. The reference defaults to 24 hours, requires staff authentication and the resource export permission again, and downloads the stored snapshot without rerunning the query. Do not regenerate the export automatically after a connection interruption.
 
 ## Permissions and errors
 

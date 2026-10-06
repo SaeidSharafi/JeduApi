@@ -29,7 +29,7 @@ it('stores a private filtered export in the same deterministic order as the user
     expect(Storage::disk('local')->getVisibility($files[0]))->toBe('private');
 });
 
-it('exports only safe fields with translated enums and Jalali dates', function (string $locale, array $labels): void {
+it('exports only safe fields with localized headings, translated enums and Jalali dates', function (string $locale, array $labels, array $headings): void {
     Storage::fake('local');
     $this->authorized_user([PermissionEnum::USER_EXPORT]);
     $user = User::factory()->withPassword()->create([
@@ -44,11 +44,7 @@ it('exports only safe fields with translated enums and Jalali dates', function (
     $download = $this->get($response->json('data.download_url'))->assertSuccessful();
     $rows     = importWorksheetRows($download->getFile()->getPathname());
 
-    expect($rows[0])->toBe([
-        'id', 'first_name', 'last_name', 'phone', 'email', 'phone2', 'civil_id',
-        'civil_id_type', 'date_of_birth', 'father_name', 'gender', 'education_level',
-        'field_of_study', 'education_status', 'created_at', 'updated_at',
-    ]);
+    expect($rows[0])->toBe($headings);
     expect($rows[1][1])->toBe('=1+1');
     expect($rows[1][3])->toBe('09123456789');
     expect($rows[1][6])->toBe('0000000019');
@@ -57,8 +53,16 @@ it('exports only safe fields with translated enums and Jalali dates', function (
     expect($rows[1][14])->toBe('1403-01-01 12:34:56');
     expect($rows[1][15])->toBe('1403-01-01 12:34:56');
 })->with([
-    'Persian' => ['fa', ['کد ملی', 'مرد', 'کارشناسی', 'فارغ‌التحصیل']],
-    'English' => ['en', ['National Code', 'Male', 'Bachelor', 'Graduated']],
+    'Persian' => ['fa', ['کد ملی', 'مرد', 'کارشناسی', 'فارغ‌التحصیل'], [
+        'شناسه', 'نام', 'نام خانوادگی', 'تلفن همراه', 'پست الکترونیکی', 'تلفن همراه دوم', 'کد شناسایی',
+        'نوع کد شناسایی', 'تاریخ تولد (شمسی)', 'نام پدر', 'جنسیت', 'مقطع تحصیلی',
+        'رشته تحصیلی', 'وضعیت تحصیلی', 'زمان ایجاد', 'زمان به‌روزرسانی',
+    ]],
+    'English' => ['en', ['National Code', 'Male', 'Bachelor', 'Graduated'], [
+        'ID', 'First name', 'Last name', 'Mobile phone', 'Email', 'Secondary phone', 'Civil ID',
+        'Civil ID type', 'Date of birth (Jalali)', "Father's name", 'Gender', 'Education level',
+        'Field of study', 'Education status', 'Created at', 'Updated at',
+    ]],
 ]);
 
 it('rejects guests for export generation with 401', function (): void {
@@ -214,3 +218,18 @@ it('removes a partial artifact when spreadsheet storage fails', function (): voi
 
     expect(Storage::disk('local')->allFiles('exports'))->toBe([]);
 });
+
+it('uses the application locale for export headings when locale is omitted', function (string $locale, string $heading): void {
+    Storage::fake('local');
+    $this->authorized_user([PermissionEnum::USER_EXPORT]);
+    app()->setLocale($locale);
+
+    $response = $this->getJson(route('api.v1.admin.exports.create', ['resource' => 'users']))->assertSuccessful();
+    $download = $this->get($response->json('data.download_url'))->assertSuccessful();
+    $rows     = importWorksheetRows($download->getFile()->getPathname());
+
+    expect($rows[0][0])->toBe($heading);
+})->with([
+    'Persian application locale' => ['fa', 'شناسه'],
+    'English application locale' => ['en', 'ID'],
+]);

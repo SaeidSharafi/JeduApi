@@ -18,7 +18,7 @@ interface ExportResourceContract
     public function query(): Builder;
 
     /** @return list<string> */
-    public function headings(): array;
+    public function headings(string $locale): array;
 
     /** @return list<string|int|null> */
     public function map(Model $row, string $locale): array;

@@ -86,7 +86,6 @@ enum PermissionEnum: string
     case HOME_PAGE_BLOCK_UPDATE                   = 'home_page_blocks.update';
     case HOME_PAGE_BLOCK_VIEW                     = 'home_page_blocks.view';
     case HOME_PAGE_BLOCK_VIEW_ANY                 = 'home_page_blocks.view_any';
-    case USER_EXPORT                              = 'users.export';
     case IMPORT_APPROVE                           = 'imports.approve';
     case IMPORT_PREVIEW                           = 'imports.preview';
     case IMPORT_RESULTS                           = 'imports.results';
@@ -184,6 +183,7 @@ enum PermissionEnum: string
     case USER_BAN                                 = 'users.ban';
     case USER_CREATE                              = 'users.create';
     case USER_DELETE                              = 'users.delete';
+    case USER_EXPORT                              = 'users.export';
     case USER_UPDATE                              = 'users.update';
     case USER_VIEW                                = 'users.view';
     case USER_VIEW_ANY                            = 'users.view_any';

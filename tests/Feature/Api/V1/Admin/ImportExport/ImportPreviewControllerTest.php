@@ -397,7 +397,7 @@ describe('file shape', function (): void {
         $response->assertJsonValidationErrors('identity_key');
     });
 
-    it('requires the identity key', function (): void {
+    it('requires the identity key for users', function (): void {
         $this->authorized_user([PermissionEnum::IMPORT_PREVIEW]);
 
         $response = $this->post(
@@ -410,11 +410,21 @@ describe('file shape', function (): void {
         $response->assertJsonValidationErrors('identity_key');
     });
 
-    it('rejects an unregistered resource', function (): void {
+    it('accepts a preview payload without an identity key for a non-user resource', function (): void {
+        Illuminate\Support\Facades\Route::post('/tests/import/{resource}', function (App\Data\Admin\ImportExport\ImportPreviewRequestData $data): App\Contracts\ApiResponseInterface {
+            return apiResponse()->success(['identity_key' => $data->identity_key]);
+        });
+
+        $this->post('/tests/import/courses', ['file' => userImportFile([userImportRow()])], ['Accept' => 'application/json'])
+            ->assertSuccessful()
+            ->assertJsonPath('data.identity_key', null);
+    });
+
+    it('rejects an unregistered resource without requiring an identity key', function (): void {
         $this->authorized_user([PermissionEnum::IMPORT_PREVIEW]);
 
         $response = $this->post(
-            route('api.v1.admin.imports.preview', ['resource' => 'unknown_resource', 'identity_key' => 'phone']),
+            route('api.v1.admin.imports.preview', ['resource' => 'unknown_resource']),
             ['file'   => userImportFile([userImportRow()])],
             ['Accept' => 'application/json'],
         );

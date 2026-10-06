@@ -14,7 +14,7 @@ return new class extends Migration
             $table->id();
             $table->uuid()->unique();
             $table->string('resource')->index();
-            $table->string('identity_key')->index();
+            $table->string('identity_key')->nullable()->index();
             $table->string('status')->index();
             $table->foreignId('staff_id')->nullable()->constrained('staff')->nullOnDelete();
             $table->string('original_filename');

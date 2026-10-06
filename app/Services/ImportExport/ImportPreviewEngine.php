@@ -36,7 +36,7 @@ final readonly class ImportPreviewEngine
      */
     public function preview(
         ImportResourceContract $resource,
-        ImportIdentityKeyEnum $identityKey,
+        ?ImportIdentityKeyEnum $identityKey,
         UploadedFile $file,
     ): array {
         $rows = $this->reader->read($file);
@@ -51,7 +51,9 @@ final readonly class ImportPreviewEngine
 
         $results = $this->validateRows($resource, $identityKey, $rows, $columns);
 
-        $this->markDuplicateIdentities($results, $identityKey);
+        if ($identityKey !== null) {
+            $this->markDuplicateIdentities($results, $identityKey);
+        }
 
         return $results;
     }
@@ -64,7 +66,7 @@ final readonly class ImportPreviewEngine
      */
     private function resolveColumns(
         ImportResourceContract $resource,
-        ImportIdentityKeyEnum $identityKey,
+        ?ImportIdentityKeyEnum $identityKey,
         array $headingCells,
     ): array {
         $columns = $resource->columns();
@@ -95,7 +97,7 @@ final readonly class ImportPreviewEngine
         $missing = [];
 
         foreach ($columns as $column) {
-            if (($column->required || $column->key === $identityKey->value) && ! isset($resolved[$column->key])) {
+            if (($column->required || ($identityKey !== null && $column->key === $identityKey->value)) && ! isset($resolved[$column->key])) {
                 $missing[] = $column->heading();
             }
         }
@@ -143,7 +145,7 @@ final readonly class ImportPreviewEngine
      */
     private function validateRows(
         ImportResourceContract $resource,
-        ImportIdentityKeyEnum $identityKey,
+        ?ImportIdentityKeyEnum $identityKey,
         array $rows,
         array $columns,
     ): array {

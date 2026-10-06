@@ -19,13 +19,15 @@ POST /api/v1/admin/users/import/{run}/approve
 GET  /api/v1/admin/users/import/{run}/errors
 ```
 
+`identity_key` is required only for the `users` resource (`phone` or `email`). Future resources that do not match existing records, such as a course creation import, may omit it. Their resource contract receives null, the engine does not require an identity heading or check duplicate identities, and preview/result responses retain `identity_key` with a null value. Resource-specific validation still applies. Courses are not currently registered.
+
 Use separate permissions for export, template download, import preview, import approval, and run-result access.
 
 ## Export
 
 `GET /users/export` accepts the same `filter[...]` and `sort` parameters as the User list endpoint. Pagination is ignored. The shared User query definition supplies allowed filters, sorting, eager-loading requirements, and a stable primary-key tie-breaker.
 
-The export is an explicit safe field allowlist. It includes user identity/profile fields and formatted timestamps, but excludes passwords, reset tokens, access tokens, provider credentials, and raw provisioning internals. Enum values are translated for the requested locale. Dates are formatted as Jalali values through `Verta`; raw database date strings are not emitted.
+The export is an explicit safe field allowlist. It includes user identity/profile fields and formatted timestamps, but excludes passwords, reset tokens, access tokens, provider credentials, and raw provisioning internals. Column headings and enum values are translated for the requested `locale=fa|en`, defaulting to the application locale. Headings are display labels rather than raw column keys, while the exported column order remains stable. Dates are formatted as Jalali values through `Verta`; raw database date strings are not emitted.
 
 The preferred implementation stores the generated XLSX privately and returns a run/download reference, allowing a client to recover from a connection interruption without regenerating the file. Direct streaming is acceptable only for a bounded synchronous implementation.
 

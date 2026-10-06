@@ -21,7 +21,7 @@ final class ImportPreviewData extends Data
         public string $run_id,
         public SpreadsheetResourceEnum $resource,
         public ImportRunStatusEnum $status,
-        public ImportIdentityKeyEnum $identity_key,
+        public ?ImportIdentityKeyEnum $identity_key,
         public ImportPreviewSummaryData $summary,
         public array $rows,
         public bool $can_approve,

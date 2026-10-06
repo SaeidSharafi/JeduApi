@@ -27,7 +27,9 @@ final class PreviewImportController extends Controller
      *
      * @urlParam resource string required The registered import resource. Enum: `users`. Example: users
      *
-     * @queryParam identity_key string required The identity rows are matched on. Enum: `phone`, `email`. Example: phone
+     * @ignoreQueryParam identity_key
+     *
+     * @queryParam identity_key string Required only for the users resource. Selects the field used to match existing users; omit for resources without identity matching. Enum: `phone`, `email`. Example: phone
      *
      * @responseFile 200 resources/responses/admin/import/preview.json
      * @responseFile 403 resources/responses/403.json

@@ -22,9 +22,9 @@ final readonly class ImportRowResult
     public function __construct(
         public bool $valid,
         public ?ImportRowActionEnum $action,
-        public ?string $identity,
         public array $data,
         public array $errors,
+        public ?string $identity = null,
         public ?string $targetResourceId = null,
         public array $sensitiveData = [],
     ) {}
@@ -32,30 +32,30 @@ final readonly class ImportRowResult
     /**
      * @param  array<string, mixed>  $data
      */
-    public static function create(string $identity, array $data, array $sensitiveData = []): self
+    public static function create(array $data, ?string $identity = null, array $sensitiveData = []): self
     {
-        return new self(true, ImportRowActionEnum::CREATE, $identity, $data, [], null, $sensitiveData);
+        return new self(true, ImportRowActionEnum::CREATE, $data, [], $identity, null, $sensitiveData);
     }
 
     /**
      * @param  array<string, mixed>  $data
      */
     public static function update(
-        string $identity,
         array $data,
+        ?string $identity = null,
         ?string $targetResourceId = null,
         array $sensitiveData = [],
     ): self {
-        return new self(true, ImportRowActionEnum::UPDATE, $identity, $data, [], $targetResourceId, $sensitiveData);
+        return new self(true, ImportRowActionEnum::UPDATE, $data, [], $identity, $targetResourceId, $sensitiveData);
     }
 
     /**
      * @param  array<string, mixed>  $data
      * @param  list<array{field: string, code: string, message: string}>  $errors
      */
-    public static function invalid(?string $identity, array $data, array $errors): self
+    public static function invalid(array $data, array $errors, ?string $identity = null): self
     {
-        return new self(false, null, $identity, $data, $errors);
+        return new self(false, null, $data, $errors, $identity);
     }
 
     /**
@@ -67,9 +67,9 @@ final readonly class ImportRowResult
         return new self(
             false,
             null,
-            $this->identity,
             $this->data,
             [['field' => $field, 'code' => 'duplicate_identity', 'message' => $message], ...$this->errors],
+            $this->identity,
             $this->targetResourceId,
             $this->sensitiveData,
         );

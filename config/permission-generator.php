@@ -151,6 +151,7 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
             'ban', // Custom String: users.ban (ban/unban customer accounts)
+            'export',
         ],
         'import' => [
             'approve',

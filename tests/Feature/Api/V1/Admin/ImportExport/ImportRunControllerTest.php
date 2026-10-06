@@ -281,3 +281,12 @@ it('preserves a report reference after deletion fails and retries safely', funct
         Storage::disk('local')->assertExists($run->fresh()->error_report_path);
     }
 })->with(['replacement' => false, 'removal' => true]);
+
+it('returns a persisted run with no identity key', function (): void {
+    $this->authorized_user([PermissionEnum::IMPORT_RESULTS]);
+    $run = App\Models\ImportRun::factory()->create(['identity_key' => null]);
+
+    $this->getJson('/api/v1/admin/users/import/'.$run->uuid)
+        ->assertSuccessful()
+        ->assertJsonPath('data.identity_key', null);
+});

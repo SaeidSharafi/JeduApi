@@ -41,9 +41,12 @@ final readonly class UserExportResource implements ExportResourceContract
         return $this->users->query()->select(self::COLUMNS);
     }
 
-    public function headings(): array
+    public function headings(string $locale): array
     {
-        return self::COLUMNS;
+        return array_map(
+            static fn (string $column): string => (string) __("imports.columns.{$column}", [], $locale),
+            self::COLUMNS,
+        );
     }
 
     public function map(Model $row, string $locale): array

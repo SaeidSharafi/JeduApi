@@ -5,26 +5,27 @@ declare(strict_types=1);
 namespace App\Data\Admin\ImportExport;
 
 use App\Enums\ImportExport\ImportIdentityKeyEnum;
+use App\Enums\ImportExport\SpreadsheetResourceEnum;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 /**
- * Multipart upload payload: the spreadsheet itself and the identity key rows are matched on.
+ * Multipart upload payload: the spreadsheet itself and an optional identity key, required for users.
  */
 final class ImportPreviewRequestData extends Data
 {
     public function __construct(
         public UploadedFile $file,
-        public string $identity_key,
+        public ?string $identity_key = null,
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
         return [
             'file'         => ['required', 'file', 'mimes:xlsx', 'max:5120'],
-            'identity_key' => ['required', 'string', Rule::enum(ImportIdentityKeyEnum::class)],
+            'identity_key' => [Rule::requiredIf(request()->route('resource') === SpreadsheetResourceEnum::USERS->value), 'nullable', 'string', Rule::enum(ImportIdentityKeyEnum::class)],
         ];
     }
 

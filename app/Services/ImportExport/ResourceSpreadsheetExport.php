@@ -30,7 +30,7 @@ final class ResourceSpreadsheetExport extends StringValueBinder implements FromQ
 
     public function headings(): array
     {
-        return $this->resource->headings();
+        return $this->resource->headings($this->locale);
     }
 
     public function map(mixed $row): array

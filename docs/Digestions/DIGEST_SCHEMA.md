@@ -627,7 +627,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - id (BIGINT, PK)
   - uuid (UUID, unique) — public identifier
   - resource (VARCHAR, indexed) — registered spreadsheet resource (`users`)
-  - identity_key (VARCHAR) — `phone` | `email`
+  - identity_key (VARCHAR, nullable) — `phone` | `email` for users; NULL for imports without identity matching. The create-table migration keeps INDEX(identity_key).
   - status (VARCHAR, indexed) — `preview_ready` | `processing` | `completed` | `completed_with_provider_failures`; `approved`/`failed`/`expired` remain future lifecycle extensions
   - staff_id (BIGINT nullable) FK -> staff(id) SET NULL
   - original_filename (VARCHAR), file_path (VARCHAR nullable), file_size (BIGINT nullable), file_checksum (VARCHAR(64) nullable)

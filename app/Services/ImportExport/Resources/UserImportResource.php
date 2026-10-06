@@ -28,6 +28,7 @@ use BackedEnum;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
+use Illuminate\Validation\ValidationException;
 
 /**
  * User import contract.
@@ -243,8 +244,14 @@ final readonly class UserImportResource implements ImportResourceContract
         ];
     }
 
-    public function validateRow(array $values, ImportIdentityKeyEnum $identityKey): ImportRowResult
+    public function validateRow(array $values, ?ImportIdentityKeyEnum $identityKey): ImportRowResult
     {
+        if ($identityKey === null) {
+            throw ValidationException::withMessages([
+                'identity_key' => __('validation.required', ['attribute' => __('imports.fields.identity_key')]),
+            ]);
+        }
+
         $values   = $this->normalizeValues($values);
         $identity = $this->identityValue($identityKey, $values[$identityKey->value] ?? null);
         $existing = $identity === null ? null : $this->findExistingUser($identityKey, $identity);
@@ -254,7 +261,7 @@ final readonly class UserImportResource implements ImportResourceContract
         $errors = $this->validateValues($values, $identityKey, $existing, $isCreate);
 
         if ($errors !== []) {
-            return ImportRowResult::invalid($identity, $data, $errors);
+            return ImportRowResult::invalid($data, $errors, $identity);
         }
 
         $sensitiveData = array_filter([
@@ -262,8 +269,8 @@ final readonly class UserImportResource implements ImportResourceContract
         ], static fn (mixed $value): bool => $value !== null);
 
         return $isCreate
-            ? ImportRowResult::create((string) $identity, $data, $sensitiveData)
-            : ImportRowResult::update((string) $identity, $data, (string) $existing->getKey(), $sensitiveData);
+            ? ImportRowResult::create($data, (string) $identity, $sensitiveData)
+            : ImportRowResult::update($data, (string) $identity, (string) $existing->getKey(), $sensitiveData);
     }
 
     public function importRow(ImportRowResult $row): ImportRowCommitResult

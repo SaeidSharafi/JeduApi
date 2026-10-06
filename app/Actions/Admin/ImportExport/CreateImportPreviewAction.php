@@ -42,7 +42,7 @@ final readonly class CreateImportPreviewAction
     public function handle(string $resource, ImportPreviewRequestData $data, ?Staff $staff = null): ImportPreviewData
     {
         $contract    = $this->registry->import($resource);
-        $identityKey = ImportIdentityKeyEnum::from($data->identity_key);
+        $identityKey = $data->identity_key === null ? null : ImportIdentityKeyEnum::from($data->identity_key);
 
         $results = $this->engine->preview($contract, $identityKey, $data->file);
 
@@ -73,7 +73,7 @@ final readonly class CreateImportPreviewAction
      */
     private function persistRun(
         string $resource,
-        ImportIdentityKeyEnum $identityKey,
+        ?ImportIdentityKeyEnum $identityKey,
         UploadedFile $file,
         string $uuid,
         string $filePath,
