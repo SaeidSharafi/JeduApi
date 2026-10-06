@@ -13,14 +13,22 @@ describe('ContactPageController', function (): void {
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
-                'title',
-                'subtitle',
-                'main_links',
-                'social_links',
-                'address',
-                'phone',
-                'email',
-                'map_embed_url',
+                'addresses' => [
+                    '*' => [
+                        'name',
+                        'address',
+                        'location_url',
+                        'phone',
+                    ],
+                ],
+                'working_hours',
+                'support_email',
+                'social_media_links' => [
+                    '*' => [
+                        'platform',
+                        'link',
+                    ],
+                ]
             ],
         ]);
     });
