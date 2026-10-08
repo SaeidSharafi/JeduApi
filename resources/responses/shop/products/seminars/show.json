@@ -98,7 +98,12 @@
       "cover": [],
       "certificate": [],
       "main": []
-    }
+    },
+    "event_start_at": null,
+    "event_ended_at": null,
+    "teachers": [],
+    "event_start_datetime": null,
+    "event_end_datetime": null
   },
   "metadata": []
 }

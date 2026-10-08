@@ -7,16 +7,22 @@ namespace App\Data\Shop\Product;
 use App\Data\Shop\ProductPriceData;
 use App\Data\Shop\Teacher\TeacherListData;
 use App\Data\Transformer\TranslatableEnumData;
+use App\Enums\CourseDifficultyLevelEnum;
+use App\Enums\MediaTagEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\Product\ProductDeliveryStatusEnum;
 use App\Enums\Product\ProductRegistrationStatusEnum;
 use App\Models\Course;
+use App\Models\DigitalAsset;
 use App\Models\Product;
+use App\Models\Seminar;
 use Carbon\CarbonImmutable;
 use Hekmatinasser\Verta\Verta;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
+use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
@@ -55,6 +61,19 @@ final class ProductCardData extends Data
         public ?ProductPriceData $price_data = null,
         public ?string $event_start_at = null,
         public ?string $event_ended_at = null,
+        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d H:i:s')]
+        public ?Verta $event_start_datetime = null,
+        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d H:i:s')]
+        public ?Verta $event_end_datetime = null,
+        public ?int $duration = null,
+        public ?int $duration_seconds = null,
+        public ?int $page_count = null,
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
+        public ?CourseDifficultyLevelEnum $difficulty_level = null,
+        public ?string $version = null,
+        public ?string $file_type = null,
+        public ?string $file_size = null,
+        public ?int $size_bytes = null,
     ) {}
 
     public static function fromModel(
@@ -66,7 +85,8 @@ final class ProductCardData extends Data
         $defaultTeacherInfo = isset($productable?->default_teacher_info)
             ? $productable->default_teacher_info
             : null;
-        $delivery = self::deliveryPresentation($product, $defaultTeacherInfo);
+        $delivery         = self::deliveryPresentation($product, $defaultTeacherInfo);
+        $typePresentation = self::typePresentation($productable);
 
         return new self(
             slug: $product->slug,
@@ -98,6 +118,16 @@ final class ProductCardData extends Data
             price_data: $withFullPriceData ? $priceData : null,
             event_start_at: $product->event_start_at?->toDateString(),
             event_ended_at: $product->event_ended_at?->toDateString(),
+            event_start_datetime: $product->event_start_at ? Verta::instance($product->event_start_at) : null,
+            event_end_datetime: $product->event_ended_at ? Verta::instance($product->event_ended_at) : null,
+            duration: $typePresentation['duration'],
+            duration_seconds: $typePresentation['duration_seconds'],
+            page_count: $typePresentation['page_count'],
+            difficulty_level: $typePresentation['difficulty_level'],
+            version: $typePresentation['version'],
+            file_type: $typePresentation['file_type'],
+            file_size: $typePresentation['file_size'],
+            size_bytes: $typePresentation['size_bytes'],
         );
     }
 
@@ -159,7 +189,48 @@ final class ProductCardData extends Data
             price_data: $withFullPriceData ? $priceData : null,
             event_start_at: $product?->event_start_at?->toDateString(),
             event_ended_at: $product?->event_ended_at?->toDateString(),
+            event_start_datetime: $product?->event_start_at ? Verta::instance($product->event_start_at) : null,
+            event_end_datetime: $product?->event_ended_at ? Verta::instance($product->event_ended_at) : null,
+            duration: $course->duration,
+            difficulty_level: $course->difficulty_level,
         );
+    }
+
+    /** @return array{duration: ?int, duration_seconds: ?int, page_count: ?int, difficulty_level: ?CourseDifficultyLevelEnum, version: ?string, file_type: ?string, file_size: ?string, size_bytes: ?int} */
+    private static function typePresentation(mixed $productable): array
+    {
+        $presentation = [
+            'duration'         => null,
+            'duration_seconds' => null,
+            'page_count'       => null,
+            'difficulty_level' => null,
+            'version'          => null,
+            'file_type'        => null,
+            'file_size'        => null,
+            'size_bytes'       => null,
+        ];
+
+        if ($productable instanceof Course) {
+            $presentation['duration']         = $productable->duration;
+            $presentation['difficulty_level'] = $productable->difficulty_level;
+        } elseif ($productable instanceof Seminar) {
+            $presentation['difficulty_level'] = $productable->difficulty_level;
+        } elseif ($productable instanceof DigitalAsset) {
+            $presentation['duration_seconds'] = $productable->duration_seconds;
+            $presentation['page_count']       = $productable->page_count;
+            $presentation['difficulty_level'] = $productable->difficulty_level;
+            $presentation['version']          = $productable->version;
+
+            if ($productable->relationLoaded('media')) {
+                $media                      = $productable->getMedia(MediaTagEnum::MAIN->value)->first();
+                $sizeBytes                  = $media?->size      !== null ? (int) $media->size : null;
+                $presentation['file_type']  = $media?->extension !== null ? mb_strtoupper($media->extension) : null;
+                $presentation['file_size']  = formatFileSize($sizeBytes);
+                $presentation['size_bytes'] = $sizeBytes;
+            }
+        }
+
+        return $presentation;
     }
 
     /**

@@ -6,11 +6,13 @@ namespace App\Data\Shop\Product;
 
 use App\Data\Shop\Product\Category\CategoryCardData;
 use App\Data\Shop\ProductPriceData;
+use App\Data\Shop\Teacher\TeacherListData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Models\Product;
 use Carbon\CarbonImmutable;
+use Hekmatinasser\Verta\Verta;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -18,6 +20,7 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
 final class SeminarDetailData extends Data
 {
@@ -54,6 +57,11 @@ final class SeminarDetailData extends Data
         public ?string $event_start_at = null,
         public ?string $event_ended_at = null,
         public array $media = [],
+        public ?array $teachers = null,
+        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d H:i:s')]
+        public ?Verta $event_start_datetime = null,
+        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d H:i:s')]
+        public ?Verta $event_end_datetime = null,
     ) {}
 
     public static function fromModel(Product $product, ProductPriceData $data): self
@@ -103,7 +111,14 @@ final class SeminarDetailData extends Data
             prices: null,
         );
 
-        return self::from(
+        $teachers = [];
+        foreach ($product->productDeliveryOptions as $option) {
+            foreach ($option->teachers as $teacher) {
+                $teachers[$teacher->getKey()] ??= TeacherListData::from($teacher);
+            }
+        }
+
+        return self::factory()->withoutMagicalCreation()->from(
             [
                 'slug'                     => $product->slug,
                 'full_name'                => $product->name ?? $product->productable->full_name,
@@ -133,6 +148,9 @@ final class SeminarDetailData extends Data
                 'event_start_at'           => $product->event_start_at?->toDateString(),
                 'event_ended_at'           => $product->event_ended_at?->toDateString(),
                 'media'                    => $product->productable->getAllMedia(urlOnly: true),
+                'teachers'                 => array_values($teachers),
+                'event_start_datetime'     => $product->event_start_at ? Verta::instance($product->event_start_at) : null,
+                'event_end_datetime'       => $product->event_ended_at ? Verta::instance($product->event_ended_at) : null,
             ]
         );
     }

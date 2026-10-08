@@ -37,6 +37,7 @@ final class BundleComponentData extends Data
         public ?string $format,
         public bool $is_available,
         public ?Collection $teachers,
+        public ?string $thumbnail_url = null,
     ) {}
 
     public static function fromModel(ProductDeliveryOption $option, int $allocation, bool $isAvailable): self
@@ -76,6 +77,7 @@ final class BundleComponentData extends Data
             format: data_get($option->details_json, 'format'),
             is_available: $isAvailable,
             teachers: $option->teachers?->map(fn ($teacher): TeacherListData => TeacherListData::from($teacher)),
+            thumbnail_url: $productable->thumbnail_url ?? null,
         );
     }
 }

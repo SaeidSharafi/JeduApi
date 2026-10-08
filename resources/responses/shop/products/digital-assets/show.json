@@ -91,7 +91,19 @@
       "cover": [],
       "certificate": [],
       "main": []
-    }
+    },
+    "preview_media": {
+      "cover": [],
+      "gallery": [],
+      "video": [],
+      "certificate": []
+    },
+    "thumbnail_url": null,
+    "reviews_count": 0,
+    "average_rating": 0,
+    "file_type": null,
+    "file_size": null,
+    "size_bytes": null
   },
   "metadata": []
 }

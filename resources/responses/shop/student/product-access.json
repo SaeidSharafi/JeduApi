@@ -1,0 +1,13 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "option_uuid": "9f7a9b30-a118-4ed5-9bb3-bca4ed2d3fcb",
+      "enrollment_uuid": "a763e886-7781-438c-8c21-3d65da13f793",
+      "status": "active",
+      "product_type": "digital_asset",
+      "asset_uuid": "7258c847-645b-45c4-8db1-1fdd93c6a2d8"
+    }
+  ],
+  "metadata": []
+}

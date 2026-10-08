@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Traits;
 
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\MediaTagEnum;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 trait HasProductListingPresets
 {
@@ -27,7 +29,9 @@ trait HasProductListingPresets
                         'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate',
                     ]);
             },
-            'productable',
+            'productable' => function (MorphTo $productable): void {
+                $productable->withMediaAndVariants([MediaTagEnum::MAIN->value]);
+            },
         ]);
     }
 

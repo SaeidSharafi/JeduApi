@@ -9,6 +9,7 @@ use App\Data\Shop\ProductPriceData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
+use App\Enums\MediaTagEnum;
 use App\Models\Product;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
@@ -46,6 +47,13 @@ final class DigitalAssetDetailData extends Data
         #[DataCollectionOf(ProductDeliveryOptionData::class)]
         public ?Collection $delivery_options = null,
         public array $media = [],
+        public ?string $thumbnail_url = null,
+        public ?int $reviews_count = null,
+        public ?float $average_rating = null,
+        public ?string $file_type = null,
+        public ?string $file_size = null,
+        public ?int $size_bytes = null,
+        public array $preview_media = [],
     ) {}
 
     public static function fromModel(Product $product, ProductPriceData $data): self
@@ -95,7 +103,10 @@ final class DigitalAssetDetailData extends Data
             prices: null,
         );
 
-        return self::from(
+        $mainMedia = self::mainMedia($product);
+        $sizeBytes = $mainMedia?->size !== null ? (int) $mainMedia->size : null;
+
+        return self::factory()->withoutMagicalCreation()->from(
             [
                 'slug'                 => $product->slug,
                 'full_name'            => $product->name ?? $product->productable->full_name,
@@ -117,8 +128,29 @@ final class DigitalAssetDetailData extends Data
                 'categories'           => $product->categories,
                 'delivery_options'     => $pdoData,
                 'media'                => $product->productable->getAllMedia(urlOnly: true),
+                'preview_media'        => $product->productable->getAllMedia(
+                    urlOnly: true,
+                    onlyTags: [MediaTagEnum::COVER, MediaTagEnum::GALLERY, MediaTagEnum::VIDEO, MediaTagEnum::CERTIFICATE],
+                ),
+                'thumbnail_url'  => $product->productable->thumbnail_url,
+                'reviews_count'  => $product->productable->review_count,
+                'average_rating' => $product->productable->average_rating,
+                'file_type'      => $mainMedia?->extension !== null
+                    ? mb_strtoupper($mainMedia->extension)
+                    : null,
+                'size_bytes' => $sizeBytes,
+                'file_size'  => formatFileSize($sizeBytes),
             ]
         );
+    }
+
+    private static function mainMedia(Product $product): ?\Plank\Mediable\Media
+    {
+        if (! $product->productable->relationLoaded('media')) {
+            return null;
+        }
+
+        return $product->productable->getMedia(MediaTagEnum::MAIN->value)->first();
     }
 
     private static function isAvailable(

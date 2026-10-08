@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Shop\Student\DigitalAssetDownloadController;
 use App\Http\Controllers\Api\Shop\Student\DigitalAssetEnrollmentController;
 use App\Http\Controllers\Api\Shop\Student\JoinUrlController;
 use App\Http\Controllers\Api\Shop\Student\OrderController;
+use App\Http\Controllers\Api\Shop\Student\ProductAccessController;
 use App\Http\Controllers\Api\Shop\Student\QuizController;
 use App\Http\Controllers\Api\Shop\Student\RetryPaymentController;
 use App\Http\Controllers\Api\Shop\Student\SeminarController as StudentSeminarController;
@@ -44,6 +45,9 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
         // 1. STUDENT DASHBOARD
         // ==========================================
         Route::prefix('student')->name('student.')->group(function (): void {
+
+            Route::post('product-access', ProductAccessController::class)
+                ->name('product-access');
 
             // Enrolled Courses
             Route::prefix('courses')->name('courses.')->group(function (): void {
