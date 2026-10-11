@@ -428,6 +428,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **UpdatePartnerAction**: Updates partner metadata and resyncs media while handling nullified assets
 - **DeleteCPartnerAction**: Performs transactional deletion and cleans up linked media assets
 - **ForgetPartnerCachesAction**: Forgets `CacheKey::PartnersInHome`, `CacheKey::PartnersInCourse` and `CacheKey::Partners`; the three write actions above call it after their transaction so every shop partner listing is regenerated on the next request
+- **DemoSeeder**: Seeds the 20 organization entries in `database/demo/partners.json` and attaches matching `resources/seed-media/cont1.jpg` through `cont20.jpg` files by partner ID under the `image` tag.
 
 #### AdviceRequest Actions (`app/Actions/Admin/AdviceRequest/`)
 - **UpdateAdviceRequestAction**: Records staff notes and marks handlers while keeping existing status intact

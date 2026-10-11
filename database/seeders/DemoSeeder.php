@@ -411,6 +411,10 @@ final class DemoSeeder extends Seeder
             'logo-tech.svg', 'logo-art.svg', 'logo-humanities.svg', 'logo-lang.svg',
             'favicon-tech.svg', 'favicon-art.svg', 'favicon-humanities.svg', 'favicon-lang.svg',
             'bank-mellat.svg', 'digipay.svg',
+            'cont1.jpg', 'cont2.jpg', 'cont3.jpg', 'cont4.jpg', 'cont5.jpg',
+            'cont6.jpg', 'cont7.jpg', 'cont8.jpg', 'cont9.jpg', 'cont10.jpg',
+            'cont11.jpg', 'cont12.jpg', 'cont13.jpg', 'cont14.jpg', 'cont15.jpg',
+            'cont16.jpg', 'cont17.jpg', 'cont18.jpg', 'cont19.jpg', 'cont20.jpg',
         ];
 
         // Import 3 video copies
@@ -767,16 +771,12 @@ final class DemoSeeder extends Seeder
     // }
     private function seedPartnerMedia(array $collection): void
     {
-        $logoPool = [
-            $this->media('logo-tech.svg'),
-            $this->media('logo-art.svg'),
-            $this->media('logo-humanities.svg'),
-            $this->media('logo-lang.svg'),
-        ];
-
-        $partners = Partner::whereIn('id', collect($collection)->pluck('id'))->get();
-        foreach ($partners as $i => $partner) {
-            $logo = $logoPool[$i % count($logoPool)];
+        $partners = Partner::query()
+            ->whereIn('id', collect($collection)->pluck('id'))
+            ->orderBy('id')
+            ->get();
+        foreach ($partners as $partner) {
+            $logo = $this->media(sprintf('cont%d.jpg', $partner->id));
             $partner->syncMedia($logo, 'image');
             $partner->image_url = $logo->getUrl();
             $partner->image_id  = $logo->id;
