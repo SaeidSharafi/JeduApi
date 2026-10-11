@@ -21,7 +21,7 @@ final class SeminarProductBannerData extends Data
         public ?int $original_price,
         public ?array $price_range,
         public ?bool $has_discount,
-        public ?flointat $discount_percent,
+        public ?float $discount_percent,
         public bool $is_free,
         public bool $is_featured,
         #[WithTransformer(TranslatableEnumData::class)]
