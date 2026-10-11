@@ -742,7 +742,7 @@ describe('ProductQueryService integration', function (): void {
                     ->relationLoaded('productDeliveryOptionDiscountPrice'))->toBeTrue()
                 ->and($fetchedProduct->productDeliveryOptions->first()->relationLoaded('teachers'))->toBeTrue()
                 ->and($fetchedProduct->relationLoaded('productable'))->toBeTrue()
-                ->and($fetchedProduct->productable->relationLoaded('media'))->toBeFalse()
+                ->and($fetchedProduct->productable->relationLoaded('media'))->toBeTrue()
                 ->and($fetchedProduct->categories)->toHaveCount(1)
                 ->and($fetchedProduct->productDeliveryOptions)->toHaveCount(1);
         });
