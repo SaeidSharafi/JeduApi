@@ -16,7 +16,7 @@
     "id": 2,
     "discount_promotion_id": 1,
     "type": "action",
-    "handler": "apply_percentage_off_product",
+    "handler": "apply_percentage_off",
     "configuration": {
       "percentage": 15
     },
