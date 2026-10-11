@@ -212,7 +212,7 @@ final class DemoSeeder extends Seeder
 
         // ─── Product Prices ────────────────────────────────────────────────
 
-        $this->seedModel(ProductPrice::class, 'product_prices.json');
+        //$this->seedModel(ProductPrice::class, 'product_prices.json');
 
         // ─── Orders & Fulfillment ──────────────────────────────────────────
 
@@ -274,6 +274,10 @@ final class DemoSeeder extends Seeder
         $this->seedModel(AdviceRequest::class, 'advice_requests.json');
 
         $this->command->info('Farsi demo data seeding complete.');
+
+        Artisan::call('discounts:reindex-all');
+        Artisan::call('prices:index-all --sync');
+
 
         $role = Role::firstOrCreate(
             [

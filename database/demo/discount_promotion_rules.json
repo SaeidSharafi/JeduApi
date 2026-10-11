@@ -16,7 +16,7 @@
     "id": 2,
     "discount_promotion_id": 1,
     "type": "action",
-    "handler": "apply_percentage_off",
+    "handler": "apply_percentage_off_product",
     "configuration": {
       "percentage": 15
     },
@@ -27,7 +27,7 @@
     "id": 3,
     "discount_promotion_id": 2,
     "type": "action",
-    "handler": "apply_percentage_off",
+    "handler": "apply_percentage_off_product",
     "configuration": {
       "percentage": 20
     },
@@ -36,13 +36,13 @@
   },
   {
     "id": 4,
-    "discount_promotion_id": 3,
-    "type": "action",
-    "handler": "apply_percentage_off",
+    "discount_promotion_id": 2,
+    "type": "condition",
+    "handler": "product_in_category",
     "configuration": {
-      "percentage": 10
+      "category_ids": [1,2,10]
     },
-    "created_at": "2024-01-01 08:00:00",
-    "updated_at": "2024-01-01 08:00:00"
+    "created_at": "2024-10-01 08:00:00",
+    "updated_at": "2024-10-01 08:00:00"
   }
 ]
