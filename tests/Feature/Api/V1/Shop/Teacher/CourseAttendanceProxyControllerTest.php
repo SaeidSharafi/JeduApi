@@ -37,15 +37,23 @@ it('index passes query parameters and returns service data', function (): void {
             return $payload['occurrence_id'] === 42;
         }))
         ->andReturn([
-            'data' => ['attendance_date' => '2026-07-19', 'enrolments' => []],
+            'data' => [
+                'attendance_date'       => '2026-07-19',
+                'course'                => ['start_date' => '2026-03-21T00:00:00.000000Z'],
+                'available_occurrences' => [['date' => '2026-07-19', 'label' => '1405-04-28 - 10:00']],
+                'enrolments'            => [],
+            ],
         ]);
 
     getJson("/api/v1/shop/teacher/courses/{$this->courseCode}/attendances?occurrence_id=42")
         ->assertOk()
         ->assertJsonPath(
             'data.data.attendance_date',
-            '2026-07-19'
-        );
+            '1405-04-28'
+        )
+        ->assertJsonPath('data.data.course.start_date', '1405-01-01')
+        ->assertJsonPath('data.data.available_occurrences.0.date', '1405-04-28')
+        ->assertJsonPath('data.data.available_occurrences.0.label', '1405-04-28 - 10:00');
 });
 
 // ─── Store (POST) ───────────────────────────────────────────────────────────

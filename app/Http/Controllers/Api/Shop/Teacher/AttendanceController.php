@@ -10,6 +10,7 @@ use App\Data\Shop\Teacher\DeleteAttendanceData;
 use App\Data\Shop\Teacher\ShowAttendanceData;
 use App\Data\Shop\Teacher\StoreAttendanceData;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
+use App\Helpers\JalaliDateHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
@@ -44,7 +45,7 @@ final class AttendanceController extends Controller
 
         $data = $this->imsService->getAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $request->all());
 
-        return apiResponse()->success($data);
+        return apiResponse()->success(JalaliDateHelper::responseDatesToJalali($data));
     }
 
     /**
@@ -74,7 +75,7 @@ final class AttendanceController extends Controller
             );
         }
 
-        return apiResponse()->success($response);
+        return apiResponse()->success(JalaliDateHelper::responseDatesToJalali($response));
     }
 
     /**
@@ -104,7 +105,7 @@ final class AttendanceController extends Controller
             );
         }
 
-        return apiResponse()->success($response);
+        return apiResponse()->success(JalaliDateHelper::responseDatesToJalali($response));
     }
 
     /**
@@ -124,6 +125,6 @@ final class AttendanceController extends Controller
 
         $response = $this->imsService->destroyAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $attendanceData->toArray());
 
-        return apiResponse()->success($response);
+        return apiResponse()->success(JalaliDateHelper::responseDatesToJalali($response));
     }
 }

@@ -9,6 +9,7 @@ use App\Contracts\Integrations\ImsClientContract;
 use App\Data\Shop\Teacher\StoreBulkGradeData;
 use App\Data\Shop\Teacher\StoreGradeData;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
+use App\Helpers\JalaliDateHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Teacher;
 use Illuminate\Http\JsonResponse;
@@ -48,7 +49,7 @@ final class GradeController extends Controller
 
         $data = $this->imsService->getGrades($courseCode, $teacherCivilId, $civilIdTypeEnum, $request->query());
 
-        return response()->json($data);
+        return response()->json(JalaliDateHelper::responseDatesToJalali($data));
     }
 
     /**
@@ -71,7 +72,7 @@ final class GradeController extends Controller
 
         $response = $this->imsService->storeGrade($courseCode, $teacherCivilId, $civilIdTypeEnum, $data->toArray());
 
-        return response()->json($response);
+        return response()->json(JalaliDateHelper::responseDatesToJalali($response));
     }
 
     /**
@@ -102,7 +103,7 @@ final class GradeController extends Controller
             );
         }
 
-        return apiResponse()->success($response);
+        return apiResponse()->success(JalaliDateHelper::responseDatesToJalali($response));
     }
 
     /**

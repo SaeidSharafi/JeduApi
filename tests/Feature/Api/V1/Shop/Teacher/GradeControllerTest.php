@@ -39,6 +39,18 @@ it('index returns grades list from IMS', function (): void {
         ->assertJsonPath('data.0.grade', 95.5);
 });
 
+it('index returns course dates in jalali format', function (): void {
+    $mockService = $this->mock(ImsService::class);
+    $mockService->shouldReceive('getGrades')
+        ->once()
+        ->andReturn(['course' => ['start_date' => '2026-03-21T00:00:00.000000Z', 'end_date' => '2026-03-22']]);
+
+    getJson("/api/v1/shop/teacher/courses/{$this->courseCode}/grades")
+        ->assertOk()
+        ->assertJsonPath('course.start_date', '1405-01-01')
+        ->assertJsonPath('course.end_date', '1405-01-02');
+});
+
 it('index passes query parameters to IMS', function (): void {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('getGrades')

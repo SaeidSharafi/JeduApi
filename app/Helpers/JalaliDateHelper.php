@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
+use Carbon\Carbon;
 use Hekmatinasser\Jalali\Exceptions\InvalidDatetimeException;
 use Hekmatinasser\Jalali\Exceptions\InvalidUnitException;
 use Hekmatinasser\Verta\Facades\Verta as VertaFacade;
 use Hekmatinasser\Verta\Verta;
 use InvalidArgumentException;
+use Throwable;
 
 final class JalaliDateHelper
 {
@@ -32,6 +34,35 @@ final class JalaliDateHelper
 
             if (! empty($value) && is_string($value)) {
                 data_set($properties, $field, self::parseSingleDate($value, $format));
+            }
+        }
+
+        return $properties;
+    }
+
+    /**
+     * Convert date fields in an IMS response to Jalali while preserving its shape.
+     *
+     * @param  array<string, mixed>  $properties
+     * @return array<string, mixed>
+     */
+    public static function responseDatesToJalali(array $properties): array
+    {
+        foreach ($properties as $key => $value) {
+            if (is_array($value)) {
+                $properties[$key] = self::responseDatesToJalali($value);
+
+                continue;
+            }
+
+            if (! is_string($value) || ! preg_match('/(?:^date$|_date$|^max$)/', (string) $key)) {
+                continue;
+            }
+
+            try {
+                $properties[$key] = Verta::instance(Carbon::parse($value))->format('Y-m-d');
+            } catch (Throwable) {
+                // Preserve non-date values returned in fields named as dates.
             }
         }
 
