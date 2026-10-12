@@ -24,9 +24,9 @@ final class ImsService extends AbstractIntegrationService implements ImsClientCo
             $payload['national_code'] = $payload['civil_id'];
         }
 
-        if (isset($payload['gender']) && $payload['gender'] === 0) {
-            $payload['gender'] = 2;
-        }
+        // IMS treats an absent optional field differently from an explicit null
+        // (null reaches its enum normaliser), so only send what we actually have.
+        $payload = array_filter($payload, static fn (mixed $value): bool => $value !== null);
 
         $response = Http::baseUrl($this->config['base_url'])
             ->timeout((int) ($this->config['timeout'] ?? 15))

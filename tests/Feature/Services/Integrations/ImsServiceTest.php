@@ -70,6 +70,29 @@ it('storeStudent returns array on success', function (): void {
         ->and($response['id'])->toBe(42);
 });
 
+it('drops null optional fields before calling IMS', function (): void {
+    Http::fake([
+        'https://ims.test/api/v2/student' => Http::response(['data' => ['student_id' => 5]], 200),
+    ]);
+
+    $this->imsService->storeStudent([
+        'first_name'       => 'Jane',
+        'gender'           => 1,
+        'field_of_study'   => null,
+        'education_level'  => null,
+        'education_status' => null,
+    ]);
+
+    Http::assertSent(function ($request): bool {
+        $data = $request->data();
+
+        return $data['gender'] === 1
+            && ! array_key_exists('field_of_study', $data)
+            && ! array_key_exists('education_level', $data)
+            && ! array_key_exists('education_status', $data);
+    });
+});
+
 it('storeGrade submits the teacher identity and returns the IMS response', function (): void {
     config(['provisioning.providers.ims' => [
         'enabled'  => true,

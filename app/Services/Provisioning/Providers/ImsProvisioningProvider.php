@@ -9,7 +9,6 @@ use App\Contracts\Provisioning\ProvisioningProvider;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\ProvisioningProviderEnum;
-use App\Enums\User\GenderEnum;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
@@ -50,11 +49,14 @@ final readonly class ImsProvisioningProvider implements ProvisioningProvider
         $customer = $enrollment->customer;
         try {
             $student = $this->ims->storeStudent([
-                'external_user_id' => (string) $customer->uuid, 'first_name' => $customer->first_name,
-                'last_name'        => $customer->last_name, 'phone' => $customer->phone, 'email' => $customer->email,
-                'civil_id'         => $customer->civil_id, 'civil_id_type' => $customer->civil_id_type,
+                'first_name'       => $customer->first_name,
+                'last_name'        => $customer->last_name,
+                'phone'            => $customer->phone,
+                'email'            => $customer->email,
+                'civil_id'         => $customer->civil_id,
+                'civil_id_type'    => $customer->civil_id_type,
                 'father_name'      => $customer->father_name,
-                'gender'           => $customer->gender === GenderEnum::MALE ? 1 : 0,
+                'gender'           => $customer->gender?->toImsValue(),
                 'field_of_study'   => $customer->field_of_study,
                 'education_level'  => $customer->education_level?->value,
                 'education_status' => $customer->education_status?->value,
