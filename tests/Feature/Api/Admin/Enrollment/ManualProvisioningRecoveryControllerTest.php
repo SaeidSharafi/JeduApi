@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\ProvisioningAttemptStatusEnum;
 use App\Models\Enrollment;
 use App\Models\ProvisioningAttempt;
@@ -56,6 +58,13 @@ it('validates confirmation and records a manual resolution through the API', fun
 
 it('previews a rebuilt plan and applies it after confirmation', function (): void {
     $enrollment = Enrollment::factory()->create();
+    // Pin the delivery method so the rebuilt plan never keeps skyroom; the factory's
+    // randomised option would otherwise make `removed` depend on the drawn provider.
+    $enrollment->productDeliveryOption->update([
+        'fulfillment_type' => FulfillmentTypeEnum::DIGITAL->value,
+        'delivery_method'  => DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
+        'details_json'     => [],
+    ]);
     $enrollment->update([
         'provisioning_plan' => ['version' => 4, 'providers' => [[
             'provider' => 'skyroom', 'applicable' => true, 'readiness' => 'ready',
