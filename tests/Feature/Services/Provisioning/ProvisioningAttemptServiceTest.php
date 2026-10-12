@@ -12,7 +12,7 @@ use App\Services\Provisioning\ProvisioningAttemptService;
 
 covers(ProvisioningAttemptService::class);
 
-it('persists the full scrubbed provider context when an attempt fails', function (): void {
+it('persists the full provider context with secrets redacted', function (): void {
     $enrollment = Enrollment::factory()->create();
     $attempt    = ProvisioningAttempt::create([
         'enrollment_id' => $enrollment->id,
@@ -31,6 +31,8 @@ it('persists the full scrubbed provider context when an attempt fails', function
             'http_status'       => 422,
             'endpoint'          => '/api/v2/student',
             'function'          => 'storeStudent',
+            'api_token'         => 'do-not-store',
+            'provider_trace_id' => 'trace-9',
             'raw_body_snippet'  => '{"message":"email test@example.com is taken"}',
             'validation_errors' => ['gender' => ['The selected gender is invalid.']],
         ]
@@ -43,10 +45,13 @@ it('persists the full scrubbed provider context when an attempt fails', function
     $metadata = $attempt->fresh()->failure_metadata;
 
     expect($metadata)->toMatchArray([
-        'http_status' => 422,
-        'endpoint'    => '/api/v2/student',
-        'function'    => 'storeStudent',
+        'http_status'       => 422,
+        'endpoint'          => '/api/v2/student',
+        'function'          => 'storeStudent',
+        'api_token'         => '[REDACTED]',
+        'provider_trace_id' => 'trace-9',
     ])
-        ->and($metadata['raw_body_snippet'])->toBe('{"message":"email [REDACTED] is taken"}')
+        // Learner PII is kept on the storage path deliberately; only the log scrubs it.
+        ->and($metadata['raw_body_snippet'])->toBe('{"message":"email test@example.com is taken"}')
         ->and($metadata['validation_errors'])->toBe(['gender' => 'The selected gender is invalid.']);
 });

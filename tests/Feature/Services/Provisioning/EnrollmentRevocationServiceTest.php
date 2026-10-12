@@ -396,7 +396,9 @@ it('records the unsupported-provider work item with its full audit detail', func
         ->and($attempt->status)->toBe(ProvisioningAttemptStatusEnum::MANUAL_ACTION_REQUIRED)
         ->and($attempt->retryable)->toBeFalse()
         ->and($attempt->failure_message)->toBe(__('messages.provisioning.revocation_not_supported'))
-        ->and($attempt->failure_metadata)->toBe(['kind' => 'revocation', 'provider_supported' => false])
+        // `failure_metadata` is jsonb, so Postgres normalises key order; compare
+        // content rather than the order the keys were written in.
+        ->and($attempt->failure_metadata)->toEqual(['kind' => 'revocation', 'provider_supported' => false])
         ->and($attempt->failed_at)->not->toBeNull()
         ->and($attempt->manual_action_required_at)->not->toBeNull();
 });

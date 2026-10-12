@@ -11,7 +11,7 @@ use App\Services\Provisioning\ProvisioningDiagnosticsService;
 
 covers(ProvisioningDiagnosticsService::class);
 
-it('exposes the sanitized provider failure message', function (string $lastError, string $expected): void {
+it('exposes the provider failure message verbatim', function (string $lastError): void {
     $enrollment = Enrollment::factory()->create();
     $enrollment->update([
         'provisioning_plan'   => ['version' => 1, 'providers' => [['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready']], 'status' => 'degraded'],
@@ -22,17 +22,13 @@ it('exposes the sanitized provider failure message', function (string $lastError
     $diagnostics = app(ProvisioningDiagnosticsService::class)->diagnostics($enrollment);
 
     expect($diagnostics->status)->toBe('degraded')
-        ->and($diagnostics->providers[0]->safe_error)->toBe($expected)
+        ->and($diagnostics->providers[0]->safe_error)->toBe($lastError)
         ->and($diagnostics->providers[0]->references)->toBe(['moodle_user_id' => 4]);
 })->with([
-    'authored message passes through' => [
-        'IMS student outcome is ambiguous; manual verification required.',
-        'IMS student outcome is ambiguous; manual verification required.',
-    ],
-    'upstream PII is scrubbed' => [
-        'Moodle rejected test@example.com for 09123456789',
-        'Moodle rejected [REDACTED] for [REDACTED]',
-    ],
+    'authored message' => ['IMS student outcome is ambiguous; manual verification required.'],
+    // The diagnostics audience already sees the learner's email and id on the same
+    // page, so the storage/API path keeps them; only the log channel scrubs PII.
+    'upstream message with learner PII' => ['Moodle rejected test@example.com for 09123456789'],
 ]);
 
 it('falls back to the failure message when validation metadata is empty', function (): void {
@@ -59,7 +55,7 @@ it('falls back to the failure message when validation metadata is empty', functi
         ->toBe('اعتبارسنجی اطلاعات در درگاه /api/v2/student ناموفق بود.');
 });
 
-it('shows sanitized provider validation details to diagnostic viewers', function (): void {
+it('renders provider validation details one line per field', function (): void {
     $enrollment = Enrollment::factory()->create([
         'provisioning_data' => ['providers' => ['ims' => ['status' => 'failed', 'last_error' => 'validation failed']]],
     ]);
@@ -88,14 +84,13 @@ it('shows sanitized provider validation details to diagnostic viewers', function
     $diagnostics = app(ProvisioningDiagnosticsService::class)->diagnostics($enrollment);
 
     expect($diagnostics->providers[0]->safe_error)
-        ->toContain('gender:')
-        ->toContain('civil_id:')
-        ->toContain('[REDACTED]')
-        ->not->toContain('1234567890')
-        ->not->toContain('test@example.com');
+        ->toContain('gender: The selected gender is invalid.')
+        ->toContain('civil_id: The civil ID 1234567890 is invalid.')
+        ->toContain('email: The email test@example.com is invalid.')
+        ->not->toContain('["');
 });
 
-it('returns the sanitized failure message and full context per attempt', function (): void {
+it('returns the failure message and full context per attempt', function (): void {
     $enrollment = Enrollment::factory()->create();
     ProvisioningAttempt::create([
         'enrollment_id'    => $enrollment->id,
@@ -115,13 +110,13 @@ it('returns the sanitized failure message and full context per attempt', functio
 
     $diagnostics = app(ProvisioningDiagnosticsService::class)->diagnostics($enrollment, true);
 
-    expect($diagnostics->attempts[0]->safe_error)->toBe('IMS rejected [REDACTED]')
+    expect($diagnostics->attempts[0]->safe_error)->toBe('IMS rejected test@example.com')
         ->and($diagnostics->attempts[0]->context)->toMatchArray([
             'http_status' => 422,
             'function'    => 'storeStudent',
             'endpoint'    => '/api/v2/student',
         ])
-        ->and($diagnostics->attempts[0]->context['raw_body_snippet'])->toBe('civil_id [REDACTED] is invalid');
+        ->and($diagnostics->attempts[0]->context['raw_body_snippet'])->toBe('civil_id 1234567890 is invalid');
 });
 
 it('returns newest attempt history first and preserves terminal retryability', function (): void {

@@ -99,17 +99,18 @@ final class ProvisioningDiagnosticsService
             return null;
         }
 
-        return ProvisioningErrorContext::sanitizeBody($error);
+        return mb_substr($error, 0, 1000);
     }
 
     /** @param array<string, mixed> $metadata */
     private function safeContext(array $metadata): array
     {
-        // `failure_metadata` is scrubbed when the attempt is written; re-running the
-        // shared sanitizer keeps rows predating that guarantee safe to return too.
-        // The previous allow-list dropped the response body, function and upstream
-        // message, which left the technical detail view with nothing to show.
-        $context = ProvisioningErrorContext::sanitize($metadata);
+        // `failure_metadata` is redacted when the attempt is written; re-running the
+        // same deny-list keeps rows predating that guarantee safe to return too.
+        // An allow-list here previously dropped the response body, function and
+        // upstream message, which left the technical detail view with nothing to
+        // show and lost any field a provider later added.
+        $context = ProvisioningErrorContext::redactSecrets($metadata);
 
         if (isset($context['endpoint']) && is_string($context['endpoint'])) {
             $context['endpoint'] = parse_url($context['endpoint'], PHP_URL_PATH) ?: Str::before($context['endpoint'], '?');

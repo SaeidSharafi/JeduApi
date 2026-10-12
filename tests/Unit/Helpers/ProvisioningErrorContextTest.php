@@ -57,6 +57,35 @@ it('scrubs PII from string values under unrecognised keys', function (): void {
     expect($sanitized['message'])->toBe('Moodle rejected [REDACTED]');
 });
 
+it('keeps unrecognised keys but redacts secret-bearing ones', function (): void {
+    $redacted = ProvisioningErrorContext::redactSecrets([
+        'endpoint'          => '/enroll',
+        'http_status'       => 503,
+        'provider_trace_id' => 'trace-9',
+        'private_token'     => 'do-not-store',
+        'X-Api-Key'         => 'also-secret',
+        'nested'            => ['licence_key' => 'abc', 'batch' => 12],
+    ]);
+
+    expect($redacted)->toBe([
+        'endpoint'          => '/enroll',
+        'http_status'       => 503,
+        'provider_trace_id' => 'trace-9',
+        'private_token'     => '[REDACTED]',
+        'X-Api-Key'         => '[REDACTED]',
+        'nested'            => ['licence_key' => '[REDACTED]', 'batch' => 12],
+    ]);
+});
+
+it('keeps learner PII in redactSecrets but scrubs it in sanitize', function (): void {
+    $metadata = ['message' => 'Moodle rejected student@example.test'];
+
+    expect(ProvisioningErrorContext::redactSecrets($metadata))
+        ->toBe(['message' => 'Moodle rejected student@example.test'])
+        ->and(ProvisioningErrorContext::sanitize($metadata))
+        ->toBe(['message' => 'Moodle rejected [REDACTED]']);
+});
+
 it('flattens nested validation errors into one message per field', function (): void {
     $flattened = ProvisioningErrorContext::flattenValidationErrors([
         'email'    => ['The email admin@example.test is invalid.', 'Use a company address.'],
@@ -64,8 +93,8 @@ it('flattens nested validation errors into one message per field', function (): 
     ]);
 
     expect($flattened)->toBe([
-        'email'    => 'The email [REDACTED] is invalid. Use a company address.',
-        'civil_id' => 'The civil id [REDACTED] is invalid.',
+        'email'    => 'The email admin@example.test is invalid. Use a company address.',
+        'civil_id' => 'The civil id 1234567890 is invalid.',
     ]);
 });
 

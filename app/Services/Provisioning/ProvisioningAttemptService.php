@@ -482,20 +482,21 @@ final class ProvisioningAttemptService
     }
 
     /**
-     * Persist the attempt's upstream context, scrubbed.
+     * Persist the attempt's upstream context with secrets redacted.
      *
-     * Previously only `http_status`, `endpoint` and `errorcode` survived, which is
-     * why a failed attempt could not be diagnosed from the database at all: the
-     * response body, the Moodle function and the upstream message were all dropped
-     * before the row was written. The shared sanitizer redacts by key and scrubs
-     * PII, so the full context can be kept.
+     * Previously only `http_status`, `endpoint` and `errorcode` survived an
+     * allow-list, which is why a failed attempt could not be diagnosed from the
+     * database at all: the response body, the Moodle function and the upstream
+     * message were all dropped before the row was written. `redactSecrets()` keeps
+     * everything except secret-bearing keys, so a field a provider adds later is
+     * stored rather than silently discarded.
      *
      * @param  array<string, mixed>  $metadata
      * @return array<string, mixed>
      */
     private function safeMetadata(array $metadata): array
     {
-        $safe = ProvisioningErrorContext::sanitize($metadata);
+        $safe = ProvisioningErrorContext::redactSecrets($metadata);
 
         // Keep validation errors flat (`field => message`) because the sanitizer
         // preserves the provider's nested `field => [messages]` shape, which the

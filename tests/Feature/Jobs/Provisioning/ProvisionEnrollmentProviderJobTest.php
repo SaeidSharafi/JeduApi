@@ -584,7 +584,7 @@ it('keeps newer provider references when an older running attempt reports a late
         ->toMatchArray(['attempt_sequence' => 2, 'status' => 'success', 'data' => ['moodle_user_id' => 84, 'moodle_course_id' => 99]]);
 });
 
-it('marks aggregate provisioning degraded and keeps only safe failure metadata', function (): void {
+it('marks aggregate provisioning degraded and redacts secrets in failure metadata', function (): void {
     $enrollment = Enrollment::factory()->create([
         'provisioning_plan' => ['providers' => [
             ['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready'],
@@ -600,12 +600,19 @@ it('marks aggregate provisioning degraded and keeps only safe failure metadata',
         $running ?? throw new RuntimeException('Provisioning attempt did not start.'),
         new RuntimeException('Provider rejected enrollment'),
         metadata: ['http_status' => 503, 'endpoint' => '/enroll', 'private_token' => 'do-not-store',
+            'provider_trace_id'  => 'trace-9',
             'validation_errors'  => ['course' => ['not found']]],
     );
 
     expect($attempt->fresh()->status)->toBe(ProvisioningAttemptStatusEnum::FAILED)
-        ->and($attempt->fresh()->failure_metadata)->toBe([
-            'endpoint' => '/enroll', 'http_status' => 503, 'validation_errors' => ['course' => '["not found"]'],
+        // `failure_metadata` is jsonb, so Postgres normalises key order; compare
+        // content rather than the order the keys were written in.
+        ->and($attempt->fresh()->failure_metadata)->toEqual([
+            'http_status'       => 503,
+            'endpoint'          => '/enroll',
+            'private_token'     => '[REDACTED]',
+            'provider_trace_id' => 'trace-9',
+            'validation_errors' => ['course' => 'not found'],
         ]);
     expect($enrollment->fresh()->provisioning_status)->toBe(ProvisioningStatusEnum::DEGRADED)
         ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.moodle.status'))->toBe('failed');

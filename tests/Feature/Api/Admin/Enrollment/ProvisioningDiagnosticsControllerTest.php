@@ -25,7 +25,7 @@ it('returns safe diagnostics to enrollment viewers', function (): void {
         ->assertOk()
         ->assertJsonStructure(['data' => ['status', 'providers']])
         ->assertJsonMissing(['attempts'])
-        ->assertJsonPath('data.providers.0.safe_error', 'Moodle rejected [REDACTED]');
+        ->assertJsonPath('data.providers.0.safe_error', 'Moodle rejected test@example.com');
 });
 
 it('requires the diagnostics permission for advanced history', function (): void {
@@ -43,7 +43,7 @@ it('requires the diagnostics permission for advanced history', function (): void
         ->assertForbidden();
 });
 
-it('returns sanitized advanced history to diagnostic viewers', function (): void {
+it('returns secret-redacted advanced history to diagnostic viewers', function (): void {
     $enrollment = Enrollment::factory()->create();
     ProvisioningAttempt::create([
         'enrollment_id'    => $enrollment->id,
@@ -53,7 +53,7 @@ it('returns sanitized advanced history to diagnostic viewers', function (): void
         'sequence'         => 1,
         'retryable'        => true,
         'failure_message'  => 'Moodle rejected test@example.com',
-        'failure_metadata' => ['http_status' => 422, 'secret' => 'hidden'],
+        'failure_metadata' => ['http_status' => 422, 'secret' => 'hidden', 'provider_trace_id' => 'trace-9'],
     ]);
     $this->authorized_user([PermissionEnum::ENROLLMENT_DIAGNOSTICS_VIEW->value]);
 
@@ -62,6 +62,7 @@ it('returns sanitized advanced history to diagnostic viewers', function (): void
         ->assertJsonStructure(['data' => ['summary' => ['status', 'providers'], 'attempts' => [['provider', 'status', 'retryable', 'sequence', 'trigger', 'failure_code', 'classification', 'safe_error', 'correlation_id', 'context', 'created_at']]]])
         ->assertJsonPath('data.attempts.0.classification', 'recoverable')
         ->assertJsonPath('data.attempts.0.context.http_status', 422)
-        ->assertJsonPath('data.attempts.0.safe_error', 'Moodle rejected [REDACTED]')
-        ->assertJsonPath('data.attempts.0.context.secret', '[REDACTED]');
+        ->assertJsonPath('data.attempts.0.safe_error', 'Moodle rejected test@example.com')
+        ->assertJsonPath('data.attempts.0.context.secret', '[REDACTED]')
+        ->assertJsonPath('data.attempts.0.context.provider_trace_id', 'trace-9');
 });
