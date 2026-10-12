@@ -15,7 +15,9 @@
     "details_json": {},
     "created_at": "2024-10-21 11:00:00",
     "updated_at": "2024-10-21 11:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 1,
@@ -33,7 +35,9 @@
     "details_json": {},
     "created_at": "2024-09-01 10:00:00",
     "updated_at": "2024-09-01 10:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 2,
@@ -51,7 +55,9 @@
     "details_json": {},
     "created_at": "2024-09-02 11:00:00",
     "updated_at": "2024-09-02 11:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 3,
@@ -69,7 +75,9 @@
     "details_json": {},
     "created_at": "2024-09-03 12:00:00",
     "updated_at": "2024-09-03 12:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 4,
@@ -87,7 +95,9 @@
     "details_json": {},
     "created_at": "2024-09-04 13:00:00",
     "updated_at": "2024-09-04 13:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": "2024-11-12 18:00:00",
+    "event_ended_at": "2024-11-12 20:00:00"
   },
   {
     "id": 5,
@@ -102,10 +112,12 @@
     "name": "کتاب الگوهای طراحی در PHP",
     "slug": "php-design-patterns-book",
     "is_featured": true,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-09-05 14:00:00",
     "updated_at": "2024-09-05 14:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 6,
@@ -123,7 +135,9 @@
     "details_json": {},
     "created_at": "2024-09-06 15:00:00",
     "updated_at": "2024-09-06 15:00:00",
-    "category_ids": [6, 12]
+    "category_ids": [6, 12],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 7,
@@ -141,7 +155,9 @@
     "details_json": {},
     "created_at": "2024-09-07 16:00:00",
     "updated_at": "2024-09-07 16:00:00",
-    "category_ids": [1]
+    "category_ids": [1],
+    "event_start_at": "2025-08-05 18:00:00",
+    "event_ended_at": "2025-08-05 20:00:00"
   },
   {
     "id": 8,
@@ -159,7 +175,9 @@
     "details_json": {},
     "created_at": "2024-09-08 17:00:00",
     "updated_at": "2024-09-08 17:00:00",
-    "category_ids": [4, 11]
+    "category_ids": [4, 11],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 9,
@@ -174,10 +192,12 @@
     "name": "مجموعه وکتورهای ایرانی برای طراحی",
     "slug": "iranian-vectors-for-design",
     "is_featured": false,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-09-09 18:00:00",
     "updated_at": "2024-09-09 18:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 10,
@@ -195,7 +215,9 @@
     "details_json": {},
     "created_at": "2024-09-10 19:00:00",
     "updated_at": "2024-09-10 19:00:00",
-    "category_ids": [5]
+    "category_ids": [5],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 11,
@@ -213,7 +235,9 @@
     "details_json": {},
     "created_at": "2024-09-11 20:00:00",
     "updated_at": "2024-09-11 20:00:00",
-    "category_ids": [6, 13]
+    "category_ids": [6, 13],
+    "event_start_at": "2025-03-28 18:00:00",
+    "event_ended_at": "2025-03-28 20:00:00"
   },
   {
     "id": 12,
@@ -231,7 +255,9 @@
     "details_json": {},
     "created_at": "2024-09-12 09:00:00",
     "updated_at": "2024-09-12 09:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 13,
@@ -246,10 +272,12 @@
     "name": "پروژه آماده نمایش لوگو در افترافکت",
     "slug": "after-effects-logo-reveal-template",
     "is_featured": false,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-09-13 10:00:00",
     "updated_at": "2024-09-13 10:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 14,
@@ -267,7 +295,9 @@
     "details_json": {},
     "created_at": "2024-09-14 11:00:00",
     "updated_at": "2024-09-14 11:00:00",
-    "category_ids": [1]
+    "category_ids": [1],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 15,
@@ -285,7 +315,9 @@
     "details_json": {},
     "created_at": "2024-09-15 12:00:00",
     "updated_at": "2024-09-15 12:00:00",
-    "category_ids": [5]
+    "category_ids": [5],
+    "event_start_at": "2024-07-20 18:00:00",
+    "event_ended_at": "2024-07-20 20:00:00"
   },
   {
     "id": 16,
@@ -303,7 +335,9 @@
     "details_json": {},
     "created_at": "2024-09-16 13:00:00",
     "updated_at": "2024-09-16 13:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 17,
@@ -318,10 +352,12 @@
     "name": "کتاب الکترونیکی راهنمای کامل سئو",
     "slug": "seo-guide-ebook",
     "is_featured": true,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-09-17 14:00:00",
     "updated_at": "2024-09-17 14:00:00",
-    "category_ids": [6, 12]
+    "category_ids": [6, 12],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 18,
@@ -339,7 +375,9 @@
     "details_json": {},
     "created_at": "2024-09-18 15:00:00",
     "updated_at": "2024-09-18 15:00:00",
-    "category_ids": [4, 11]
+    "category_ids": [4, 11],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 19,
@@ -357,7 +395,9 @@
     "details_json": {},
     "created_at": "2024-09-19 16:00:00",
     "updated_at": "2024-09-19 16:00:00",
-    "category_ids": [6, 12]
+    "category_ids": [6, 12],
+    "event_start_at": "2025-11-10 18:00:00",
+    "event_ended_at": "2025-11-10 20:00:00"
   },
   {
     "id": 20,
@@ -375,7 +415,9 @@
     "details_json": {},
     "created_at": "2024-09-20 17:00:00",
     "updated_at": "2024-09-20 17:00:00",
-    "category_ids": [5]
+    "category_ids": [5],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 21,
@@ -390,10 +432,12 @@
     "name": "مجموعه قالب‌های رزومه خلاقانه",
     "slug": "creative-resume-templates",
     "is_featured": false,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-09-21 18:00:00",
     "updated_at": "2024-09-21 18:00:00",
-    "category_ids": [6]
+    "category_ids": [6],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 22,
@@ -411,7 +455,9 @@
     "details_json": {},
     "created_at": "2024-09-22 09:00:00",
     "updated_at": "2024-09-22 09:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 23,
@@ -429,7 +475,9 @@
     "details_json": {},
     "created_at": "2024-09-23 10:00:00",
     "updated_at": "2024-09-23 10:00:00",
-    "category_ids": [3]
+    "category_ids": [3],
+    "event_start_at": "2024-12-05 18:00:00",
+    "event_ended_at": "2024-12-05 20:00:00"
   },
   {
     "id": 24,
@@ -447,7 +495,9 @@
     "details_json": {},
     "created_at": "2024-09-24 11:00:00",
     "updated_at": "2024-09-24 11:00:00",
-    "category_ids": [5]
+    "category_ids": [5],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 25,
@@ -462,10 +512,12 @@
     "name": "مجموعه موسیقی متن برای تولید محتوا",
     "slug": "background-music-for-content-creation",
     "is_featured": false,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-09-25 12:00:00",
     "updated_at": "2024-09-25 12:00:00",
-    "category_ids": [4, 11]
+    "category_ids": [4, 11],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 26,
@@ -483,7 +535,9 @@
     "details_json": {},
     "created_at": "2024-09-26 13:00:00",
     "updated_at": "2024-09-26 13:00:00",
-    "category_ids": [5]
+    "category_ids": [5],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 27,
@@ -501,7 +555,9 @@
     "details_json": {},
     "created_at": "2024-09-27 14:00:00",
     "updated_at": "2024-09-27 14:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": "2025-05-14 18:00:00",
+    "event_ended_at": "2025-05-14 20:00:00"
   },
   {
     "id": 28,
@@ -519,7 +575,9 @@
     "details_json": {},
     "created_at": "2024-09-28 15:00:00",
     "updated_at": "2024-09-28 15:00:00",
-    "category_ids": [4, 5]
+    "category_ids": [4, 5],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 29,
@@ -534,10 +592,12 @@
     "name": "چک‌لیست کمپین‌های بازاریابی دیجیتال",
     "slug": "digital-marketing-campaigns-checklist",
     "is_featured": false,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-09-29 16:00:00",
     "updated_at": "2024-09-29 16:00:00",
-    "category_ids": [6, 12]
+    "category_ids": [6, 12],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 30,
@@ -555,7 +615,9 @@
     "details_json": {},
     "created_at": "2024-09-30 17:00:00",
     "updated_at": "2024-09-30 17:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 31,
@@ -573,7 +635,9 @@
     "details_json": {},
     "created_at": "2024-10-01 18:00:00",
     "updated_at": "2024-10-01 18:00:00",
-    "category_ids": [5, 6]
+    "category_ids": [5, 6],
+    "event_start_at": "2026-02-18 18:00:00",
+    "event_ended_at": "2026-02-18 20:00:00"
   },
   {
     "id": 32,
@@ -591,7 +655,9 @@
     "details_json": {},
     "created_at": "2024-10-02 09:00:00",
     "updated_at": "2024-10-02 09:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 33,
@@ -606,10 +672,12 @@
     "name": "مجموعه داستان‌های کوتاه معاصر",
     "slug": "contemporary-short-stories-collection",
     "is_featured": false,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-10-03 10:00:00",
     "updated_at": "2024-10-03 10:00:00",
-    "category_ids": [4, 5]
+    "category_ids": [4, 5],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 34,
@@ -627,7 +695,9 @@
     "details_json": {},
     "created_at": "2024-10-04 11:00:00",
     "updated_at": "2024-10-04 11:00:00",
-    "category_ids": [6, 13]
+    "category_ids": [6, 13],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 35,
@@ -645,7 +715,9 @@
     "details_json": {},
     "created_at": "2024-10-05 12:00:00",
     "updated_at": "2024-10-05 12:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": "2025-02-25 18:00:00",
+    "event_ended_at": "2025-02-25 20:00:00"
   },
   {
     "id": 36,
@@ -663,7 +735,9 @@
     "details_json": {},
     "created_at": "2024-10-06 13:00:00",
     "updated_at": "2024-10-06 13:00:00",
-    "category_ids": [2, 15]
+    "category_ids": [2, 15],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 37,
@@ -678,10 +752,12 @@
     "name": "مجموعه فونت‌های دست‌نویس فارسی",
     "slug": "persian-handwritten-fonts-collection",
     "is_featured": false,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-10-07 14:00:00",
     "updated_at": "2024-10-07 14:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 38,
@@ -699,7 +775,9 @@
     "details_json": {},
     "created_at": "2024-10-08 15:00:00",
     "updated_at": "2024-10-08 15:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 39,
@@ -717,7 +795,9 @@
     "details_json": {},
     "created_at": "2024-10-09 16:00:00",
     "updated_at": "2024-10-09 16:00:00",
-    "category_ids": [4, 5]
+    "category_ids": [4, 5],
+    "event_start_at": "2025-07-15 18:00:00",
+    "event_ended_at": "2025-07-15 20:00:00"
   },
   {
     "id": 40,
@@ -735,7 +815,9 @@
     "details_json": {},
     "created_at": "2024-10-10 17:00:00",
     "updated_at": "2024-10-10 17:00:00",
-    "category_ids": [4, 11]
+    "category_ids": [4, 11],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 41,
@@ -750,10 +832,12 @@
     "name": "فایل ویدیویی آموزش توابع پیشرفته اکسل",
     "slug": "advanced-excel-functions-video",
     "is_featured": true,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-10-11 18:00:00",
     "updated_at": "2024-10-11 18:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 42,
@@ -771,7 +855,9 @@
     "details_json": {},
     "created_at": "2024-10-12 09:00:00",
     "updated_at": "2024-10-12 09:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 43,
@@ -789,7 +875,9 @@
     "details_json": {},
     "created_at": "2024-10-13 10:00:00",
     "updated_at": "2024-10-13 10:00:00",
-    "category_ids": [7]
+    "category_ids": [7],
+    "event_start_at": "2025-04-02 18:00:00",
+    "event_ended_at": "2025-04-02 20:00:00"
   },
   {
     "id": 44,
@@ -807,7 +895,9 @@
     "details_json": {},
     "created_at": "2024-10-14 11:00:00",
     "updated_at": "2024-10-14 11:00:00",
-    "category_ids": [5]
+    "category_ids": [5],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 45,
@@ -822,10 +912,12 @@
     "name": "کتاب الکترونیکی ترکیب‌بندی در عکاسی",
     "slug": "photography-composition-ebook",
     "is_featured": true,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-10-15 12:00:00",
     "updated_at": "2024-10-15 12:00:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 46,
@@ -843,7 +935,9 @@
     "details_json": {},
     "created_at": "2024-10-16 13:00:00",
     "updated_at": "2024-10-16 13:00:00",
-    "category_ids": [4, 11]
+    "category_ids": [4, 11],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 47,
@@ -861,7 +955,9 @@
     "details_json": {},
     "created_at": "2024-10-17 14:00:00",
     "updated_at": "2024-10-17 14:00:00",
-    "category_ids": [6]
+    "category_ids": [6],
+    "event_start_at": "2024-08-10 18:00:00",
+    "event_ended_at": "2024-08-10 20:00:00"
   },
   {
     "id": 48,
@@ -879,7 +975,9 @@
     "details_json": {},
     "created_at": "2024-10-18 15:00:00",
     "updated_at": "2024-10-18 15:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 49,
@@ -894,10 +992,12 @@
     "name": "پلاگین حرفه‌ای ساخت فرم تماس",
     "slug": "wordpress-professional-contact-form-plugin",
     "is_featured": true,
-    "details_json": {},
+    "details_json": ["دسترسی مادام‌العمر پس از خرید", "قابل استفاده در موبایل، تبلت و رایانه", "به‌روزرسانی رایگان نسخه‌های بعدی", "پشتیبانی پرسش و پاسخ از سوی تیم محتوا"],
     "created_at": "2024-10-19 16:00:00",
     "updated_at": "2024-10-19 16:00:00",
-    "category_ids": [10]
+    "category_ids": [10],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 50,
@@ -915,7 +1015,9 @@
     "details_json": {},
     "created_at": "2024-10-20 17:00:00",
     "updated_at": "2024-10-20 17:00:00",
-    "category_ids": [4, 11]
+    "category_ids": [4, 11],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 52,
@@ -933,7 +1035,9 @@
     "details_json": {},
     "created_at": "2024-10-21 11:10:00",
     "updated_at": "2024-10-21 11:10:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 53,
@@ -951,7 +1055,9 @@
     "details_json": {},
     "created_at": "2024-10-21 11:11:00",
     "updated_at": "2024-10-21 11:11:00",
-    "category_ids": [4, 11]
+    "category_ids": [4, 11],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 54,
@@ -969,7 +1075,9 @@
     "details_json": {},
     "created_at": "2024-10-21 11:12:00",
     "updated_at": "2024-10-21 11:12:00",
-    "category_ids": [5]
+    "category_ids": [5],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 55,
@@ -987,7 +1095,9 @@
     "details_json": {},
     "created_at": "2024-10-21 11:13:00",
     "updated_at": "2024-10-21 11:13:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 56,
@@ -1005,7 +1115,9 @@
     "details_json": {},
     "created_at": "2024-10-21 11:14:00",
     "updated_at": "2024-10-21 11:14:00",
-    "category_ids": [6, 12]
+    "category_ids": [6, 12],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 57,
@@ -1023,7 +1135,9 @@
     "details_json": {},
     "created_at": "2024-10-21 11:15:00",
     "updated_at": "2024-10-21 11:15:00",
-    "category_ids": [4]
+    "category_ids": [4],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 58,
@@ -1041,7 +1155,9 @@
     "details_json": {},
     "created_at": "2024-10-21 11:16:00",
     "updated_at": "2024-10-21 11:16:00",
-    "category_ids": [6, 10, 2, 15]
+    "category_ids": [6, 10, 2, 15],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 59,
@@ -1059,7 +1175,9 @@
     "details_json": {},
     "created_at": "2024-10-21 11:17:00",
     "updated_at": "2024-10-21 11:17:00",
-    "category_ids": [4, 5]
+    "category_ids": [4, 5],
+    "event_start_at": null,
+    "event_ended_at": null
   },
   {
     "id": 60,
@@ -1077,6 +1195,8 @@
     "details_json": {},
     "created_at": "2024-10-21 11:18:00",
     "updated_at": "2024-10-21 11:18:00",
-    "category_ids": [1, 5]
+    "category_ids": [1, 5],
+    "event_start_at": null,
+    "event_ended_at": null
   }
 ]
