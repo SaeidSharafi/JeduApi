@@ -56,6 +56,24 @@ describe('Admin Customer Select Option API', function (): void {
         $response->assertJsonMissingPath('data.data.0.phone');
     });
 
+    it('returns customer select options when the customer has no email', function (): void {
+        User::factory()->create([
+            'first_name' => 'Phone',
+            'last_name'  => 'Only',
+            'email'      => null,
+            'phone'      => '09305556677',
+        ]);
+
+        $response = $this->getJson(
+            route('api.v1.admin.select-option.customers', ['q' => 'Phone Only'])
+        );
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data.data')
+            ->assertJsonPath('data.data.0.title', 'Phone Only')
+            ->assertJsonPath('data.data.0.subtitle', '09305556677');
+    });
+
     it('searches customers by civil id and phone', function (): void {
         User::factory()->create([
             'first_name' => 'Jane',

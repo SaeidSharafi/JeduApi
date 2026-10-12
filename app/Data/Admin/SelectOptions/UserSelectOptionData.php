@@ -19,13 +19,14 @@ final class UserSelectOptionData extends Data
         public int $id,
         public string $first_name,
         public string $last_name,
-        public string $email,
+        public ?string $email,
         public string $phone,
         public ?string $avatar_url = null,
     ) {
         $this->title    = $this->first_name.' '.$this->last_name;
-        $this->subtitle = $this->email." ({$this->phone})";
-
+        $this->subtitle = filled($this->email)
+            ? $this->email." ({$this->phone})"
+            : $this->phone;
     }
 
     protected function exceptProperties(): array
