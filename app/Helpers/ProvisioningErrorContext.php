@@ -60,7 +60,8 @@ final class ProvisioningErrorContext
 
     /**
      * Redact a provisioning metadata array: known sensitive keys are replaced,
-     * raw upstream bodies are scrubbed of PII, and arrays are walked recursively.
+     * raw upstream bodies and every other string value are scrubbed of PII, and
+     * arrays are walked recursively.
      *
      * @param  array<string, mixed>  $metaData
      * @return array<string, mixed>
@@ -91,10 +92,43 @@ final class ProvisioningErrorContext
                 continue;
             }
 
-            $sanitized[$key] = $value;
+            // Keys outside SENSITIVE_KEYS/BODY_KEYS still carry upstream free text
+            // (Moodle's `message`, for instance), so every remaining string gets the
+            // same PII scrub. Without this, persisting or returning those keys would
+            // bypass the redaction the body keys already receive.
+            $sanitized[$key] = is_string($value) ? self::sanitizeBody($value) : $value;
         }
 
         return $sanitized;
+    }
+
+    /**
+     * Flatten a provider validation-error payload into `field => message`.
+     *
+     * Providers answer either `field => message` or Laravel-style
+     * `field => [messages]`. Diagnostics render one line per field, so array
+     * values are joined; JSON-encoding them previously surfaced
+     * `gender: ["The selected gender is invalid."]` to operators.
+     *
+     * @param  array<array-key, mixed>  $validationErrors
+     * @return array<string, string>
+     */
+    public static function flattenValidationErrors(array $validationErrors): array
+    {
+        $flattened = [];
+
+        foreach ($validationErrors as $field => $value) {
+            $messages = is_array($value) ? $value : [$value];
+
+            $texts = [];
+            foreach ($messages as $message) {
+                $texts[] = is_scalar($message) ? (string) $message : (json_encode($message) ?: '[unavailable]');
+            }
+
+            $flattened[(string) $field] = self::sanitizeBody(implode(' ', $texts));
+        }
+
+        return $flattened;
     }
 
     /**

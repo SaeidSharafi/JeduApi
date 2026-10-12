@@ -49,6 +49,26 @@ it('scrubs body-shaped keys whether they hold a string or an array', function ()
         ->and($sanitized['debuginfo'])->not->toContain('1234567890');
 });
 
+it('scrubs PII from string values under unrecognised keys', function (): void {
+    $sanitized = ProvisioningErrorContext::sanitize([
+        'message' => 'Moodle rejected student@example.test',
+    ]);
+
+    expect($sanitized['message'])->toBe('Moodle rejected [REDACTED]');
+});
+
+it('flattens nested validation errors into one message per field', function (): void {
+    $flattened = ProvisioningErrorContext::flattenValidationErrors([
+        'email'    => ['The email admin@example.test is invalid.', 'Use a company address.'],
+        'civil_id' => 'The civil id 1234567890 is invalid.',
+    ]);
+
+    expect($flattened)->toBe([
+        'email'    => 'The email [REDACTED] is invalid. Use a company address.',
+        'civil_id' => 'The civil id [REDACTED] is invalid.',
+    ]);
+});
+
 it('leaves non-sensitive scalar context untouched and skips empty metadata', function (): void {
     expect(ProvisioningErrorContext::sanitize([
         'http_status' => 500,

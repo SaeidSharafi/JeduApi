@@ -13,8 +13,11 @@ use Tests\Support\Traits\AuthTestTrait;
 uses(AuthTestTrait::class);
 
 it('returns safe diagnostics to enrollment viewers', function (): void {
-    $enrollment = Enrollment::factory()->create([
-        'provisioning_data' => ['providers' => ['moodle' => ['status' => 'failed', 'last_error' => 'token secret should be hidden']]],
+    $enrollment = Enrollment::factory()->create();
+    $enrollment->update([
+        'provisioning_plan'   => ['version' => 1, 'providers' => [['provider' => 'moodle', 'applicable' => true, 'readiness' => 'ready']], 'status' => 'degraded'],
+        'provisioning_status' => 'degraded',
+        'provisioning_data'   => ['providers' => ['moodle' => ['status' => 'failed', 'last_error' => 'Moodle rejected test@example.com']]],
     ]);
     $this->authorized_user([PermissionEnum::ENROLLMENT_VIEW->value]);
 
@@ -22,7 +25,7 @@ it('returns safe diagnostics to enrollment viewers', function (): void {
         ->assertOk()
         ->assertJsonStructure(['data' => ['status', 'providers']])
         ->assertJsonMissing(['attempts'])
-        ->assertJsonMissing(['safe_error' => 'token secret should be hidden']);
+        ->assertJsonPath('data.providers.0.safe_error', 'Moodle rejected [REDACTED]');
 });
 
 it('requires the diagnostics permission for advanced history', function (): void {
@@ -40,7 +43,7 @@ it('requires the diagnostics permission for advanced history', function (): void
         ->assertForbidden();
 });
 
-it('returns allow-listed advanced history to diagnostic viewers', function (): void {
+it('returns sanitized advanced history to diagnostic viewers', function (): void {
     $enrollment = Enrollment::factory()->create();
     ProvisioningAttempt::create([
         'enrollment_id'    => $enrollment->id,
@@ -49,14 +52,16 @@ it('returns allow-listed advanced history to diagnostic viewers', function (): v
         'status'           => ProvisioningAttemptStatusEnum::FAILED,
         'sequence'         => 1,
         'retryable'        => true,
+        'failure_message'  => 'Moodle rejected test@example.com',
         'failure_metadata' => ['http_status' => 422, 'secret' => 'hidden'],
     ]);
     $this->authorized_user([PermissionEnum::ENROLLMENT_DIAGNOSTICS_VIEW->value]);
 
     $this->getJson(route('api.v1.admin.enrollments.provisioning.diagnostics.advanced', $enrollment))
         ->assertOk()
-        ->assertJsonStructure(['data' => ['summary' => ['status', 'providers'], 'attempts' => [['provider', 'status', 'retryable', 'sequence', 'trigger', 'failure_code', 'classification', 'correlation_id', 'context', 'created_at']]]])
+        ->assertJsonStructure(['data' => ['summary' => ['status', 'providers'], 'attempts' => [['provider', 'status', 'retryable', 'sequence', 'trigger', 'failure_code', 'classification', 'safe_error', 'correlation_id', 'context', 'created_at']]]])
         ->assertJsonPath('data.attempts.0.classification', 'recoverable')
         ->assertJsonPath('data.attempts.0.context.http_status', 422)
-        ->assertJsonMissing(['secret' => 'hidden']);
+        ->assertJsonPath('data.attempts.0.safe_error', 'Moodle rejected [REDACTED]')
+        ->assertJsonPath('data.attempts.0.context.secret', '[REDACTED]');
 });

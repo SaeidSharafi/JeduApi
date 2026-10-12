@@ -14,6 +14,7 @@ use App\Enums\ProvisioningReadinessEnum;
 use App\Enums\ProvisioningStatusEnum;
 use App\Enums\ProvisioningTriggerEnum;
 use App\Exceptions\BundleStructuralInvariantException;
+use App\Helpers\ProvisioningErrorContext;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
 use App\Models\Enrollment;
 use App\Models\ProvisioningAttempt;
@@ -480,18 +481,27 @@ final class ProvisioningAttemptService
         return 'in_progress';
     }
 
-    /** @param  array<string, mixed>  $metadata  @return array<string, mixed> */
+    /**
+     * Persist the attempt's upstream context, scrubbed.
+     *
+     * Previously only `http_status`, `endpoint` and `errorcode` survived, which is
+     * why a failed attempt could not be diagnosed from the database at all: the
+     * response body, the Moodle function and the upstream message were all dropped
+     * before the row was written. The shared sanitizer redacts by key and scrubs
+     * PII, so the full context can be kept.
+     *
+     * @param  array<string, mixed>  $metadata
+     * @return array<string, mixed>
+     */
     private function safeMetadata(array $metadata): array
     {
-        $safe = collect($metadata)->only(['http_status', 'endpoint', 'errorcode'])->all();
-        if (isset($metadata['validation_errors']) && is_array($metadata['validation_errors'])) {
-            $safe['validation_errors'] = collect($metadata['validation_errors'])
-                ->map(function (mixed $value): string {
-                    $serialized = is_scalar($value) ? (string) $value : (json_encode($value) ?: '[unavailable]');
+        $safe = ProvisioningErrorContext::sanitize($metadata);
 
-                    return mb_substr($serialized, 0, 500);
-                })
-                ->all();
+        // Keep validation errors flat (`field => message`) because the sanitizer
+        // preserves the provider's nested `field => [messages]` shape, which the
+        // diagnostics summary would otherwise render as an encoded JSON array.
+        if (isset($metadata['validation_errors']) && is_array($metadata['validation_errors'])) {
+            $safe['validation_errors'] = ProvisioningErrorContext::flattenValidationErrors($metadata['validation_errors']);
         }
 
         return $safe;

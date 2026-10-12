@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 final class ProvisioningAttemptDiagnosticData extends Data
 {
     /**
-     * @param  array<string, int|string|array<string, string>>  $context
+     * @param  array<string, mixed>  $context
      */
     public function __construct(
         public string $provider,
@@ -19,6 +19,7 @@ final class ProvisioningAttemptDiagnosticData extends Data
         public string $trigger,
         public ?string $failure_code,
         public ?string $classification,
+        public ?string $safe_error,
         public ?string $correlation_id,
         public array $context,
         public ?string $created_at,

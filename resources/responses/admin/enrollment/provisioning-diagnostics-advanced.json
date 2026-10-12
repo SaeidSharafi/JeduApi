@@ -13,9 +13,16 @@
                 "trigger": "retry",
                 "failure_code": "validation_error",
                 "classification": "recoverable",
+                "safe_error": "Provider validation failed: email: The email [REDACTED] is invalid.",
                 "correlation_id": "00000000-0000-0000-0000-000000000000",
                 "context": {
-                    "http_status": 422
+                    "http_status": 422,
+                    "endpoint": "/api/v2/student",
+                    "function": "storeStudent",
+                    "raw_body_snippet": "{\"message\":\"email [REDACTED] is taken\"}",
+                    "validation_errors": {
+                        "email": "The email [REDACTED] is invalid."
+                    }
                 },
                 "created_at": "2026-01-01T12:00:00Z"
             }

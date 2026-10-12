@@ -9,6 +9,7 @@ use App\Data\Admin\Enrollment\ProvisioningAttemptDiagnosticData;
 use App\Data\Admin\Enrollment\ProvisioningDiagnosticData;
 use App\Data\Admin\Enrollment\ProvisioningDiagnosticsData;
 use App\Enums\ProvisioningOutcomeStatusEnum;
+use App\Helpers\ProvisioningErrorContext;
 use App\Models\Enrollment;
 use App\Models\ProvisioningAttempt;
 use Illuminate\Support\Str;
@@ -40,7 +41,22 @@ final class ProvisioningDiagnosticsService
         if (! $advanced) {
             return $summary;
         }
-        $attempts = $attemptHistory->map(fn (ProvisioningAttempt $attempt): ProvisioningAttemptDiagnosticData => new ProvisioningAttemptDiagnosticData($attempt->provider->value, $this->diagnosticStatus($attempt->status->value), (bool) $attempt->retryable, (int) $attempt->sequence, $attempt->trigger->value, $attempt->failure_code, $this->classification($attempt->status->value, (bool) $attempt->retryable), $attempt->correlation_id, $this->safeContext($attempt->failure_metadata ?? []), $attempt->created_at?->toISOString()))->values()->all();
+        $attempts = $attemptHistory
+            ->map(fn (ProvisioningAttempt $attempt): ProvisioningAttemptDiagnosticData => new ProvisioningAttemptDiagnosticData(
+                provider: $attempt->provider->value,
+                status: $this->diagnosticStatus($attempt->status->value),
+                retryable: (bool) $attempt->retryable,
+                sequence: (int) $attempt->sequence,
+                trigger: $attempt->trigger->value,
+                failure_code: $attempt->failure_code,
+                classification: $this->classification($attempt->status->value, (bool) $attempt->retryable),
+                safe_error: $this->safeError($attempt->failure_message, $attempt->failure_metadata ?? []),
+                correlation_id: $attempt->correlation_id,
+                context: $this->safeContext($attempt->failure_metadata ?? []),
+                created_at: $attempt->created_at?->toISOString(),
+            ))
+            ->values()
+            ->all();
 
         return new AdvancedProvisioningDiagnosticsData($summary, new DataCollection(ProvisioningAttemptDiagnosticData::class, $attempts));
     }
@@ -72,7 +88,7 @@ final class ProvisioningDiagnosticsService
     {
         $validationErrors = data_get($metadata, 'validation_errors');
         if (is_array($validationErrors) && $validationErrors !== []) {
-            $details = collect($this->safeValidationErrors($validationErrors))
+            $details = collect(ProvisioningErrorContext::flattenValidationErrors($validationErrors))
                 ->map(fn (string $message, string $field): string => $field.': '.$message)
                 ->implode('; ');
 
@@ -83,36 +99,20 @@ final class ProvisioningDiagnosticsService
             return null;
         }
 
-        return 'Provider failure details were redacted.';
-    }
-
-    /** @param array<string, mixed> $validationErrors @return array<string, string> */
-    private function safeValidationErrors(array $validationErrors): array
-    {
-        return collect($validationErrors)
-            ->map(function (mixed $value): string {
-                $message   = is_scalar($value) ? (string) $value : (json_encode($value) ?: '[unavailable]');
-                $sanitized = preg_replace(
-                    ['/[\w.+-]+@[\w-]+\.[\w.-]+/', '/\b09\d{9}\b/', '/\b\d{10}\b/'],
-                    '[REDACTED]',
-                    $message
-                );
-
-                return mb_substr($sanitized ?? $message, 0, 500);
-            })
-            ->all();
+        return ProvisioningErrorContext::sanitizeBody($error);
     }
 
     /** @param array<string, mixed> $metadata */
     private function safeContext(array $metadata): array
     {
-        $context = collect($metadata)->only(['http_status', 'errorcode'])->all();
-        if (isset($metadata['endpoint']) && is_string($metadata['endpoint'])) {
-            $context['endpoint'] = parse_url($metadata['endpoint'], PHP_URL_PATH) ?: Str::before($metadata['endpoint'], '?');
-        }
+        // `failure_metadata` is scrubbed when the attempt is written; re-running the
+        // shared sanitizer keeps rows predating that guarantee safe to return too.
+        // The previous allow-list dropped the response body, function and upstream
+        // message, which left the technical detail view with nothing to show.
+        $context = ProvisioningErrorContext::sanitize($metadata);
 
-        if (isset($metadata['validation_errors']) && is_array($metadata['validation_errors'])) {
-            $context['validation_errors'] = $this->safeValidationErrors($metadata['validation_errors']);
+        if (isset($context['endpoint']) && is_string($context['endpoint'])) {
+            $context['endpoint'] = parse_url($context['endpoint'], PHP_URL_PATH) ?: Str::before($context['endpoint'], '?');
         }
 
         return $context;
