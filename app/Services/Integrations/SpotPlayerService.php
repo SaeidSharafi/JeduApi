@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Http;
 final class SpotPlayerService extends AbstractIntegrationService implements SpotPlayerClientContract
 {
     /**
+     * SpotPlayer returns a relative `url` for the issued licence; the documented
+     * host that serves it is dl.spotplayer.ir.
+     */
+    private const PLAYER_BASE_URL = 'https://dl.spotplayer.ir';
+
+    /**
      * @return array<string, mixed>
      */
     public function issueLicense(string $spotId, User $user): array
@@ -22,32 +28,58 @@ final class SpotPlayerService extends AbstractIntegrationService implements Spot
         $response = Http::baseUrl($this->config['endpoint'])
             ->timeout((int) ($this->config['timeout'] ?? 15))
             ->acceptJson()
-            ->withHeaders(['x-api-key' => $this->config['api_key']])
+            ->withHeaders([
+                '$API'   => (string) $this->config['api_key'],
+                '$LEVEL' => '-1',
+            ])
             ->post('', [
-                'spot_id'       => $spotId,
-                'mobile'        => $user->phone,
-                'name'          => mb_trim(($user->first_name ?? '').' '.($user->last_name ?? '')),
-                'email'         => $user->email,
-                'national_code' => $user->civil_id,
-                'sandbox'       => (bool) ($this->config['sandbox'] ?? false),
+                'test'      => (bool) ($this->config['sandbox'] ?? false),
+                'course'    => [$spotId],
+                'name'      => mb_trim(($user->first_name ?? '').' '.($user->last_name ?? '')),
+                'watermark' => [
+                    'texts' => [['text' => (string) $user->phone]],
+                ],
             ]);
 
-        $this->handleHttpErrors($response, '/'); // handles 4xx/5xx
-
         $data = $response->json();
+
+        // SpotPlayer reports business failures (bad key, missing course, missing
+        // watermark, …) with an `ex` envelope even on 5xx. Surface the upstream
+        // message and treat it as final — replaying the same request cannot succeed.
+        if (is_array($data) && isset($data['ex'])) {
+            throw new UnrecoverableProvisioningException(
+                (string) data_get($data, 'ex.msg', __('messages.integration.spot_player.service_error')),
+                $response->status(),
+                null,
+                [
+                    'http_status'      => $response->status(),
+                    'endpoint'         => '/',
+                    'raw_body_snippet' => $data,
+                ],
+            );
+        }
+
+        $this->handleHttpErrors($response, '/'); // handles 4xx/5xx without an ex envelope
+
         if (! is_array($data)) {
             throw new UnrecoverableProvisioningException(__('messages.integration.spot_player.invalid_response'));
         }
 
-        // Application-level error (bad spot_id, etc.) — retrying won't fix it
-        if ((isset($data['status']) && $data['status'] === false) || isset($data['error'])) {
-            $message = (string) ($data['message'] ?? $data['error'] ?? __('messages.integration.spot_player.service_error'));
-            throw new UnrecoverableProvisioningException($message, 0, null, ['raw_body_snippet' => $data]);
+        $licenseKey = data_get($data, 'key');
+        $playerPath = data_get($data, 'url');
+
+        if (! is_string($licenseKey) || $licenseKey === '' || ! is_string($playerPath) || $playerPath === '') {
+            throw new UnrecoverableProvisioningException(
+                __('messages.integration.spot_player.invalid_response'),
+                0,
+                null,
+                ['raw_body_snippet' => $data],
+            );
         }
 
         return [
-            'license_key' => data_get($data, 'license_key') ?? data_get($data, 'data.license_key'),
-            'player_url'  => data_get($data, 'player_url')  ?? data_get($data, 'data.player_url'),
+            'license_key' => $licenseKey,
+            'player_url'  => self::PLAYER_BASE_URL.'/'.mb_ltrim($playerPath, '/'),
             'raw'         => $data,
         ];
     }
