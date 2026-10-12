@@ -165,7 +165,9 @@ final class DemoSeeder extends Seeder
         });
         $this->seedModel(LearningPathStep::class, 'learning_path_steps.json');
 
-        $this->seedModel(Bundle::class, 'bundles.json');
+        $this->seedModel(Bundle::class, 'bundles.json', null, function (array $collection) {
+            $this->seedBundleMedia($collection);
+        });
 
         $this->seedModel(Product::class, 'products.json', function ($data) {
             if (empty($data['term_id'])) {
@@ -212,7 +214,7 @@ final class DemoSeeder extends Seeder
 
         // ─── Product Prices ────────────────────────────────────────────────
 
-        //$this->seedModel(ProductPrice::class, 'product_prices.json');
+        // $this->seedModel(ProductPrice::class, 'product_prices.json');
 
         // ─── Orders & Fulfillment ──────────────────────────────────────────
 
@@ -277,7 +279,6 @@ final class DemoSeeder extends Seeder
 
         Artisan::call('discounts:reindex-all');
         Artisan::call('prices:index-all --sync');
-
 
         $role = Role::firstOrCreate(
             [
@@ -413,6 +414,7 @@ final class DemoSeeder extends Seeder
             'placeholder.svg', 'icon.svg',
             'avatar-male.svg', 'avatar-female.svg', 'avatar-default.svg',
             'logo-tech.svg', 'logo-art.svg', 'logo-humanities.svg', 'logo-lang.svg',
+            'logo-text.webp', 'logo-footer.webp', 'enamad.webp', 'saman.webp',
             'favicon-tech.svg', 'favicon-art.svg', 'favicon-humanities.svg', 'favicon-lang.svg',
             'bank-mellat.svg', 'digipay.svg',
             'cont1.jpg', 'cont2.jpg', 'cont3.jpg', 'cont4.jpg', 'cont5.jpg',
@@ -427,7 +429,11 @@ final class DemoSeeder extends Seeder
         Storage::disk('public')->putFileAs('fake-media', new File($seedPath.'/placeholder.mp4'), 'placeholder3.mp4');
 
         // Import all image files
-        $allImageFiles = array_merge($coverFiles, $galleryFiles, $sliderFiles, $bannerFiles, $generatedProductImageFiles, $coreImageFiles);
+        $categoryIconFiles = collect(json_decode(FileFacade::get($this->demoDataPath.'/categories.json'), true))
+            ->pluck('icon_url')->unique()->all();
+        $bundleCoverFiles = collect(json_decode(FileFacade::get($this->demoDataPath.'/bundles.json'), true))
+            ->pluck('thumbnail_url')->unique()->all();
+        $allImageFiles = array_unique(array_merge($coverFiles, $galleryFiles, $sliderFiles, $bannerFiles, $generatedProductImageFiles, $coreImageFiles, $categoryIconFiles, $bundleCoverFiles));
         foreach ($allImageFiles as $file) {
             Storage::disk('public')->putFileAs('fake-media', new File($seedPath.'/'.$file), $file);
         }
@@ -522,11 +528,10 @@ final class DemoSeeder extends Seeder
 
     private function seedCategoryMedia(array $collection): void
     {
-        $image = $this->media('placeholder.svg');
-        $icon  = $this->media('icon.svg');
-
         $categories = Category::whereIn('id', collect($collection)->pluck('id'))->get();
         foreach ($categories as $category) {
+            $image = $this->media($category->image_url);
+            $icon  = $this->media($category->icon_url);
             $category->syncMedia($image, 'image');
             $category->syncMedia($icon, 'icon');
             $category->image_url = $image->getUrl();
@@ -631,6 +636,20 @@ final class DemoSeeder extends Seeder
             $asset->syncMedia($preview, 'preview');
             $asset->thumbnail_url = $main->getUrl();
             $asset->save();
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $collection
+     */
+    private function seedBundleMedia(array $collection): void
+    {
+        $bundles = Bundle::whereIn('id', collect($collection)->pluck('id'))->get();
+        foreach ($bundles as $bundle) {
+            $cover = $this->media($bundle->thumbnail_url);
+            $bundle->syncMedia($cover, 'cover');
+            $bundle->thumbnail_url = $cover->getUrl();
+            $bundle->save();
         }
     }
 

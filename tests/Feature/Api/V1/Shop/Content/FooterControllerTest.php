@@ -18,8 +18,8 @@ describe('FooterController', function (): void {
             )->create();
         app(SettingsService::class)->set(SettingKeyEnum::FOOTER,
             [
-                'logo'                  => 'logo-tech.svg',
-                'logo_url'              => 'logo-tech.svg',
+                'logo'                  => 'logo-text.webp',
+                'logo_url'              => 'logo-text.webp',
                 'logo_alt'              => 'جهاددانشگاهی قزوین',
                 'caption'               => 'شریک شما در آموزش مدرن',
                 'support_email_address' => 'support@jedu.ir',

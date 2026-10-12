@@ -118,7 +118,7 @@
     "meta_keywords": "بازاریابی دیجیتال, دیجیتال مارکتینگ, سئو, آموزش سئو",
     "status": "published",
     "created_by": 9,
-    "category_ids": [6],
+    "category_ids": [6, 12],
     "provides_certificate": true,
     "faq": [
       {
@@ -283,7 +283,7 @@
     "meta_keywords": "فیلمنامه نویسی, اصغر فرهادی, آموزش نویسندگی, سینما",
     "status": "published",
     "created_by": 8,
-    "category_ids": [2],
+    "category_ids": [4],
     "provides_certificate": true,
     "faq": [
       {
@@ -316,7 +316,7 @@
     "meta_keywords": "کیهان کلهر, کمانچه, موسیقی تلفیقی, بداهه نوازی",
     "status": "published",
     "created_by": 10,
-    "category_ids": [2, 11],
+    "category_ids": [4, 11],
     "provides_certificate": true,
     "faq": [
       {
@@ -349,7 +349,7 @@
     "meta_keywords": "جامعه شناسی دین, علی شریعتی, دین و مدرنیته",
     "status": "published",
     "created_by": 1,
-    "category_ids": [],
+    "category_ids": [5],
     "provides_certificate": true,
     "faq": [
       {
@@ -382,7 +382,7 @@
     "meta_keywords": "تاریخ هنر, آموزش نقاشی, رنسانس, مدرنیسم",
     "status": "published",
     "created_by": 2,
-    "category_ids": [2],
+    "category_ids": [4],
     "provides_certificate": true,
     "faq": [
       {
@@ -415,7 +415,7 @@
     "meta_keywords": "معنویت, عقلانیت, فلسفه زندگی, مصطفی ملکیان",
     "status": "published",
     "created_by": 3,
-    "category_ids": [],
+    "category_ids": [5],
     "provides_certificate": true,
     "faq": [
       {
@@ -448,7 +448,7 @@
     "meta_keywords": "فلسفه غرب, آموزش فلسفه, سقراط, افلاطون, نیچه",
     "status": "published",
     "created_by": 4,
-    "category_ids": [],
+    "category_ids": [5],
     "provides_certificate": true,
     "faq": [
       {
@@ -481,7 +481,7 @@
     "meta_keywords": "شعر نو, آموزش شعر, کارگاه شعر, سهراب سپهری",
     "status": "published",
     "created_by": 5,
-    "category_ids": [2],
+    "category_ids": [4, 5],
     "provides_certificate": true,
     "faq": [
       {
@@ -547,7 +547,7 @@
     "meta_keywords": "عکاسی پرتره, آموزش عکاسی, نورپردازی, استودیو",
     "status": "published",
     "created_by": 2,
-    "category_ids": [2, 10],
+    "category_ids": [4],
     "provides_certificate": true,
     "faq": [
       {
@@ -580,7 +580,7 @@
     "meta_keywords": "مدیریت مالی, سرمایه گذاری, بورس, سواد مالی",
     "status": "published",
     "created_by": 9,
-    "category_ids": [3, 13],
+    "category_ids": [6, 13],
     "provides_certificate": true,
     "faq": [
       {
@@ -646,7 +646,7 @@
     "meta_keywords": "PHP, الگوهای طراحی, معماری نرم افزار, SOLID",
     "status": "published",
     "created_by": 3,
-    "category_ids": [1, 7],
+    "category_ids": [10],
     "provides_certificate": true,
     "faq": [
       {
@@ -679,7 +679,7 @@
     "meta_keywords": "آموزش تار, آموزش سه تار, موسیقی سنتی, حسین علیزاده",
     "status": "published",
     "created_by": 10,
-    "category_ids": [2, 11],
+    "category_ids": [4, 11],
     "provides_certificate": true,
     "faq": [
       {
@@ -882,7 +882,7 @@
     "meta_keywords": "فلسفه دین, کلام جدید, عبدالکریم سروش, اثبات خدا",
     "status": "published",
     "created_by": 9,
-    "category_ids": [],
+    "category_ids": [5],
     "provides_certificate": true,
     "faq": [
       {
@@ -915,7 +915,7 @@
     "meta_keywords": "علوم شناختی, مغز, روانشناسی, مجید سمیعی",
     "status": "published",
     "created_by": 3,
-    "category_ids": [],
+    "category_ids": [5],
     "provides_certificate": true,
     "faq": [
       {
@@ -948,7 +948,7 @@
     "meta_keywords": "فیلم مستند, مستندسازی, کارگردانی, سینما",
     "status": "published",
     "created_by": 2,
-    "category_ids": [2],
+    "category_ids": [4],
     "provides_certificate": true,
     "faq": [
       {
@@ -981,7 +981,7 @@
     "meta_keywords": "نقاشی آبستره, نقاشی انتزاعی, هنر مدرن, سهراب سپهری",
     "status": "published",
     "created_by": 10,
-    "category_ids": [2, 9],
+    "category_ids": [4],
     "provides_certificate": true,
     "faq": [
       {

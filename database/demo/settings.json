@@ -86,8 +86,8 @@
     "id": 4,
     "key": "header",
     "value": {
-      "logo": "logo-tech.svg",
-      "logo_url": "logo-tech.svg",
+      "logo": "logo-text.webp",
+      "logo_url": "logo-text.webp",
       "contact_phone": "+98-21-12345678",
       "contact_email": "info@jedu.ir"
     },
@@ -100,17 +100,23 @@
     "id": 5,
     "key": "footer",
     "value": {
-      "logo": "logo-tech.svg",
-      "logo_url": "logo-tech.svg",
+      "logo": "logo-text.webp",
+      "logo_url": "logo-text.webp",
       "logo_alt": "جهاددانشگاهی قزوین",
-      "caption": "شریک شما در آموزش مدرن",
+      "caption": "جهاد دانشگاهی قزوین با رویکردی علمی و عملی، از آموزش تا اشتغال همراه شماست؛ مرکزی معتبر برای یادگیری مؤثر، مهارت‌آموزی کاربردی و توانمندسازی حرفه‌ای.",
       "support_email_address": "support@jedu.ir",
       "addresses": [
         {
-          "name": "دفتر مرکزی",
-          "address": "تهران، خیابان آزادی، پلاک ۱۲۳",
+          "name": "مرکز آموزشی شماره یک",
+          "address": "قزوین، چهارراه ولیعصر(عج)، جنب بانک سپه",
           "location_url": "https://maps.example.com/?q=35.6892,51.3890",
-          "phone": "۰۲۱-۱۲۳۴۵۶۷۸"
+          "phone": "028-33376797-9"
+        },
+        {
+          "name": "مرکز آموزشی شماره دو",
+          "address": "قزوین، خیابان دانشگاه، بلوار شهید بابایی، کوچه خاکعلی، پ 15",
+          "location_url": "https://maps.example.com/?q=35.6892,51.3890",
+          "phone": "028-33667001"
         }
       ],
       "categories": [
@@ -122,22 +128,22 @@
       "social_media_links": [
         {
           "platform": "instagram",
-          "link": "https://instagram.com/jedushop"
+          "link": "https://www.instagram.com/jedu.ir"
         },
         {
-          "platform": "linkedin",
-          "link": "https://linkedin.com/company/jedushop"
+          "platform": "aparat",
+          "link": "https://www.aparat.com/jedu.ir"
         }
       ],
       "certifications": [
         {
           "name": "اینماد",
-          "image": "favicon-tech.svg",
+          "image": "enamad.webp",
           "html": ""
         },
         {
           "name": "ساماندهی",
-          "image": "favicon-art.svg",
+          "image": "saman.webp",
           "html": ""
         }
       ]

@@ -2,6 +2,7 @@
   {
     "id": 1,
     "slug": "web-development-starter-bundle",
+    "thumbnail_url": "pacakge-web.webp",
     "full_name": "بسته جامع شروع توسعه وب",
     "short_name": "بسته شروع توسعه وب",
     "description": "مسیر یادگیری کاربردی برای ساخت وب‌سایت‌های مدرن؛ از الگوهای طراحی PHP و طراحی واکنش‌گرا تا مرجع الگوهای طراحی.",
@@ -22,11 +23,12 @@
     "status": "published",
     "created_at": "2024-10-21 11:00:00",
     "updated_at": "2024-10-21 11:00:00",
-    "category_ids": [7]
+    "category_ids": [10]
   },
   {
     "id": 2,
     "slug": "digital-design-bundle",
+    "thumbnail_url": "pacakge-desing.webp",
     "full_name": "بسته جامع طراحی دیجیتال",
     "short_name": "بسته طراحی دیجیتال",
     "description": "ترکیبی برای تقویت نگاه بصری و مهارت‌های طراحی دیجیتال با نقاشی مینیاتور، وکتورهای ایرانی و پروژه آماده افترافکت.",
@@ -36,11 +38,12 @@
     "status": "published",
     "created_at": "2024-10-21 11:10:00",
     "updated_at": "2024-10-21 11:10:00",
-    "category_ids": [9]
+    "category_ids": [4]
   },
   {
     "id": 3,
     "slug": "iranian-music-bundle",
+    "thumbnail_url": "package-music.webp",
     "full_name": "بسته جامع موسیقی ایرانی",
     "short_name": "بسته موسیقی ایرانی",
     "description": "مسیر جامع موسیقی برای پرورش صدا، آشنایی با موسیقی تلفیقی و یادگیری سازهای ایرانی.",
@@ -50,11 +53,12 @@
     "status": "published",
     "created_at": "2024-10-21 11:11:00",
     "updated_at": "2024-10-21 11:11:00",
-    "category_ids": [11]
+    "category_ids": [4, 11]
   },
   {
     "id": 4,
     "slug": "philosophy-and-thought-bundle",
+    "thumbnail_url": "pacakge-phil.webp",
     "full_name": "بسته اندیشه و فلسفه",
     "short_name": "بسته اندیشه و فلسفه",
     "description": "نگاهی چندجانبه به اندیشه‌های شرقی و غربی، معنویت و عقلانیت برای یادگیری عمیق‌تر.",
@@ -64,11 +68,12 @@
     "status": "published",
     "created_at": "2024-10-21 11:12:00",
     "updated_at": "2024-10-21 11:12:00",
-    "category_ids": [3]
+    "category_ids": [5]
   },
   {
     "id": 5,
     "slug": "film-production-bundle",
+    "thumbnail_url": "pacakge-video.webp",
     "full_name": "بسته جامع تولید فیلم",
     "short_name": "بسته تولید فیلم",
     "description": "از ایده‌پردازی و کارگردانی تا فیلم‌نامه و موسیقی؛ بسته‌ای برای ساختن یک فیلم کامل.",
@@ -78,11 +83,12 @@
     "status": "published",
     "created_at": "2024-10-21 11:13:00",
     "updated_at": "2024-10-21 11:13:00",
-    "category_ids": [10]
+    "category_ids": [4]
   },
   {
     "id": 6,
     "slug": "business-growth-and-marketing-bundle",
+    "thumbnail_url": "package-business.webp",
     "full_name": "بسته رشد کسب‌وکار و بازاریابی",
     "short_name": "بسته رشد کسب‌وکار",
     "description": "مهارت‌های کاربردی برای رشد کسب‌وکار از کپی‌رایتینگ و بازاریابی دیجیتال تا راه‌اندازی استارتاپ.",
@@ -92,11 +98,12 @@
     "status": "published",
     "created_at": "2024-10-21 11:14:00",
     "updated_at": "2024-10-21 11:14:00",
-    "category_ids": [12]
+    "category_ids": [6, 12]
   },
   {
     "id": 7,
     "slug": "creative-photography-bundle",
+    "thumbnail_url": "package-photography.webp",
     "full_name": "بسته جامع عکاسی خلاق",
     "short_name": "بسته عکاسی خلاق",
     "description": "بسته‌ای برای دیدن، ثبت و ساختن تصویر؛ از عکاسی خیابانی و پرتره تا شناخت ترکیب‌بندی.",
@@ -106,11 +113,12 @@
     "status": "published",
     "created_at": "2024-10-21 11:15:00",
     "updated_at": "2024-10-21 11:15:00",
-    "category_ids": [11]
+    "category_ids": [4]
   },
   {
     "id": 8,
     "slug": "career-skills-and-productivity-bundle",
+    "thumbnail_url": "package-career.webp",
     "full_name": "بسته مهارت‌های شغلی و بهره‌وری",
     "short_name": "بسته مهارت‌های شغلی",
     "description": "ابزارهای یادگیری و پیشرفت شغلی با زبان آلمانی، اکسل پیشرفته و قالب‌های حرفه‌ای رزومه.",
@@ -120,11 +128,12 @@
     "status": "published",
     "created_at": "2024-10-21 11:16:00",
     "updated_at": "2024-10-21 11:16:00",
-    "category_ids": [5]
+    "category_ids": [6, 10, 2, 15]
   },
   {
     "id": 9,
     "slug": "art-and-literature-bundle",
+    "thumbnail_url": "package-literature.webp",
     "full_name": "بسته هنر و ادبیات جهان",
     "short_name": "بسته هنر و ادبیات",
     "description": "ترکیبی برای شناخت هنر و ادبیات، از تاریخ هنر و شعر نو تا روایت‌های کلاسیک جهان.",
@@ -134,11 +143,12 @@
     "status": "published",
     "created_at": "2024-10-21 11:17:00",
     "updated_at": "2024-10-21 11:17:00",
-    "category_ids": [10]
+    "category_ids": [4, 5]
   },
   {
     "id": 10,
     "slug": "analytical-thinking-bundle",
+    "thumbnail_url": "package-analytical.webp",
     "full_name": "بسته تفکر تحلیلی و استدلال",
     "short_name": "بسته تفکر تحلیلی",
     "description": "بسته‌ای میان‌رشته‌ای برای تقویت تفکر تحلیلی با ریاضیات، فلسفه و مباحث فقه و حقوق.",
@@ -148,6 +158,6 @@
     "status": "published",
     "created_at": "2024-10-21 11:18:00",
     "updated_at": "2024-10-21 11:18:00",
-    "category_ids": [3]
+    "category_ids": [1, 5]
   }
 ]

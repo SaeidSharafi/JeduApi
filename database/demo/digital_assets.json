@@ -111,7 +111,7 @@
     "meta_keywords": "سئو,آموزش سئو,دیجیتال مارکتینگ",
     "published_at": "2024-08-25 09:00:00",
     "created_by": 2,
-    "category_ids": [3, 12],
+    "category_ids": [6, 12],
     "faq": [
       {
         "question": "آیا این کتاب برای افرادی که هیچ دانشی از سئو ندارند مناسب است؟",
@@ -141,7 +141,7 @@
     "meta_keywords": "رزومه,قالب آماده,PSD",
     "published_at": "2025-01-10 18:00:00",
     "created_by": 7,
-    "category_ids": [2, 8],
+    "category_ids": [6],
     "faq": [
       {
         "question": "آیا ویرایش این قالب‌ها آسان است؟",
@@ -171,7 +171,7 @@
     "meta_keywords": "موسیقی متن,موزیک ویدیو,پادکست",
     "published_at": "2025-02-05 12:00:00",
     "created_by": 10,
-    "category_ids": [2, 11],
+    "category_ids": [4, 11],
     "faq": [
       {
         "question": "منظور از 'بدون کپی‌رایت' (Royalty-Free) چیست؟",
@@ -201,7 +201,7 @@
     "meta_keywords": "بازاریابی دیجیتال,استراتژی,چک‌لیست",
     "published_at": "2025-01-22 16:45:00",
     "created_by": 4,
-    "category_ids": [3, 12],
+    "category_ids": [6, 12],
     "faq": [
       {
         "question": "این چک‌لیست برای چه نوع کمپین‌هایی مناسب است؟",
@@ -231,7 +231,7 @@
     "meta_keywords": "داستان کوتاه,کتاب الکترونیکی,ادبیات فارسی",
     "published_at": "2024-12-12 19:00:00",
     "created_by": 9,
-    "category_ids": [2],
+    "category_ids": [4, 5],
     "faq": [
       {
         "question": "این مجموعه شامل چند داستان است؟",
@@ -261,7 +261,7 @@
     "meta_keywords": "فونت فارسی,تایپوگرافی,دانلود فونت",
     "published_at": "2024-11-30 13:20:00",
     "created_by": 1,
-    "category_ids": [2, 8],
+    "category_ids": [4],
     "faq": [
       {
         "question": "فرمت فونت‌ها چیست و چگونه نصب می‌شوند؟",
@@ -291,7 +291,7 @@
     "meta_keywords": "اکسل,آموزش اکسل,توابع اکسل",
     "published_at": "2024-07-18 10:10:00",
     "created_by": 6,
-    "category_ids": [3],
+    "category_ids": [10],
     "faq": [
       {
         "question": "مدت زمان این دوره آموزشی چقدر است؟",
@@ -321,7 +321,7 @@
     "meta_keywords": "عکاسی,آموزش عکاسی,ترکیب بندی",
     "published_at": "2024-06-20 15:00:00",
     "created_by": 5,
-    "category_ids": [2, 10],
+    "category_ids": [4],
     "faq": [
       {
         "question": "آیا این کتاب برای عکاسی با موبایل هم کاربرد دارد؟",
@@ -351,7 +351,7 @@
     "meta_keywords": "وردپرس,افزونه وردپرس,فرم ساز",
     "published_at": "2025-02-15 11:00:00",
     "created_by": 3,
-    "category_ids": [1, 8],
+    "category_ids": [10],
     "faq": [
       {
         "question": "آیا این پلاگین با ویرایشگرهای صفحه‌ساز مانند المنتور سازگار است؟",
@@ -411,7 +411,7 @@
     "meta_keywords": "پایتون,برنامه نویسی,اسکریپت نویسی",
     "published_at": "2025-03-01 17:00:00",
     "created_by": 2,
-    "category_ids": [1, 5],
+    "category_ids": [10],
     "faq": [
       {
         "question": "آیا برای استفاده از این اسکریپت‌ها نیاز به دانش برنامه‌نویسی پایتون دارم؟",
