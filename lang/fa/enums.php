@@ -53,6 +53,7 @@ return [
         'lms_moodle'                => 'LMS Moodle',
         'video_platform_spotplayer' => 'پلتفرم ویدیویی SpotPlayer',
         'in_person'                 => 'حضوری',
+        'bundle'                    => 'بسته آموزشی',
     ],
     'DiscountTypeEnum' => [
         'product_specific' => 'تخفیف مخصوص محصول',
@@ -149,6 +150,7 @@ return [
         'online_service'    => 'سرویس آنلاین',
         'offline_service'   => 'سرویس آفلاین',
         'in_person_service' => 'سرویس حضوری',
+        'composite'          => 'بسته آموزشی',
     ],
     'GenderEnum' => [
         'male'   => 'مرد',

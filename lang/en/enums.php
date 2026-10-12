@@ -53,6 +53,7 @@ return [
         'lms_moodle'                => 'LMS Moodle',
         'video_platform_spotplayer' => 'Video Platform (SpotPlayer)',
         'in_person'                 => 'In-person',
+        'bundle'                    => 'Bundle',
     ],
     'DiscountTypeEnum' => [
         'product_specific' => 'Product Specific Discount',
@@ -149,6 +150,7 @@ return [
         'online_service'    => 'Online Service',
         'offline_service'   => 'Offline Service',
         'in_person_service' => 'In-person Service',
+        'composite'         => 'Composite',
     ],
     'GenderEnum' => [
         'male'   => 'Male',
