@@ -605,7 +605,7 @@ it('marks aggregate provisioning degraded and keeps only safe failure metadata',
 
     expect($attempt->fresh()->status)->toBe(ProvisioningAttemptStatusEnum::FAILED)
         ->and($attempt->fresh()->failure_metadata)->toBe([
-            'endpoint' => '/enroll', 'http_status' => 503, 'validation_errors' => ['course' => '["not found"]'],
+            'endpoint' => '/enroll', 'http_status' => 503, 'validation_errors' => ['course' => 'not found'],
         ]);
     expect($enrollment->fresh()->provisioning_status)->toBe(ProvisioningStatusEnum::DEGRADED)
         ->and(data_get($enrollment->fresh()->provisioning_data, 'providers.moodle.status'))->toBe('failed');
