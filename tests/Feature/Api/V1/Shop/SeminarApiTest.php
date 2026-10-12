@@ -33,6 +33,7 @@ describe('Seminar API', function (): void {
         $responseData = $response->json('data');
         expect($responseData['slug'])->toBe($product->slug)
             ->and($responseData['full_name'])->toBe($product->name)
+            ->and($responseData['excerpt'])->toBe($product->short_description)
             ->and(count($responseData['delivery_options']))->toBe(2)
             ->and(collect($responseData['delivery_options'])->pluck('price_data.current_price')->sort()->values()->all())
             ->toBe([1000000, 3000000]);

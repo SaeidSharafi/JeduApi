@@ -13,5 +13,6 @@ enum ProductDeliveryStatusEnum: string
 
     case ONLINE    = 'online';
     case IN_PERSON = 'in_person';
+    case DIGITAL   = 'digital';
     case COMBINED  = 'combined';
 }

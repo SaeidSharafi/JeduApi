@@ -289,6 +289,7 @@ return [
     'ProductDeliveryStatusEnum' => [
         'online'    => 'Online',
         'in_person' => 'In-Person',
+        'digital'   => 'Educational Resources',
         'combined'  => 'Combined',
     ],
     'ProductRegistrationStatusEnum' => [

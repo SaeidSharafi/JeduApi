@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use App\Data\Shop\Product\ProductCardData;
 use App\Data\Shop\ProductPriceData;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\Product\ProductDeliveryStatusEnum;
 use App\Enums\Product\ProductRegistrationStatusEnum;
 use App\Enums\User\GenderEnum;
+use App\Models\DigitalAsset;
 use App\Models\Product;
 use App\Models\Seminar;
 
@@ -296,6 +299,22 @@ describe('ProductCardData', function (): void {
 
         $productCardData = ProductCardData::fromModel($product, ProductPriceData::make([]));
         expect($productCardData->registration_status)->toEqual(ProductRegistrationStatusEnum::IN_PROGRESS);
+    });
+
+    it('labels digital fulfillment as a downloadable delivery type', function (): void {
+        $product                   = new Product();
+        $product->slug             = 'example-digital-asset';
+        $product->name             = 'Example Digital Asset';
+        $product->is_featured      = false;
+        $product->productable_type = ProductableEnum::DIGITAL_ASSET->value;
+        $product->setRelation('productable', new DigitalAsset(['thumbnail_url' => 'thumbnail.jpg']));
+        $product->setRelation('productDeliveryOptions', collect([
+            new App\Models\ProductDeliveryOption(['fulfillment_type' => FulfillmentTypeEnum::DIGITAL]),
+        ]));
+
+        $productCardData = ProductCardData::fromModel($product, ProductPriceData::make([]));
+
+        expect($productCardData->delivery_type)->toEqual(ProductDeliveryStatusEnum::DIGITAL);
     });
 
 });

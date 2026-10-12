@@ -294,6 +294,7 @@ final class ProductCardData extends Data
             in_array(FulfillmentTypeEnum::ONLINE_SERVICE->value, $fulfillmentTypes),
             in_array(FulfillmentTypeEnum::OFFLINE_SERVICE->value, $fulfillmentTypes)   => ProductDeliveryStatusEnum::ONLINE,
             in_array(FulfillmentTypeEnum::IN_PERSON_SERVICE->value, $fulfillmentTypes) => ProductDeliveryStatusEnum::IN_PERSON,
+            in_array(FulfillmentTypeEnum::DIGITAL->value, $fulfillmentTypes)           => ProductDeliveryStatusEnum::DIGITAL,
             default                                                                    => null,
         };
 

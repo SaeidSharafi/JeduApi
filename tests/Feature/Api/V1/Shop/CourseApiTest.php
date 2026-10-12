@@ -80,6 +80,7 @@ describe('Course API', function (): void {
                     'slug',
                     'full_name',
                     'short_name',
+                    'excerpt',
                     'price_data',
                     'description',
                     'duration',
@@ -128,6 +129,7 @@ describe('Course API', function (): void {
         $resposneData = $response->json('data');
         expect($resposneData['slug'])->toBe($product->slug)
             ->and($resposneData['full_name'])->toBe($product->name)
+            ->and($resposneData['excerpt'])->toBe($product->short_description)
             ->and(count($resposneData['delivery_options']))->toBe(2)
             ->and(collect($resposneData['delivery_options'])->pluck('price_data.current_price')->sort()->values()->all())
             ->toBe([1000000, 3000000]);

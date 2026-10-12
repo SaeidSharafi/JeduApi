@@ -289,6 +289,7 @@ return [
     'ProductDeliveryStatusEnum' => [
         'online'    => 'آنلاین',
         'in_person' => 'حضوری',
+        'digital'   => 'منابع آموزشی',
         'combined'  => 'ترکیبی',
     ],
     'ProductRegistrationStatusEnum' => [

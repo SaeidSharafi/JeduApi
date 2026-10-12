@@ -422,8 +422,8 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 - **Purpose:** Derived status in `ProductCardData` indicating whether registration is open for a product based on registration/availability dates aggregation
 
 #### ProductDeliveryStatusEnum (`app/Enums/Product/ProductDeliveryStatusEnum.php`)
-- **Values:** `ONLINE`, `IN_PERSON`, `COMBINED`
-- **Purpose:** Derived delivery type in `ProductCardData` based on fulfillment types across delivery options
+- **Values:** `ONLINE`, `IN_PERSON`, `DIGITAL`, `COMBINED`
+- **Purpose:** Derived delivery type in `ProductCardData` based on fulfillment types across delivery options. `DIGITAL` covers `FulfillmentTypeEnum::DIGITAL` (direct-download assets); any mix of distinct fulfillment types collapses to `COMBINED`.
 
 #### PaymentMethodEnum (`app/Enums/Payment/PaymentMethodEnum.php`)
 - **`defaultConfig(): array`** — returns the default configuration array from `config/payments.php` for each gateway, used as fallback when no stored settings exist in the database. Includes `wallet_topup_enabled`, so top-up eligibility has a default even before an admin saves the gateway.
