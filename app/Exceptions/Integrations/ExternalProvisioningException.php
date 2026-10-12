@@ -33,7 +33,7 @@ abstract class ExternalProvisioningException extends RuntimeException
     /**
      * HTTP status this failure maps to when it reaches the API boundary.
      */
-    public function status(): int
+    final public function status(): int
     {
         return 503;
     }
@@ -83,13 +83,18 @@ abstract class ExternalProvisioningException extends RuntimeException
     /**
      * Laravel's reporting hook, and the only place this hierarchy is logged.
      *
-     * Reporting `false` is what the `dontReport()` entries for the recoverable and
-     * unrecoverable classes used to express: the framework skips both its fallback
-     * log line and every `reportable` callback (Sentry registers one). Keeping the
-     * decision here instead means the same "stay quiet" semantics, with a hook we
-     * can build the diagnostic payload in.
+     * `Handler::reportThrowable()` returns early only when this method does not
+     * return `false`, so `true` is what keeps the framework from falling through to
+     * its default logger. Returning `false` sent every failure to the default
+     * channel as an ERROR — including the recoverable ones this method deliberately
+     * logs at `debug` — which defeated the "stay quiet" semantics the `dontReport()`
+     * entries used to provide for these classes.
+     *
+     * Sentry discards this hierarchy anyway through `config/sentry.php`
+     * `ignore_exceptions`, so claiming the failure here does not hide it from
+     * reporting.
      */
-    public function report(): bool
+    final public function report(): bool
     {
         try {
             Log::channel($this->logChannel())->log(
@@ -101,7 +106,7 @@ abstract class ExternalProvisioningException extends RuntimeException
             // Logging is diagnostic and must never replace the failure it describes.
         }
 
-        return false;
+        return true;
     }
 
     /**

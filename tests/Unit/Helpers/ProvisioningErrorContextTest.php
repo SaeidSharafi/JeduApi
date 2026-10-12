@@ -110,6 +110,17 @@ it('leaves non-sensitive scalar context untouched and skips empty metadata', fun
     ])->and(ProvisioningErrorContext::sanitize([]))->toBe([]);
 });
 
+describe('Provisioning failure reporting', function (): void {
+    it('claims the failure so the framework does not log it a second time', function (): void {
+        $failure = new RecoverableProvisioningException('Provisioning failed');
+
+        // Handler::reportThrowable() only stops at a reporter that returns non-false.
+        // Returning false sent every failure on to the default channel as an ERROR,
+        // defeating the debug-level logging this hook uses for recoverable failures.
+        expect($failure->report())->toBeTrue();
+    });
+});
+
 describe('Provisioning API error disclosure', function (): void {
     it('hides all upstream context from API errors when debug is disabled', function (): void {
         config(['app.debug' => false]);
