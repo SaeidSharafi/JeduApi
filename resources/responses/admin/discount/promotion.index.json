@@ -1,48 +1,149 @@
 {
-  "data": [
-    {
-      "id": 1,
-      "name": "Back to School Sale",
-      "description": "Discount for school season",
-      "type": {
-        "value": "product_specific",
-        "label": "Product Specific"
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 1,
+        "name": "Back to School Sale",
+        "description": "Discount for school season",
+        "type": {
+          "value": "cart_checkout",
+          "label": "تخفیف روی سبد خرید"
+        },
+        "is_active": true,
+        "starts_at": "1404-05-10 00:00:00",
+        "ends_at": "1404-06-10 23:59:59",
+        "priority": 1,
+        "stop_processing_subsequent_rules": false,
+        "usage_limit_total": 100,
+        "usage_limit_per_customer": 1,
+        "total_usage_count": 10,
+        "reserved_usage_count": 2,
+        "created_at": "1404-04-10 12:00:00",
+        "updated_at": "1404-05-10 12:00:00",
+        "rules": [
+          {
+            "id": 1,
+            "discount_promotion_id": 1,
+            "type": "condition",
+            "handler": "cart_value_over",
+            "configuration": {
+              "operator": "greater_than_or_equal",
+              "value": 50000,
+              "measure_whole_commitment": false
+            },
+            "created_at": "1404-04-10 12:00:00",
+            "updated_at": "1404-05-10 12:00:00"
+          },
+          {
+            "id": 2,
+            "discount_promotion_id": 1,
+            "type": "action",
+            "handler": "apply_percentage_off",
+            "configuration": {
+              "percentage": 15
+            },
+            "created_at": "1404-04-10 12:00:00",
+            "updated_at": "1404-05-10 12:00:00"
+          }
+        ],
+        "coupons": [
+          {
+            "id": 1,
+            "discount_promotion_id": 1,
+            "code": "BACK2SCHOOL",
+            "is_active": true,
+            "usage_limit": 50,
+            "usage_count": 5,
+            "created_at": "1404-04-10 12:00:00",
+            "updated_at": "1404-05-10 12:00:00"
+          }
+        ]
       },
-      "is_active": true,
-      "starts_at": "2025-08-01 00:00:00",
-      "ends_at": "2025-09-01 23:59:59",
-      "priority": 1,
-      "stop_processing_subsequent_rules": false,
-      "usage_limit_total": 100,
-      "usage_limit_per_customer": 1,
-      "total_usage_count": 10,
-      "reserved_usage_count": 2,
-      "created_at": "2025-07-01 12:00:00",
-      "updated_at": "2025-08-01 12:00:00",
-      "rules": [
-        {
-          "id": 1,
-          "discount_promotion_id": 1,
-          "type": "cart",
-          "handler": "App\\Services\\Discounts\\Cart\\Conditions\\CartValueCondition",
-          "configuration": {"min": 50000},
-          "created_at": "2025-07-01 12:00:00",
-          "updated_at": "2025-08-01 12:00:00"
-        }
-      ],
-      "coupons": [
-        {
-          "id": 1,
-          "discount_promotion_id": 1,
-          "code": "BACK2SCHOOL",
-          "is_active": true,
-          "usage_limit": 50,
-          "usage_count": 5,
-          "created_at": "2025-07-01 12:00:00",
-          "updated_at": "2025-08-01 12:00:00"
-        }
-      ]
-    }
-  ],
-  "meta": {"current_page": 1, "per_page": 15, "total": 1}
+      {
+        "id": 4,
+        "name": "Automatic Spend Ladder",
+        "description": "No code needed: 5% over 3,000,000 and 8% over 5,000,000.",
+        "type": {
+          "value": "cart_checkout",
+          "label": "تخفیف روی سبد خرید"
+        },
+        "is_active": true,
+        "starts_at": "1404-06-10 00:00:00",
+        "ends_at": "1406-10-10 23:59:59",
+        "priority": 4,
+        "stop_processing_subsequent_rules": false,
+        "usage_limit_total": null,
+        "usage_limit_per_customer": null,
+        "total_usage_count": 0,
+        "reserved_usage_count": 0,
+        "created_at": "1404-06-10 08:00:00",
+        "updated_at": "1404-06-10 08:00:00",
+        "rules": [
+          {
+            "id": 3,
+            "discount_promotion_id": 4,
+            "type": "condition",
+            "handler": "cart_value_tier",
+            "configuration": {
+              "tiers": [
+                {
+                  "min_amount": 3000000,
+                  "percentage": 5
+                },
+                {
+                  "min_amount": 5000000,
+                  "percentage": 8
+                }
+              ]
+            },
+            "created_at": "1404-06-10 08:00:00",
+            "updated_at": "1404-06-10 08:00:00"
+          },
+          {
+            "id": 4,
+            "discount_promotion_id": 4,
+            "type": "action",
+            "handler": "apply_tiered_percentage_off",
+            "configuration": [],
+            "created_at": "1404-06-10 08:00:00",
+            "updated_at": "1404-06-10 08:00:00"
+          }
+        ],
+        "coupons": []
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/admin/discount-promotions?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/admin/discount-promotions?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/discount-promotions?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "بعدی &raquo;",
+        "page": null,
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "http://jedu.test/api/v1/admin/discount-promotions",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 2,
+    "total": 2
+  },
+  "metadata": []
 }
