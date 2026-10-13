@@ -26,6 +26,17 @@ return [
             ],
         ],
 
+        'cart_value_tier' => [
+            'name'        => 'Cart Value Tier',
+            'description' => 'Selects the highest discount tier the discountable cart value reaches. It measures the cart on the same effective price basis as other value conditions, excluding deposit and bundle lines, and only decides eligibility — it never changes what gets discounted.',
+            'fields'      => [
+                'tiers' => [
+                    'label'       => 'Discount Tiers',
+                    'description' => 'The tiers defining minimum discountable cart amounts and their corresponding discount percentages.',
+                ],
+            ],
+        ],
+
         // ---- Shared by Cart + Product Conditions (same handler key, both contexts) ----
         'product_in_category' => [
             'name'        => 'Product Category',
@@ -246,14 +257,9 @@ return [
             ],
         ],
         'apply_tiered_percentage_off' => [
-            'name'        => 'Tiered Percentage Off Cart',
-            'description' => 'Applies a tiered percentage discount to the cart based on defined tiers.',
-            'fields'      => [
-                'tiers' => [
-                    'label'       => 'Discount Tiers',
-                    'description' => 'The tiers defining amount thresholds and their corresponding discount percentages.',
-                ],
-            ],
+            'name'        => 'Apply Selected Tier Discount',
+            'description' => 'Applies the percentage selected by the Cart Value Tier condition to the discountable cart lines. It has no configuration of its own.',
+            'fields'      => [],
         ],
         'cart_item_count_over' => [
             'name'        => 'Cart Item Count Over',
@@ -305,6 +311,7 @@ return [
         'configuration_invalid'  => 'The configuration provided for \':handler\' is invalid: :errors',
         'condition_required'     => 'At least one condition must be specified in :attribute.',
         'action_required'        => 'At least one action must be specified in :attribute.',
+        'tier_pair_incomplete'   => 'A tiered percentage action must be paired with a cart value tier condition, and a cart value tier condition must be paired with a tiered percentage action.',
     ],
 
 ];

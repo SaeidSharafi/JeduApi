@@ -301,6 +301,25 @@ describe('DiscountInfoController', function (): void {
         }
     });
 
+    test('lists the cart value tier condition and the config-free consuming action', function (): void {
+        $conditions = $this->get('/api/v1/admin/discount-info/conditions')->assertOk()->json('data.cart');
+        $tier       = collect($conditions)->firstWhere('key', 'cart_value_tier');
+
+        expect($tier)->not->toBeNull()
+            ->and($tier['name'])->toBe(__('discount.handlers.cart_value_tier.name'))
+            ->and($tier['handler_class'])->toBe(App\Services\Discounts\Cart\Conditions\CartValueTierCondition::class)
+            ->and(array_keys($tier['configuration_schema']))->toBe(['tiers'])
+            ->and($tier['configuration_schema']['tiers']['item_class'])->toBe(App\Services\Discounts\Configs\TierData::class)
+            ->and($tier['configuration_schema']['tiers']['item_schema'])->toHaveKeys(['min_amount', 'percentage']);
+
+        $actions = $this->get('/api/v1/admin/discount-info/actions')->assertOk()->json('data.cart');
+        $action  = collect($actions)->firstWhere('key', 'apply_tiered_percentage_off');
+
+        expect($action)->not->toBeNull()
+            ->and($action['name'])->toBe(__('discount.handlers.apply_tiered_percentage_off.name'))
+            ->and($action['configuration_schema'])->toBe([]);
+    });
+
 })->group('unit', 'controllers', 'discounts');
 
 describe('DiscountInfoController with unauthorized user', function (): void {

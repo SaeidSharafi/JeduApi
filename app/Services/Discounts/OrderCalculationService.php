@@ -81,7 +81,7 @@ final class OrderCalculationService
                 throw new RuntimeException(__('messages.discount.no_config_dto', ['class' => $handlerClass]));
             }
 
-            $config = $configDtoClass::from(data_get($rule, 'configuration'));
+            $config = $configDtoClass::from((array) data_get($rule, 'configuration'));
             // The action handler mutates the $context object directly.
             $handler->apply($context, $config);
         }

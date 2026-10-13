@@ -58,7 +58,37 @@ final class OrderContextData extends Data
          * setting only selects a line set and never a price basis.
          */
         public int $effective_subtotal_all_items = 0,
+
+        /**
+         * Selections published by condition handlers: eligibility decisions
+         * only, never price or total mutations. Keyed by the publishing
+         * condition's handler key, so a consuming action shares one read/write
+         * shape with the condition that produced the decision.
+         *
+         * @var array<string, array<string, mixed>>
+         */
+        public array $condition_selections = [],
     ) {}
+
+    /**
+     * Publish a condition's eligibility selection for its consuming action.
+     *
+     * @param  array<string, mixed>  $selection
+     */
+    public function publishSelection(string $handlerKey, array $selection): void
+    {
+        $this->condition_selections[$handlerKey] = $selection;
+    }
+
+    /**
+     * Read a selection previously published by a condition handler.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function publishedSelection(string $handlerKey): ?array
+    {
+        return $this->condition_selections[$handlerKey] ?? null;
+    }
 
     /**
      * The single amount a value-based condition measures against.

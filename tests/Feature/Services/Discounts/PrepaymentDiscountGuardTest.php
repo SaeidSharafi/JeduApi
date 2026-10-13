@@ -9,13 +9,13 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
+use App\Services\Discounts\Cart\Conditions\CartValueTierCondition;
 use App\Services\Discounts\Configs\AddGiftCreditConfigData;
 use App\Services\Discounts\Configs\AddWalletCreditConfigData;
 use App\Services\Discounts\Configs\ApplyFixedAmountOffData;
 use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 use App\Services\Discounts\Configs\ApplyTieredPercentageOffData;
 use App\Services\Discounts\Configs\GiftProductData;
-use App\Services\Discounts\Configs\TierData;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use Spatie\LaravelData\Data;
 
@@ -50,6 +50,13 @@ function depositOnlyContext(int $prepaymentAmount = 25000, int $price = 100000):
 
     $context->evaluating_promotion = DiscountPromotion::factory()->create();
 
+    // Publish a tier selection so the config-free consuming action is genuinely
+    // driven; the deposit-only cart still has nothing it may mark down.
+    $context->publishSelection(CartValueTierCondition::HANDLER_KEY, [
+        'min_amount' => 0,
+        'percentage' => 10.0,
+    ]);
+
     return $context;
 }
 
@@ -65,9 +72,7 @@ function cartActionFixtures(): array
     return [
         'apply_fixed_amount_off'      => new ApplyFixedAmountOffData(amount: 3000),
         'apply_percentage_off'        => new ApplyPercentageDiscountConfigData(percentage: 10),
-        'apply_tiered_percentage_off' => new ApplyTieredPercentageOffData(tiers: [
-            new TierData(min_amount: 10000, percentage: 10),
-        ]),
+        'apply_tiered_percentage_off' => new ApplyTieredPercentageOffData(),
         // The gift line is a free line, not a markdown, so it is tolerated below.
         'gift_product'      => new GiftProductData(product_delivery_option_id: ProductDeliveryOption::factory()->create()->id),
         'add_wallet_credit' => new AddWalletCreditConfigData(amount: 5000),
