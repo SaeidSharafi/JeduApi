@@ -729,6 +729,62 @@ describe('CreateOrderAction', function (): void {
         expect($orderItem->total)->toBe(20000); // Just the prepayment_amount
     });
 
+    it('ignores a flat-amount coupon on a deposit-only order', function (): void {
+        $user = User::factory()->create();
+
+        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $option  = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'price'                   => 100000,
+            'prepayment_amount'       => 20000,
+            'is_prepayment_available' => true,
+            'capacity'                => 10,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        // A flat-amount cart action is the red-before case: it used to be
+        // distributed over every non-bundle line, deposit included.
+        $promotion = DiscountPromotion::factory()->create([
+            'type'            => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'       => true,
+            'requires_coupon' => true,
+        ]);
+        $promotion->rules()->create([
+            'type'          => 'action',
+            'handler'       => 'apply_fixed_amount_off',
+            'configuration' => ['amount' => 100000],
+        ]);
+        DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'FLATBIG',
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [
+                new OrderItemCreateData(
+                    product_delivery_option_id: $option->id,
+                    payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                    qty_ordered: 1,
+                ),
+            ],
+            applied_coupon_code: 'FLATBIG',
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        $orderItem = $order->items->first();
+
+        expect($order->grand_total)->toBe(20000)
+            ->and($order->discount_amount)->toBe(0)
+            ->and($orderItem->discount_amount)->toBe(0)
+            ->and($orderItem->total)->toBe(20000)
+            ->and($orderItem->pricing_metadata['paid_amount'])->toBe(20000)
+            ->and($orderItem->pricing_metadata['cart_discount_amount'])->toBe(0)
+            ->and($orderItem->pricing_metadata['total_discount_amount'])->toBe(0);
+    });
+
     it('records no cart discount on the deposit line of a mixed prepayment order', function (): void {
         $user = User::factory()->create();
 
