@@ -242,7 +242,12 @@ Reference for uploaded-doc chat: workflows, side effects, events/jobs, invariant
 - **InvalidateDiscountCachesAction** (`app/Actions/Admin/Discounts/InvalidateDiscountCachesAction.php`)
   - `handle(): void`: Bumps `CacheTag::Catalog`, `CacheTag::Search` and `CacheTag::Discounts` through the gateway. Every discount-promotion write uses it, so a promotion change cannot leave cached prices, search pages or the handler registry stale. Reindexing the discounted-price rows remains the caller's job.
 - **CreateDiscountPromotionAction** (`app/Actions/Admin/Discounts/CreateDiscountPromotionAction.php`)
-  - `execute(DiscountPromotionCreateData $data): DiscountPromotion`: Creates a promotion with its rules and coupons, dispatches `RegeneratePromotionDiscountPricesJob` for product-specific promotions, then calls `InvalidateDiscountCachesAction`
+  - `execute(DiscountPromotionCreateData $data): DiscountPromotion`: Creates a promotion with its rules and coupons, sets `requires_coupon` to `true` exactly when the promotion is cart-checkout and carries coupons (same rule as the update action, so a coupon promotion never doubles as an always-on automatic discount), dispatches `RegeneratePromotionDiscountPricesJob` for product-specific promotions, then calls `InvalidateDiscountCachesAction`
+- **ResolvePerCustomerPromotionEligibilityAction** (`app/Actions/Admin/Discounts/ResolvePerCustomerPromotionEligibilityAction.php`)
+  - `filterExhausted(Collection $promotions, ?int $customerId): Collection`: Single owner of the per-customer allowance rule. Drops promotions whose `usage_limit_per_customer` the customer has used up, preserving priority order; returns the input untouched for guests/`null` customers or unlimited promotions.
+  - `blockingMessage(DiscountPromotion $promotion, int $customerId): ?string`: Translated limit message when the allowance is gone, naming the pending order that holds the slot when one exists; `null` while the promotion is still available.
+- **ValidatePromotionPerCustomerLimitAction** (`app/Actions/Admin/Discounts/ValidatePromotionPerCustomerLimitAction.php`)
+  - `handle(?string $appliedCouponCode, ?int $customerId): void`: Transaction-only. Resolves the promotion owning the explicitly supplied code with `findPromotionByCoupon(..., lockForUpdate: true)` and throws a `coupon` ValidationException when its per-customer allowance is gone. Automatic promotions never reach it — the eligibility filter has already dropped them.
 - **UpdateDiscountPromotionAction** (`app/Actions/Admin/Discounts/UpdateDiscountPromotionAction.php`)
   - `execute(DiscountPromotion $promotion, DiscountPromotionCreateData $data): DiscountPromotion`: Replaces rules and coupons, reindexes product-specific promotions, then calls `InvalidateDiscountCachesAction`
 - **DeleteDiscountPromotionAction** (`app/Actions/Admin/Discounts/DeleteDiscountPromotionAction.php`)
@@ -612,7 +617,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Key Capabilities:**
   - `findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart`: Resolves carts via the `CartIdentifier` contract (user or guest token) and eagerly loads delivery options/products. Supports `lockForUpdate` for transactional checkout flows.
   - `addItem`, `updateItem`, `removeItem`: Validate capacity/payment type constraints before mutating cart rows. Add/update invokes `ValidateNoDuplicatePurchasesAction` so known Customer ownership and Bundle-versus-standalone/Bundle-versus-Bundle cart overlap are rejected by underlying `(productable_type, productable_id)` identity before checkout.
-  - `applyCoupon(ApplyCouponData $data): CartData`: Validates coupon codes via `PromotionService::findPromotionByCoupon()`, checks condition gates via `checkPromotionConditions()`, tracks them on the cart, and recalculates totals through `OrderCalculationService`
+  - `applyCoupon(ApplyCouponData $data): CartData`: Validates coupon codes via `PromotionService::findPromotionByCoupon()`, checks condition gates via `checkPromotionConditions()`, rejects the code with a `coupon_code` error when the customer's per-customer allowance for that promotion is already used up, tracks it on the cart, and recalculates totals through `OrderCalculationService`
   - `buildCartDataWithTotals(Cart $cart): CartData`: Hydrates DTOs with current pricing/discount context for API responses
 - **Internal:** `resolveCart()` implements the find-or-create pattern with unique constraint race recovery for concurrent requests.
 - **Special Notes:** Enforces an order velocity limit (5 orders/hour) during checkout and delegates cart persistence cleanup post-successful conversion
@@ -637,8 +642,8 @@ Administrative status and access-date changes reconcile deliberately with applic
 #### PromotionService (`app/Services/Discounts/PromotionService.php`)
 - **Purpose:** Central promotion matching, coupon resolution, and order-context building for cart and product discounts
 - **Public Methods:**
-  - `findPromotionByCoupon(string $couponCode): ?DiscountPromotion`: Resolves an active promotion from a coupon code, enforcing `is_active`, `starts_at`/`ends_at` window, and `usage_limit_total`
-  - `findAllApplicableCartPromotions(OrderContextData $context, DiscountTypeEnum $type = CART_CHECKOUT): Collection`: Returns all promotions whose conditions pass, sorted by `priority` descending
+  - `findPromotionByCoupon(string $couponCode, bool $lockForUpdate = false): ?DiscountPromotion`: Resolves an active promotion from a coupon code, enforcing `is_active`, `starts_at`/`ends_at` window, `usage_limit_total`, and the coupon's own active/`usage_limit` state. `$lockForUpdate` (transaction-only) locks the promotion row so concurrent checkouts serialize their per-customer limit check.
+  - `findAllApplicableCartPromotions(?string $appliedCouponCode = null, ?int $customerId = null): Collection`: Returns the eligible CART_CHECKOUT promotions sorted by `priority` ascending. With no code only `requires_coupon = false` promotions qualify; a matching active coupon adds its coupon-gated promotion. Promotions whose `usage_limit_per_customer` the customer has used up are dropped from the result (eligibility, never an error).
   - `buildOrderContext(OrderCreateData $data, bool $useFreshData = false): OrderContextData`: Normalizes order data into the shared calculation context
   - `promotionConditionsPass(DiscountPromotion $promotion, OrderContextData $context): bool`: Evaluates all rules of a promotion against the context
   - `checkPromotionConditions(DiscountPromotion $promotion, OrderCreateData $data): bool`: Convenience wrapper used by `CartService::applyCoupon()`
@@ -646,7 +651,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 #### OrderCalculationService (`app/Services/Discounts/OrderCalculationService.php`)
 - **Purpose:** Comprehensive discount and pricing calculation engine integrated with ProductPriceService
 - **Public Methods:**
-  - `calculate(OrderCreateData $data): OrderContextData`: Builds the order context via `promotionService->buildOrderContext()`, collects all applicable CART_CHECKOUT promotions (`findAllApplicableCartPromotions`), and applies their actions in priority order — respecting `stop_processing_subsequent_rules` to prevent stacking. Uses ProductPriceService for consistent pricing hierarchy.
+  - `calculate(OrderCreateData $data): OrderContextData`: Builds the order context via `promotionService->buildOrderContext()`, collects all applicable CART_CHECKOUT promotions (`findAllApplicableCartPromotions($data->applied_coupon_code, $data->customer_id)`), and applies their actions in priority order — respecting `stop_processing_subsequent_rules` to prevent stacking. Passing the customer id makes per-customer-exhausted promotions drop out here, so cart preview and checkout always agree. Uses ProductPriceService for consistent pricing hierarchy.
 - **Dependencies:** `PromotionService`, `ProductPriceService`, `DiscountHandlerRegistry` for action execution
 
 #### DiscountHandlerRegistry (`app/Services/Discounts/DiscountHandlerRegistry.php`)
@@ -900,7 +905,12 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 ### Discounts Evaluation & Counters
 - Promotions/coupons are evaluated at checkout time; expired promotions at checkout are ignored even if applied earlier.
+- `requires_coupon` separates the two cart-promotion modes: it is `true` only for cart-checkout promotions that carry coupons, so those activate solely when a matching code is present in `carts.applied_coupon_code`; automatic cart promotions (`requires_coupon = false`) apply by conditions alone. Clearing the code via `CartService::removeCoupon()` therefore drops the coupon discount, while an automatic promotion keeps applying with no coupon set.
 - `DiscountPromotion.total_usage_count` and `DiscountCoupon.usage_count` increment only on successful checkout.
+- The per-customer allowance (`discount_promotions.usage_limit_per_customer`) is **eligibility, not a gate**: `ResolvePerCustomerPromotionEligibilityAction::filterExhausted()` drops an exhausted promotion from the calculation for cart preview and checkout alike (`OrderCalculationService` passes `customer_id`), so a spent automatic promotion is simply not applied — it never blocks the sale and never suppresses the other stacked promotions.
+- An explicitly supplied coupon is handled differently: `CartService::applyCoupon()` returns a `coupon_code` error naming the blocking pending order, and `CreateOrderAction` re-checks the same code inside the transaction with a `coupon` error (locking the promotion row, so concurrent checkouts serialize). An exhausted code is therefore never silently dropped.
+- `discount_promotion_usages` holds the allowance: one row per applied promotion per order, created at order creation. Pending/processing reserve it, completed/refunded consume it, cancelled/failed delete it (refunds never restore usage). Counting is per promotion, so all coupon codes of one promotion share the limit.
+- The `total_usage_count`/`usage_count` increment happens once per order at the COMPLETED transition, guarded by `orders.discount_usage_incremented_at`: via `OrderStatusService::updateParentOrderStatus()`, via an admin `PUT /api/v1/admin/orders/{order}` flip to completed, and via an admin `POST /api/v1/admin/orders` that creates the order already completed. Counters are never decremented.
 
 ### Wallet Insufficient Balance Flow
 - Wallet checkout with insufficient funds returns a `wallet_balance` validation error; retry after top-up completes normally.

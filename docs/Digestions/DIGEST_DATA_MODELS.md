@@ -325,6 +325,12 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 - **Key Fields:** `code`, `usage_limit`, `used_count`, coupon metadata
 - **Relationships:** `belongsTo(DiscountPromotion::class)` - discountPromotion
 
+### DiscountPromotionUsage (`app/Models/DiscountPromotionUsage.php`)
+- **Purpose:** One row per applied Promotion per order; holds the customer's per-customer allowance while the order exists
+- **Key Fields:** `discount_promotion_id`, `discount_coupon_id` (nullable — audit only, coupon deletion never frees a slot), `customer_id` (required), `order_id`
+- **Relationships:** `belongsTo(DiscountPromotion::class)` (`promotion`), `belongsTo(DiscountCoupon::class)` (`coupon`), `belongsTo(User::class)` (`customer`), `belongsTo(Order::class)` (`order`)
+- **Special Features:** `active()` scope selects rows whose order is not cancelled/failed (pending/processing reserve, completed/refunded consume); `unique(discount_promotion_id, order_id)` and index `(discount_promotion_id, customer_id)`; the allowance is pooled per promotion, not per coupon code. No casts are declared.
+
 ### Wallet (`app/Models/Wallet.php`)
 - **Purpose:** User wallet system for credits and transactions
 - **Key Fields:** `user_id` (unique — one wallet per user), `balance` (available in rials), `gift_balance` (non-withdrawable gift amounts), `status` (`WalletStatusEnum`: active/suspended/closed), `created_by` (nullable staff)
