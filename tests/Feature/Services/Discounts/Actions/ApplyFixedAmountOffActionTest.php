@@ -9,6 +9,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use App\Services\Discounts\Cart\Actions\ApplyFixedAmountOffAction;
 use App\Services\Discounts\Configs\ApplyFixedAmountOffData;
+use App\Services\WeightedApportionment;
 
 /**
  * Build a line whose `total` may differ from the delivery option's list price,
@@ -47,7 +48,7 @@ function fixedAmountContext(array $items, int $subtotalAllItems): OrderContextDa
 
 describe('ApplyFixedAmountOffAction', function (): void {
     test('it distributes flat discount proportionally across items', function (): void {
-        $action = new ApplyFixedAmountOffAction();
+        $action = new ApplyFixedAmountOffAction(new WeightedApportionment());
         $config = new ApplyFixedAmountOffData(amount: 3000); // 3000 total discount
 
         $item1 = new CalculatedOrderItemData(
@@ -80,7 +81,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
     });
 
     test('it caps the discount to the total cart value', function (): void {
-        $action = new ApplyFixedAmountOffAction();
+        $action = new ApplyFixedAmountOffAction(new WeightedApportionment());
         $config = new ApplyFixedAmountOffData(amount: 10000); // More than cart value
 
         $item1 = new CalculatedOrderItemData(
@@ -103,7 +104,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
     });
 
     test('it distributes the flat discount over standalone lines only, leaving a bundle line untouched', function (): void {
-        $action = new ApplyFixedAmountOffAction();
+        $action = new ApplyFixedAmountOffAction(new WeightedApportionment());
         $config = new ApplyFixedAmountOffData(amount: 3000); // 3000 total discount
 
         $standalone = new CalculatedOrderItemData(
@@ -136,7 +137,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
     });
 
     test('it applies no discount when the cart holds only a bundle line', function (): void {
-        $action = new ApplyFixedAmountOffAction();
+        $action = new ApplyFixedAmountOffAction(new WeightedApportionment());
         $config = new ApplyFixedAmountOffData(amount: 3000);
 
         $bundle = new CalculatedOrderItemData(
@@ -160,7 +161,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
     });
 
     test('it never marks down a prepayment line and gives the whole amount to the full-payment line', function (): void {
-        $action = new ApplyFixedAmountOffAction();
+        $action = new ApplyFixedAmountOffAction(new WeightedApportionment());
         $config = new ApplyFixedAmountOffData(amount: 3000);
 
         $prepayment = new CalculatedOrderItemData(
@@ -190,7 +191,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
     });
 
     test('it applies nothing on a deposit-only cart', function (): void {
-        $action = new ApplyFixedAmountOffAction();
+        $action = new ApplyFixedAmountOffAction(new WeightedApportionment());
         $config = new ApplyFixedAmountOffData(amount: 3000);
 
         $prepayment = new CalculatedOrderItemData(
@@ -216,7 +217,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
         $discounted = fixedAmountItem(total: 90000, listPrice: 100000);
         $context    = fixedAmountContext([$discounted], subtotalAllItems: 100000);
 
-        (new ApplyFixedAmountOffAction())->apply($context, new ApplyFixedAmountOffData(amount: 5000));
+        (new ApplyFixedAmountOffAction(new WeightedApportionment()))->apply($context, new ApplyFixedAmountOffData(amount: 5000));
 
         expect($discounted->discount_amount)->toBe(5000)
             ->and($discounted->total)->toBe(85000);
@@ -232,7 +233,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
         $second->applyDiscount(4000);
         $worthBefore = $context->discountableTotal();
 
-        (new ApplyFixedAmountOffAction())->apply($context, new ApplyFixedAmountOffData(amount: 5000));
+        (new ApplyFixedAmountOffAction(new WeightedApportionment()))->apply($context, new ApplyFixedAmountOffData(amount: 5000));
 
         expect($context->discountableTotal())->toBe($worthBefore - 5000)
             ->and($context->items->sum('discount_amount'))->toBe(15000);
@@ -243,7 +244,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
         $second  = fixedAmountItem(total: 10000, listPrice: 100000);
         $context = fixedAmountContext([$first, $second], subtotalAllItems: 200000);
 
-        (new ApplyFixedAmountOffAction())->apply($context, new ApplyFixedAmountOffData(amount: 100000));
+        (new ApplyFixedAmountOffAction(new WeightedApportionment()))->apply($context, new ApplyFixedAmountOffData(amount: 100000));
 
         expect($first->discount_amount)->toBe(30000)
             ->and($first->total)->toBe(0)
@@ -261,7 +262,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
         $effectiveTarget = min($target, $weightTotal);
         $context         = fixedAmountContext($items, subtotalAllItems: $weightTotal);
 
-        (new ApplyFixedAmountOffAction())->apply($context, new ApplyFixedAmountOffData(amount: $target));
+        (new ApplyFixedAmountOffAction(new WeightedApportionment()))->apply($context, new ApplyFixedAmountOffData(amount: $target));
 
         $shares = array_map(
             fn (CalculatedOrderItemData $item): int => $item->discount_amount,
@@ -295,7 +296,7 @@ describe('ApplyFixedAmountOffAction', function (): void {
         $standalone = fixedAmountItem(total: 10000);
         $context    = fixedAmountContext([$deposit, $bundle, $standalone], subtotalAllItems: 125000);
 
-        (new ApplyFixedAmountOffAction())->apply($context, new ApplyFixedAmountOffData(amount: 7000));
+        (new ApplyFixedAmountOffAction(new WeightedApportionment()))->apply($context, new ApplyFixedAmountOffData(amount: 7000));
 
         expect($deposit->discount_amount)->toBe(0)
             ->and($deposit->total)->toBe(25000)

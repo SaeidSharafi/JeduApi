@@ -10,8 +10,6 @@ use App\Models\Bundle;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
-use App\Models\DiscountPromotionUsage;
-use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
@@ -308,18 +306,6 @@ it('does not let a tier selection reach the next promotion when that promotion h
  * Hold one reservation slot for a promotion (and coupon, when given) through a
  * fresh pending order.
  */
-function reservePromotionUsageSlot(DiscountPromotion $promotion, ?DiscountCoupon $coupon = null): DiscountPromotionUsage
-{
-    $holdingOrder = Order::factory()->create(['status' => OrderStatusEnum::PENDING->value]);
-
-    return DiscountPromotionUsage::create([
-        'discount_promotion_id' => $promotion->id,
-        'discount_coupon_id'    => $coupon?->id,
-        'customer_id'           => $holdingOrder->customer_id,
-        'order_id'              => $holdingOrder->id,
-    ]);
-}
-
 it('drops an automatic promotion from the applicable cart promotions once its total cap is fully reserved', function (): void {
     $promotion = DiscountPromotion::factory()->create([
         'type'              => DiscountTypeEnum::CART_CHECKOUT,
@@ -330,7 +316,7 @@ it('drops an automatic promotion from the applicable cart promotions once its to
         'ends_at'           => now()->addDay(),
     ]);
 
-    reservePromotionUsageSlot($promotion);
+    discountReserveUsageSlot($promotion);
 
     $promotions = app(PromotionService::class)->findAllApplicableCartPromotions(null, User::factory()->create()->id);
 
@@ -347,7 +333,7 @@ it('keeps an automatic promotion applicable while its reserved capacity is below
         'ends_at'           => now()->addDay(),
     ]);
 
-    reservePromotionUsageSlot($promotion);
+    discountReserveUsageSlot($promotion);
 
     $promotions = app(PromotionService::class)->findAllApplicableCartPromotions(null, User::factory()->create()->id);
 
@@ -364,7 +350,7 @@ it('does not find a promotion by coupon while its total cap is fully reserved', 
         'code'                  => 'TOTALCAP',
     ]);
 
-    reservePromotionUsageSlot($promotion);
+    discountReserveUsageSlot($promotion);
 
     expect(app(PromotionService::class)->findPromotionByCoupon($coupon->code))->toBeNull();
 });
@@ -377,7 +363,7 @@ it('does not find a coupon code whose own cap is fully reserved', function (): v
         'usage_limit'           => 1,
     ]);
 
-    reservePromotionUsageSlot($promotion, $coupon);
+    discountReserveUsageSlot($promotion, $coupon);
 
     expect(app(PromotionService::class)->findPromotionByCoupon($coupon->code))->toBeNull();
 });
@@ -390,7 +376,7 @@ it('finds a coupon code while its reserved capacity is below the cap', function 
         'usage_limit'           => 2,
     ]);
 
-    reservePromotionUsageSlot($promotion, $coupon);
+    discountReserveUsageSlot($promotion, $coupon);
 
     $found = app(PromotionService::class)->findPromotionByCoupon($coupon->code);
 
@@ -411,7 +397,7 @@ it('drops a coupon-gated promotion from the applicable cart promotions once the 
         'usage_limit'           => 1,
     ]);
 
-    reservePromotionUsageSlot($promotion, $coupon);
+    discountReserveUsageSlot($promotion, $coupon);
 
     $promotions = app(PromotionService::class)->findAllApplicableCartPromotions('GATEDCAP', User::factory()->create()->id);
 
@@ -428,7 +414,7 @@ it('frees reserved cap capacity once the holding reservation expires', function 
         'ends_at'           => now()->addDay(),
     ]);
 
-    reservePromotionUsageSlot($promotion);
+    discountReserveUsageSlot($promotion);
 
     $this->travel(31)->minutes();
 

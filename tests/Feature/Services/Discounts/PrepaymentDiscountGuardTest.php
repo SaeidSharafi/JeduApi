@@ -2,21 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Data\Admin\Discounts\CalculatedOrderItemData;
-use App\Data\Admin\Discounts\OrderContextData;
-use App\Enums\Order\OrderItemPaymentTypeEnum;
-use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
-use App\Models\User;
 use App\Services\Discounts\Cart\Actions\GiftProductAction;
-use App\Services\Discounts\Cart\Conditions\CartValueTierCondition;
 use App\Services\Discounts\Configs\AddGiftCreditConfigData;
 use App\Services\Discounts\Configs\AddWalletCreditConfigData;
 use App\Services\Discounts\Configs\ApplyFixedAmountOffData;
 use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 use App\Services\Discounts\Configs\ApplyTieredPercentageOffData;
 use App\Services\Discounts\Configs\GiftProductData;
-use App\Services\Discounts\Configs\TierData;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use Spatie\LaravelData\Data;
 
@@ -27,47 +20,6 @@ use Spatie\LaravelData\Data;
  * has no fixture. Those two assertions are why this is intentionally a
  * multi-class, registry-driven file rather than a single-handler test.
  */
-
-/**
- * A deposit-only cart: one line paid in full is impossible here, so no
- * registered cart action may mark anything down.
- */
-function depositOnlyContext(int $prepaymentAmount = 25000, int $price = 100000): OrderContextData
-{
-    $option = ProductDeliveryOption::factory()->create([
-        'price'                   => $price,
-        'prepayment_amount'       => $prepaymentAmount,
-        'is_prepayment_available' => true,
-    ]);
-
-    $customer = User::factory()->create();
-
-    $context = OrderContextData::from([
-        'customer' => $customer,
-        'items'    => [
-            new CalculatedOrderItemData(
-                product_delivery_option: $option,
-                qty: 2,
-                payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT,
-                price: $price,
-                total: $prepaymentAmount * 2,
-            ),
-        ],
-        'subtotal_full_payment_items' => 0,
-        'subtotal_all_items'          => $price * 2,
-    ]);
-
-    $context->evaluating_promotion = DiscountPromotion::factory()->create();
-
-    // Publish a tier selection so the config-free consuming action is genuinely
-    // driven; the deposit-only cart still has nothing it may mark down.
-    $context->publishSelection(
-        CartValueTierCondition::HANDLER_KEY,
-        new TierData(min_amount: 0, percentage: 10.0),
-    );
-
-    return $context;
-}
 
 /**
  * The concrete configuration each registered cart action is driven with.
@@ -106,7 +58,7 @@ it('leaves a deposit-only cart unmarked by every markdown action', function (str
 
     expect($handlerClass)->not->toBeNull();
 
-    $context = depositOnlyContext();
+    $context = discountDepositOnlyContext();
     $line    = $context->items->first();
 
     app($handlerClass)->apply($context, cartActionFixtures()[$handlerKey]);
@@ -125,7 +77,7 @@ it('leaves a deposit-only cart unmarked by every markdown action', function (str
 ]);
 
 it('grants the gift coupon as a free line rather than a deposit markdown', function (): void {
-    $context = depositOnlyContext();
+    $context = discountDepositOnlyContext();
     $line    = $context->items->first();
 
     app(GiftProductAction::class)

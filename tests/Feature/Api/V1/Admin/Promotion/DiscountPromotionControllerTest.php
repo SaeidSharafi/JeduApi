@@ -5,25 +5,8 @@ declare(strict_types=1);
 use App\Enums\Order\OrderStatusEnum;
 use App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob;
 use App\Models\DiscountPromotion;
-use App\Models\DiscountPromotionUsage;
-use App\Models\Order;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
-
-function reservePromotionCapacity(
-    DiscountPromotion $promotion,
-    int $count,
-    OrderStatusEnum $status = OrderStatusEnum::PENDING,
-): void {
-    for ($i = 0; $i < $count; $i++) {
-        $order = Order::factory()->create(['status' => $status->value]);
-        DiscountPromotionUsage::create([
-            'discount_promotion_id' => $promotion->id,
-            'customer_id'           => $order->customer_id,
-            'order_id'              => $order->id,
-        ]);
-    }
-}
 
 describe('DiscountPromotionController', function (): void {
     beforeEach(function (): void {
@@ -254,8 +237,8 @@ describe('DiscountPromotionController', function (): void {
             'usage_limit_total' => 10,
             'total_usage_count' => 3,
         ]);
-        reservePromotionCapacity($promotion, 2);
-        reservePromotionCapacity($promotion, 1, OrderStatusEnum::COMPLETED);
+        discountReserveUsageSlots($promotion, 2);
+        discountReserveUsageSlots($promotion, 1, OrderStatusEnum::COMPLETED);
 
         // Act
         $response = $this->get('/api/v1/admin/discount-promotions');
@@ -274,8 +257,8 @@ describe('DiscountPromotionController', function (): void {
             'usage_limit_total' => 10,
             'total_usage_count' => 4,
         ]);
-        reservePromotionCapacity($promotion, 1);
-        reservePromotionCapacity($promotion, 1, OrderStatusEnum::COMPLETED);
+        discountReserveUsageSlots($promotion, 1);
+        discountReserveUsageSlots($promotion, 1, OrderStatusEnum::COMPLETED);
 
         // Act
         $response = $this->get("/api/v1/admin/discount-promotions/{$promotion->id}");

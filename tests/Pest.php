@@ -56,3 +56,4 @@ require_once __DIR__.'/Support/Helpers/ImportHelpers.php';
 require_once __DIR__.'/Support/Helpers/SearchIndexHelpers.php';
 require_once __DIR__.'/Support/Helpers/BundleCartHelpers.php';
 require_once __DIR__.'/Support/Helpers/DiscountRewardHelpers.php';
+require_once __DIR__.'/Support/Helpers/DiscountHelpers.php';

@@ -138,19 +138,8 @@ describe('DiscountInfoController', function (): void {
             ->and($productValueCondition['configuration_schema'])->toHaveKeys(['category_ids', 'match_policy']);
     });
 
-    test('cart value condition wording states a measurement-only choice in both locales', function (): void {
-        $expected = [
-            'en' => [
-                'label'       => 'Measure the Whole Commitment',
-                'description' => "Only changes how this threshold is measured: the customer's whole commitment (deposit lines counted at their paid deposit) instead of only the lines being paid in full. It never changes what gets discounted — deposits are never discounted.",
-            ],
-            'fa' => [
-                'label'       => 'سنجش کل تعهد مشتری',
-                'description' => 'تنها نحوه سنجش این شرط را تغییر می‌دهد: کل تعهد مشتری (اقلام پیش‌پرداختی با مبلغ پیش‌پرداخت پرداخت‌شده) به‌جای فقط اقلامی که نقداً تسویه می‌شوند. این تنظیم هرگز تعیین نمی‌کند چه چیزی تخفیف می‌خورد؛ پیش‌پرداخت‌ها هیچ‌گاه تخفیف نمی‌خورند.',
-            ],
-        ];
-
-        foreach ($expected as $locale => $strings) {
+    test('cart value condition exposes one measurement knob documented in both locales', function (): void {
+        foreach (['en', 'fa'] as $locale) {
             app()->setLocale($locale);
 
             $response = $this->get('/api/v1/admin/discount-info/conditions');
@@ -162,8 +151,15 @@ describe('DiscountInfoController', function (): void {
             // The exact key set is pinned, so no other measurement knob (the
             // old "include prepayments" flag included) can silently return.
             expect(array_keys($schema))->toEqualCanonicalizing(['operator', 'value', 'measure_whole_commitment'])
-                ->and($schema['measure_whole_commitment']['label'])->toBe($strings['label'])
-                ->and($schema['measure_whole_commitment']['description'])->toBe($strings['description']);
+                // The copy is asserted through the translation it renders, so a
+                // wording edit in lang/ — the normal way to fix a label — does
+                // not fail an API contract test.
+                ->and($schema['measure_whole_commitment']['label'])
+                ->toBe(__('discount.handlers.cart_value_over.fields.measure_whole_commitment.label'))
+                ->and($schema['measure_whole_commitment']['description'])
+                ->toBe(__('discount.handlers.cart_value_over.fields.measure_whole_commitment.description'))
+                ->and($schema['measure_whole_commitment']['label'])->not->toBeEmpty()
+                ->and($schema['measure_whole_commitment']['description'])->not->toBeEmpty();
         }
 
         app()->setLocale('en');

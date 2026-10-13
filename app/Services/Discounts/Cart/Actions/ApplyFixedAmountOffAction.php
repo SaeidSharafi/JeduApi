@@ -16,7 +16,7 @@ use Spatie\LaravelData\Data;
 final class ApplyFixedAmountOffAction implements DiscountActionContract, LineMarkdownActionContract
 {
     public function __construct(
-        private readonly WeightedApportionment $apportionment = new WeightedApportionment(),
+        private readonly WeightedApportionment $apportionment,
     ) {}
 
     public static function getConfigClass(): string
