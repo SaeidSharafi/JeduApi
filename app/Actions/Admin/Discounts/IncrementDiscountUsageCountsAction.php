@@ -13,13 +13,15 @@ final readonly class IncrementDiscountUsageCountsAction
     /**
      * Increment coupon/promotion usage counters for a completed order.
      *
-     * Reads the discount audit trail persisted at order creation
-     * (orders.applied_cart_discounts_json) and the coupon code that triggered
-     * the discounts (orders.applied_coupon_code), so no recalculation happens
-     * at completion time. Idempotency is guaranteed internally: the order row
-     * is locked for update inside a transaction, so the counter increments and
-     * the orders.discount_usage_incremented_at flag are written atomically and
-     * concurrent completion paths can never double-increment.
+     * Reads the journeys persisted at order creation — the discount audit trail
+     * (orders.applied_cart_discounts_json), the rewards the order owes
+     * (orders.reward_intents_json) and the coupon code that triggered them
+     * (orders.applied_coupon_code) — so no recalculation happens at completion
+     * time. A promotion that only granted a reward counts too, otherwise its
+     * caps would never be consumed. Idempotency is guaranteed internally: the
+     * order row is locked for update inside a transaction, so the counter
+     * increments and the orders.discount_usage_incremented_at flag are written
+     * atomically and concurrent completion paths can never double-increment.
      */
     public function handle(Order $order): void
     {
@@ -31,14 +33,8 @@ final readonly class IncrementDiscountUsageCountsAction
             }
 
             $couponCode = $lockedOrder->applied_coupon_code;
-            $discounts  = $lockedOrder->applied_cart_discounts_json ?? [];
 
-            foreach ($discounts as $discount) {
-                $promotionId = $discount['promotion_id'] ?? null;
-                if (! $promotionId) {
-                    continue;
-                }
-
+            foreach ($lockedOrder->usedPromotionIds() as $promotionId) {
                 $promotion = DiscountPromotion::find($promotionId);
                 if (! $promotion) {
                     continue;

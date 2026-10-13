@@ -43,6 +43,51 @@ describe('IncrementDiscountUsageCountsAction', function (): void {
             ->and($order->fresh()->discount_usage_incremented_at)->not->toBeNull();
     });
 
+    test('increments a promotion that only granted a reward', function (): void {
+        // No price discount was recorded, so the completion counter has to read
+        // the reward intents too — otherwise a reward-only promotion's caps are
+        // never consumed and the customer can repeat it indefinitely.
+        $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+        $coupon    = DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'WALLET1',
+        ]);
+
+        $order = Order::factory()->create([
+            'status'                      => OrderStatusEnum::COMPLETED,
+            'applied_coupon_code'         => 'WALLET1',
+            'applied_cart_discounts_json' => null,
+            'reward_intents_json'         => [
+                ['promotion_id' => $promotion->id, 'ledger_type' => 'bonus', 'amount' => 5000],
+            ],
+        ]);
+
+        app(IncrementDiscountUsageCountsAction::class)->handle($order);
+
+        expect($promotion->fresh()->total_usage_count)->toBe(1)
+            ->and($coupon->fresh()->usage_count)->toBe(1)
+            ->and($order->fresh()->discount_usage_incremented_at)->not->toBeNull();
+    });
+
+    test('increments a promotion that both discounted and granted a reward once', function (): void {
+        $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+
+        $order = Order::factory()->create([
+            'status'                      => OrderStatusEnum::COMPLETED,
+            'applied_coupon_code'         => null,
+            'applied_cart_discounts_json' => [
+                ['promotion_id' => $promotion->id, 'applied_amount' => 5000],
+            ],
+            'reward_intents_json' => [
+                ['promotion_id' => $promotion->id, 'ledger_type' => 'bonus', 'amount' => 5000],
+            ],
+        ]);
+
+        app(IncrementDiscountUsageCountsAction::class)->handle($order);
+
+        expect($promotion->fresh()->total_usage_count)->toBe(1);
+    });
+
     test('does not increment counters when the idempotency flag is already set', function (): void {
         $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
         DiscountCoupon::factory()->create([

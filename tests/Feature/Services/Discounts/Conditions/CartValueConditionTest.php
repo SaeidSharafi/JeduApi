@@ -143,3 +143,29 @@ it('evaluates a stored rule whose operator is the metadata name', function (): v
     expect($config->operator)->toBe(MathOperatorEnum::GREATER_THAN_OR_EQUAL)
         ->and((new CartValueCondition())->passes($context, $config))->toBeTrue();
 });
+
+it('defaults the measurement key so a rule that omits it still prices', function (): void {
+    // The key was renamed from `include_prepayments`, and it is optional: a
+    // stored configuration that predates the rename (or a client that omits it)
+    // must measure the full-payment lines, not throw CannotCreateData while the
+    // cart is being priced.
+    $config = CartValueConditionConfigData::from(['operator' => '>=', 'value' => 10000]);
+
+    expect($config->measure_whole_commitment)->toBeFalse();
+
+    $context = OrderContextData::from([
+        'customer'                              => User::factory()->make(),
+        'items'                                 => [],
+        'subtotal_full_payment_items'           => 15000,
+        'subtotal_all_items'                    => 20000,
+        'effective_subtotal_all_items'          => 20000,
+        'effective_subtotal_discountable_items' => 15000,
+    ]);
+
+    // Both sides clear 10,000; 18,000 separates them, proving the default reads
+    // the full-payment side rather than the whole commitment.
+    $separates = CartValueConditionConfigData::from(['operator' => '>=', 'value' => 18000]);
+
+    expect((new CartValueCondition())->passes($context, $config))->toBeTrue()
+        ->and((new CartValueCondition())->passes($context, $separates))->toBeFalse();
+});

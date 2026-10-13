@@ -524,3 +524,21 @@ each.
   `OrderContextData::discountableItems()`, the context-build snapshot and the test helper.
 - Item 18 was an unrequested finding, but the fix was put to the product owner during
   implementation and approved (accept both operator spellings rather than change the metadata).
+- **Two more pre-existing bugs surfaced while answering "is anything left to fix?"**, both put to the
+  owner and approved, both fixed on this branch:
+  - **A config key the validation does not require but the DTO does.**
+    `CartValueConditionConfigData` required `measure_whole_commitment` while its validation rule was
+    only `['boolean']`, so a rule that omits the key — including any row stored before the #149
+    rename, which is exactly what this workspace's database still holds — threw `CannotCreateData`
+    from `promotionConditionsPass()` and 500'd every cart calculation that reached the promotion.
+    The key now defaults to `false` (the old `include_prepayments = false` meaning) and the admin
+    metadata reports it optional.
+  - **Reward-only promotions consumed no usage budget.** `RecordPromotionUsageAction` and
+    `IncrementDiscountUsageCountsAction` both iterated `applied_cart_discounts_json`, which only
+    gains an entry when the actions changed a price, so a promotion whose only action granted wallet
+    or gift credit never created a usage row and never moved a counter. Probe before the fix: with
+    `usage_limit_total = 1`, `usage_limit_per_customer = 1` and the coupon's `usage_limit = 1`, the
+    first order stored the code and the reward intent but created 0 usage rows and left the counter
+    at 0, and a second order was granted another 5,000. `Order::usedPromotionIds()` now unions the
+    discount log with `reward_intents_json` and both actions read it; the same probe now shows one
+    usage row (carrying the coupon id) and a second order with no code and no reward intent.

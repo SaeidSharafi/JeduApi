@@ -159,7 +159,10 @@ describe('DiscountInfoController', function (): void {
                 ->and($schema['measure_whole_commitment']['description'])
                 ->toBe(__('discount.handlers.cart_value_over.fields.measure_whole_commitment.description'))
                 ->and($schema['measure_whole_commitment']['label'])->not->toBeEmpty()
-                ->and($schema['measure_whole_commitment']['description'])->not->toBeEmpty();
+                ->and($schema['measure_whole_commitment']['description'])->not->toBeEmpty()
+                // Optional: a rule that omits the key measures the full-payment
+                // lines instead of failing to instantiate on the pricing path.
+                ->and($schema['measure_whole_commitment']['required'])->toBeFalse();
         }
 
         app()->setLocale('en');
