@@ -21,6 +21,14 @@ final class CartData extends Data
         public int $discount_amount,
         public int $grand_total,
         public ?string $guest_token = null,
+        /**
+         * Why the stored code is not being used on this cart. A code stays on
+         * the cart after it stops being applicable (the coupon was deactivated,
+         * its window closed, its cap filled, or the cart no longer meets its
+         * conditions); checkout must not be blocked by it, but the customer
+         * must not be left wondering why the discount disappeared either.
+         */
+        public ?string $applied_coupon_error = null,
     ) {}
 
     public static function fromModel(
@@ -29,6 +37,7 @@ final class CartData extends Data
         int $discountAmount = 0,
         int $grandTotal = 0,
         ?DataCollection $items = null,
+        ?string $appliedCouponError = null,
     ): self {
         return new self(
             id: $cart->id,
@@ -39,6 +48,7 @@ final class CartData extends Data
             discount_amount: $discountAmount,
             grand_total: $grandTotal,
             guest_token: $cart->guest_token,
+            applied_coupon_error: $appliedCouponError,
         );
     }
 }

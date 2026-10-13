@@ -137,6 +137,41 @@ it('accepts a markdown coupon when a fully paid line is present', function (): v
     postJson(route('api.v1.shop.cart.coupon.apply'), ['coupon_code' => $code])->assertOk();
 });
 
+it('reports why a stored code is no longer applied to the cart', function (): void {
+    $customer = User::factory()->create();
+    $this->customer($customer);
+
+    $code = couponApplicabilityPromotion('apply_percentage_off', ['percentage' => 10]);
+
+    $fullOption = ProductDeliveryOption::factory()->create([
+        'price' => 40000,
+        'uuid'  => Str::uuid()->toString(),
+    ]);
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $fullOption->uuid,
+        'payment_type'                 => 'full_payment',
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    $applied = postJson(route('api.v1.shop.cart.coupon.apply'), ['coupon_code' => $code])
+        ->assertOk()
+        ->json('data');
+
+    expect($applied['applied_coupon_error'])->toBeNull()
+        ->and($applied['discount_amount'])->toBe(4000);
+
+    // The code stays on the cart after its coupon is switched off, so the next
+    // read has to explain the missing discount rather than silently pricing it
+    // at zero.
+    DiscountCoupon::where('code', $code)->update(['is_active' => false]);
+
+    $cart = getJson(route('api.v1.shop.cart.index'))->assertOk()->json('data');
+
+    expect($cart['applied_coupon_code'])->toBe($code)
+        ->and($cart['applied_coupon_error'])->toBe(__('shop.cart.errors.coupon_not_applied'))
+        ->and($cart['discount_amount'])->toBe(0);
+});
+
 it('leaves applying a coupon to an empty cart unaffected', function (): void {
     $this->customer();
 

@@ -482,12 +482,21 @@ final readonly class CartService
             );
         });
 
+        // A code that is still stored but consumed by nothing is not applied to
+        // this cart: the coupon went inactive, its window closed, its cap
+        // filled, or the cart no longer meets the conditions. Checkout proceeds
+        // without the discount, so the payload has to say why.
+        $appliedCouponError = $cart->applied_coupon_code !== null && $context->triggered_by_coupon_code === null
+            ? __('shop.cart.errors.coupon_not_applied')
+            : null;
+
         return CartData::fromModel(
             $cart,
             $subtotal,
             $discountAmount,
             $grandTotal,
             CartItemData::collect($cartItems, DataCollection::class),
+            $appliedCouponError,
         );
     }
 

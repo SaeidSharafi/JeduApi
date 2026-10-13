@@ -32,6 +32,7 @@ return [
             'pre_payment_not_available'     => 'Pre-payment option is not available for this product.',
             'coupon_does_not_exist'         => 'The entered discount coupon is not valid.',
             'coupon_nothing_discountable'   => 'This coupon cannot be applied because none of the items in your cart can be discounted.',
+            'coupon_not_applied'            => 'This discount code is not applied to your cart. It may have expired or no longer match the cart contents.',
         ],
     ],
 ];
