@@ -524,6 +524,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### Order & OrderItem Discount Snapshots
 - `Order.applied_cart_discounts_json` captures cart-level discounts at checkout.
+- `Order.reward_intents_json` (array cast) captures the promotion rewards this order intends to grant: promotion id/name, ledger credit type (`bonus` for `add_wallet_credit`, `gift` for `add_gift_credit`), amount, resolved description, rule configuration snapshot, and `expires_days`. It is written in the same transaction as the order and executed once when the order reaches `completed`.
 - `OrderItem.applied_discount_details_json` captures item-level discount details at checkout.
 
 ### ContactUsRequest (`app/Models/ContactUsRequest.php`)

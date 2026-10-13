@@ -2,11 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
-use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
-use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
@@ -15,57 +12,44 @@ use App\Services\Discounts\Cart\Actions\AddWalletCreditAction;
 use App\Services\Discounts\Configs\AddWalletCreditConfigData;
 use Tests\Support\Traits\AuthTestTrait;
 
+covers(AddWalletCreditAction::class);
+
 uses(AuthTestTrait::class);
 
 beforeEach(function (): void {
-    $this->user = User::factory()->create();
-
-    $this->wallet = $this->user->wallet;
-    $this->wallet->update([
-        'balance' => 10000,
-    ]);
+    $this->user      = User::factory()->create();
     $this->promotion = DiscountPromotion::factory()->create([
         'name' => 'Test Promotion',
     ]);
-
-    $this->mockRecordAction = $this->mock(RecordWalletTransactionAction::class);
-    $this->action           = new AddWalletCreditAction($this->mockRecordAction);
+    $this->action = app(AddWalletCreditAction::class);
 });
 
 it('returns correct config class', function (): void {
     expect(AddWalletCreditAction::getConfigClass())->toBe(AddWalletCreditConfigData::class);
 });
 
-it('applies fixed amount wallet credit', function (): void {
+it('records a fixed amount wallet credit intent without touching the wallet', function (): void {
     $config = new AddWalletCreditConfigData(
         amount: 5000,
         per_item: false,
         description: 'Order completion bonus'
     );
 
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return $transactionData->user_id     === $this->user->id
-                && $transactionData->type        === TransactionTypeEnum::BONUS
-                && $transactionData->amount      === 5000
-                && $transactionData->source_type === TransactionSourceEnum::PROMOTION
-                && $transactionData->description === 'Order completion bonus';
-        });
-
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1);
+
+    $intent = $context->reward_intents[0];
+    expect($intent['promotion_id'])->toBe($this->promotion->id)
+        ->and($intent['promotion_name'])->toBe('Test Promotion')
+        ->and($intent['ledger_type'])->toBe(TransactionTypeEnum::BONUS->value)
+        ->and($intent['amount'])->toBe(5000)
+        ->and($intent['description'])->toBe('Order completion bonus')
+        ->and($intent['configuration']['amount'])->toBe(5000);
 });
 
-it('applies per-item wallet credit', function (): void {
+it('records a per-item wallet credit intent', function (): void {
     $config = new AddWalletCreditConfigData(
         amount: 1000,
         per_item: true,
@@ -74,39 +58,15 @@ it('applies per-item wallet credit', function (): void {
 
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
-    $items = collect([
-        new CalculatedOrderItemData(
-            product_delivery_option: $deliveryOption,
-            qty: 2,
-            payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
-            price: 5000,
-            total: 10000
-        ),
-        new CalculatedOrderItemData(
-            product_delivery_option: $deliveryOption,
-            qty: 3,
-            payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
-            price: 3000,
-            total: 9000
-        ),
-    ]);
-
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: $items,
-        subtotal_full_payment_items: 19000,
-        subtotal_all_items: 19000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return $transactionData->amount === 5000; // (2 + 3) * 1000
-        });
+    $context = discountRewardContext($this->user, $this->promotion, collect([
+        discountRewardFullPaymentItem($deliveryOption, 2, 5000),
+        discountRewardFullPaymentItem($deliveryOption, 3, 3000),
+    ]));
 
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1)
+        ->and($context->reward_intents[0]['amount'])->toBe(5000); // (2 + 3) * 1000
 });
 
 it('excludes prepayment items from per-item calculation', function (): void {
@@ -118,82 +78,54 @@ it('excludes prepayment items from per-item calculation', function (): void {
 
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
-    $items = collect([
-        new CalculatedOrderItemData(
-            product_delivery_option: $deliveryOption,
-            qty: 2,
-            payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
-            price: 5000,
-            total: 10000
-        ),
+    $context = discountRewardContext($this->user, $this->promotion, collect([
+        discountRewardFullPaymentItem($deliveryOption, 2, 5000),
         new CalculatedOrderItemData(
             product_delivery_option: $deliveryOption,
             qty: 3,
-            payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT, // This should be excluded
+            payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT, // This must be excluded
             price: 3000,
-            total: 9000
+            total: 9000,
         ),
-    ]);
-
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: $items,
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 19000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return $transactionData->amount === 2000; // Only 2 items * 1000
-        });
+    ]));
 
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1)
+        ->and($context->reward_intents[0]['amount'])->toBe(2000); // Only 2 items * 1000
 });
 
-it('does not apply credit for zero amount', function (): void {
+it('records no intent for zero amount', function (): void {
     $config = new AddWalletCreditConfigData(
         amount: 1000,
         per_item: true,
         description: 'Per item bonus'
     );
 
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]), // No items
-        subtotal_full_payment_items: 0,
-        subtotal_all_items: 0,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction->shouldNotReceive('execute');
+    $context = discountRewardContext($this->user, $this->promotion);
 
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toBeEmpty();
 });
 
-it('does not apply credit when customer has no wallet', function (): void {
+it('records the intent even when the customer has no wallet', function (): void {
+    // Wallet ownership is an execution concern: it must not decide eligibility.
     $userWithoutWallet = User::factory()->create();
     $userWithoutWallet->wallet->delete();
     $userWithoutWallet->refresh();
+
     $config = new AddWalletCreditConfigData(
         amount: 5000,
         per_item: false,
         description: 'Order completion bonus'
     );
 
-    $context = new OrderContextData(
-        customer: $userWithoutWallet,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction->shouldNotReceive('execute');
-
+    $context = discountRewardContext($userWithoutWallet, $this->promotion);
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1)
+        ->and($context->reward_intents[0]['amount'])->toBe(5000);
 });
 
 it('uses localized description when none provided', function (): void {
@@ -203,48 +135,14 @@ it('uses localized description when none provided', function (): void {
         description: null
     );
 
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return str_contains($transactionData->description, 'Test Promotion');
-        });
-
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1)
+        ->and($context->reward_intents[0]['description'])->toContain('Test Promotion');
 });
 
-it('handles record action exceptions gracefully', function (): void {
-    $config = new AddWalletCreditConfigData(
-        amount: 5000,
-        per_item: false,
-        description: 'Test bonus'
-    );
-
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->andThrow(new Exception('Database error'));
-    // Should not throw exception
-    expect(fn () => $this->action->apply($context, $config))->not->toThrow(Exception::class);
-});
-
-it('does not apply credit for invalid configuration type', function (): void {
+it('records no intent for invalid configuration type', function (): void {
     $invalidConfig = new class extends Spatie\LaravelData\Data
     {
         public function toArray(): array
@@ -253,15 +151,8 @@ it('does not apply credit for invalid configuration type', function (): void {
         }
     };
 
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction->shouldNotReceive('execute');
-
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $invalidConfig);
+
+    expect($context->reward_intents)->toBeEmpty();
 });

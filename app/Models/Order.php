@@ -45,6 +45,7 @@ final class Order extends Model implements WalletTransactionSourceableContract
             'currency_code',
             'applied_coupon_code',
             'applied_cart_discounts_json',
+            'reward_intents_json',
             'admin_notes',
             'created_by',
         ];
@@ -183,6 +184,7 @@ final class Order extends Model implements WalletTransactionSourceableContract
         return [
             'customer_snapshot_json'        => 'array',
             'applied_cart_discounts_json'   => 'array',
+            'reward_intents_json'           => 'array',
             'subtotal'                      => 'integer',
             'discount_amount'               => 'integer',
             'tax_amount'                    => 'integer',

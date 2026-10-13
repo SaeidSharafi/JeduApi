@@ -4,82 +4,64 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts\Cart\Actions;
 
-use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Data\Admin\Discounts\OrderContextData;
-use App\Data\Admin\Wallet\RecordTransactionData;
+use App\Data\Admin\Discounts\RewardIntentData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
-use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Services\Discounts\Configs\AddWalletCreditConfigData;
-use Exception;
-use Log;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('add_wallet_credit')]
 final class AddWalletCreditAction implements DiscountActionContract
 {
-    public function __construct(
-        private readonly RecordWalletTransactionAction $recordWalletTransactionAction
-    ) {}
-
     public static function getConfigClass(): string
     {
         return AddWalletCreditConfigData::class;
     }
 
+    /**
+     * Records the intent to credit the customer's wallet. Pricing must stay free
+     * of side effects, so no ledger row is written here: the intent is executed
+     * by GrantOrderRewardsAction once the order reaches COMPLETED. Whether the
+     * customer actually owns a wallet is an execution concern, not an
+     * eligibility one.
+     */
     public function apply(OrderContextData $context, Data $configuration): void
     {
         if (! $configuration instanceof AddWalletCreditConfigData) {
             return;
         }
 
-        // Get the customer from the context
         $customer = $context->customer;
-        if (! $customer || ! $customer->wallet) {
+        if (! $customer) {
             return;
         }
 
-        // Calculate the credit amount
+        $promotion = $context->evaluating_promotion;
+        if ($promotion === null) {
+            return;
+        }
+
         $creditAmount = $this->calculateCreditAmount($context, $configuration);
 
         if ($creditAmount <= 0) {
             return;
         }
 
-        // Prepare description
         $description = $configuration->description ?? __('wallet.promotion.credit_from_order', [
-            'promotion' => $context->evaluating_promotion->name ?? __('wallet.promotion.discount'),
+            'promotion' => $promotion->name,
         ]);
 
-        // Record wallet transaction
-        try {
-            $transactionData = new RecordTransactionData(
-                user_id: $customer->id,
-                type: TransactionTypeEnum::BONUS,
-                amount: $creditAmount,
-                source_type: TransactionSourceEnum::PROMOTION,
-                source_id: $context->evaluating_promotion?->id,
-                description: $description,
-                metadata: [
-                    'order_id'       => $context->order_id ?? null,
-                    'promotion_name' => $context->evaluating_promotion?->name,
-                    'credit_type'    => 'regular',
-                    'configuration'  => $configuration->toArray(),
-                ]
-            );
-
-            $this->recordWalletTransactionAction->execute($transactionData);
-        } catch (Exception $e) {
-            // Log the error but don't break the order process
-            Log::error('Failed to record wallet credit from promotion', [
-                'error'        => $e->getMessage(),
-                'customer_id'  => $customer->id,
-                'promotion_id' => $context->evaluating_promotion?->id,
-                'amount'       => $creditAmount,
-            ]);
-        }
+        $context->reward_intents[] = (new RewardIntentData(
+            promotion_id: $promotion->id,
+            promotion_name: $promotion->name,
+            ledger_type: TransactionTypeEnum::BONUS,
+            amount: $creditAmount,
+            description: $description,
+            configuration: $configuration->toArray(),
+        ))->toArray();
     }
 
     private function calculateCreditAmount(OrderContextData $context, AddWalletCreditConfigData $configuration): int

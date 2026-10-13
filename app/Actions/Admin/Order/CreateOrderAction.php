@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
-use App\Actions\Admin\Discounts\IncrementDiscountUsageCountsAction;
 use App\Actions\Admin\Discounts\RecordPromotionUsageAction;
+use App\Actions\Admin\Discounts\SettleCompletedOrderAction;
 use App\Actions\Admin\Discounts\ValidatePromotionPerCustomerLimitAction;
 use App\Actions\Admin\ProductDeliveryOption\ValidateBundleCompositionAction;
 use App\Data\Admin\Order\OrderCreateData;
@@ -40,7 +40,7 @@ final readonly class CreateOrderAction
         private BundleAvailabilityService $bundleAvailability,
         private ValidatePromotionPerCustomerLimitAction $validatePromotionPerCustomerLimit,
         private RecordPromotionUsageAction $recordPromotionUsage,
-        private IncrementDiscountUsageCountsAction $incrementDiscountUsageCounts,
+        private SettleCompletedOrderAction $settleCompletedOrder,
         private CreateBundlePurchaseAction $createBundlePurchase,
         private ValidateBundleCompositionAction $validateBundleComposition,
     ) {}
@@ -201,6 +201,11 @@ final readonly class CreateOrderAction
                     ? $context->applied_cart_discounts
                     : null,
 
+                // --- REWARDS EARNED BY THIS ORDER (executed on completion) ---
+                'reward_intents_json' => ! empty($context->reward_intents)
+                    ? $context->reward_intents
+                    : null,
+
                 'applied_coupon_code' => $context->triggered_by_coupon_code, // Get code from context
                 'admin_notes'         => $data->admin_notes,
             ]);
@@ -216,10 +221,10 @@ final readonly class CreateOrderAction
             $this->recordPromotionUsage->handle($order);
 
             // An order created directly as COMPLETED never passes through
-            // OrderStatusService, so settle its usage counters here. The
-            // discount_usage_incremented_at flag keeps this idempotent.
+            // OrderStatusService, so settle its usage counters and rewards here.
+            // Both steps are internally idempotent.
             if ($order->status === OrderStatusEnum::COMPLETED) {
-                $this->incrementDiscountUsageCounts->handle($order);
+                $this->settleCompletedOrder->handle($order);
             }
 
             // Enrollments are now created by OrderStatusService after payment.
