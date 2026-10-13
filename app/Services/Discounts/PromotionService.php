@@ -256,7 +256,7 @@ final class PromotionService
 
         $promotionIds = $promotions->pluck('id')->all();
 
-        $reservedUsageCounts = DiscountPromotionUsage::query()
+        $reservationRows = DiscountPromotionUsage::query()
             ->active()
             ->whereIn('discount_promotion_id', $promotionIds)
             ->selectRaw('discount_promotion_id, discount_coupon_id, count(*) as reserved_usage_count')
@@ -273,28 +273,28 @@ final class PromotionService
                 ->keyBy('discount_promotion_id');
 
         return $promotions
-            ->reject(function (DiscountPromotion $promotion) use ($appliedCoupons, $reservedUsageCounts): bool {
-                if ($this->isTotalCapFullyReserved($promotion, $reservedUsageCounts)) {
+            ->reject(function (DiscountPromotion $promotion) use ($appliedCoupons, $reservationRows): bool {
+                if ($this->isTotalCapFullyReserved($promotion, $reservationRows)) {
                     return true;
                 }
 
                 $coupon = $appliedCoupons->get($promotion->id);
 
-                return $coupon !== null && $this->isCouponCapFullyReserved($coupon, $reservedUsageCounts);
+                return $coupon !== null && $this->isCouponCapFullyReserved($coupon, $reservationRows);
             })
             ->values();
     }
 
     /**
-     * @param  Collection<int, DiscountPromotionUsage>  $reservedUsageCounts
+     * @param  Collection<int, DiscountPromotionUsage>  $reservationRows
      */
-    private function isTotalCapFullyReserved(DiscountPromotion $promotion, Collection $reservedUsageCounts): bool
+    private function isTotalCapFullyReserved(DiscountPromotion $promotion, Collection $reservationRows): bool
     {
         if ($promotion->usage_limit_total === null) {
             return false;
         }
 
-        $reservedCount = $reservedUsageCounts
+        $reservedCount = $reservationRows
             ->where('discount_promotion_id', $promotion->id)
             ->sum('reserved_usage_count');
 
@@ -302,15 +302,15 @@ final class PromotionService
     }
 
     /**
-     * @param  Collection<int, DiscountPromotionUsage>  $reservedUsageCounts
+     * @param  Collection<int, DiscountPromotionUsage>  $reservationRows
      */
-    private function isCouponCapFullyReserved(DiscountCoupon $coupon, Collection $reservedUsageCounts): bool
+    private function isCouponCapFullyReserved(DiscountCoupon $coupon, Collection $reservationRows): bool
     {
         if ($coupon->usage_limit === null) {
             return false;
         }
 
-        $reservedCount = $reservedUsageCounts
+        $reservedCount = $reservationRows
             ->where('discount_promotion_id', $coupon->discount_promotion_id)
             ->where('discount_coupon_id', $coupon->id)
             ->sum('reserved_usage_count');

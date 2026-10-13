@@ -88,3 +88,22 @@ test('usages relation', function (): void {
         ->and($discount->usages->first()->id)
         ->toEqual($usage->id);
 });
+
+test('held usages relation', function (): void {
+    $discount = DiscountPromotion::factory()->create();
+    $order    = App\Models\Order::factory()->create([
+        'status' => App\Enums\Order\OrderStatusEnum::PENDING->value,
+    ]);
+    $usage = App\Models\DiscountPromotionUsage::create([
+        'discount_promotion_id' => $discount->id,
+        'customer_id'           => $order->customer_id,
+        'order_id'              => $order->id,
+    ])->fresh();
+
+    expect($discount->heldUsages)
+        ->toBeInstanceOf(Illuminate\Database\Eloquent\Collection::class)
+        ->and($discount->heldUsages->first())
+        ->toBeInstanceOf(App\Models\DiscountPromotionUsage::class)
+        ->and($discount->heldUsages->first()->id)
+        ->toEqual($usage->id);
+});

@@ -76,11 +76,7 @@ final class DiscountPromotionUsage extends Model
     protected function active(Builder $query): Builder
     {
         $holdCutoff      = now()->subMinutes((int) config('discounts.reservation_hold_minutes'));
-        $settledStatuses = [
-            OrderStatusEnum::COMPLETED->value,
-            OrderStatusEnum::REFUNDED->value,
-            OrderStatusEnum::PARTIALLY_REFUNDED->value,
-        ];
+        $settledStatuses = self::settledStatuses();
 
         return $query
             ->whereHas('order', fn (Builder $orderQuery): Builder => $orderQuery->whereNotIn('status', [
@@ -92,5 +88,39 @@ final class DiscountPromotionUsage extends Model
                     ->where('created_at', '>=', $holdCutoff)
                     ->orWhereHas('order', fn (Builder $orderQuery): Builder => $orderQuery->whereIn('status', $settledStatuses));
             });
+    }
+
+    /**
+     * Rows holding capacity that is not settled yet.
+     *
+     * A held row is an `active()` row whose order is still pending or
+     * processing, so it occupies a slot but records no completed usage. An
+     * admin reporting reserved capacity must use this scope: counting
+     * `active()` rows there would report settled completions twice and
+     * contradict the reservation window that stale holds expire under.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function held(Builder $query): Builder
+    {
+        return $query
+            ->active()
+            ->whereHas('order', fn (Builder $orderQuery): Builder => $orderQuery->whereNotIn('status', self::settledStatuses()));
+    }
+
+    /**
+     * Order statuses whose usage slot is consumed permanently.
+     *
+     * @return list<string>
+     */
+    private static function settledStatuses(): array
+    {
+        return [
+            OrderStatusEnum::COMPLETED->value,
+            OrderStatusEnum::REFUNDED->value,
+            OrderStatusEnum::PARTIALLY_REFUNDED->value,
+        ];
     }
 }
