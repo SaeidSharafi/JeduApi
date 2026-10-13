@@ -322,6 +322,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - admin_notes (TEXT nullable)
   - created_by (BIGINT nullable) FK -> staff(id) SET NULL
   - applied_cart_discounts_json (JSON nullable)
+  - reward_intents_json (JSON nullable) — reward intents snapshotted at order creation; executed on completion
   - created_at/updated_at (TIMESTAMPS)
 - Indexes:
   - UNIQUE(increment_id)

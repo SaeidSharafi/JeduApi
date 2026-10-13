@@ -40,6 +40,16 @@ final class OrderContextData extends Data
         public array $applied_cart_discounts = [],
 
         /**
+         * A running log of the rewards cart promotions intend to grant the
+         * customer (wallet and gift credits). Pricing must stay side-effect
+         * free, so reward actions only append here; the list is snapshotted
+         * onto orders.reward_intents_json and executed once the order completes.
+         *
+         * @var list<array<string, mixed>>
+         */
+        public array $reward_intents = [],
+
+        /**
          * This holds a reference to the promotion being evaluated.
          * It allows action handlers to access details like the promotion's name for the audit trail.
          */

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
-use App\Actions\Admin\Discounts\IncrementDiscountUsageCountsAction;
 use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
+use App\Actions\Admin\Discounts\SettleCompletedOrderAction;
 use App\Data\Admin\Order\OrderUpdateData;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
@@ -20,7 +20,7 @@ final readonly class UpdateOrderAction
     public function __construct(
         private ProductReservationService $productReservationService,
         private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
-        private IncrementDiscountUsageCountsAction $incrementDiscountUsageCounts,
+        private SettleCompletedOrderAction $settleCompletedOrder,
     ) {}
 
     /**
@@ -43,10 +43,10 @@ final readonly class UpdateOrderAction
             }
 
             // An admin flip straight to COMPLETED bypasses OrderStatusService, so
-            // settle the usage counters here. The discount_usage_incremented_at
-            // flag on the order keeps this idempotent.
+            // settle the usage counters and the order's rewards here. Both steps
+            // are internally idempotent.
             if ($order->status === OrderStatusEnum::COMPLETED) {
-                $this->incrementDiscountUsageCounts->handle($order);
+                $this->settleCompletedOrder->handle($order);
             }
 
             if ($order->status    === OrderStatusEnum::CANCELLED

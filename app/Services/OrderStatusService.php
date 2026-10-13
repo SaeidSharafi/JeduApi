@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Actions\Admin\Discounts\IncrementDiscountUsageCountsAction;
 use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
+use App\Actions\Admin\Discounts\SettleCompletedOrderAction;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderProvisioningTriggerEnum;
@@ -21,7 +21,7 @@ final class OrderStatusService
 {
     public function __construct(
         private ProductReservationService $productReservationService,
-        private IncrementDiscountUsageCountsAction $incrementDiscountUsageCounts,
+        private SettleCompletedOrderAction $settleCompletedOrder,
         private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
     ) {}
 
@@ -118,10 +118,12 @@ final class OrderStatusService
             $order->status = $newStatus;
             $order->save();
 
-            // Coupon/promotion usage counters reflect COMPLETED orders only, so
-            // abandoned or cancelled pending orders never consume the allowance.
+            // Coupon/promotion usage counters reflect COMPLETED orders only, and
+            // the rewards this order earned are granted here too. Settling is the
+            // single entry point for "this order became completed" and every step
+            // is idempotent, so a repeated transition pays nothing twice.
             if ($newStatus === OrderStatusEnum::COMPLETED) {
-                $this->incrementDiscountUsageCounts->handle($order);
+                $this->settleCompletedOrder->handle($order);
             }
 
             // Cancelled/failed orders release their coupon/promotion usage slot.
