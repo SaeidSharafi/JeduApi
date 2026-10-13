@@ -463,11 +463,11 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
 - Indexes: UNIQUE(code), INDEX(is_active, code) as idx_active_code
 
 ### Table: `discount_promotion_usages`
-- Purpose: Per-customer promotion allowance slots; one row per applied promotion per order.
+- Purpose: Promotion/coupon capacity reservations; one row per applied promotion per order. Rows are created at order placement, deleted on cancellation/failure, and backfilled for orders that settled before the table existed (`backfill_discount_promotion_usages_for_settled_orders`).
 - Columns:
   - id (BIGINT, PK)
   - discount_promotion_id (BIGINT) FK -> discount_promotions(id) CASCADE
-  - discount_coupon_id (BIGINT nullable) FK -> discount_coupons(id) SET NULL (audit only)
+  - discount_coupon_id (BIGINT nullable) FK -> discount_coupons(id) SET NULL (the coupon used; counts toward that coupon's `usage_limit`; SET NULL so coupon deletion never frees a consumed slot)
   - customer_id (BIGINT) FK -> users(id) CASCADE
   - order_id (BIGINT) FK -> orders(id) CASCADE
   - created_at/updated_at (TIMESTAMPS)
