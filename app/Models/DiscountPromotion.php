@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Enums\Order\DiscountTypeEnum;
 use Database\Factories\DiscountPromotionFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -76,6 +78,33 @@ final class DiscountPromotion extends Model
     public function heldUsages(): HasMany
     {
         return $this->usages()->held();
+    }
+
+    /**
+     * {@see self::withReservedUsage()} for an already hydrated model.
+     */
+    public function loadReservedUsage(): static
+    {
+        $this->loadCount('heldUsages as reserved_usage_count');
+
+        return $this;
+    }
+
+    /**
+     * Load the reported reserved capacity with one counted query.
+     *
+     * The admin payload's `reserved_usage_count` has exactly one definition —
+     * `heldUsages` — and this is the only place that chooses it, so no
+     * controller can silently report a different scope (the spend cap counts
+     * `active()` rows instead, which also include settled usage).
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function withReservedUsage(Builder $query): Builder
+    {
+        return $query->withCount('heldUsages as reserved_usage_count');
     }
 
     /**

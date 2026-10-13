@@ -32,7 +32,7 @@ final class DiscountPromotionStatusUpdateController extends Controller
         Gate::authorize('update', $discountPromotion);
 
         $promotion = $action->handle($discountPromotion);
-        $promotion->loadCount('heldUsages as reserved_usage_count');
+        $promotion->loadReservedUsage();
 
         return apiResponse()->success(DiscountPromotionData::from($promotion));
     }
