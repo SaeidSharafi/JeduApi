@@ -226,14 +226,4 @@ final class PromotionService
 
         return true;
     }
-
-    /**
-     * Convenience: build context from OrderCreateData then check conditions.
-     */
-    public function checkPromotionConditions(DiscountPromotion $promotion, OrderCreateData $data): bool
-    {
-        $context = $this->buildOrderContext($data);
-
-        return $this->promotionConditionsPass($promotion, $context);
-    }
 }
