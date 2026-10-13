@@ -10,10 +10,13 @@ use App\Models\Order;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-function reservePromotionCapacity(DiscountPromotion $promotion, int $count): void
-{
+function reservePromotionCapacity(
+    DiscountPromotion $promotion,
+    int $count,
+    OrderStatusEnum $status = OrderStatusEnum::PENDING,
+): void {
     for ($i = 0; $i < $count; $i++) {
-        $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING->value]);
+        $order = Order::factory()->create(['status' => $status->value]);
         DiscountPromotionUsage::create([
             'discount_promotion_id' => $promotion->id,
             'customer_id'           => $order->customer_id,
@@ -252,12 +255,15 @@ describe('DiscountPromotionController', function (): void {
             'total_usage_count' => 3,
         ]);
         reservePromotionCapacity($promotion, 2);
+        reservePromotionCapacity($promotion, 1, OrderStatusEnum::COMPLETED);
 
         // Act
         $response = $this->get('/api/v1/admin/discount-promotions');
 
         // Assert
         $response->assertOk();
+        // The completed order's row consumes capacity but is not a hold, so it
+        // must not be reported as reserved-again alongside total_usage_count.
         expect($response->json('data.data.0.reserved_usage_count'))->toBe(2)
             ->and($response->json('data.data.0.total_usage_count'))->toBe(3);
     });
@@ -269,6 +275,7 @@ describe('DiscountPromotionController', function (): void {
             'total_usage_count' => 4,
         ]);
         reservePromotionCapacity($promotion, 1);
+        reservePromotionCapacity($promotion, 1, OrderStatusEnum::COMPLETED);
 
         // Act
         $response = $this->get("/api/v1/admin/discount-promotions/{$promotion->id}");

@@ -67,6 +67,18 @@ final class DiscountPromotion extends Model
     }
 
     /**
+     * Reservation rows whose orders have not settled yet, i.e. capacity that is
+     * held rather than consumed. This is the `reserved_usage_count` admins see
+     * next to the completion counter; see DiscountPromotionUsage::held().
+     *
+     * @return HasMany<DiscountPromotionUsage, $this>
+     */
+    public function heldUsages(): HasMany
+    {
+        return $this->usages()->held();
+    }
+
+    /**
      * The attributes that should be cast.
      *
      * @return array<string, string>
