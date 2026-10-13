@@ -2,10 +2,25 @@
 
 declare(strict_types=1);
 
+use App\Enums\Order\OrderStatusEnum;
 use App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob;
 use App\Models\DiscountPromotion;
+use App\Models\DiscountPromotionUsage;
+use App\Models\Order;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+function reservePromotionCapacity(DiscountPromotion $promotion, int $count): void
+{
+    for ($i = 0; $i < $count; $i++) {
+        $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING->value]);
+        DiscountPromotionUsage::create([
+            'discount_promotion_id' => $promotion->id,
+            'customer_id'           => $order->customer_id,
+            'order_id'              => $order->id,
+        ]);
+    }
+}
 
 describe('DiscountPromotionController', function (): void {
     beforeEach(function (): void {
@@ -228,6 +243,40 @@ describe('DiscountPromotionController', function (): void {
                     'coupons',
                 ],
             ]);
+    });
+
+    test('index exposes reserved capacity alongside completed usage', function (): void {
+        // Arrange
+        $promotion = DiscountPromotion::factory()->create([
+            'usage_limit_total' => 10,
+            'total_usage_count' => 3,
+        ]);
+        reservePromotionCapacity($promotion, 2);
+
+        // Act
+        $response = $this->get('/api/v1/admin/discount-promotions');
+
+        // Assert
+        $response->assertOk();
+        expect($response->json('data.data.0.reserved_usage_count'))->toBe(2)
+            ->and($response->json('data.data.0.total_usage_count'))->toBe(3);
+    });
+
+    test('show exposes reserved capacity alongside completed usage', function (): void {
+        // Arrange
+        $promotion = DiscountPromotion::factory()->create([
+            'usage_limit_total' => 10,
+            'total_usage_count' => 4,
+        ]);
+        reservePromotionCapacity($promotion, 1);
+
+        // Act
+        $response = $this->get("/api/v1/admin/discount-promotions/{$promotion->id}");
+
+        // Assert
+        $response->assertOk();
+        expect($response->json('data.reserved_usage_count'))->toBe(1)
+            ->and($response->json('data.total_usage_count'))->toBe(4);
     });
 
     test('update modifies existing promotion', function (): void {

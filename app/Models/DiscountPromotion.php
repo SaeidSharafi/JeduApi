@@ -56,6 +56,17 @@ final class DiscountPromotion extends Model
     }
 
     /**
+     * Reservation rows holding this promotion's capacity. Counting the active
+     * ones decides the usage caps; see DiscountPromotionUsage::active().
+     *
+     * @return HasMany<DiscountPromotionUsage, $this>
+     */
+    public function usages(): HasMany
+    {
+        return $this->hasMany(DiscountPromotionUsage::class);
+    }
+
+    /**
      * The attributes that should be cast.
      *
      * @return array<string, string>
