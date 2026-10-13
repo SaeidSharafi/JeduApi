@@ -701,7 +701,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - Capacity checks occur at checkout time using `product_delivery_options.capacity` against `enrolled_count`.
   - Discount counters: `discount_promotions.total_usage_count` and `discount_coupons.usage_count` increment once when an order reaches COMPLETED (including admin status flips/creations) and are never decremented. `discount_promotion_usages` rows are deleted only when the order becomes CANCELLED or FAILED; refunds keep the row.
   - Payments: `payments.status` transitions from `PENDING` to `COMPLETED` via gateway verification; re-verification on non-pending payments is rejected.
-  - Orders: `orders.applied_cart_discounts_json` and `order_items.applied_discount_details_json` store immutable snapshots of applied discounts at checkout.
+  - Orders: `orders.applied_cart_discounts_json` and `order_items.applied_discount_details_json` store immutable snapshots of applied discounts at checkout; `orders.reward_intents_json` stores the promotion rewards to grant, executed (idempotently) when the order reaches COMPLETED.
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: INDEX(user_id, reviewable_type, reviewable_id), INDEX(status, is_featured), INDEX(reviewable_type, reviewable_id, status, is_featured), INDEX(reviewable_type, reviewable_id, status)
 
