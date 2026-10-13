@@ -41,12 +41,20 @@ final class OrderCalculationService
             }
 
             $context->evaluating_promotion = $promotion;
+
             // Attribute the coupon code only to the promotion that requires it;
-            // automatic promotions must not inherit it in the audit trail.
-            $context->triggered_by_coupon_code = $promotion->requires_coupon
-                ? $data->applied_coupon_code
-                : null;
+            // automatic promotions must not inherit it in the audit trail. The
+            // handlers and the audit entry read the context while the actions
+            // run, so the field holds THIS promotion's attribution during them...
+            $appliedCouponCode                 = $promotion->requires_coupon ? $data->applied_coupon_code : null;
+            $consumedCouponCode                = $context->triggered_by_coupon_code;
+            $context->triggered_by_coupon_code = $appliedCouponCode;
             $this->applyActions($promotion, $context);
+
+            // ...and afterwards it accumulates. A later automatic promotion must
+            // not erase the code this calculation consumed: the order column and
+            // the coupon usage counter both read the field after the loop.
+            $context->triggered_by_coupon_code = $appliedCouponCode ?? $consumedCouponCode;
 
             if ($promotion->stop_processing_subsequent_rules) {
                 break; // Stop stacking further promotions

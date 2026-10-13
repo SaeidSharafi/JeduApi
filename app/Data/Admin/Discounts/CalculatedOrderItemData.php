@@ -35,13 +35,24 @@ final class CalculatedOrderItemData extends Data
     ) {}
 
     /**
+     * True when a cart markdown may land on this line. Bundle lines (composite
+     * SKUs) and prepayment (deposit) lines are never marked down — this is the
+     * one predicate `applyDiscount()`, `OrderContextData::discountableItems()`
+     * and the context-build threshold snapshot all agree on.
+     */
+    public function isDiscountable(): bool
+    {
+        return ! $this->is_bundle && $this->payment_type !== OrderItemPaymentTypeEnum::PRE_PAYMENT;
+    }
+
+    /**
      * Apply a markdown to this line and return the amount actually applied.
      * Bundle lines and prepayment (deposit) lines are never marked down, so a
      * mis-filtered handler cannot mark a deposit down.
      */
     public function applyDiscount(int $amount): int
     {
-        if ($this->is_bundle || $this->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT) {
+        if (! $this->isDiscountable()) {
             return 0;
         }
 

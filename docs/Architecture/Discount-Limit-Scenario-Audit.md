@@ -481,6 +481,7 @@ tests cover all of it, including the two admin counter-settlement paths.
 | Admin promotion API examples documented a handler shape the API never returns (new) | Fixed | All five `resources/responses/admin/discount/promotion.*.json` examples regenerated through `DiscountPromotionData`: handler keys, real config keys, Jalali dates, the real `message`/`data`/`metadata` envelope, and the `cart_value_tier` / config-free `apply_tiered_percentage_off` pair | `54c15c1c` |
 | Digest described the tier selection as an array payload | Fixed | `DIGEST_CORE_LOGIC.md` now names `TierData` | `dbecfaf6` |
 | Admin metadata called the wallet-credit action a top-up of the withdrawable balance | Fixed | Name/description now read as a non-withdrawable bonus credit in both locales, and the published metadata examples follow | `111ff514` |
+| Stacked promotions could erase the coupon code the order consumed (new, found reviewing this branch) | Fixed | `OrderCalculationService` accumulates `OrderContextData::$triggered_by_coupon_code`: per-promotion while a promotion's actions run, sticky after them. A later automatic promotion therefore neither inherits the code in its audit entry nor erases it, so the cart no longer reports a discount as "not applied" and `orders.applied_coupon_code` — which `IncrementDiscountUsageCountsAction` reads to increment the coupon's `usage_count` — keeps the code | `OrderCalculationService` + its test, this branch |
 
 Also resolved on this branch: `refactor`/hygiene items split the single "count reservations vs cap"
 comparison into `PromotionCapacity::exhausted()` (`0ea3b5d4`), moved the `reserved_usage_count`
@@ -503,6 +504,7 @@ Spec amendments made from this review (issue bodies, 2026-10-14):
 | --- | --- |
 | **I5 — `product_specific` promotions accept usage limits that are never enforced** | **Deferred by decision (2026-10-14).** The earlier ruling was to reject `usage_limit_total`/`usage_limit_per_customer` for `product_specific` in `DiscountPromotionCreateData` the way coupons already are; that was re-confirmed as *acceptable for now*, so the fields stay accepted and stay unenforced. Reverting to the ruling is a one-line validation change plus a test. |
 | **I7 — refunds keep the slot; partial refunds count as consumed** | Decided, no action: a refund never restores quota (ADR-0003). |
+| **I9 — a coupon-worded error for a promotion with no coupon** | Decided, no action: automatic promotions no longer raise a coupon error at all (round 1), and the remaining coupon-worded messages are accurate for the case that still raises them. |
 | **I10 — admin order creation enforces the same per-customer limit** | Decided, no action (tested). |
 | **I14 — the "no customer" guard is dead code** | Informational; kept as a defensive guard. |
 

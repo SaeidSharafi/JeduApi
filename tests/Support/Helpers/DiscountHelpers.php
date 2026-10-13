@@ -99,8 +99,7 @@ if (! function_exists('discountOrderContext')) {
             'subtotal_all_items'                    => $baseSubtotalAllItems ?? $lines->sum('total'),
             'effective_subtotal_all_items'          => $lines->sum('total'),
             'effective_subtotal_discountable_items' => $lines
-                ->reject(fn (CalculatedOrderItemData $item): bool => $item->is_bundle
-                    || $item->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT)
+                ->filter(fn (CalculatedOrderItemData $item): bool => $item->isDiscountable())
                 ->sum('total'),
         ]);
     }

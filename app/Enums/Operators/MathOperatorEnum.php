@@ -27,7 +27,7 @@ enum MathOperatorEnum: string
     public static function fromAlias(string $value): ?self
     {
         return self::tryFrom($value)
-            ?? Arr::first(self::cases(), fn (self $case): bool => mb_strtolower($case->name) === $value);
+            ?? Arr::first(self::cases(), fn (self $case): bool => in_array($value, self::spellings($case), true));
     }
 
     /**
@@ -38,9 +38,19 @@ enum MathOperatorEnum: string
     public static function acceptedValues(): array
     {
         return collect(self::cases())
-            ->flatMap(fn (self $case): array => [$case->value, mb_strtolower($case->name)])
+            ->flatMap(fn (self $case): array => self::spellings($case))
             ->unique()
             ->values()
             ->all();
+    }
+
+    /**
+     * One case's two spellings, so resolution and validation cannot drift apart.
+     *
+     * @return list<string>
+     */
+    private static function spellings(self $case): array
+    {
+        return [$case->value, mb_strtolower($case->name)];
     }
 }

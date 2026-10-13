@@ -529,6 +529,54 @@ test('it attributes the coupon code only to the coupon-required promotion in the
     expect($context->triggered_by_coupon_code)->toBe('SAVE20');
 });
 
+test('a later automatic promotion cannot erase the code an earlier one consumed', function (): void {
+    $user           = User::factory()->create();
+    $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+    // The coupon-required promotion runs FIRST, so the automatic one is the
+    // last to touch the context.
+    $couponPromotion = DiscountPromotion::factory()->make([
+        'id'              => 300,
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'requires_coupon' => true,
+        'priority'        => 1,
+    ]);
+    $couponPromotion->setRelation('rules', collect([
+        ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 20]],
+    ]));
+
+    $automaticPromotion = DiscountPromotion::factory()->make([
+        'id'              => 301,
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'requires_coupon' => false,
+        'priority'        => 2,
+    ]);
+    $automaticPromotion->setRelation('rules', collect([
+        ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 10]],
+    ]));
+
+    mockPromotionFinderReturning([$couponPromotion, $automaticPromotion]);
+
+    $data = new OrderCreateData(
+        status: App\Enums\Order\OrderStatusEnum::PENDING->value,
+        customer_id: $user->id,
+        items: [new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')],
+        applied_coupon_code: 'SAVE20',
+    );
+
+    $context     = app(OrderCalculationService::class)->calculate($data);
+    $byPromotion = collect($context->applied_cart_discounts)->keyBy('promotion_id');
+
+    expect($context->applied_cart_discounts)->toHaveCount(2)
+        ->and($byPromotion[$couponPromotion->id]['coupon_code'])->toBe('SAVE20')
+        // The automatic promotion never inherits the code...
+        ->and($byPromotion[$automaticPromotion->id]['coupon_code'])->toBeNull()
+        // ...and it must not erase it either: CreateOrderAction persists this
+        // field into orders.applied_coupon_code, and the coupon usage counter
+        // resolves the coupon from that same column.
+        ->and($context->triggered_by_coupon_code)->toBe('SAVE20');
+});
+
 test('it does not crash or grant credit when a wallet-credit promotion is applied to a guest cart', function (): void {
     // Arrange
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);

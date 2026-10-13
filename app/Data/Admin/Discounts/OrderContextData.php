@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Discounts;
 
-use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -55,6 +54,15 @@ final class OrderContextData extends Data
          * It allows action handlers to access details like the promotion's name for the audit trail.
          */
         public ?DiscountPromotion $evaluating_promotion = null,
+
+        /**
+         * The applied coupon code this calculation consumed, or null when no
+         * coupon-required promotion used it. It accumulates across stacked
+         * promotions — while a promotion's actions run it holds that
+         * promotion's own attribution, so an automatic promotion never inherits
+         * the code in the audit trail, but a later automatic promotion cannot
+         * erase a code an earlier promotion consumed.
+         */
         public ?string $triggered_by_coupon_code = null,
         public ?int $order_id = null,
 
@@ -175,8 +183,7 @@ final class OrderContextData extends Data
     public function discountableItems(): Collection
     {
         return $this->items->reject(
-            fn (CalculatedOrderItemData $item): bool => $item->is_bundle
-                || $item->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT
+            fn (CalculatedOrderItemData $item): bool => ! $item->isDiscountable()
         )->values();
     }
 

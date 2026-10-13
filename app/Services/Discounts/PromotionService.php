@@ -184,9 +184,7 @@ final class PromotionService
 
             // The threshold snapshot: the same line set `discountableItems()`
             // exposes to every markdown action, at its product-effective worth.
-            if (! $calculatedItem->is_bundle
-                && $calculatedItem->payment_type !== OrderItemPaymentTypeEnum::PRE_PAYMENT
-            ) {
+            if ($calculatedItem->isDiscountable()) {
                 $effective_subtotal_discountable_items += $calculatedItem->total;
             }
         }

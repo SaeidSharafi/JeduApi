@@ -454,8 +454,9 @@ Rules that bit this review, worth keeping:
 
 ## Implementation log (2026-10-14)
 
-Every item below landed on `refactor/discount-system`, one commit per concern, `vendor/bin/sail bin
-pint --dirty` clean and the focused suites green after each.
+Every item below landed on `refactor/discount-system`, grouped by concern (the test-suite hygiene
+items share one commit), `vendor/bin/sail bin pint --dirty` clean and the focused suites green after
+each.
 
 | # | Outcome | Commit |
 | --- | --- | --- |
@@ -477,7 +478,7 @@ pint --dirty` clean and the focused suites green after each.
 | 15 | `DiscountPromotion::withReservedUsage()` scope + `loadReservedUsage()`; no controller names `heldUsages` any more | `abea6918` |
 | 16 | The test-only constructor default is gone; tests inject `WeightedApportionment` | `d7422a6c` |
 | 17 | Wallet-credit label renamed in both locales (+ published metadata examples); the deactivation UX is the item-4 notice | `111ff514`, `fb84423d` |
-| 18 | **New finding, not in the original plan:** the operator value `DiscountMetadataService::getOperators()` publishes (`greater_than_or_equal`) could not be cast by `CartValueConditionConfigData`, so a promotion configured from the published metadata threw `CannotCastEnum` on every cart it reached. `MathOperatorEnum::fromAlias()` + `MathOperatorCast` accept both spellings, and validation accepts both | `bad8b1ec` |
+| 18 | **New finding, approved with the product owner during implementation:** the operator value `DiscountMetadataService::getOperators()` publishes (`greater_than_or_equal`) could not be cast by `CartValueConditionConfigData`, so a promotion configured from the published metadata threw `CannotCastEnum` on every cart it reached. `MathOperatorEnum::fromAlias()` + `MathOperatorCast` accept both spellings, and validation accepts both | `bad8b1ec` |
 
 ### Deviations from this plan, and why
 
@@ -505,3 +506,21 @@ pint --dirty` clean and the focused suites green after each.
   behaviour (all full-payment lines) or mirrored `discountableTotal()`. The owner chose the
   discountable set, so a bundle-heavy cart can now fall below a threshold it reached before; that
   is the "never promise a markdown the engine cannot keep" rule from #149, applied to thresholds.
+
+### Found while reviewing this work
+
+- **Stacked promotions erased the coupon code the order consumed.** `OrderCalculationService`
+  assigned `OrderContextData::$triggered_by_coupon_code` inside the promotion loop, so a later
+  *automatic* promotion reset it to null. Two consequences, one of them pre-existing and worse than
+  the notice this branch added: `orders.applied_coupon_code` was written as null, so
+  `IncrementDiscountUsageCountsAction` — which resolves the coupon to increment from that column —
+  never moved the coupon's `usage_count`; and `CartData::$applied_coupon_error` reported "not
+  applied" while the discount *was* applied. The field now accumulates: it holds one promotion's
+  attribution while that promotion's actions run (so handlers and the audit entry stay correct) and
+  keeps the last consumed code afterwards. Covered by a test with the coupon promotion first and
+  an automatic promotion after it.
+- Review also flagged that the discountable-line predicate had grown a third and fourth copy. It is
+  now `CalculatedOrderItemData::isDiscountable()`, shared by `applyDiscount()`,
+  `OrderContextData::discountableItems()`, the context-build snapshot and the test helper.
+- Item 18 was an unrequested finding, but the fix was put to the product owner during
+  implementation and approved (accept both operator spellings rather than change the metadata).
