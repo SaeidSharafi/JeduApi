@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Actions\Admin\Discounts\ResolvePerCustomerPromotionEligibilityAction;
 use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
 use App\Contracts\CartIdentifier;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
@@ -39,6 +40,7 @@ final readonly class CartService
         private PromotionService $promotionService,
         private ProductPriceService $productPriceService,
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
+        private ResolvePerCustomerPromotionEligibilityAction $perCustomerEligibility,
     ) {}
 
     public function findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart
@@ -198,6 +200,18 @@ final readonly class CartService
             throw ValidationException::withMessages([
                 'coupon_code' => __('shop.cart.errors.coupon_does_not_exist'),
             ]);
+        }
+
+        // The customer's per-customer allowance is checked here, before the code
+        // is stored, so the cart never displays a discount checkout will refuse.
+        if ($userId !== null) {
+            $blockingMessage = $this->perCustomerEligibility->blockingMessage($promotion, $userId);
+
+            if ($blockingMessage !== null) {
+                throw ValidationException::withMessages([
+                    'coupon_code' => $blockingMessage,
+                ]);
+            }
         }
 
         // Update cart with coupon code

@@ -69,9 +69,11 @@ final readonly class CreateOrderAction
             $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
             $context = $this->orderCalculationService->calculate($data);
 
-            // Enforce the per-customer promotion limit before anything else is
-            // reserved/created in this transaction (locks each applied promotion row).
-            $this->validatePromotionPerCustomerLimit->handle($context);
+            // Enforce the per-customer promotion limit for an explicitly supplied
+            // coupon before anything else is reserved/created in this transaction
+            // (locks the promotion row). Exhausted automatic promotions never get
+            // here: the calculation has already dropped them.
+            $this->validatePromotionPerCustomerLimit->handle($data->applied_coupon_code, $context->customer?->id);
 
             $originalInputItems = collect($data->items)->keyBy('product_delivery_option_id');
             $orderItemsData     = new Collection();

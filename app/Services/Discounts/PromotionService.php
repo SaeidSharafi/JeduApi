@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
+use App\Actions\Admin\Discounts\ResolvePerCustomerPromotionEligibilityAction;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Discounts\OrderContextData;
@@ -25,6 +26,7 @@ final class PromotionService
     public function __construct(
         private DiscountHandlerRegistry $handlerRegistry,
         private ProductPriceService $priceService,
+        private ResolvePerCustomerPromotionEligibilityAction $perCustomerEligibility,
     ) {}
 
     // ──────────────────────────────────────────────
@@ -34,8 +36,12 @@ final class PromotionService
     /**
      * Find a single active promotion by its coupon code.
      * Used by CartService to locate a promotion when a coupon is entered.
+     *
+     * When $lockForUpdate is true, this must run inside a DB transaction: the
+     * promotion row is locked so concurrent checkouts serialize their
+     * per-customer limit checks.
      */
-    public function findPromotionByCoupon(string $couponCode): ?DiscountPromotion
+    public function findPromotionByCoupon(string $couponCode, bool $lockForUpdate = false): ?DiscountPromotion
     {
         return DiscountPromotion::query()
             ->where('is_active', true)
@@ -57,6 +63,7 @@ final class PromotionService
                         ->orWhereColumn('usage_count', '<', 'usage_limit');
                 })
             )
+            ->when($lockForUpdate, fn (Builder $query): Builder => $query->lockForUpdate())
             ->with('rules')
             ->first();
     }
@@ -67,11 +74,14 @@ final class PromotionService
      *
      * A promotion with requires_coupon = true needs a matching coupon to activate.
      * A promotion with requires_coupon = false is always evaluated subject to its conditions.
+     * A promotion whose per-customer allowance the customer has used up is dropped
+     * entirely (never an error): the sale proceeds without that discount.
      *
      * @return Collection<int, DiscountPromotion>
      */
     public function findAllApplicableCartPromotions(
         ?string $appliedCouponCode = null,
+        ?int $customerId = null,
     ): Collection {
         $query = DiscountPromotion::query()
             ->where('type', DiscountTypeEnum::CART_CHECKOUT)
@@ -103,7 +113,7 @@ final class PromotionService
             ->with('rules')
             ->orderBy('priority', 'asc');
 
-        return $query->get();
+        return $this->perCustomerEligibility->filterExhausted($query->get(), $customerId);
     }
 
     // ──────────────────────────────────────────────

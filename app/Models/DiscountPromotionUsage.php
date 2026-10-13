@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Order\OrderStatusEnum;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -55,5 +58,22 @@ final class DiscountPromotionUsage extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /**
+     * Rows that still hold the customer's slot: their order is neither
+     * cancelled nor failed. Pending/processing reserve, completed/refunded
+     * consume.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function active(Builder $query): Builder
+    {
+        return $query->whereHas('order', fn (Builder $orderQuery): Builder => $orderQuery->whereNotIn('status', [
+            OrderStatusEnum::CANCELLED->value,
+            OrderStatusEnum::FAILED->value,
+        ]));
     }
 }

@@ -27,8 +27,11 @@ final class OrderCalculationService
         $context = $this->promotionService->buildOrderContext($data);
 
         // 2. Find all applicable CART_CHECKOUT promotions (stacked by priority).
+        // The customer id lets per-customer-exhausted promotions drop out so that
+        // cart preview and checkout always agree on the discount.
         $promotions = $this->promotionService->findAllApplicableCartPromotions(
             $data->applied_coupon_code,
+            $data->customer_id,
         );
 
         // 3. Apply each matching promotion in priority order, respecting stop_processing_subsequent_rules.

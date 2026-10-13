@@ -15,6 +15,7 @@ use App\Models\Course;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
+use App\Models\DiscountPromotionUsage;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
@@ -83,7 +84,7 @@ function createLimitPromotion(string $name, ?int $perCustomerLimit, array $codes
         'starts_at'                        => now()->subDay(),
         'ends_at'                          => now()->addDay(),
         'stop_processing_subsequent_rules' => false,
-        'requires_coupon'                  => true,
+        'requires_coupon'                  => $codes !== [],
         'usage_limit_per_customer'         => $perCustomerLimit,
     ]);
     DiscountPromotionRule::create([
@@ -102,13 +103,19 @@ function createLimitPromotion(string $name, ?int $perCustomerLimit, array $codes
     return [$promotion, $coupons];
 }
 
-function addItemAndApplyCoupon(ProductDeliveryOption $option, string $couponCode): void
+function applyCoupon(ProductDeliveryOption $option, string $couponCode): Illuminate\Testing\TestResponse
 {
     postJson(route('api.v1.shop.cart.items.store'), [
         'product_delivery_option_uuid' => $option->uuid,
         'quantity'                     => 1,
     ])->assertOk();
-    postJson(route('api.v1.shop.cart.coupon.apply'), ['coupon_code' => $couponCode])->assertOk();
+
+    return postJson(route('api.v1.shop.cart.coupon.apply'), ['coupon_code' => $couponCode]);
+}
+
+function addItemAndApplyCoupon(ProductDeliveryOption $option, string $couponCode): void
+{
+    applyCoupon($option, $couponCode)->assertOk();
 }
 
 function checkoutWithWallet(): Illuminate\Testing\TestResponse
@@ -147,11 +154,19 @@ describe('per-customer coupon limit — shop checkout', function (): void {
             'customer_id'           => $customer->id,
         ]);
 
-        // Second checkout with the same coupon is rejected at the coupon check.
-        addItemAndApplyCoupon($secondOption, $coupon->code);
-        $response = checkoutWithWallet()->assertStatus(422);
-        $response->assertJsonValidationErrors(['coupon']);
-        expect($response->json('errors.coupon.0'))->toBe(__('messages.checkout.coupon_usage_limit_reached'));
+        // The code is refused in the cart, so no unusable discount is ever shown.
+        $response = applyCoupon($secondOption, $coupon->code);
+        $response->assertStatus(422)->assertJsonValidationErrors(['coupon_code']);
+        expect($response->json('errors.coupon_code.0'))->toBe(__('messages.checkout.coupon_usage_limit_reached'));
+
+        // The sale itself is not blocked: without the code the order completes at full price.
+        $orderId = checkoutWithWallet()->assertCreated()->json('data.order.id');
+        assertDatabaseHas('orders', [
+            'id'                  => $orderId,
+            'discount_amount'     => 0,
+            'applied_coupon_code' => null,
+        ]);
+        assertDatabaseCount('discount_promotion_usages', 1);
     });
 
     test('a pending order holds the slot and the rejection names the blocking order', function (): void {
@@ -172,11 +187,10 @@ describe('per-customer coupon limit — shop checkout', function (): void {
             'customer_id'           => $customer->id,
         ]);
 
-        // Second checkout is rejected and the message names the pending order.
-        addItemAndApplyCoupon($option, $coupon->code);
-        $response = checkoutPendingWithGateway()->assertStatus(422);
-        $response->assertJsonValidationErrors(['coupon']);
-        expect($response->json('errors.coupon.0'))->toContain($pendingOrderIncrementId);
+        // The code is refused in the cart and the message names the pending order.
+        $response = applyCoupon($option, $coupon->code);
+        $response->assertStatus(422)->assertJsonValidationErrors(['coupon_code']);
+        expect($response->json('errors.coupon_code.0'))->toContain($pendingOrderIncrementId);
     });
 
     test('cancelling a pending order releases the slot', function (): void {
@@ -237,12 +251,11 @@ describe('per-customer coupon limit — shop checkout', function (): void {
             'customer_id'           => $customer->id,
         ]);
 
-        // A second checkout with the same coupon is still rejected.
+        // A second attempt to use the same coupon is rejected in the cart.
         $this->customer($customer);
-        addItemAndApplyCoupon($option, $coupon->code);
-        $response = checkoutWithWallet()->assertStatus(422);
-        $response->assertJsonValidationErrors(['coupon']);
-        expect($response->json('errors.coupon.0'))->toBe(__('messages.checkout.coupon_usage_limit_reached'));
+        $response = applyCoupon($option, $coupon->code);
+        $response->assertStatus(422)->assertJsonValidationErrors(['coupon_code']);
+        expect($response->json('errors.coupon_code.0'))->toBe(__('messages.checkout.coupon_usage_limit_reached'));
     });
 
     test('the limit pools across all coupon codes of a promotion', function (): void {
@@ -261,10 +274,9 @@ describe('per-customer coupon limit — shop checkout', function (): void {
         checkoutWithWallet()->assertCreated();
 
         // Coupon B belongs to the same promotion → the limit still applies.
-        addItemAndApplyCoupon($secondOption, $couponB->code);
-        $response = checkoutWithWallet()->assertStatus(422);
-        $response->assertJsonValidationErrors(['coupon']);
-        expect($response->json('errors.coupon.0'))->toBe(__('messages.checkout.coupon_usage_limit_reached'));
+        $response = applyCoupon($secondOption, $couponB->code);
+        $response->assertStatus(422)->assertJsonValidationErrors(['coupon_code']);
+        expect($response->json('errors.coupon_code.0'))->toBe(__('messages.checkout.coupon_usage_limit_reached'));
 
         assertDatabaseCount('discount_promotion_usages', 1);
     });
@@ -286,6 +298,103 @@ describe('per-customer coupon limit — shop checkout', function (): void {
         checkoutWithWallet()->assertCreated();
 
         assertDatabaseCount('discount_promotion_usages', 2);
+    });
+
+    test('an exhausted automatic promotion is skipped instead of blocking the sale', function (): void {
+        $firstOption  = createLimitDeliveryOption();
+        $secondOption = createLimitDeliveryOption();
+        [$promotion]  = createLimitPromotion('Automatic Skip', 1, []);
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        // No coupon: the automatic promotion applies and consumes the slot.
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $firstOption->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+        checkoutWithWallet()->assertCreated();
+
+        assertDatabaseHas('discount_promotion_usages', [
+            'discount_promotion_id' => $promotion->id,
+            'customer_id'           => $customer->id,
+        ]);
+
+        // The allowance is spent: the promotion drops out, the sale still completes.
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $secondOption->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+        $orderId = checkoutWithWallet()->assertCreated()->json('data.order.id');
+
+        assertDatabaseHas('orders', [
+            'id'                          => $orderId,
+            'discount_amount'             => 0,
+            'applied_coupon_code'         => null,
+            'applied_cart_discounts_json' => null,
+        ]);
+        assertDatabaseCount('discount_promotion_usages', 1);
+    });
+
+    test('an exhausted automatic promotion does not block an unrelated coupon', function (): void {
+        $firstOption  = createLimitDeliveryOption();
+        $secondOption = createLimitDeliveryOption();
+        createLimitPromotion('Automatic Blocked', 1, []);
+        createLimitPromotion('Unrelated Coupon', null, ['STILLOK']);
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $firstOption->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+        checkoutWithWallet()->assertCreated();
+
+        // The coupon promotion is unaffected by the spent automatic allowance.
+        $response = applyCoupon($secondOption, 'STILLOK');
+        $response->assertOk();
+        expect($response->json('data.discount_amount'))->toBeGreaterThan(0);
+
+        $orderId = checkoutWithWallet()->assertCreated()->json('data.order.id');
+
+        assertDatabaseHas('orders', [
+            'id'                  => $orderId,
+            'applied_coupon_code' => 'STILLOK',
+        ]);
+    });
+
+    test('a coupon already on the cart is still rejected at checkout once the slot is gone', function (): void {
+        $option                = createLimitDeliveryOption();
+        [$promotion, $coupons] = createLimitPromotion('Race Safety Net', 1, ['RACEIT']);
+        $coupon                = $coupons->first();
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        // The code is accepted while the allowance is still free.
+        applyCoupon($option, $coupon->code)->assertOk();
+
+        // Another order consumes the slot before this cart is checked out.
+        $blockingOrder = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'status'      => OrderStatusEnum::PENDING->value,
+        ]);
+        DiscountPromotionUsage::create([
+            'discount_promotion_id' => $promotion->id,
+            'customer_id'           => $customer->id,
+            'order_id'              => $blockingOrder->id,
+        ]);
+
+        // Checkout still fails loudly instead of silently dropping the requested code.
+        $response = checkoutWithWallet()->assertStatus(422);
+        $response->assertJsonValidationErrors(['coupon']);
+        expect($response->json('errors.coupon.0'))->toBe(__('messages.checkout.coupon_usage_pending_order_blocked', [
+            'order_id' => $blockingOrder->increment_id,
+        ]));
     });
 });
 

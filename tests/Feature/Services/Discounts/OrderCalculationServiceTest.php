@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actions\Admin\Discounts\ResolvePerCustomerPromotionEligibilityAction;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
@@ -27,6 +28,7 @@ function mockPromotionFinderReturning(mixed $promotions): void
     $mock = Mockery::mock(PromotionService::class, [
         app(DiscountHandlerRegistry::class),
         app(ProductPriceService::class),
+        app(ResolvePerCustomerPromotionEligibilityAction::class),
     ])->makePartial();
 
     $resolvedPromotions = match (true) {
