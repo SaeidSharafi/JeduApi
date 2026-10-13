@@ -6,6 +6,7 @@ namespace App\Services\Discounts;
 
 use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Cache\CacheStore;
+use App\Contracts\Discounts\Cart\LineMarkdownActionContract;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Contracts\Discounts\ProductDiscountActionContract;
@@ -141,6 +142,15 @@ final class DiscountHandlerRegistry
     public function getCartActionHandler(string $key): ?string
     {
         return $this->cartActionHandlers[$key] ?? null;
+    }
+
+    /**
+     * Whether a registered cart action may only reduce line totals, and therefore
+     * can do nothing on a cart whose every line is a deposit or a bundle.
+     */
+    public function isLineMarkdownAction(?string $handlerClass): bool
+    {
+        return $handlerClass !== null && is_subclass_of($handlerClass, LineMarkdownActionContract::class);
     }
 
     public function getProductConditionHandler(string $key): ?string

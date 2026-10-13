@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Services\Discounts\Cart\Actions;
 
 use App\Attributes\DiscountHandlerKey;
+use App\Contracts\Discounts\Cart\LineMarkdownActionContract;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Services\Discounts\Configs\ApplyTieredPercentageOffData;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('apply_tiered_percentage_off')]
-final class ApplyTieredPercentageOffAction implements DiscountActionContract
+final class ApplyTieredPercentageOffAction implements DiscountActionContract, LineMarkdownActionContract
 {
     public static function getConfigClass(): string
     {
@@ -33,18 +34,10 @@ final class ApplyTieredPercentageOffAction implements DiscountActionContract
             return;
         }
 
-        foreach ($context->items as $item) {
-            // Bundle lines keep their reviewed selling price — they never
-            // participate in tiered cart promotions.
-            if ($item->is_bundle) {
-                continue;
-            }
-
+        foreach ($context->discountableItems() as $item) {
             $itemDiscount = (int) ($item->total * ($applicablePercentage / 100));
-            $itemDiscount = min($itemDiscount, $item->total);
 
-            $item->discount_amount += $itemDiscount;
-            $item->total -= $itemDiscount;
+            $item->applyDiscount($itemDiscount);
         }
     }
 }

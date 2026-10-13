@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Discounts;
 
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -81,5 +82,26 @@ final class OrderContextData extends Data
     public function calculateTotalDiscount(): int
     {
         return $this->items->sum('discount_amount');
+    }
+
+    /**
+     * Every line a cart promotion may mark down: no bundles, no deposits.
+     *
+     * @return Collection<int, CalculatedOrderItemData>
+     */
+    public function discountableItems(): Collection
+    {
+        return $this->items->reject(
+            fn (CalculatedOrderItemData $item): bool => $item->is_bundle
+                || $item->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT
+        )->values();
+    }
+
+    /**
+     * Product-discount-applied current worth of those lines.
+     */
+    public function discountableTotal(): int
+    {
+        return $this->discountableItems()->sum('total');
     }
 }

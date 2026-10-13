@@ -31,6 +31,7 @@ return [
             'multiple_quantity_not_allowed' => 'You cannot order more than one of this product.',
             'pre_payment_not_available'     => 'Pre-payment option is not available for this product.',
             'coupon_does_not_exist'         => 'The entered discount coupon is not valid.',
+            'coupon_nothing_discountable'   => 'This coupon cannot be applied because none of the items in your cart can be discounted.',
         ],
     ],
 ];

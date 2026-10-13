@@ -123,4 +123,57 @@ describe('ApplyFixedAmountOffAction', function (): void {
         expect($context->items[0]->discount_amount)->toBe(0)
             ->and($context->items[0]->total)->toBe(2000);
     });
+
+    test('it never marks down a prepayment line and gives the whole amount to the full-payment line', function (): void {
+        $action = new ApplyFixedAmountOffAction();
+        $config = new ApplyFixedAmountOffData(amount: 3000);
+
+        $prepayment = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 2, payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT,
+            price: 50000, total: 20000
+        );
+        $fullPayment = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
+            price: 10000, total: 10000
+        );
+
+        $context = OrderContextData::from([
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$prepayment, $fullPayment],
+            'subtotal_full_payment_items' => 10000,
+            'subtotal_all_items'          => 110000,
+        ]);
+
+        $action->apply($context, $config);
+
+        expect($context->items[0]->discount_amount)->toBe(0)
+            ->and($context->items[0]->total)->toBe(20000)
+            ->and($context->items[1]->discount_amount)->toBe(3000)
+            ->and($context->items[1]->total)->toBe(7000);
+    });
+
+    test('it applies nothing on a deposit-only cart', function (): void {
+        $action = new ApplyFixedAmountOffAction();
+        $config = new ApplyFixedAmountOffData(amount: 3000);
+
+        $prepayment = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 2, payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT,
+            price: 50000, total: 20000
+        );
+
+        $context = OrderContextData::from([
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$prepayment],
+            'subtotal_full_payment_items' => 0,
+            'subtotal_all_items'          => 100000,
+        ]);
+
+        $action->apply($context, $config);
+
+        expect($context->items[0]->discount_amount)->toBe(0)
+            ->and($context->items[0]->total)->toBe(20000);
+    });
 });
