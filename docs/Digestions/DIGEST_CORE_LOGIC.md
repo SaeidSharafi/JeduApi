@@ -705,7 +705,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### Config Data Classes (`app/Services/Discounts/Configs/`)
 - Per-handler configuration DTOs (`CartValueConditionConfigData`, `CartValueTierConditionConfigData`, `DeliveryMethodIsData`, `GiftProductData`, `ProductCategoryConditionConfigData`, `SpecificProductsInCartData`, `TierData`, `UserNeverPurchasedCategoryData`, etc.) define the typed `rules[].config` payload validated against each handler's schema.
-- `CartValueConditionConfigData` uses `measure_whole_commitment` (renamed from the former prepayment-inclusion flag) — a measurement-only choice that never changes what gets discounted. `CartValueTierConditionConfigData` carries `tiers` of `TierData` (`min_amount`, `percentage`). `ApplyTieredPercentageOffData` is now config-free (empty rules).
+- `CartValueConditionConfigData` uses `measure_whole_commitment` (renamed from the former prepayment-inclusion flag) — a measurement-only choice that never changes what gets discounted. Its `operator` accepts both the stored symbol (`>=`) and the snake_case name the admin metadata endpoint publishes (`greater_than_or_equal`), through `MathOperatorEnum::fromAlias()`; `MathOperatorEnum::acceptedValues()` is the one list the config validation and the `MathOperatorCast` both use, because `rules[].configuration` is persisted verbatim while `DiscountMetadataService::getOperators()` emits the names. `CartValueTierConditionConfigData` carries `tiers` of `TierData` (`min_amount`, `percentage`). `ApplyTieredPercentageOffData` is now config-free (empty rules).
 
 ### ProductPriceService (`app/Services/ProductPriceService.php`)
 - **Purpose:** Centralized product pricing logic with hierarchy support and caching

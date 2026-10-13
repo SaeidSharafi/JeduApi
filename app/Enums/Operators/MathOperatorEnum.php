@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Enums\Operators;
 
 use App\Traits\AdvanceEnum;
+use Illuminate\Support\Arr;
 
 enum MathOperatorEnum: string
 {
@@ -16,4 +17,30 @@ enum MathOperatorEnum: string
     case LESS_THAN_OR_EQUAL    = '<=';
     case GREATER_THAN_OR_EQUAL = '>=';
     case NOT_EQUAL             = '<>';
+
+    /**
+     * The admin metadata endpoint publishes operators under their snake_case
+     * case name (`greater_than_or_equal`) while a stored rule configuration
+     * holds the symbol (`>=`), because `rules[].configuration` is persisted
+     * verbatim. Both spellings therefore have to resolve to the same case.
+     */
+    public static function fromAlias(string $value): ?self
+    {
+        return self::tryFrom($value)
+            ?? Arr::first(self::cases(), fn (self $case): bool => mb_strtolower($case->name) === $value);
+    }
+
+    /**
+     * Every spelling a stored configuration or the metadata endpoint can send.
+     *
+     * @return list<string>
+     */
+    public static function acceptedValues(): array
+    {
+        return collect(self::cases())
+            ->flatMap(fn (self $case): array => [$case->value, mb_strtolower($case->name)])
+            ->unique()
+            ->values()
+            ->all();
+    }
 }

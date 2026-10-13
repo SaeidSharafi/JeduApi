@@ -510,4 +510,35 @@ describe('CheckDiscountConfigurationRule', function (): void {
 
         expect(fn () => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
     });
+
+    it('accepts the operator spelling the admin metadata endpoint publishes', function (): void {
+        $this->rule->setData(['type' => 'cart_checkout']);
+
+        $this->mockService->shouldReceive('getConfigurationClass')
+            ->with('cart_value_over', 'condition', DiscountTypeEnum::CART_CHECKOUT)
+            ->andReturn(CartValueConditionConfigData::class);
+
+        $this->mockService->shouldReceive('getConfigurationClass')
+            ->with('apply_percentage_off', 'action', DiscountTypeEnum::CART_CHECKOUT)
+            ->andReturn(ApplyPercentageDiscountConfigData::class);
+
+        $fail = function ($message): void {
+            throw new Exception($message);
+        };
+
+        $rules = [
+            [
+                'type'          => 'condition',
+                'handler'       => 'cart_value_over',
+                'configuration' => ['operator' => 'greater_than_or_equal', 'value' => 1000, 'measure_whole_commitment' => false],
+            ],
+            [
+                'type'          => 'action',
+                'handler'       => 'apply_percentage_off',
+                'configuration' => ['percentage' => 15],
+            ],
+        ];
+
+        expect(fn () => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
+    });
 });

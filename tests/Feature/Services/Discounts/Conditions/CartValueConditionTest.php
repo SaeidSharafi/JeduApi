@@ -119,3 +119,25 @@ it('returns false if configuration is not the correct type', function (): void {
 
     expect($handler->passes($context, $wrongConfig))->toBeFalse();
 });
+
+it('evaluates a stored rule whose operator is the metadata name', function (): void {
+    // PromotionService builds the config DTO from the persisted
+    // rules[].configuration array. The admin metadata endpoint publishes
+    // operators as `greater_than_or_equal`, so that spelling must survive the
+    // cast as well as the symbol the factory writes.
+    $config = CartValueConditionConfigData::from([
+        'operator'                 => 'greater_than_or_equal',
+        'value'                    => 10000,
+        'measure_whole_commitment' => false,
+    ]);
+    $context = OrderContextData::from([
+        'customer'                     => User::factory()->make(),
+        'items'                        => [],
+        'subtotal_full_payment_items'  => 15000,
+        'subtotal_all_items'           => 20000,
+        'effective_subtotal_all_items' => 15000,
+    ]);
+
+    expect($config->operator)->toBe(MathOperatorEnum::GREATER_THAN_OR_EQUAL)
+        ->and((new CartValueCondition())->passes($context, $config))->toBeTrue();
+});

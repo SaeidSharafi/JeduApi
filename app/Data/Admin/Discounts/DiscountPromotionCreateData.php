@@ -102,7 +102,7 @@ final class DiscountPromotionCreateData extends Data
             ],
             'type' => [
                 'description' => 'The type of discount.',
-                'example'     => 'order',
+                'example'     => DiscountTypeEnum::CART_CHECKOUT->value,
             ],
             'description' => [
                 'description' => 'Description of the promotion.',
@@ -139,7 +139,16 @@ final class DiscountPromotionCreateData extends Data
             'rules' => [
                 'description' => 'Array of discount rules.',
                 'example'     => [
-                    ['type' => 'condition', 'handler' => 'min_order_amount', 'configuration' => ['amount' => 10000]],
+                    [
+                        'type'          => 'condition',
+                        'handler'       => 'cart_value_over',
+                        'configuration' => ['operator' => 'greater_than_or_equal', 'value' => 50000, 'measure_whole_commitment' => false],
+                    ],
+                    [
+                        'type'          => 'action',
+                        'handler'       => 'apply_percentage_off',
+                        'configuration' => ['percentage' => 15],
+                    ],
                 ],
             ],
             'rules.*.type' => [
@@ -147,12 +156,12 @@ final class DiscountPromotionCreateData extends Data
                 'example'     => 'condition',
             ],
             'rules.*.handler' => [
-                'description' => 'Handler for the rule.',
-                'example'     => 'min_order_amount',
+                'description' => 'Registered handler key for the rule, e.g. cart_value_over, cart_value_tier, apply_percentage_off, gift_product.',
+                'example'     => 'cart_value_over',
             ],
             'rules.*.configuration' => [
-                'description' => 'Configuration for the rule.',
-                'example'     => json_encode(['amount' => 10000]),
+                'description' => 'Configuration for the rule, validated against that handler\'s config schema.',
+                'example'     => json_encode(['operator' => 'greater_than_or_equal', 'value' => 50000, 'measure_whole_commitment' => false]),
             ],
             'coupons' => [
                 'description' => 'Array of discount coupons.',
