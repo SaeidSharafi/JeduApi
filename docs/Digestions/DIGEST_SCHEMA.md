@@ -463,7 +463,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
 - Indexes: UNIQUE(code), INDEX(is_active, code) as idx_active_code
 
 ### Table: `discount_promotion_usages`
-- Purpose: Promotion/coupon capacity reservations; one row per applied promotion per order. Rows are created at order placement, deleted on cancellation/failure, and backfilled for orders that settled before the table existed (`backfill_discount_promotion_usages_for_settled_orders`).
+- Purpose: Promotion/coupon capacity reservations; one row per applied promotion per order. Rows are created at order placement and deleted on cancellation/failure.
 - Columns:
   - id (BIGINT, PK)
   - discount_promotion_id (BIGINT) FK -> discount_promotions(id) CASCADE
