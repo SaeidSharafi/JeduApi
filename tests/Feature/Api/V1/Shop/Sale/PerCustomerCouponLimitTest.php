@@ -722,3 +722,83 @@ describe('per-customer coupon limit — admin order creation', function (): void
         checkoutPendingWithGateway()->assertCreated();
     });
 });
+
+describe('reserved promotion caps — shop checkout', function (): void {
+    test('a fully reserved automatic cap keeps the promotion out of the cart preview and checkout', function (): void {
+        $option      = createLimitDeliveryOption();
+        [$promotion] = createLimitPromotion('Reserved Automatic', null, []);
+        $promotion->update(['usage_limit_total' => 1]);
+
+        $holdingOrder = Order::factory()->create(['status' => OrderStatusEnum::PENDING->value]);
+        DiscountPromotionUsage::create([
+            'discount_promotion_id' => $promotion->id,
+            'customer_id'           => $holdingOrder->customer_id,
+            'order_id'              => $holdingOrder->id,
+        ]);
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $option->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        // The cart preview never shows a discount the reserved cap cannot support.
+        expect($this->getJson(route('api.v1.shop.cart.index'))->assertOk()->json('data.discount_amount'))->toBe(0);
+
+        $orderId = checkoutWithWallet()->assertCreated()->json('data.order.id');
+
+        assertDatabaseHas('orders', [
+            'id'                          => $orderId,
+            'discount_amount'             => 0,
+            'applied_cart_discounts_json' => null,
+        ]);
+        assertDatabaseCount('discount_promotion_usages', 1);
+    });
+
+    test('an explicitly supplied coupon whose own cap is fully reserved is rejected', function (): void {
+        $option      = createLimitDeliveryOption();
+        [, $coupons] = createLimitPromotion('Reserved Coupon', null, ['RESERVEDCAP']);
+        $coupon      = $coupons->first();
+        $coupon->update(['usage_limit' => 1]);
+
+        $holdingOrder = Order::factory()->create(['status' => OrderStatusEnum::PENDING->value]);
+        DiscountPromotionUsage::create([
+            'discount_promotion_id' => $coupon->discount_promotion_id,
+            'discount_coupon_id'    => $coupon->id,
+            'customer_id'           => $holdingOrder->customer_id,
+            'order_id'              => $holdingOrder->id,
+        ]);
+
+        $customer = User::factory()->create();
+        $this->customer($customer);
+
+        $response = applyCoupon($option, $coupon->code);
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['coupon_code']);
+    });
+
+    test('cancelling the pending order that holds a reserved cap frees it', function (): void {
+        $option      = createLimitDeliveryOption();
+        [, $coupons] = createLimitPromotion('Cap Holder Cancels', null, ['CAPFREE']);
+        $coupon      = $coupons->first();
+        $coupon->update(['usage_limit' => 1]);
+
+        $customer = User::factory()->create();
+        $this->customer($customer);
+
+        // A pending order reserves the code's only slot.
+        addItemAndApplyCoupon($option, $coupon->code);
+        $incrementId = checkoutPendingWithGateway()->assertCreated()->json('data.order.increment_id');
+
+        applyCoupon($option, $coupon->code)->assertStatus(422)->assertJsonValidationErrors(['coupon_code']);
+
+        postJson(route('api.v1.shop.student.orders.cancel', $incrementId))->assertOk();
+
+        // The release frees the reserved capacity, so the code applies again on
+        // the item the refused attempt left in the cart.
+        postJson(route('api.v1.shop.cart.coupon.apply'), ['coupon_code' => $coupon->code])->assertOk();
+    });
+});

@@ -9,6 +9,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Discounts\DiscountPromotionData;
 use App\Http\Controllers\Controller;
 use App\Models\DiscountPromotion;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -31,6 +32,9 @@ final class DiscountPromotionStatusUpdateController extends Controller
     {
         Gate::authorize('update', $discountPromotion);
 
-        return apiResponse()->success(DiscountPromotionData::from($action->handle($discountPromotion)));
+        $promotion = $action->handle($discountPromotion);
+        $promotion->loadCount(['usages as reserved_usage_count' => fn (Builder $query): Builder => $query->active()]);
+
+        return apiResponse()->success(DiscountPromotionData::from($promotion));
     }
 }

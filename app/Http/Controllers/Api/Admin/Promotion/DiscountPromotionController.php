@@ -12,6 +12,7 @@ use App\Data\Admin\Discounts\DiscountPromotionCreateData;
 use App\Data\Admin\Discounts\DiscountPromotionData;
 use App\Http\Controllers\Controller;
 use App\Models\DiscountPromotion;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -49,6 +50,7 @@ final class DiscountPromotionController extends Controller
                 AllowedFilter::partial('search', 'name'),
             ])
             ->with(['rules', 'coupons'])
+            ->withCount(['usages as reserved_usage_count' => fn (Builder $query): Builder => $query->active()])
             ->orderBy('created_at', 'desc')
             ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
@@ -68,6 +70,7 @@ final class DiscountPromotionController extends Controller
     {
         Gate::authorize('create', DiscountPromotion::class);
         $promotion = $action->execute($data);
+        $promotion->loadCount(['usages as reserved_usage_count' => fn (Builder $query): Builder => $query->active()]);
 
         return apiResponse()->created(DiscountPromotionData::from($promotion), model: DiscountPromotion::class);
     }
@@ -83,6 +86,7 @@ final class DiscountPromotionController extends Controller
     {
         Gate::authorize('view', $discountPromotion);
         $discountPromotion->load(['rules', 'coupons']);
+        $discountPromotion->loadCount(['usages as reserved_usage_count' => fn (Builder $query): Builder => $query->active()]);
 
         return apiResponse()->success(DiscountPromotionData::from($discountPromotion));
     }
@@ -102,6 +106,7 @@ final class DiscountPromotionController extends Controller
     ): ApiResponseInterface {
         Gate::authorize('update', $discountPromotion);
         $updatedPromotion = $action->execute($discountPromotion, $data);
+        $updatedPromotion->loadCount(['usages as reserved_usage_count' => fn (Builder $query): Builder => $query->active()]);
 
         return apiResponse()->success(DiscountPromotionData::from($updatedPromotion));
     }

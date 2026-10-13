@@ -129,7 +129,7 @@ final class DiscountPromotionCreateData extends Data
                 'example'     => false,
             ],
             'usage_limit_total' => [
-                'description' => 'Total usage limit.',
+                'description' => 'Total usage limit, counted from reservations held by placed-but-unsettled orders. It is a budget target rather than a hard guarantee: the cap can be exceeded by the number of genuinely simultaneous checkouts.',
                 'example'     => 100,
             ],
             'usage_limit_per_customer' => [
@@ -165,7 +165,7 @@ final class DiscountPromotionCreateData extends Data
                 'example'     => 'BACK2SCHOOL',
             ],
             'coupons.*.usage_limit' => [
-                'description' => 'Usage limit for the coupon.',
+                'description' => 'Usage limit for the coupon, counted from reservations held by placed-but-unsettled orders. It is a budget target rather than a hard guarantee: the cap can be exceeded by the number of genuinely simultaneous checkouts.',
                 'example'     => 10,
             ],
             'coupons.*.is_active' => [

@@ -12,7 +12,9 @@ use App\Data\Admin\Order\OrderCreateData;
 use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
+use App\Models\DiscountPromotionUsage;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use App\Services\ProductPriceService;
@@ -37,13 +39,17 @@ final class PromotionService
      * Find a single active promotion by its coupon code.
      * Used by CartService to locate a promotion when a coupon is entered.
      *
+     * A promotion whose total cap, or whose supplied code's own cap, is already
+     * filled by reserved capacity is not found, so the caller can reject the
+     * code instead of silently dropping the discount.
+     *
      * When $lockForUpdate is true, this must run inside a DB transaction: the
      * promotion row is locked so concurrent checkouts serialize their
      * per-customer limit checks.
      */
     public function findPromotionByCoupon(string $couponCode, bool $lockForUpdate = false): ?DiscountPromotion
     {
-        return DiscountPromotion::query()
+        $promotion = DiscountPromotion::query()
             ->where('is_active', true)
             ->where(function ($q): void {
                 $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
@@ -51,21 +57,19 @@ final class PromotionService
             ->where(function ($q): void {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
             })
-            ->where(function ($q): void {
-                $q->whereNull('usage_limit_total')
-                    ->orWhereColumn('total_usage_count', '<', 'usage_limit_total');
-            })
             ->whereHas('coupons', fn (Builder $q) => $q
                 ->where('code', $couponCode)
                 ->where('is_active', true)
-                ->where(function (Builder $q2): void {
-                    $q2->whereNull('usage_limit')
-                        ->orWhereColumn('usage_count', '<', 'usage_limit');
-                })
             )
             ->when($lockForUpdate, fn (Builder $query): Builder => $query->lockForUpdate())
             ->with('rules')
             ->first();
+
+        if ($promotion === null) {
+            return null;
+        }
+
+        return $this->filterFullyReserved(collect([$promotion]), $couponCode)->first();
     }
 
     /**
@@ -74,8 +78,9 @@ final class PromotionService
      *
      * A promotion with requires_coupon = true needs a matching coupon to activate.
      * A promotion with requires_coupon = false is always evaluated subject to its conditions.
-     * A promotion whose per-customer allowance the customer has used up is dropped
-     * entirely (never an error): the sale proceeds without that discount.
+     * A promotion whose total cap, whose applied code's cap, or whose per-customer
+     * allowance is filled by reservations is dropped entirely (never an error):
+     * the sale proceeds without that discount.
      *
      * @return Collection<int, DiscountPromotion>
      */
@@ -92,10 +97,6 @@ final class PromotionService
             ->where(function ($q): void {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
             })
-            ->where(function ($q): void {
-                $q->whereNull('usage_limit_total')
-                    ->orWhereColumn('total_usage_count', '<', 'usage_limit_total');
-            })
             ->where(function ($q) use ($appliedCouponCode): void {
                 $q->where('requires_coupon', false);
 
@@ -103,17 +104,15 @@ final class PromotionService
                     $q->orWhereHas('coupons', fn (Builder $cq) => $cq
                         ->where('code', $appliedCouponCode)
                         ->where('is_active', true)
-                        ->where(function (Builder $usageQ): void {
-                            $usageQ->whereNull('usage_limit')
-                                ->orWhereColumn('usage_count', '<', 'usage_limit');
-                        })
                     );
                 }
             })
             ->with('rules')
             ->orderBy('priority', 'asc');
 
-        return $this->perCustomerEligibility->filterExhausted($query->get(), $customerId);
+        $promotions = $this->filterFullyReserved($query->get(), $appliedCouponCode);
+
+        return $this->perCustomerEligibility->filterExhausted($promotions, $customerId);
     }
 
     // ──────────────────────────────────────────────
@@ -233,5 +232,89 @@ final class PromotionService
         }
 
         return true;
+    }
+
+    /**
+     * Drop promotions whose total usage cap, or whose supplied coupon's own
+     * usage cap, is already filled by reserved capacity.
+     *
+     * Caps are budget targets counted from active reservation rows — a
+     * placed-but-unsettled order holds its slot, so a promotion or code leaves
+     * the calculation as soon as reservations reach the cap. The completion
+     * counters are the reporting metric, not the cap decision. Concurrent
+     * checkouts may overshoot a cap by their own number, because the count is
+     * not serialized (spec #150, decision a).
+     *
+     * @param  Collection<int, DiscountPromotion>  $promotions
+     * @return Collection<int, DiscountPromotion>
+     */
+    private function filterFullyReserved(Collection $promotions, ?string $appliedCouponCode = null): Collection
+    {
+        if ($promotions->isEmpty()) {
+            return $promotions;
+        }
+
+        $promotionIds = $promotions->pluck('id')->all();
+
+        $reservedUsageCounts = DiscountPromotionUsage::query()
+            ->active()
+            ->whereIn('discount_promotion_id', $promotionIds)
+            ->selectRaw('discount_promotion_id, discount_coupon_id, count(*) as reserved_usage_count')
+            ->groupBy('discount_promotion_id', 'discount_coupon_id')
+            ->get();
+
+        $appliedCoupons = $appliedCouponCode === null
+            ? collect()
+            : DiscountCoupon::query()
+                ->whereIn('discount_promotion_id', $promotionIds)
+                ->where('code', $appliedCouponCode)
+                ->where('is_active', true)
+                ->get()
+                ->keyBy('discount_promotion_id');
+
+        return $promotions
+            ->reject(function (DiscountPromotion $promotion) use ($appliedCoupons, $reservedUsageCounts): bool {
+                if ($this->isTotalCapFullyReserved($promotion, $reservedUsageCounts)) {
+                    return true;
+                }
+
+                $coupon = $appliedCoupons->get($promotion->id);
+
+                return $coupon !== null && $this->isCouponCapFullyReserved($coupon, $reservedUsageCounts);
+            })
+            ->values();
+    }
+
+    /**
+     * @param  Collection<int, DiscountPromotionUsage>  $reservedUsageCounts
+     */
+    private function isTotalCapFullyReserved(DiscountPromotion $promotion, Collection $reservedUsageCounts): bool
+    {
+        if ($promotion->usage_limit_total === null) {
+            return false;
+        }
+
+        $reservedCount = $reservedUsageCounts
+            ->where('discount_promotion_id', $promotion->id)
+            ->sum('reserved_usage_count');
+
+        return (int) $reservedCount >= $promotion->usage_limit_total;
+    }
+
+    /**
+     * @param  Collection<int, DiscountPromotionUsage>  $reservedUsageCounts
+     */
+    private function isCouponCapFullyReserved(DiscountCoupon $coupon, Collection $reservedUsageCounts): bool
+    {
+        if ($coupon->usage_limit === null) {
+            return false;
+        }
+
+        $reservedCount = $reservedUsageCounts
+            ->where('discount_promotion_id', $coupon->discount_promotion_id)
+            ->where('discount_coupon_id', $coupon->id)
+            ->sum('reserved_usage_count');
+
+        return (int) $reservedCount >= $coupon->usage_limit;
     }
 }
