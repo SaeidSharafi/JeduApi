@@ -17,6 +17,7 @@ use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
+use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
@@ -620,6 +621,102 @@ describe('Advanced Discount Engine Logic', function (): void {
 
         // 100,000 - 15% = 85,000
         expect($response->json('data.order.grand_total'))->toBe(85000);
+    });
+
+    test('8. Flat-amount coupon removes the full advertised amount on a product-discounted cart', function (): void {
+        $option = ProductDeliveryOption::factory()->create(['price' => 100000]);
+        ProductDeliveryOptionDiscountPrice::factory()
+            ->forProductDeliveryOption($option)
+            ->withPrice(90000)
+            ->create();
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        $promo = createCouponCartPromotion('Flat 5000 Off', ['amount' => 5000], 'apply_fixed_amount_off');
+
+        postJson(route('api.v1.shop.cart.items.store'), ['product_delivery_option_uuid' => $option->uuid])->assertOk();
+        postJson(route('api.v1.shop.cart.coupon.apply'), ['coupon_code' => $promo->coupons->first()->code])->assertOk();
+
+        $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value])
+            ->assertCreated();
+
+        $order = Order::with('items')->find($response->json('data.order.id'));
+
+        // The line is worth 90,000, so the advertised 5,000 comes off in full.
+        expect($response->json('data.order.grand_total'))->toBe(85000)
+            ->and($order->items->first()->total)->toBe(85000)
+            ->and($order->items->first()->discount_amount)->toBe(5000);
+    });
+
+    test('9. Flat-amount coupon still removes the advertised amount after an earlier stacked promotion', function (): void {
+        $option = ProductDeliveryOption::factory()->create(['price' => 100000]);
+        ProductDeliveryOptionDiscountPrice::factory()
+            ->forProductDeliveryOption($option)
+            ->withPrice(90000)
+            ->create();
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        // An earlier automatic promotion (priority 1) marks the line down first.
+        $earlier = DiscountPromotion::create([
+            'name'                             => 'Earlier 10 Percent',
+            'type'                             => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'                        => true,
+            'priority'                         => 1,
+            'starts_at'                        => now()->subDay(),
+            'ends_at'                          => now()->addDay(),
+            'stop_processing_subsequent_rules' => false,
+            'requires_coupon'                  => false,
+        ]);
+        DiscountPromotionRule::create([
+            'discount_promotion_id' => $earlier->id,
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off',
+            'configuration'         => ['percentage' => 10],
+        ]);
+
+        $promo = createCouponCartPromotion('Flat 5000 Off', ['amount' => 5000], 'apply_fixed_amount_off', priority: 5);
+
+        postJson(route('api.v1.shop.cart.items.store'), ['product_delivery_option_uuid' => $option->uuid])->assertOk();
+        postJson(route('api.v1.shop.cart.coupon.apply'), ['coupon_code' => $promo->coupons->first()->code])->assertOk();
+
+        $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value])
+            ->assertCreated();
+
+        // 90,000 - 10% = 81,000, then the advertised 5,000 comes off in full → 76,000.
+        expect($response->json('data.order.grand_total'))->toBe(76000);
+    });
+
+    test('10. Flat-amount coupon splits an uneven target without losing a unit', function (): void {
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        $promo = createCouponCartPromotion('Flat 10000 Off', ['amount' => 10000], 'apply_fixed_amount_off');
+
+        foreach (range(1, 3) as $ignored) {
+            $option = ProductDeliveryOption::factory()->create(['price' => 10000]);
+            postJson(route('api.v1.shop.cart.items.store'), ['product_delivery_option_uuid' => $option->uuid])
+                ->assertOk();
+        }
+
+        postJson(route('api.v1.shop.cart.coupon.apply'), ['coupon_code' => $promo->coupons->first()->code])->assertOk();
+
+        $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value])
+            ->assertCreated();
+
+        $order = Order::with('items')->find($response->json('data.order.id'));
+
+        // 30,000 of discountable value: the advertised 10,000 must come off exactly,
+        // as 3334 + 3333 + 3333 rather than three rounded 3333s.
+        expect($response->json('data.order.grand_total'))->toBe(20000)
+            ->and($order->items->sum('discount_amount'))->toBe(10000)
+            ->and($order->items->sum('total'))->toBe(20000)
+            ->and($order->items->pluck('discount_amount')->sort()->values()->all())->toBe([3333, 3333, 3334]);
     });
 });
 
