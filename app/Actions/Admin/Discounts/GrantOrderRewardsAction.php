@@ -49,7 +49,7 @@ final readonly class GrantOrderRewardsAction
                         'order_id'     => $lockedOrder->id,
                         'customer_id'  => $lockedOrder->customer_id,
                         'promotion_id' => $intent['promotion_id'] ?? null,
-                        'credit_type'  => $intent['type']         ?? null,
+                        'ledger_type'  => $intent['ledger_type']  ?? null,
                         'amount'       => $intent['amount']       ?? null,
                     ]);
                 }
@@ -69,7 +69,7 @@ final readonly class GrantOrderRewardsAction
             return;
         }
 
-        $type        = TransactionTypeEnum::from($intent['type']);
+        $type        = TransactionTypeEnum::from($intent['ledger_type']);
         $expiresDays = $intent['expires_days'] ?? null;
 
         $this->recordWalletTransaction->execute(new RecordTransactionData(
@@ -109,7 +109,7 @@ final readonly class GrantOrderRewardsAction
             'order-reward:%d:%d:%s:%d',
             (int) $order->getKey(),
             (int) ($intent['promotion_id'] ?? 0),
-            (string) ($intent['type'] ?? 'unknown'),
+            (string) ($intent['ledger_type'] ?? 'unknown'),
             $index,
         );
     }

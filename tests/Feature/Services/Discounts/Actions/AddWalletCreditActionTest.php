@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
-use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\DiscountPromotion;
@@ -11,8 +10,9 @@ use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use App\Services\Discounts\Cart\Actions\AddWalletCreditAction;
 use App\Services\Discounts\Configs\AddWalletCreditConfigData;
-use Illuminate\Support\Collection;
 use Tests\Support\Traits\AuthTestTrait;
+
+covers(AddWalletCreditAction::class);
 
 uses(AuthTestTrait::class);
 
@@ -23,31 +23,6 @@ beforeEach(function (): void {
     ]);
     $this->action = app(AddWalletCreditAction::class);
 });
-
-/**
- * @param  Collection<int, CalculatedOrderItemData>|null  $items
- */
-function walletRewardContext(User $user, DiscountPromotion $promotion, ?Collection $items = null): OrderContextData
-{
-    return new OrderContextData(
-        customer: $user,
-        items: $items ?? collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $promotion,
-    );
-}
-
-function walletRewardFullPaymentItem(ProductDeliveryOption $option, int $qty, int $price): CalculatedOrderItemData
-{
-    return new CalculatedOrderItemData(
-        product_delivery_option: $option,
-        qty: $qty,
-        payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
-        price: $price,
-        total: $price * $qty,
-    );
-}
 
 it('returns correct config class', function (): void {
     expect(AddWalletCreditAction::getConfigClass())->toBe(AddWalletCreditConfigData::class);
@@ -60,7 +35,7 @@ it('records a fixed amount wallet credit intent without touching the wallet', fu
         description: 'Order completion bonus'
     );
 
-    $context = walletRewardContext($this->user, $this->promotion);
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $config);
 
     expect($context->reward_intents)->toHaveCount(1);
@@ -68,7 +43,7 @@ it('records a fixed amount wallet credit intent without touching the wallet', fu
     $intent = $context->reward_intents[0];
     expect($intent['promotion_id'])->toBe($this->promotion->id)
         ->and($intent['promotion_name'])->toBe('Test Promotion')
-        ->and($intent['type'])->toBe(TransactionTypeEnum::BONUS->value)
+        ->and($intent['ledger_type'])->toBe(TransactionTypeEnum::BONUS->value)
         ->and($intent['amount'])->toBe(5000)
         ->and($intent['description'])->toBe('Order completion bonus')
         ->and($intent['configuration']['amount'])->toBe(5000);
@@ -83,9 +58,9 @@ it('records a per-item wallet credit intent', function (): void {
 
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
-    $context = walletRewardContext($this->user, $this->promotion, collect([
-        walletRewardFullPaymentItem($deliveryOption, 2, 5000),
-        walletRewardFullPaymentItem($deliveryOption, 3, 3000),
+    $context = discountRewardContext($this->user, $this->promotion, collect([
+        discountRewardFullPaymentItem($deliveryOption, 2, 5000),
+        discountRewardFullPaymentItem($deliveryOption, 3, 3000),
     ]));
 
     $this->action->apply($context, $config);
@@ -103,8 +78,8 @@ it('excludes prepayment items from per-item calculation', function (): void {
 
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
-    $context = walletRewardContext($this->user, $this->promotion, collect([
-        walletRewardFullPaymentItem($deliveryOption, 2, 5000),
+    $context = discountRewardContext($this->user, $this->promotion, collect([
+        discountRewardFullPaymentItem($deliveryOption, 2, 5000),
         new CalculatedOrderItemData(
             product_delivery_option: $deliveryOption,
             qty: 3,
@@ -127,7 +102,7 @@ it('records no intent for zero amount', function (): void {
         description: 'Per item bonus'
     );
 
-    $context = walletRewardContext($this->user, $this->promotion);
+    $context = discountRewardContext($this->user, $this->promotion);
 
     $this->action->apply($context, $config);
 
@@ -146,7 +121,7 @@ it('records the intent even when the customer has no wallet', function (): void 
         description: 'Order completion bonus'
     );
 
-    $context = walletRewardContext($userWithoutWallet, $this->promotion);
+    $context = discountRewardContext($userWithoutWallet, $this->promotion);
     $this->action->apply($context, $config);
 
     expect($context->reward_intents)->toHaveCount(1)
@@ -160,7 +135,7 @@ it('uses localized description when none provided', function (): void {
         description: null
     );
 
-    $context = walletRewardContext($this->user, $this->promotion);
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $config);
 
     expect($context->reward_intents)->toHaveCount(1)
@@ -176,7 +151,7 @@ it('records no intent for invalid configuration type', function (): void {
         }
     };
 
-    $context = walletRewardContext($this->user, $this->promotion);
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $invalidConfig);
 
     expect($context->reward_intents)->toBeEmpty();

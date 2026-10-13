@@ -31,6 +31,7 @@ test('to array', function (): void {
             'full_value_grand_total'        => $order->full_value_grand_total,
             'currency_code'                 => $order->currency_code,
             'applied_cart_discounts_json'   => $order->applied_cart_discounts_json,
+            'reward_intents_json'           => $order->reward_intents_json,
             'applied_coupon_code'           => $order->applied_coupon_code,
             'admin_notes'                   => $order->admin_notes,
             'created_at'                    => $order->created_at?->utc()->toJSON(),

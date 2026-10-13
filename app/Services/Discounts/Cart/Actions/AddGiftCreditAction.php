@@ -57,7 +57,7 @@ final class AddGiftCreditAction implements DiscountActionContract
         $context->reward_intents[] = (new RewardIntentData(
             promotion_id: $promotion->id,
             promotion_name: $promotion->name,
-            type: TransactionTypeEnum::GIFT,
+            ledger_type: TransactionTypeEnum::GIFT,
             amount: $giftAmount,
             description: $description,
             configuration: $configuration->toArray(),

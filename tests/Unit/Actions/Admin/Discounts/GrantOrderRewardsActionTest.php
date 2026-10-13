@@ -21,7 +21,7 @@ function grantedRewardIntent(array $overrides = []): array
     return array_merge([
         'promotion_id'   => 4242,
         'promotion_name' => 'Reward Promotion',
-        'type'           => TransactionTypeEnum::BONUS->value,
+        'ledger_type'    => TransactionTypeEnum::BONUS->value,
         'amount'         => 5000,
         'description'    => 'Wallet bonus',
         'configuration'  => ['amount' => 5000, 'per_item' => false],
@@ -93,21 +93,21 @@ it('skips the reward without failing when the customer has no wallet', function 
 });
 
 it('computes gift expiry from the grant date rather than the order date', function (): void {
-    Carbon::setTestNow('2026-01-01 10:00:00');
+    $this->travelTo(Carbon::parse('2026-01-01 10:00:00'));
 
     $customer = User::factory()->create();
     $order    = Order::factory()->create([
         'customer_id'         => $customer->id,
         'reward_intents_json' => [
             grantedRewardIntent([
-                'type'         => TransactionTypeEnum::GIFT->value,
+                'ledger_type'  => TransactionTypeEnum::GIFT->value,
                 'expires_days' => 30,
             ]),
         ],
     ]);
 
     // The order sat pending for a month before it was paid for.
-    Carbon::setTestNow('2026-02-01 10:00:00');
+    $this->travelTo(Carbon::parse('2026-02-01 10:00:00'));
 
     app(GrantOrderRewardsAction::class)->handle($order);
 
@@ -115,7 +115,29 @@ it('computes gift expiry from the grant date rather than the order date', functi
 
     expect($transaction->type)->toBe(TransactionTypeEnum::GIFT)
         ->and($transaction->expires_at->toDateTimeString())->toBe('2026-03-03 10:00:00')
-        ->and($transaction->metadata['credit_type'])->toBe('gift');
+        ->and($transaction->metadata['credit_type'])->toBe('gift')
+        ->and($transaction->metadata['expires_days'])->toBe(30)
+        ->and($transaction->metadata['configuration'])->toBe(['amount' => 5000, 'per_item' => false])
+        ->and($transaction->metadata['promotion_name'])->toBe('Reward Promotion');
+});
 
-    Carbon::setTestNow();
+it('still dates a gift that expires the day it is granted', function (): void {
+    $this->travelTo(Carbon::parse('2026-01-01 10:00:00'));
+
+    $customer = User::factory()->create();
+    $order    = Order::factory()->create([
+        'customer_id'         => $customer->id,
+        'reward_intents_json' => [
+            grantedRewardIntent([
+                'ledger_type'  => TransactionTypeEnum::GIFT->value,
+                'expires_days' => 0,
+            ]),
+        ],
+    ]);
+
+    app(GrantOrderRewardsAction::class)->handle($order);
+
+    $transaction = WalletTransaction::query()->where('user_id', $customer->id)->firstOrFail();
+
+    expect($transaction->expires_at?->toDateTimeString())->toBe('2026-01-01 10:00:00');
 });

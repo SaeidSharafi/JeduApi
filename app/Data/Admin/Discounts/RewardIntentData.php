@@ -22,7 +22,8 @@ final class RewardIntentData extends Data
     public function __construct(
         public int $promotion_id,
         public ?string $promotion_name,
-        public TransactionTypeEnum $type,
+        /** The wallet ledger type this reward is written as: `bonus` for wallet credit, `gift` for gift credit. */
+        public TransactionTypeEnum $ledger_type,
         public int $amount,
         public string $description,
         public array $configuration = [],

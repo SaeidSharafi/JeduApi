@@ -179,4 +179,38 @@ describe('Promotion rewards are granted at order completion, not during calculat
         expect(WalletTransaction::query()->where('user_id', $customer->id)->count())->toBe(1);
         expect($customer->wallet->refresh()->gift_balance)->toBe(7000);
     });
+
+    test('an order created already completed grants its reward at creation', function (): void {
+        $this->authorized_user([PermissionEnum::ORDER_CREATE]);
+
+        $option = createRewardDeliveryOption();
+        createRewardPromotion('add_wallet_credit', ['amount' => 4000, 'per_item' => false]);
+
+        $customer = User::factory()->create();
+
+        postJson(route('api.v1.admin.orders.store'), [
+            'status'      => OrderStatusEnum::COMPLETED->value,
+            'customer_id' => $customer->id,
+            'items'       => [
+                [
+                    'product_delivery_option_id' => $option->id,
+                    'payment_type'               => 'full_payment',
+                    'qty_ordered'                => 1,
+                ],
+            ],
+        ])->assertCreated();
+
+        $order = Order::query()->where('customer_id', $customer->id)->firstOrFail();
+        expect($order->status)->toBe(OrderStatusEnum::COMPLETED);
+
+        $transactions = WalletTransaction::query()
+            ->where('user_id', $customer->id)
+            ->where('source_type', TransactionSourceEnum::PROMOTION->value)
+            ->get();
+
+        expect($transactions)->toHaveCount(1)
+            ->and($transactions->first()->amount)->toBe(4000);
+
+        expect($customer->wallet->refresh()->gift_balance)->toBe(4000);
+    });
 });

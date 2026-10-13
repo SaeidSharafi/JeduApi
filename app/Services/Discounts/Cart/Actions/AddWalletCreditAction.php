@@ -57,7 +57,7 @@ final class AddWalletCreditAction implements DiscountActionContract
         $context->reward_intents[] = (new RewardIntentData(
             promotion_id: $promotion->id,
             promotion_name: $promotion->name,
-            type: TransactionTypeEnum::BONUS,
+            ledger_type: TransactionTypeEnum::BONUS,
             amount: $creditAmount,
             description: $description,
             configuration: $configuration->toArray(),
