@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Services\Discounts\Cart\Actions;
 
 use App\Attributes\DiscountHandlerKey;
+use App\Contracts\Discounts\Cart\LineMarkdownActionContract;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Data\Admin\Discounts\OrderContextData;
-use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('apply_percentage_off')]
-final class ApplyPercentageDiscountToItemsAction implements DiscountActionContract
+final class ApplyPercentageDiscountToItemsAction implements DiscountActionContract, LineMarkdownActionContract
 {
     public static function getConfigClass(): string
     {
@@ -28,20 +28,9 @@ final class ApplyPercentageDiscountToItemsAction implements DiscountActionContra
         $discountRate  = $configuration->percentage / 100;
         $promotionName = $context->evaluating_promotion->name ?? 'Discount';
 
-        foreach ($context->items as $item) {
-            // Bundle lines keep their reviewed selling price — no coupons or
-            // cart promotions may mark them down. Unrelated standalone lines
-            // in the same cart remain eligible.
-            if ($item->is_bundle) {
-                continue;
-            }
-
-            // HERE IS THE CRITICAL LOGIC FOR PREPAYMENTS
-            $paymentType = $item->payment_type;
-            if ($paymentType === OrderItemPaymentTypeEnum::PRE_PAYMENT) {
-                continue; // Skip and do not apply any discount to prepayment items
-            }
-
+        // Bundle and deposit lines are not in the discountable set, and
+        // applyDiscount() is the second guarantee should one ever slip through.
+        foreach ($context->discountableItems() as $item) {
             // Calculate the discount amount for a single unit
             $discountPerUnit = (int) round($item->price * $discountRate);
 
@@ -50,15 +39,13 @@ final class ApplyPercentageDiscountToItemsAction implements DiscountActionContra
                 $discountPerUnit = $item->price;
             }
 
-            // Update the item's state within the context
-            $item->discount_amount += ($discountPerUnit * $item->qty);
-            $item->total = ($item->price * $item->qty) - $item->discount_amount;
+            $applied = $item->applyDiscount($discountPerUnit * $item->qty);
 
             // Add a record for the final audit trail
             $item->applied_discount_details[] = [
                 'promotion_id'   => $context->evaluating_promotion?->id,
                 'promotion_name' => $promotionName,
-                'applied_amount' => ($discountPerUnit * $item->qty),
+                'applied_amount' => $applied,
                 'coupon_code'    => $context->triggered_by_coupon_code,
             ];
         }

@@ -236,6 +236,47 @@ describe('Cart Discount Integration', function (): void {
             'is_prepayment_available' => false,
         ]);
     });
+
+    test('a percentage coupon marks down only the fully paid line of a deposit cart', function (): void {
+        $this->customer();
+
+        $depositOption = ProductDeliveryOption::factory()->create([
+            'price'                   => 100000,
+            'prepayment_amount'       => 25000,
+            'is_prepayment_available' => true,
+            'uuid'                    => Str::uuid()->toString(),
+        ]);
+        $fullOption = ProductDeliveryOption::factory()->create([
+            'price' => 40000,
+            'uuid'  => Str::uuid()->toString(),
+        ]);
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $depositOption->uuid,
+            'payment_type'                 => 'pre_payment',
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $fullOption->uuid,
+            'payment_type'                 => 'full_payment',
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        $data = postJson(route('api.v1.shop.cart.coupon.apply'), [
+            'coupon_code' => 'SAVE10',
+        ])->assertOk()->json('data');
+
+        // 10% of 40000 lands on the fully paid line only.
+        expect($data['discount_amount'])->toBe(4000)
+            ->and($data['grand_total'])->toBe(61000)
+            ->and($data['items'][0]['cart_discount_amount'])->toBe(0)
+            ->and($data['items'][0]['total_discount_amount'])->toBe(0)
+            ->and($data['items'][0]['line_total'])->toBe(25000)
+            ->and($data['items'][1]['cart_discount_amount'])->toBe(4000)
+            ->and($data['items'][1]['total_discount_amount'])->toBe(4000)
+            ->and($data['items'][1]['line_total'])->toBe(36000);
+    });
 });
 
 describe('Paymetn Type Variations', function (): void {

@@ -136,4 +136,63 @@ describe('ApplyTieredPercentageOffAction', function (): void {
         expect($context->items[0]->discount_amount)->toBe(0)
             ->and($context->items[0]->total)->toBe(50000);
     });
+
+    test('it never marks down a prepayment line while tiering a full-payment line', function (): void {
+        $action = new ApplyTieredPercentageOffAction();
+        $config = new ApplyTieredPercentageOffData(tiers: [
+            new TierData(min_amount: 10000, percentage: 20),
+        ]);
+
+        $prepayment = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 2, payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT,
+            price: 50000, total: 20000
+        );
+        $fullPayment = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
+            price: 10000, total: 10000
+        );
+
+        // The tier is measured on the cart's undiscounted full value, which the
+        // deposit line contributes to.
+        $context = OrderContextData::from([
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$prepayment, $fullPayment],
+            'subtotal_full_payment_items' => 10000,
+            'subtotal_all_items'          => 110000,
+        ]);
+
+        $action->apply($context, $config);
+
+        expect($context->items[0]->discount_amount)->toBe(0)
+            ->and($context->items[0]->total)->toBe(20000)
+            ->and($context->items[1]->discount_amount)->toBe(2000)
+            ->and($context->items[1]->total)->toBe(8000);
+    });
+
+    test('it applies nothing on a deposit-only cart', function (): void {
+        $action = new ApplyTieredPercentageOffAction();
+        $config = new ApplyTieredPercentageOffData(tiers: [
+            new TierData(min_amount: 10000, percentage: 50),
+        ]);
+
+        $prepayment = new CalculatedOrderItemData(
+            product_delivery_option: ProductDeliveryOption::factory()->make(),
+            qty: 2, payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT,
+            price: 50000, total: 20000
+        );
+
+        $context = OrderContextData::from([
+            'customer'                    => User::factory()->make(),
+            'items'                       => [$prepayment],
+            'subtotal_full_payment_items' => 0,
+            'subtotal_all_items'          => 100000,
+        ]);
+
+        $action->apply($context, $config);
+
+        expect($context->items[0]->discount_amount)->toBe(0)
+            ->and($context->items[0]->total)->toBe(20000);
+    });
 });

@@ -179,3 +179,33 @@ it('does not apply a percentage discount when every line is a bundle line', func
     expect($context->items[0]->discount_amount)->toBe(0)
         ->and($context->items[0]->total)->toBe(500000);
 });
+
+it('marks down only the full-payment line of a mixed deposit cart', function (): void {
+    $handler = new ApplyPercentageDiscountToItemsAction();
+    $config  = new ApplyPercentageDiscountConfigData(percentage: 10);
+
+    $prepayment = new CalculatedOrderItemData(
+        product_delivery_option: ProductDeliveryOption::factory()->make([
+            'price'             => 100000,
+            'prepayment_amount' => 25000,
+        ]),
+        qty: 1, payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT, price: 100000, total: 25000
+    );
+    $fullPayment = new CalculatedOrderItemData(
+        product_delivery_option: ProductDeliveryOption::factory()->make(['price' => 40000]),
+        qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT, price: 40000, total: 40000
+    );
+    $context = OrderContextData::from([
+        'customer'                    => App\Models\User::factory()->create(),
+        'items'                       => [$prepayment, $fullPayment],
+        'subtotal_full_payment_items' => 40000,
+        'subtotal_all_items'          => 160000,
+    ]);
+
+    $handler->apply($context, $config);
+
+    expect($context->items[0]->discount_amount)->toBe(0)
+        ->and($context->items[0]->total)->toBe(25000)
+        ->and($context->items[1]->discount_amount)->toBe(4000)
+        ->and($context->items[1]->total)->toBe(36000);
+});

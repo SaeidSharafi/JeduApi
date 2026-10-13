@@ -24,6 +24,7 @@ use App\Models\CartItem;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
+use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\Discounts\PromotionService;
 use Illuminate\Database\QueryException;
@@ -41,6 +42,7 @@ final readonly class CartService
         private ProductPriceService $productPriceService,
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
         private ResolvePerCustomerPromotionEligibilityAction $perCustomerEligibility,
+        private DiscountHandlerRegistry $handlerRegistry,
     ) {}
 
     public function findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart
@@ -196,9 +198,25 @@ final readonly class CartService
             applied_coupon_code: $data->coupon_code,
         );
 
-        if (! $this->promotionService->checkPromotionConditions($promotion, $orderData)) {
+        // One context serves both the conditions check and the discountability
+        // check, so the coupon is judged against exactly one view of the cart.
+        $context = $this->promotionService->buildOrderContext($orderData);
+
+        if (! $this->promotionService->promotionConditionsPass($promotion, $context)) {
             throw ValidationException::withMessages([
                 'coupon_code' => __('shop.cart.errors.coupon_does_not_exist'),
+            ]);
+        }
+
+        // A coupon whose only effect is marking lines down can do nothing when
+        // every line is a deposit or a bundle: say so instead of storing a code
+        // that will never change the bill.
+        if (! $context->items->isEmpty()
+            && $context->discountableItems()->isEmpty()
+            && $this->promotionIsLineMarkdownOnly($promotion)
+        ) {
+            throw ValidationException::withMessages([
+                'coupon_code' => __('shop.cart.errors.coupon_nothing_discountable'),
             ]);
         }
 
@@ -331,6 +349,29 @@ final readonly class CartService
     {
         $cart = $this->findOrCreateCart();
         $cart->delete();
+    }
+
+    /**
+     * True when every action rule of the promotion resolves to a registered
+     * line-markdown handler, and there is at least one such rule.
+     */
+    private function promotionIsLineMarkdownOnly(DiscountPromotion $promotion): bool
+    {
+        $actionRules = $promotion->rules->where('type', 'action');
+
+        if ($actionRules->isEmpty()) {
+            return false;
+        }
+
+        foreach ($actionRules as $rule) {
+            $handlerClass = $this->handlerRegistry->getCartActionHandler(data_get($rule, 'handler'));
+
+            if (! $this->handlerRegistry->isLineMarkdownAction($handlerClass)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
