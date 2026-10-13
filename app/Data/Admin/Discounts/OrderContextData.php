@@ -65,27 +65,23 @@ final class OrderContextData extends Data
          * condition's handler key, so a consuming action shares one read/write
          * shape with the condition that produced the decision.
          *
-         * @var array<string, array<string, mixed>>
+         * @var array<string, Data>
          */
         public array $condition_selections = [],
     ) {}
 
     /**
      * Publish a condition's eligibility selection for its consuming action.
-     *
-     * @param  array<string, mixed>  $selection
      */
-    public function publishSelection(string $handlerKey, array $selection): void
+    public function publishSelection(string $handlerKey, Data $selection): void
     {
         $this->condition_selections[$handlerKey] = $selection;
     }
 
     /**
      * Read a selection previously published by a condition handler.
-     *
-     * @return array<string, mixed>|null
      */
-    public function publishedSelection(string $handlerKey): ?array
+    public function publishedSelection(string $handlerKey): ?Data
     {
         return $this->condition_selections[$handlerKey] ?? null;
     }
@@ -93,10 +89,16 @@ final class OrderContextData extends Data
     /**
      * The single amount a value-based condition measures against.
      *
-     * Both options use the same effective (product-discount-applied) basis;
-     * the flag only selects the line set: the customer's whole commitment
-     * (deposit lines counted at their paid deposit) or only the lines being
-     * paid in full.
+     * The whole-commitment side is the product-effective snapshot
+     * (`effective_subtotal_all_items`), and the flag only selects the line set
+     * (deposit lines counted at their paid deposit) rather than a price basis.
+     *
+     * The full-payment-only side is the legacy `subtotal_full_payment_items`
+     * field. That total is not purely product-effective: `GiftProductAction`
+     * also bumps it (and `subtotal_all_items`) by the gift's list price for the
+     * full-value audit trail, so a gift line is worth 0 to the customer while
+     * its list price can inflate the full-payment-only side measured later in
+     * the same calculation.
      */
     public function thresholdBasis(bool $measureWholeCommitment): int
     {

@@ -7,8 +7,10 @@ namespace App\Services\Discounts\Configs;
 use Spatie\LaravelData\Data;
 
 /**
- * Config-free action: the tier ladder and its selection live on
- * {@see \App\Services\Discounts\Cart\Conditions\CartValueTierCondition}.
+ * Exists only because {@see \App\Contracts\Discounts\DiscountActionContract::getConfigClass()}
+ * requires a config class: the tier ladder lives on
+ * {@see \App\Services\Discounts\Cart\Conditions\CartValueTierCondition}, so the
+ * action is deliberately configuration-free.
  */
 final class ApplyTieredPercentageOffData extends Data
 {

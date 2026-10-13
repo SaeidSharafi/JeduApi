@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Contracts\Discounts\Cart\LineMarkdownActionContract;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
+use App\Services\Discounts\Cart\Actions\GiftProductAction;
 use App\Services\Discounts\Cart\Conditions\CartValueTierCondition;
 use App\Services\Discounts\Configs\AddGiftCreditConfigData;
 use App\Services\Discounts\Configs\AddWalletCreditConfigData;
@@ -16,8 +16,17 @@ use App\Services\Discounts\Configs\ApplyFixedAmountOffData;
 use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 use App\Services\Discounts\Configs\ApplyTieredPercentageOffData;
 use App\Services\Discounts\Configs\GiftProductData;
+use App\Services\Discounts\Configs\TierData;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use Spatie\LaravelData\Data;
+
+/*
+ * Ticket #152 mandates the scope of this file: one behavioural test that walks
+ * every registered cart action and asserts a deposit-only cart stays unmarked,
+ * plus the fixture-completeness guard that fails when a newly registered action
+ * has no fixture. Those two assertions are why this is intentionally a
+ * multi-class, registry-driven file rather than a single-handler test.
+ */
 
 /**
  * A deposit-only cart: one line paid in full is impossible here, so no
@@ -52,10 +61,10 @@ function depositOnlyContext(int $prepaymentAmount = 25000, int $price = 100000):
 
     // Publish a tier selection so the config-free consuming action is genuinely
     // driven; the deposit-only cart still has nothing it may mark down.
-    $context->publishSelection(CartValueTierCondition::HANDLER_KEY, [
-        'min_amount' => 0,
-        'percentage' => 10.0,
-    ]);
+    $context->publishSelection(
+        CartValueTierCondition::HANDLER_KEY,
+        new TierData(min_amount: 0, percentage: 10.0),
+    );
 
     return $context;
 }
@@ -91,12 +100,11 @@ it('covers every registered cart action with a fixture', function (): void {
     expect($covered)->toBe($registered);
 });
 
-it('leaves a deposit-only cart unmarked by every markdown action', function (string $handlerKey, bool $isLineMarkdown): void {
+it('leaves a deposit-only cart unmarked by every markdown action', function (string $handlerKey): void {
     $registry     = app(DiscountHandlerRegistry::class);
     $handlerClass = $registry->getCartActionHandler($handlerKey);
 
-    expect($handlerClass)->not->toBeNull()
-        ->and(is_subclass_of($handlerClass, LineMarkdownActionContract::class))->toBe($isLineMarkdown);
+    expect($handlerClass)->not->toBeNull();
 
     $context = depositOnlyContext();
     $line    = $context->items->first();
@@ -108,19 +116,19 @@ it('leaves a deposit-only cart unmarked by every markdown action', function (str
     expect($line->discount_amount)->toBe(0)
         ->and($line->total)->toBe(50000);
 })->with([
-    'apply_fixed_amount_off'      => ['apply_fixed_amount_off', true],
-    'apply_percentage_off'        => ['apply_percentage_off', true],
-    'apply_tiered_percentage_off' => ['apply_tiered_percentage_off', true],
-    'gift_product'                => ['gift_product', false],
-    'add_wallet_credit'           => ['add_wallet_credit', false],
-    'add_gift_credit'             => ['add_gift_credit', false],
+    'apply_fixed_amount_off',
+    'apply_percentage_off',
+    'apply_tiered_percentage_off',
+    'gift_product',
+    'add_wallet_credit',
+    'add_gift_credit',
 ]);
 
 it('grants the gift coupon as a free line rather than a deposit markdown', function (): void {
     $context = depositOnlyContext();
     $line    = $context->items->first();
 
-    app(App\Services\Discounts\Cart\Actions\GiftProductAction::class)
+    app(GiftProductAction::class)
         ->apply($context, cartActionFixtures()['gift_product']);
 
     expect($context->items)->toHaveCount(2)

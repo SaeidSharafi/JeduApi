@@ -200,6 +200,14 @@ final class PromotionService
      */
     public function promotionConditionsPass(DiscountPromotion $promotion, OrderContextData $context): bool
     {
+        // A selection is only ever valid for the promotion whose conditions just
+        // ran: clearing here keeps publish and consume adjacent within one
+        // promotion, so a selection cannot survive a failed sibling condition or
+        // leak into a later promotion that has the consuming action but no tier
+        // condition. A missing selection must produce no markdown rather than a
+        // foreign percentage.
+        $context->condition_selections = [];
+
         $conditionRules = $promotion->rules->where('type', 'condition');
 
         foreach ($conditionRules as $rule) {

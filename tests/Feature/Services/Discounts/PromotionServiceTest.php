@@ -239,3 +239,65 @@ it('keeps a Bundle line at its reviewed selling price while an automatic cart pr
         ->and($context->items[1]->discount_amount)->toBe(0)
         ->and($context->items[1]->total)->toBe(500000);
 });
+
+it('does not let a tier selection reach the next promotion when that promotion has no tier condition', function (): void {
+    $user           = User::factory()->create();
+    $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+    // Priority 1: a proper tiered campaign publishes and consumes its selection.
+    $tieredPromotion = DiscountPromotion::factory()->create([
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'       => true,
+        'requires_coupon' => false,
+        'priority'        => 1,
+        'starts_at'       => now()->subDay(),
+        'ends_at'         => now()->addDay(),
+    ]);
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $tieredPromotion->id,
+        'type'                  => 'condition',
+        'handler'               => 'cart_value_tier',
+        'configuration'         => ['tiers' => [['min_amount' => 0, 'percentage' => 10]]],
+    ]);
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $tieredPromotion->id,
+        'type'                  => 'action',
+        'handler'               => 'apply_tiered_percentage_off',
+        'configuration'         => [],
+    ]);
+
+    // Priority 2: rules persisted before the pairing validation existed, so the
+    // consuming action is present with no tier condition to publish for it.
+    $legacyPromotion = DiscountPromotion::factory()->create([
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'       => true,
+        'requires_coupon' => false,
+        'priority'        => 2,
+        'starts_at'       => now()->subDay(),
+        'ends_at'         => now()->addDay(),
+    ]);
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $legacyPromotion->id,
+        'type'                  => 'action',
+        'handler'               => 'apply_tiered_percentage_off',
+        'configuration'         => [],
+    ]);
+
+    $data = new OrderCreateData(
+        status: OrderStatusEnum::PENDING->value,
+        customer_id: $user->id,
+        items: [
+            new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment'),
+        ],
+        applied_coupon_code: null,
+    );
+
+    $context = app(OrderCalculationService::class)->calculate($data);
+
+    // Only the tiered campaign marks the line down; the action-only promotion
+    // must not inherit its percentage.
+    expect($context->items[0]->discount_amount)->toBe(1000)
+        ->and($context->items[0]->total)->toBe(9000)
+        ->and($context->applied_cart_discounts)->toHaveCount(1)
+        ->and($context->applied_cart_discounts[0]['promotion_id'])->toBe($tieredPromotion->id);
+});

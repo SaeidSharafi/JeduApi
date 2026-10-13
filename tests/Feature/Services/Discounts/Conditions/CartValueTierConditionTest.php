@@ -50,9 +50,13 @@ it('publishes the highest satisfied tier and reports eligible', function (): voi
     $handler = new CartValueTierCondition();
     $context = tierConditionContext([tierConditionFullPaymentLine(6000000)]);
 
-    expect($handler->passes($context, tierConditionConfig()))->toBeTrue()
-        ->and($context->publishedSelection(CartValueTierCondition::HANDLER_KEY))
-        ->toBe(['min_amount' => 5000000, 'percentage' => 8.0]);
+    expect($handler->passes($context, tierConditionConfig()))->toBeTrue();
+
+    $selection = $context->publishedSelection(CartValueTierCondition::HANDLER_KEY);
+
+    expect($selection)->toBeInstanceOf(TierData::class)
+        ->and($selection->min_amount)->toBe(5000000)
+        ->and($selection->percentage)->toBe(8.0);
 });
 
 it('selects exactly one tier when two rungs are satisfied, never a sum of both', function (): void {
@@ -63,10 +67,10 @@ it('selects exactly one tier when two rungs are satisfied, never a sum of both',
 
     $selection = $context->publishedSelection(CartValueTierCondition::HANDLER_KEY);
 
-    expect($selection)->toHaveCount(2)
-        ->and($selection['min_amount'])->toBe(5000000)
-        ->and($selection['percentage'])->toBe(8.0)
-        ->and($selection['percentage'])->not->toBe(13.0);
+    expect($selection)->toBeInstanceOf(TierData::class)
+        ->and($selection->min_amount)->toBe(5000000)
+        ->and($selection->percentage)->toBe(8.0)
+        ->and($selection->percentage)->not->toBe(13.0);
 });
 
 it('is ineligible below the lowest tier and publishes no selection', function (): void {
@@ -125,9 +129,13 @@ it('ignores bundle lines while tiering the standalone discountable lines', funct
 
     $context = tierConditionContext([$standalone, $bundle], baseSubtotal: 8500000);
 
-    expect($handler->passes($context, tierConditionConfig()))->toBeTrue()
-        ->and($context->publishedSelection(CartValueTierCondition::HANDLER_KEY))
-        ->toBe(['min_amount' => 3000000, 'percentage' => 5.0]);
+    expect($handler->passes($context, tierConditionConfig()))->toBeTrue();
+
+    $selection = $context->publishedSelection(CartValueTierCondition::HANDLER_KEY);
+
+    expect($selection)->toBeInstanceOf(TierData::class)
+        ->and($selection->min_amount)->toBe(3000000)
+        ->and($selection->percentage)->toBe(5.0);
 });
 
 it('returns false when the configuration is not the correct type', function (): void {

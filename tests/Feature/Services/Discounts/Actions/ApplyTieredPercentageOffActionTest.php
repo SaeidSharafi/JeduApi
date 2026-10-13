@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Discounts\Cart\Actions\ApplyTieredPercentageOffAction;
 use App\Services\Discounts\Cart\Conditions\CartValueTierCondition;
 use App\Services\Discounts\Configs\ApplyTieredPercentageOffData;
+use App\Services\Discounts\Configs\TierData;
 
 /**
  * @param  array<int, CalculatedOrderItemData>  $items
@@ -24,10 +25,10 @@ function tieredActionContext(array $items, ?float $publishedPercentage = null): 
     ]);
 
     if ($publishedPercentage !== null) {
-        $context->publishSelection(CartValueTierCondition::HANDLER_KEY, [
-            'min_amount' => 3000000,
-            'percentage' => $publishedPercentage,
-        ]);
+        $context->publishSelection(
+            CartValueTierCondition::HANDLER_KEY,
+            new TierData(min_amount: 3000000, percentage: $publishedPercentage),
+        );
     }
 
     return $context;
