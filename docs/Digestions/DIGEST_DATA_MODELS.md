@@ -313,7 +313,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
   - `hasMany(DiscountPromotionRule::class)` - rules
   - `hasMany(DiscountCoupon::class)` - coupons
   - `hasMany(DiscountPromotionUsage::class)` - usages
-  - `hasMany(DiscountPromotionUsage::class)` - heldUsages (the `usages()` relation with the `held()` scope applied; the source of `reserved_usage_count`)
+  - `hasMany(DiscountPromotionUsage::class)` - heldUsages (the `usages()` relation with the `held()` scope applied; the source of `reserved_usage_count`, loaded only through the model's `withReservedUsage()` query scope or `loadReservedUsage()` so the reported scope is chosen once)
 - **Special Features:** Complex rule-based discount system with conditions and actions; index on `(is_active, starts_at, ends_at)` and `(type, priority)`; usage caps (`usage_limit_total`, and the coupon's `usage_limit`) are decided by the count of `active()` reservation rows, while `total_usage_count` is the completion/reporting counter and increments only on successful checkout; `reserved_usage_count` on `DiscountPromotionData` instead counts `heldUsages`, so settled completions are never reported twice; coupon gating via `requires_coupon` with `findPromotionByCoupon()` on `PromotionService`.
 
 ### DiscountPromotionRule (`app/Models/DiscountPromotionRule.php`)
