@@ -7,6 +7,7 @@ namespace App\Actions\Admin\Discounts;
 use App\Enums\Order\OrderStatusEnum;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionUsage;
+use App\Services\Discounts\PromotionCapacity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -17,10 +18,13 @@ use Illuminate\Support\Collection;
  * whose order is not cancelled/failed (pending/processing reserve it,
  * completed/refunded consume it). Exhaustion makes a promotion ineligible for
  * that customer — it must be filtered out of a calculation, never used to
- * block a sale.
+ * block a sale. The count-to-cap comparison itself belongs to
+ * {@see PromotionCapacity}, shared with the promotion and coupon caps.
  */
 final readonly class ResolvePerCustomerPromotionEligibilityAction
 {
+    public function __construct(private PromotionCapacity $capacity) {}
+
     /**
      * Drop promotions whose per-customer allowance this customer has used up,
      * preserving the incoming (priority) order.
@@ -98,7 +102,6 @@ final readonly class ResolvePerCustomerPromotionEligibilityAction
 
     private function isExhausted(DiscountPromotion $promotion, int $activeUsageCount): bool
     {
-        return $promotion->usage_limit_per_customer !== null
-            && $activeUsageCount >= $promotion->usage_limit_per_customer;
+        return $this->capacity->exhausted($promotion->usage_limit_per_customer, $activeUsageCount);
     }
 }

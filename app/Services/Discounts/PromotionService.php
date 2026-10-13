@@ -29,6 +29,7 @@ final class PromotionService
         private DiscountHandlerRegistry $handlerRegistry,
         private ProductPriceService $priceService,
         private ResolvePerCustomerPromotionEligibilityAction $perCustomerEligibility,
+        private PromotionCapacity $capacity,
     ) {}
 
     // ──────────────────────────────────────────────
@@ -300,15 +301,11 @@ final class PromotionService
      */
     private function isTotalCapFullyReserved(DiscountPromotion $promotion, Collection $reservationRows): bool
     {
-        if ($promotion->usage_limit_total === null) {
-            return false;
-        }
-
-        $reservedCount = $reservationRows
+        $reservedCount = (int) $reservationRows
             ->where('discount_promotion_id', $promotion->id)
             ->sum('reserved_usage_count');
 
-        return (int) $reservedCount >= $promotion->usage_limit_total;
+        return $this->capacity->exhausted($promotion->usage_limit_total, $reservedCount);
     }
 
     /**
@@ -316,15 +313,11 @@ final class PromotionService
      */
     private function isCouponCapFullyReserved(DiscountCoupon $coupon, Collection $reservationRows): bool
     {
-        if ($coupon->usage_limit === null) {
-            return false;
-        }
-
-        $reservedCount = $reservationRows
+        $reservedCount = (int) $reservationRows
             ->where('discount_promotion_id', $coupon->discount_promotion_id)
             ->where('discount_coupon_id', $coupon->id)
             ->sum('reserved_usage_count');
 
-        return (int) $reservedCount >= $coupon->usage_limit;
+        return $this->capacity->exhausted($coupon->usage_limit, $reservedCount);
     }
 }

@@ -31,6 +31,7 @@ function mockPromotionFinderReturning(mixed $promotions): void
         app(DiscountHandlerRegistry::class),
         app(ProductPriceService::class),
         app(ResolvePerCustomerPromotionEligibilityAction::class),
+        app(App\Services\Discounts\PromotionCapacity::class),
     ])->makePartial();
 
     $resolvedPromotions = match (true) {
