@@ -8,12 +8,23 @@ use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Discounts\Cart\LineMarkdownActionContract;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Data\Admin\Discounts\OrderContextData;
+use App\Services\Discounts\Cart\Conditions\CartValueTierCondition;
 use App\Services\Discounts\Configs\ApplyTieredPercentageOffData;
 use Spatie\LaravelData\Data;
 
-#[DiscountHandlerKey('apply_tiered_percentage_off')]
+/**
+ * Config-free consumer of the tier {@see CartValueTierCondition} selected.
+ *
+ * The ladder and the eligibility decision live on the condition; this action
+ * only applies the published percentage to the discountable lines. When no
+ * selection was published (or it carries no positive percentage) it does
+ * nothing at all rather than guessing a percentage.
+ */
+#[DiscountHandlerKey(self::HANDLER_KEY)]
 final class ApplyTieredPercentageOffAction implements DiscountActionContract, LineMarkdownActionContract
 {
+    public const string HANDLER_KEY = 'apply_tiered_percentage_off';
+
     public static function getConfigClass(): string
     {
         return ApplyTieredPercentageOffData::class;
@@ -21,23 +32,15 @@ final class ApplyTieredPercentageOffAction implements DiscountActionContract, Li
 
     public function apply(OrderContextData $context, Data $configuration): void
     {
-        /** @var ApplyTieredPercentageOffData $configuration */
-        $applicablePercentage = 0;
+        $selection  = $context->publishedSelection(CartValueTierCondition::HANDLER_KEY);
+        $percentage = (float) ($selection['percentage'] ?? 0);
 
-        foreach ($configuration->tiers as $tier) {
-            if ($context->subtotal_all_items >= $tier->min_amount && $tier->percentage > $applicablePercentage) {
-                $applicablePercentage = $tier->percentage;
-            }
-        }
-
-        if ($applicablePercentage <= 0) {
+        if ($percentage <= 0) {
             return;
         }
 
         foreach ($context->discountableItems() as $item) {
-            $itemDiscount = (int) ($item->total * ($applicablePercentage / 100));
-
-            $item->applyDiscount($itemDiscount);
+            $item->applyDiscount((int) ($item->total * ($percentage / 100)));
         }
     }
 }

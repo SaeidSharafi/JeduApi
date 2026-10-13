@@ -6,15 +6,12 @@ namespace App\Services\Discounts\Configs;
 
 use Spatie\LaravelData\Data;
 
+/**
+ * Config-free action: the tier ladder and its selection live on
+ * {@see \App\Services\Discounts\Cart\Conditions\CartValueTierCondition}.
+ */
 final class ApplyTieredPercentageOffData extends Data
 {
-    /**
-     * @param  array<int, TierData>  $tiers
-     */
-    public function __construct(
-        public array $tiers
-    ) {}
-
     /**
      * @return array<string, mixed>
      *
@@ -22,29 +19,6 @@ final class ApplyTieredPercentageOffData extends Data
      */
     public static function rules(): array
     {
-        return [
-            'tiers'              => ['required', 'array'],
-            'tiers.*.min_amount' => ['required', 'integer', 'min:0'],
-            'tiers.*.percentage' => ['required', 'numeric', 'min:0', 'max:100'],
-        ];
-    }
-
-    /**
-     * Extra frontend metadata for specific fields.
-     *
-     * @return array<string, array<string, mixed>>
-     *
-     * @codeCoverageIgnore
-     */
-    public static function fieldMeta(): array
-    {
-        return [
-            'tiers' => [
-                'item' => [
-                    'item_type'  => 'data',
-                    'item_class' => TierData::class,
-                ],
-            ],
-        ];
+        return [];
     }
 }

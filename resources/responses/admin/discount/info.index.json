@@ -82,6 +82,39 @@
           }
         },
         {
+          "key": "cart_value_tier",
+          "name": "پله مبلغ سبد خرید",
+          "description": "بالاترین پله تخفیفی که مبلغ قابل تخفیف سبد به آن می‌رسد را انتخاب می‌کند. سبد را بر همان مبنای قیمت مؤثرِ سایر شرایط مبلغی می‌سنجد (بدون اقلام پیش‌پرداختی و بسته) و تنها واجد شرایط بودن را تعیین می‌کند — هرگز تعیین نمی‌کند چه چیزی تخفیف می‌خورد.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\CartValueTierCondition",
+          "configuration_schema": {
+            "tiers": {
+              "key": "tiers",
+              "type": "array",
+              "label": "پله‌های تخفیف",
+              "required": true,
+              "description": "پله‌هایی که حداقل مبلغ قابل تخفیف سبد و درصد تخفیف متناظر آن را تعیین می‌کنند.",
+              "item_type": "data",
+              "item_class": "App\\Services\\Discounts\\Configs\\TierData",
+              "item_schema": {
+                "min_amount": {
+                  "key": "min_amount",
+                  "type": "integer",
+                  "label": "Min Amount",
+                  "required": true,
+                  "description": "Min Amount (integer)"
+                },
+                "percentage": {
+                  "key": "percentage",
+                  "type": "number",
+                  "label": "Percentage",
+                  "required": true,
+                  "description": "Percentage (number)"
+                }
+              }
+            }
+          }
+        },
+        {
           "key": "first_order_only",
           "name": "فقط اولین سفارش",
           "description": "این شرط بررسی می‌کند که آیا این اولین خرید مشتری است یا خیر.",
@@ -188,7 +221,7 @@
               "type": "enum",
               "label": "نحوه بررسی تطابق",
               "required": false,
-              "description": "مشخص می‌کند که آیا عدم خرید از یکی از دسته‌ها کافیست یا باید از هیچ‌کام خرید نکرده باشد.",
+              "description": "مشخص می‌کند که آیا عدم خرید از یکی از دسته‌ها کافیست یا باید از هیچ‌کدام خرید نکرده باشد.",
               "cases": [
                 {
                   "value": "any",
@@ -307,36 +340,10 @@
         },
         {
           "key": "apply_tiered_percentage_off",
-          "name": "تخفیف درصدی پلکانی",
-          "description": "اعمال تخفیف درصدی بر اساس پله‌های تعریف شده.",
+          "name": "اعمال تخفیف پله انتخاب‌شده",
+          "description": "درصد انتخاب‌شده توسط شرط «پله مبلغ سبد خرید» را روی اقلام قابل تخفیف سبد اعمال می‌کند. این عملیات تنظیمات اختصاصی ندارد.",
           "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyTieredPercentageOffAction",
-          "configuration_schema": {
-            "tiers": {
-              "key": "tiers",
-              "type": "array",
-              "label": "پله‌های تخفیف",
-              "required": true,
-              "description": "تعریف پله‌های مقداری و درصد تخفیف مربوطه.",
-              "item_type": "data",
-              "item_class": "App\\Services\\Discounts\\Configs\\TierData",
-              "item_schema": {
-                "min_amount": {
-                  "key": "min_amount",
-                  "type": "integer",
-                  "label": "Min Amount",
-                  "required": true,
-                  "description": "Min Amount (integer)"
-                },
-                "percentage": {
-                  "key": "percentage",
-                  "type": "number",
-                  "label": "Percentage",
-                  "required": true,
-                  "description": "Percentage (number)"
-                }
-              }
-            }
-          }
+          "configuration_schema": []
         },
         {
           "key": "gift_product",
@@ -400,8 +407,50 @@
                 {
                   "value": "live_session_skyroom",
                   "label": "جلسه زنده با Skyroom"
+                },
+                {
+                  "value": "bundle",
+                  "label": "بسته آموزشی"
                 }
               ]
+            }
+          }
+        },
+        {
+          "key": "low_capacity_remaining",
+          "name": "ظرفیت رو به اتمام",
+          "description": "این شرط بررسی می‌کند که آیا ظرفیت باقیمانده محصول از حد آستانه مشخص‌شده کمتر است یا خیر.",
+          "handler_class": "App\\Services\\Discounts\\Product\\Conditions\\LowCapacityRemainingCondition",
+          "configuration_schema": {
+            "threshold": {
+              "key": "threshold",
+              "type": "integer",
+              "label": "حد آستانه ظرفیت",
+              "required": true,
+              "description": "نسبت تکمیل ظرفیت که شرط در آن فعال می‌شود (مثلاً ۸۰ برای ۸۰٪ تکمیل)."
+            }
+          }
+        },
+        {
+          "key": "price_between",
+          "name": "بازه قیمتی محصول",
+          "description": "این شرط بررسی می‌کند که آیا قیمت محصول در بازه مشخص‌شده قرار دارد یا خیر.",
+          "handler_class": "App\\Services\\Discounts\\Product\\Conditions\\PriceBetweenCondition",
+          "configuration_schema": {
+            "min_price": {
+              "key": "min_price",
+              "type": "integer",
+              "label": "حداقل قیمت",
+              "required": true,
+              "description": "حداقل قیمت محصول (به ریال)."
+            },
+            "max_price": {
+              "key": "max_price",
+              "type": "integer",
+              "label": "حداکثر قیمت",
+              "required": false,
+              "description": "حداکثر قیمت محصول (به ریال). برای عدم اعمال حد بالا خالی بگذارید.",
+              "default": null
             }
           }
         },
@@ -443,6 +492,21 @@
               "default": "any"
             }
           }
+        },
+        {
+          "key": "registration_closing_soon",
+          "name": "پایان نزدیک ثبت‌نام",
+          "description": "این شرط بررسی می‌کند که آیا تاریخ پایان ثبت‌نام محصول در محدوده روزهای مشخص‌شده قرار دارد یا خیر.",
+          "handler_class": "App\\Services\\Discounts\\Product\\Conditions\\RegistrationClosingSoonCondition",
+          "configuration_schema": {
+            "days": {
+              "key": "days",
+              "type": "integer",
+              "label": "روزهای مانده تا پایان ثبت‌نام",
+              "required": true,
+              "description": "تعداد روزهای مانده تا پایان ثبت‌نام که شرط در آن فعال می‌شود."
+            }
+          }
         }
       ],
       "actions": [
@@ -462,6 +526,21 @@
           }
         },
         {
+          "key": "apply_fixed_price_product",
+          "name": "قیمت مقطوع محصول",
+          "description": "یک قیمت مقطوع برای محصول تعیین می‌کند و جایگزین قیمت اصلی می‌شود.",
+          "handler_class": "App\\Services\\Discounts\\Product\\Actions\\ApplyFixedPriceProductAction",
+          "configuration_schema": {
+            "fixed_price": {
+              "key": "fixed_price",
+              "type": "integer",
+              "label": "قیمت مقطوع",
+              "required": true,
+              "description": "قیمت مقطوع جهت اعمال روی محصول (به ریال)."
+            }
+          }
+        },
+        {
           "key": "apply_percentage_off_product",
           "name": "تخفیف درصدی محصول",
           "description": "درصد مشخصی از قیمت محصول کسر می‌شود.",
@@ -473,6 +552,39 @@
               "label": "درصد تخفیف",
               "required": true,
               "description": "درصد تخفیف."
+            }
+          }
+        },
+        {
+          "key": "apply_tiered_percentage_off_product",
+          "name": "تخفیف درصدی پلکانی محصول",
+          "description": "بر اساس پله‌های تعریف‌شده، تخفیف درصدی پلکانی روی قیمت محصول اعمال می‌کند.",
+          "handler_class": "App\\Services\\Discounts\\Product\\Actions\\ApplyTieredPercentageOffProductAction",
+          "configuration_schema": {
+            "tiers": {
+              "key": "tiers",
+              "type": "array",
+              "label": "پله‌های تخفیف",
+              "required": true,
+              "description": "تعریف پله‌های مقداری و درصد تخفیف مربوط به آن‌ها.",
+              "item_type": "data",
+              "item_class": "App\\Services\\Discounts\\Configs\\TierData",
+              "item_schema": {
+                "min_amount": {
+                  "key": "min_amount",
+                  "type": "integer",
+                  "label": "Min Amount",
+                  "required": true,
+                  "description": "Min Amount (integer)"
+                },
+                "percentage": {
+                  "key": "percentage",
+                  "type": "number",
+                  "label": "Percentage",
+                  "required": true,
+                  "description": "Percentage (number)"
+                }
+              }
             }
           }
         }
