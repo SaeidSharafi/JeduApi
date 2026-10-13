@@ -15,9 +15,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * The row exists while the order holds a usage slot: pending/processing
  * reserve it, completed/refunded consume it, cancelled/failed release it
- * (the row is deleted). Order status is the single source of truth; a
- * customer's active usage of a Promotion is the count of their usage rows
- * whose order is not cancelled/failed.
+ * (the row is deleted). Order status is the single source of truth for
+ * consumption; a held slot additionally goes stale after the configured
+ * reservation window, while consumed slots never expire.
  */
 final class DiscountPromotionUsage extends Model
 {
@@ -61,9 +61,13 @@ final class DiscountPromotionUsage extends Model
     }
 
     /**
-     * Rows that still hold the customer's slot: their order is neither
-     * cancelled nor failed. Pending/processing reserve, completed/refunded
-     * consume.
+     * Rows that still count against a customer's allowance.
+     *
+     * A row counts while its order is neither cancelled nor failed and either
+     * its order is settled (completed/refunded/partially refunded — consumed
+     * permanently) or the row is younger than the configured reservation
+     * window (`discounts.reservation_hold_minutes`). A held row older than the
+     * window is stale and stops counting; the order itself is untouched.
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
@@ -71,9 +75,22 @@ final class DiscountPromotionUsage extends Model
     #[Scope]
     protected function active(Builder $query): Builder
     {
-        return $query->whereHas('order', fn (Builder $orderQuery): Builder => $orderQuery->whereNotIn('status', [
-            OrderStatusEnum::CANCELLED->value,
-            OrderStatusEnum::FAILED->value,
-        ]));
+        $holdCutoff      = now()->subMinutes((int) config('discounts.reservation_hold_minutes'));
+        $settledStatuses = [
+            OrderStatusEnum::COMPLETED->value,
+            OrderStatusEnum::REFUNDED->value,
+            OrderStatusEnum::PARTIALLY_REFUNDED->value,
+        ];
+
+        return $query
+            ->whereHas('order', fn (Builder $orderQuery): Builder => $orderQuery->whereNotIn('status', [
+                OrderStatusEnum::CANCELLED->value,
+                OrderStatusEnum::FAILED->value,
+            ]))
+            ->where(function (Builder $holdQuery) use ($holdCutoff, $settledStatuses): void {
+                $holdQuery
+                    ->where('created_at', '>=', $holdCutoff)
+                    ->orWhereHas('order', fn (Builder $orderQuery): Builder => $orderQuery->whereIn('status', $settledStatuses));
+            });
     }
 }

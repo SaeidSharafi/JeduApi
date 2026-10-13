@@ -474,6 +474,184 @@ describe('per-customer coupon limit — shop checkout', function (): void {
     });
 });
 
+describe('promotion reservation expiry — shop checkout', function (): void {
+    test('a reservation older than the window frees the allowance without cancelling the order', function (): void {
+        $option                = createLimitDeliveryOption();
+        [$promotion, $coupons] = createLimitPromotion('Expired Hold', 1, ['EXPIRES']);
+        $coupon                = $coupons->first();
+
+        $customer = User::factory()->create();
+        $this->customer($customer);
+
+        // Gateway checkout leaves the order PENDING — the slot is held.
+        addItemAndApplyCoupon($option, $coupon->code);
+        $response    = checkoutPendingWithGateway()->assertCreated();
+        $incrementId = $response->json('data.order.increment_id');
+
+        // Past the payment-retry window the hold stops counting...
+        $this->travel(31)->minutes();
+
+        // ...without the order being cancelled.
+        assertDatabaseHas('orders', [
+            'increment_id' => $incrementId,
+            'status'       => OrderStatusEnum::PENDING->value,
+        ]);
+
+        // Cart preview and checkout both see the allowance as free again.
+        addItemAndApplyCoupon($option, $coupon->code);
+        checkoutPendingWithGateway()->assertCreated();
+
+        assertDatabaseCount('discount_promotion_usages', 2);
+        assertDatabaseHas('discount_promotion_usages', [
+            'discount_promotion_id' => $promotion->id,
+            'customer_id'           => $customer->id,
+        ]);
+    });
+
+    test('a reservation inside the window still counts', function (): void {
+        $option                = createLimitDeliveryOption();
+        [$promotion, $coupons] = createLimitPromotion('Fresh Hold', 1, ['HOLDS']);
+        $coupon                = $coupons->first();
+
+        $customer = User::factory()->create();
+        $this->customer($customer);
+
+        addItemAndApplyCoupon($option, $coupon->code);
+        $response    = checkoutPendingWithGateway()->assertCreated();
+        $incrementId = $response->json('data.order.increment_id');
+
+        // Still inside the payment-retry window — the slot is held.
+        $this->travel(29)->minutes();
+
+        $response = applyCoupon($option, $coupon->code);
+        $response->assertStatus(422)->assertJsonValidationErrors(['coupon_code']);
+        expect($response->json('errors.coupon_code.0'))->toContain($incrementId);
+
+        assertDatabaseHas('discount_promotion_usages', [
+            'discount_promotion_id' => $promotion->id,
+            'customer_id'           => $customer->id,
+        ]);
+    });
+
+    test('a completed order counts forever past the window', function (): void {
+        $firstOption           = createLimitDeliveryOption();
+        $secondOption          = createLimitDeliveryOption();
+        [$promotion, $coupons] = createLimitPromotion('Completed Keeps', 1, ['KEEPS']);
+        $coupon                = $coupons->first();
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        // Wallet checkout completes the order → the slot is consumed.
+        addItemAndApplyCoupon($firstOption, $coupon->code);
+        checkoutWithWallet()->assertCreated();
+
+        $this->travel(31)->minutes();
+
+        $response = applyCoupon($secondOption, $coupon->code);
+        $response->assertStatus(422)->assertJsonValidationErrors(['coupon_code']);
+        expect($response->json('errors.coupon_code.0'))->toBe(__('messages.checkout.coupon_usage_limit_reached'));
+
+        assertDatabaseHas('discount_promotion_usages', [
+            'discount_promotion_id' => $promotion->id,
+            'customer_id'           => $customer->id,
+        ]);
+    });
+
+    test('a refunded order counts forever past the window', function (): void {
+        $firstOption           = createLimitDeliveryOption();
+        $secondOption          = createLimitDeliveryOption();
+        [$promotion, $coupons] = createLimitPromotion('Refund Keeps', 1, ['REFUNDKEEP']);
+        $coupon                = $coupons->first();
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        addItemAndApplyCoupon($firstOption, $coupon->code);
+        $orderId = checkoutWithWallet()->assertCreated()->json('data.order.id');
+
+        // Refund the whole order via admin (skip gateway) → order becomes REFUNDED.
+        Event::fake([RefundCompletedEvent::class]);
+        $this->user = Staff::factory()->create();
+        $this->authorized_user([PermissionEnum::REFUND_CREATE->value, PermissionEnum::REFUND_SKIP_GATEWAY->value]);
+        postJson(route('api.v1.admin.orders.refund', ['order' => $orderId]), [
+            'skip_gateway' => true,
+        ])->assertCreated();
+
+        assertDatabaseHas('orders', [
+            'id'     => $orderId,
+            'status' => OrderStatusEnum::REFUNDED->value,
+        ]);
+
+        $this->travel(31)->minutes();
+
+        $this->customer($customer);
+        $response = applyCoupon($secondOption, $coupon->code);
+        $response->assertStatus(422)->assertJsonValidationErrors(['coupon_code']);
+        expect($response->json('errors.coupon_code.0'))->toBe(__('messages.checkout.coupon_usage_limit_reached'));
+
+        assertDatabaseHas('discount_promotion_usages', [
+            'discount_promotion_id' => $promotion->id,
+            'customer_id'           => $customer->id,
+        ]);
+    });
+
+    test('an order that pays after its hold expired still completes normally', function (): void {
+        $option                = createLimitDeliveryOption();
+        [$promotion, $coupons] = createLimitPromotion('Late Payment', 1, ['LATEPAY']);
+        $coupon                = $coupons->first();
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 500000]);
+        $this->customer($customer);
+
+        addItemAndApplyCoupon($option, $coupon->code);
+        $response = checkoutPendingWithGateway()->assertCreated();
+        $orderId  = $response->json('data.order.id');
+
+        // The hold goes stale before the customer gets around to paying.
+        $this->travel(31)->minutes();
+
+        // Paying the stale order is not blocked: the order completes with its discount.
+        postJson(route('api.v1.shop.student.orders.retry-payment', $response->json('data.order.increment_id')), [
+            'payment_method' => PaymentMethodEnum::WALLET->value,
+        ])->assertOk();
+
+        assertDatabaseHas('orders', [
+            'id'     => $orderId,
+            'status' => OrderStatusEnum::COMPLETED->value,
+        ]);
+        assertDatabaseHas('discount_promotion_usages', [
+            'discount_promotion_id' => $promotion->id,
+            'order_id'              => $orderId,
+            'customer_id'           => $customer->id,
+        ]);
+        expect(Order::query()->findOrFail($orderId)->discount_amount)->toBeGreaterThan(0);
+    });
+
+    test('the reservation window is configurable', function (): void {
+        config(['discounts.reservation_hold_minutes' => 5]);
+
+        $option      = createLimitDeliveryOption();
+        [, $coupons] = createLimitPromotion('Short Window', 1, ['SHORT']);
+        $coupon      = $coupons->first();
+
+        $customer = User::factory()->create();
+        $this->customer($customer);
+
+        addItemAndApplyCoupon($option, $coupon->code);
+        checkoutPendingWithGateway()->assertCreated();
+
+        // Older than the configured 5 minutes, still inside the default 30.
+        $this->travel(6)->minutes();
+
+        addItemAndApplyCoupon($option, $coupon->code);
+        checkoutPendingWithGateway()->assertCreated();
+    });
+});
+
 describe('per-customer coupon limit — admin order creation', function (): void {
     test('admin order creation enforces the per-customer limit', function (): void {
         $firstOption           = createLimitDeliveryOption();
