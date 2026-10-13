@@ -78,8 +78,8 @@ return [
         ],
 
         'add_wallet_credit' => [
-            'name'        => 'Increase Wallet Balance',
-            'description' => 'A specified amount is directly added to the customer\'s primary wallet balance.',
+            'name'        => 'Grant Non-Withdrawable Bonus Credit',
+            'description' => 'Adds a bonus credit to the customer\'s wallet balance. The credit cannot be withdrawn as cash.',
             'fields'      => [
                 'amount' => [
                     'label'       => 'Credit Amount',
