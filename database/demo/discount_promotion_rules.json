@@ -26,6 +26,18 @@
   {
     "id": 3,
     "discount_promotion_id": 2,
+    "type": "condition",
+    "handler": "product_in_category",
+    "configuration": {
+      "category_ids": [12],
+      "match_policy": "any"
+    },
+    "created_at": "2024-10-01 08:00:00",
+    "updated_at": "2024-10-01 08:00:00"
+  },
+  {
+    "id": 4,
+    "discount_promotion_id": 2,
     "type": "action",
     "handler": "apply_percentage_off_product",
     "configuration": {
@@ -35,12 +47,68 @@
     "updated_at": "2024-10-01 08:00:00"
   },
   {
-    "id": 4,
-    "discount_promotion_id": 2,
+    "id": 5,
+    "discount_promotion_id": 3,
     "type": "condition",
-    "handler": "product_in_category",
+    "handler": "first_order_only",
+    "configuration": {},
+    "created_at": "2024-01-01 08:00:00",
+    "updated_at": "2024-01-01 08:00:00"
+  },
+  {
+    "id": 6,
+    "discount_promotion_id": 3,
+    "type": "action",
+    "handler": "apply_percentage_off",
     "configuration": {
-      "category_ids": [1,2,10]
+      "percentage": 10
+    },
+    "created_at": "2024-01-01 08:00:00",
+    "updated_at": "2024-01-01 08:00:00"
+  },
+  {
+    "id": 7,
+    "discount_promotion_id": 4,
+    "type": "condition",
+    "handler": "cart_value_over",
+    "configuration": {
+      "operator": ">=",
+      "value": 3000000,
+      "include_prepayments": true
+    },
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 8,
+    "discount_promotion_id": 4,
+    "type": "action",
+    "handler": "apply_percentage_off",
+    "configuration": {
+      "percentage": 5
+    },
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 9,
+    "discount_promotion_id": 5,
+    "type": "condition",
+    "handler": "specific_products_in_cart",
+    "configuration": {
+      "product_ids": [1, 2, 3],
+      "match_policy": "any"
+    },
+    "created_at": "2024-10-01 08:00:00",
+    "updated_at": "2024-10-01 08:00:00"
+  },
+  {
+    "id": 10,
+    "discount_promotion_id": 5,
+    "type": "action",
+    "handler": "apply_fixed_amount_off",
+    "configuration": {
+      "amount": 500000
     },
     "created_at": "2024-10-01 08:00:00",
     "updated_at": "2024-10-01 08:00:00"

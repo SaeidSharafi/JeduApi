@@ -152,6 +152,45 @@ describe('Cart Discount Integration', function (): void {
         ]);
     });
 
+    test('coupon promotion created through the admin action stops discounting once the coupon is removed', function (): void {
+        $this->customer();
+
+        app(App\Actions\Admin\Discounts\CreateDiscountPromotionAction::class)->execute(
+            App\Data\Admin\Discounts\DiscountPromotionCreateData::from([
+                'name'      => 'Admin Coupon',
+                'type'      => App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT->value,
+                'is_active' => true,
+                'rules'     => [
+                    [
+                        'type'          => 'action',
+                        'handler'       => 'apply_percentage_off',
+                        'configuration' => ['percentage' => 10],
+                    ],
+                ],
+                'coupons' => [
+                    ['code' => 'ADMIN10', 'is_active' => true],
+                ],
+            ])
+        );
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+            'quantity'                     => 1,
+        ]);
+
+        $applied = postJson(route('api.v1.shop.cart.coupon.apply'), [
+            'coupon_code' => 'ADMIN10',
+        ])->json('data');
+
+        expect($applied['discount_amount'])->toBeGreaterThan(0);
+
+        $removed = deleteJson(route('api.v1.shop.cart.coupon.remove'))->json('data');
+
+        expect($removed['applied_coupon_code'])->toBeNull()
+            ->and($removed['discount_amount'])->toBe(0)
+            ->and($removed['grand_total'])->toBe($removed['subtotal']);
+    });
+
     test('guest cart shows zero discount_amount without coupon', function (): void {
 
         $response = postJson(route('api.v1.shop.cart.items.store'), [
