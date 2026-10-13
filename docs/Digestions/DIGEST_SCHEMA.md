@@ -698,7 +698,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
 
   ## Behavior Clarifications
   - Capacity checks occur at checkout time using `product_delivery_options.capacity` against `enrolled_count`.
-  - Discount counters: `discount_promotions.total_usage_count` and `discount_coupons.usage_count` increment once when an order reaches COMPLETED (including admin status flips/creations) and are never decremented. `discount_promotion_usages` rows are deleted only when the order becomes CANCELLED or FAILED; refunds keep the row.
+  - Discount counters: `discount_promotions.total_usage_count` and `discount_coupons.usage_count` increment once when an order reaches COMPLETED (including admin status flips/creations) and are never decremented. `discount_promotion_usages` rows are deleted only when the order becomes CANCELLED or FAILED; refunds keep the row. A held row stops counting toward the per-customer allowance once it is older than `config('discounts.reservation_hold_minutes')` (default 30 minutes) but stays in the table; rows of settled (completed/refunded) orders count forever. No column was added for this — `created_at` is the hold timestamp.
   - Payments: `payments.status` transitions from `PENDING` to `COMPLETED` via gateway verification; re-verification on non-pending payments is rejected.
   - Orders: `orders.applied_cart_discounts_json` and `order_items.applied_discount_details_json` store immutable snapshots of applied discounts at checkout.
   - created_at/updated_at (TIMESTAMPS)

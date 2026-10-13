@@ -327,9 +327,9 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### DiscountPromotionUsage (`app/Models/DiscountPromotionUsage.php`)
 - **Purpose:** One row per applied Promotion per order; holds the customer's per-customer allowance while the order exists
-- **Key Fields:** `discount_promotion_id`, `discount_coupon_id` (nullable — audit only, coupon deletion never frees a slot), `customer_id` (required), `order_id`
+- **Key Fields:** `discount_promotion_id`, `discount_coupon_id` (nullable — audit only, coupon deletion never frees a slot), `customer_id` (required), `order_id`, `created_at` (the hold time the expiry window measures)
 - **Relationships:** `belongsTo(DiscountPromotion::class)` (`promotion`), `belongsTo(DiscountCoupon::class)` (`coupon`), `belongsTo(User::class)` (`customer`), `belongsTo(Order::class)` (`order`)
-- **Special Features:** `active()` scope selects rows whose order is not cancelled/failed (pending/processing reserve, completed/refunded consume); `unique(discount_promotion_id, order_id)` and index `(discount_promotion_id, customer_id)`; the allowance is pooled per promotion, not per coupon code. No casts are declared.
+- **Special Features:** `active()` is the single "still counts against the allowance" scope: rows whose order is not cancelled/failed AND either settled (`completed`/`refunded`/`partially_refunded` — consumed permanently) or younger than `config('discounts.reservation_hold_minutes')` (env `DISCOUNT_RESERVATION_HOLD_MINUTES`, default 30 minutes); a stale pending/processing hold stops counting without deleting the row or cancelling the order. `unique(discount_promotion_id, order_id)` and index `(discount_promotion_id, customer_id)`; the allowance is pooled per promotion, not per coupon code. No casts are declared (timestamps are Eloquent-managed).
 
 ### Wallet (`app/Models/Wallet.php`)
 - **Purpose:** User wallet system for credits and transactions
@@ -496,6 +496,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### Order Provisioning Configuration
 - `config/order.php` controls increment ID pattern (simple/dated/prefixed) and provisioning trigger (`any_payment`/`full_payment`/`manual_approval`).
+- `config/discounts.php` sets the discount handler discovery paths and the promotion reservation hold window `reservation_hold_minutes` (env `DISCOUNT_RESERVATION_HOLD_MINUTES`, default 30 minutes, matching the abandoned-order canceller window). Held slots older than it stop counting; settled usage never expires.
 - `config/payments.php` centralizes Mellat, bank transfer, and wallet gateway configurations. Shared random transaction reference generation is documented in [PaymentTransactionReferenceService](DIGEST_CORE_LOGIC.md#paymenttransactionreferenceservice-appservicespaymenttransactionreferenceservicephp).
 
 ### Payment Transaction Tracking
