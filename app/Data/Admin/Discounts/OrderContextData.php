@@ -47,7 +47,33 @@ final class OrderContextData extends Data
         public ?DiscountPromotion $evaluating_promotion = null,
         public ?string $triggered_by_coupon_code = null,
         public ?int $order_id = null,
+
+        /**
+         * The sum of every line's total at context-build time: product-level
+         * discounts already applied, prepayment lines counted at their deposit
+         * amount, bundle lines at their effective price.
+         *
+         * This is a snapshot and is never mutated by cart actions. It is the
+         * all-lines value a threshold is measured against, so the prepayment
+         * setting only selects a line set and never a price basis.
+         */
+        public int $effective_subtotal_all_items = 0,
     ) {}
+
+    /**
+     * The single amount a value-based condition measures against.
+     *
+     * Both options use the same effective (product-discount-applied) basis;
+     * the flag only selects the line set: the customer's whole commitment
+     * (deposit lines counted at their paid deposit) or only the lines being
+     * paid in full.
+     */
+    public function thresholdBasis(bool $measureWholeCommitment): int
+    {
+        return $measureWholeCommitment
+            ? $this->effective_subtotal_all_items
+            : $this->subtotal_full_payment_items;
+    }
 
     /**
      * Calculate the grand total (what the customer must pay).

@@ -7,8 +7,10 @@ use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Enums\Order\DiscountTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
+use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\User;
@@ -213,6 +215,60 @@ test('it calculates subtotals correctly for mixed payment types', function (): v
     expect($context->subtotal_full_payment_items)->toBe(10000);
 });
 
+test('it sums every line\'s effective total into one all-lines measurement basis', function (): void {
+    // Arrange: a mixed cart whose base prices differ from what each line is worth.
+    $user = User::factory()->create();
+
+    // Product-discounted full-payment line: 100,000 list, 80,000 effective.
+    $discountedOption = ProductDeliveryOption::factory()->create([
+        'price'                   => 100000,
+        'is_prepayment_available' => false,
+    ]);
+    ProductDeliveryOptionDiscountPrice::factory()
+        ->forProductDeliveryOption($discountedOption)
+        ->create(['discounted_price' => 80000]);
+
+    // Deposit line: 200,000 course price, 30,000 deposit.
+    $prePaymentOption = ProductDeliveryOption::factory()->create([
+        'price'                   => 200000,
+        'is_prepayment_available' => true,
+        'prepayment_amount'       => 30000,
+    ]);
+
+    // Bundle line: priced at its reviewed selling price, 50,000.
+    $bundleProduct = Product::factory()->create([
+        'productable_type' => ProductableEnum::BUNDLE->value,
+    ]);
+    $bundleOption = ProductDeliveryOption::factory()->create([
+        'product_id'              => $bundleProduct->id,
+        'price'                   => 50000,
+        'is_prepayment_available' => false,
+    ]);
+
+    mockPromotionFinderReturning(null);
+
+    $data = new OrderCreateData(
+        status: App\Enums\Order\OrderStatusEnum::PENDING->value,
+        customer_id: $user->id,
+        items: [
+            new OrderItemCreateData(product_delivery_option_id: $discountedOption->id, payment_type: 'full_payment'),
+            new OrderItemCreateData(product_delivery_option_id: $prePaymentOption->id, payment_type: 'pre_payment'),
+            new OrderItemCreateData(product_delivery_option_id: $bundleOption->id, payment_type: 'full_payment'),
+        ],
+        applied_coupon_code: null
+    );
+
+    // Act
+    $context = app(OrderCalculationService::class)->calculate($data);
+
+    // Assert: 80,000 discounted line + 30,000 deposit + 50,000 bundle.
+    expect($context->effective_subtotal_all_items)->toBe(160000)
+        ->and($context->items->sum('total'))->toBe(160000)
+        // The legacy subtotals keep their own, unchanged meanings.
+        ->and($context->subtotal_all_items)->toBe(350000)
+        ->and($context->subtotal_full_payment_items)->toBe(130000);
+});
+
 test('it throws a runtime exception if a condition handler config dto is not mapped', function (): void {
     $customer     = User::factory()->create();
     $orderContext = new OrderContextData(
@@ -229,7 +285,7 @@ test('it throws a runtime exception if a condition handler config dto is not map
         'discount_promotion_id' => $promotion->id,
         'type'                  => 'condition',
         'handler'               => 'cart_value_over',
-        'configuration'         => json_encode(['value' => 10000, 'operator' => '>=', 'include_prepayments' => true]),
+        'configuration'         => json_encode(['value' => 10000, 'operator' => '>=', 'measure_whole_commitment' => true]),
     ]);
 
     $promotion->load('rules');
@@ -389,7 +445,7 @@ test('it does not apply discount when promotion conditions fail', function (): v
         'type' => DiscountTypeEnum::CART_CHECKOUT,
     ]);
     $promotion->setRelation('rules', collect([
-        ['type' => 'condition', 'handler' => 'cart_value_over', 'configuration' => ['value' => 20000, 'operator' => '>=', 'include_prepayments' => true]],
+        ['type' => 'condition', 'handler' => 'cart_value_over', 'configuration' => ['value' => 20000, 'operator' => '>=', 'measure_whole_commitment' => true]],
         ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 20]],
     ]));
 

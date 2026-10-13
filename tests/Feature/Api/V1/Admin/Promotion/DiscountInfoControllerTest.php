@@ -130,12 +130,43 @@ describe('DiscountInfoController', function (): void {
         $cartValueCondition = $cartConditions->firstWhere('key', 'cart_value_over');
         expect($cartValueCondition['configuration_schema'])->toBeArray()
             ->and($cartValueCondition['configuration_schema'])->toHaveKeys([
-                'value', 'operator', 'include_prepayments',
+                'value', 'operator', 'measure_whole_commitment',
             ]);
 
         $productValueCondition = $poroductConditions->firstWhere('key', 'product_in_category');
         expect($productValueCondition['configuration_schema'])->toBeArray()
             ->and($productValueCondition['configuration_schema'])->toHaveKeys(['category_ids', 'match_policy']);
+    });
+
+    test('cart value condition wording states a measurement-only choice in both locales', function (): void {
+        $expected = [
+            'en' => [
+                'label'       => 'Measure the Whole Commitment',
+                'description' => "Only changes how this threshold is measured: the customer's whole commitment (deposit lines counted at their paid deposit) instead of only the lines being paid in full. It never changes what gets discounted — deposits are never discounted.",
+            ],
+            'fa' => [
+                'label'       => 'سنجش کل تعهد مشتری',
+                'description' => 'تنها نحوه سنجش این شرط را تغییر می‌دهد: کل تعهد مشتری (اقلام پیش‌پرداختی با مبلغ پیش‌پرداخت پرداخت‌شده) به‌جای فقط اقلامی که نقداً تسویه می‌شوند. این تنظیم هرگز تعیین نمی‌کند چه چیزی تخفیف می‌خورد؛ پیش‌پرداخت‌ها هیچ‌گاه تخفیف نمی‌خورند.',
+            ],
+        ];
+
+        foreach ($expected as $locale => $strings) {
+            app()->setLocale($locale);
+
+            $response = $this->get('/api/v1/admin/discount-info/conditions');
+            $response->assertOk();
+
+            $schema = collect($response->json('data.cart'))
+                ->firstWhere('key', 'cart_value_over')['configuration_schema'];
+
+            // The exact key set is pinned, so no other measurement knob (the
+            // old "include prepayments" flag included) can silently return.
+            expect(array_keys($schema))->toEqualCanonicalizing(['operator', 'value', 'measure_whole_commitment'])
+                ->and($schema['measure_whole_commitment']['label'])->toBe($strings['label'])
+                ->and($schema['measure_whole_commitment']['description'])->toBe($strings['description']);
+        }
+
+        app()->setLocale('en');
     });
 
     test('actions returns available discount actions dynamically', function (): void {

@@ -28,18 +28,18 @@ final class DiscountPromotionRuleFactory extends Factory
      *
      * @param  int  $value  The value the cart must be over (in cents).
      * @param  string  $operator  The comparison operator (e.g., '>=', '>').
-     * @param  bool  $includePrepayments  Whether to include the full value of prepayment items.
+     * @param  bool  $measureWholeCommitment  Measure the customer's whole commitment (deposit lines at their paid deposit) instead of only the lines paid in full.
      */
-    public function asCartValueCondition(int $value = 10000, string $operator = '>=', bool $includePrepayments = false): Factory
+    public function asCartValueCondition(int $value = 10000, string $operator = '>=', bool $measureWholeCommitment = false): Factory
     {
-        return $this->state(function (array $attributes) use ($value, $operator, $includePrepayments) {
+        return $this->state(function (array $attributes) use ($value, $operator, $measureWholeCommitment) {
             return [
                 'type'          => 'condition',
                 'handler'       => 'cart_value_over',
                 'configuration' => [
-                    'value'               => $value,
-                    'operator'            => $operator,
-                    'include_prepayments' => $includePrepayments,
+                    'value'                    => $value,
+                    'operator'                 => $operator,
+                    'measure_whole_commitment' => $measureWholeCommitment,
                 ],
             ];
         });

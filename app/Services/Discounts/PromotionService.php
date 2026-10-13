@@ -143,9 +143,10 @@ final class PromotionService
             );
         }
 
-        $subtotal_all_items          = 0;
-        $subtotal_full_payment_items = 0;
-        $calculatedItems             = collect();
+        $subtotal_all_items           = 0;
+        $subtotal_full_payment_items  = 0;
+        $effective_subtotal_all_items = 0;
+        $calculatedItems              = collect();
         foreach ($data->items as $itemData) {
             /** @var ProductDeliveryOption $option */
             $option = $deliveryOptions->get($itemData->product_delivery_option_id);
@@ -171,6 +172,10 @@ final class PromotionService
             $calculatedItems->push($calculatedItem);
 
             $subtotal_all_items += $originalFullPrice * $calculatedItem->qty;
+            // A line's total is already its product-effective value: the
+            // discounted price for a full-payment line and the deposit for a
+            // prepayment line.
+            $effective_subtotal_all_items += $calculatedItem->total;
 
             if ($calculatedItem->payment_type === OrderItemPaymentTypeEnum::FULL_PAYMENT) {
                 $subtotal_full_payment_items += $startingPriceForCalc * $calculatedItem->qty;
@@ -182,6 +187,7 @@ final class PromotionService
             items: $calculatedItems,
             subtotal_full_payment_items: $subtotal_full_payment_items,
             subtotal_all_items: $subtotal_all_items,
+            effective_subtotal_all_items: $effective_subtotal_all_items,
         );
     }
 

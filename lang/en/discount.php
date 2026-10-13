@@ -19,9 +19,9 @@ return [
                     'label'       => 'Amount',
                     'description' => 'The amount the customer\'s cart is compared against (in Rials).',
                 ],
-                'include_prepayments' => [
-                    'label'       => 'Include Prepayments',
-                    'description' => 'If enabled, prepayment amounts of the cart items will also be included in this condition\'s calculation.',
+                'measure_whole_commitment' => [
+                    'label'       => 'Measure the Whole Commitment',
+                    'description' => 'Only changes how this threshold is measured: the customer\'s whole commitment (deposit lines counted at their paid deposit) instead of only the lines being paid in full. It never changes what gets discounted — deposits are never discounted.',
                 ],
             ],
         ],
