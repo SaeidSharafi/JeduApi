@@ -695,7 +695,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 #### Cart Condition Handlers (`app/Services/Discounts/Cart/Conditions/`)
 - `CartItemCountOverCondition`, `CartValueCondition`, `CartValueTierCondition`, `FirstOrderOnlyCondition`, `ProductCategoryCondition`, `SpecificProductsInCartCondition`, `UserNeverPurchasedCategoryCondition` — gate cart-level rule eligibility.
-- `CartValueTierCondition` (`cart_value_tier`) owns the `tiers` ladder. It measures `discountableTotal()`, selects the single highest satisfied tier (no tier reached ⇒ the promotion is ineligible) and publishes `['min_amount' => int, 'percentage' => float]` on `OrderContextData::$condition_selections` under its own handler key. Conditions may publish selections but still never write prices.
+- `CartValueTierCondition` (`cart_value_tier`) owns the `tiers` ladder. It measures `discountableTotal()`, selects the single highest satisfied tier (no tier reached ⇒ the promotion is ineligible) and publishes the matched `App\Services\Discounts\Configs\TierData` (`min_amount`, `percentage`) on `OrderContextData::$condition_selections` under its own handler key. Conditions may publish selections but still never write prices.
 
 #### Product Action Handlers (`app/Services/Discounts/Product/Actions/`)
 - `ApplyFixedDiscountToProductAction`, `ApplyFixedPriceProductAction`, `ApplyPercentageDiscountToProductAction`, `ApplyTieredPercentageOffProductAction` — adjust product pricing.
@@ -704,7 +704,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - `DeliveryMethodIsCondition`, `LowCapacityRemainingCondition`, `PriceBetweenCondition`, `ProductCategoryCondition`, `RegistrationClosingSoonCondition`, `VendorIsCondition` — gate product-level rule eligibility.
 
 #### Config Data Classes (`app/Services/Discounts/Configs/`)
-- Per-handler configuration DTOs (`ApplyTieredPercentageOffData`, `CartValueConditionConfigData`, `CartValueTierConditionConfigData`, `DeliveryMethodIsData`, `GiftProductData`, `ProductCategoryConditionConfigData`, `SpecificProductsInCartData`, `TierData`, `UserNeverPurchasedCategoryData`, etc.) define the typed `rules[].config` payload validated against each handler's schema.
+- Per-handler configuration DTOs (`CartValueConditionConfigData`, `CartValueTierConditionConfigData`, `DeliveryMethodIsData`, `GiftProductData`, `ProductCategoryConditionConfigData`, `SpecificProductsInCartData`, `TierData`, `UserNeverPurchasedCategoryData`, etc.) define the typed `rules[].config` payload validated against each handler's schema.
 - `CartValueConditionConfigData` uses `measure_whole_commitment` (renamed from the former prepayment-inclusion flag) — a measurement-only choice that never changes what gets discounted. `CartValueTierConditionConfigData` carries `tiers` of `TierData` (`min_amount`, `percentage`). `ApplyTieredPercentageOffData` is now config-free (empty rules).
 
 ### ProductPriceService (`app/Services/ProductPriceService.php`)
