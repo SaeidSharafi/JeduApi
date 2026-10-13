@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
+use App\Actions\Admin\Discounts\IncrementDiscountUsageCountsAction;
 use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
 use App\Data\Admin\Order\OrderUpdateData;
 use App\Enums\EnrollmentStatusEnum;
@@ -19,6 +20,7 @@ final readonly class UpdateOrderAction
     public function __construct(
         private ProductReservationService $productReservationService,
         private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
+        private IncrementDiscountUsageCountsAction $incrementDiscountUsageCounts,
     ) {}
 
     /**
@@ -38,6 +40,13 @@ final readonly class UpdateOrderAction
                 || $order->status === OrderStatusEnum::FAILED
             ) {
                 $this->releasePromotionUsageSlots->handle($order);
+            }
+
+            // An admin flip straight to COMPLETED bypasses OrderStatusService, so
+            // settle the usage counters here. The discount_usage_incremented_at
+            // flag on the order keeps this idempotent.
+            if ($order->status === OrderStatusEnum::COMPLETED) {
+                $this->incrementDiscountUsageCounts->handle($order);
             }
 
             if ($order->status    === OrderStatusEnum::CANCELLED

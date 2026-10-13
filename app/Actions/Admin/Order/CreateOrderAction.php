@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
+use App\Actions\Admin\Discounts\IncrementDiscountUsageCountsAction;
 use App\Actions\Admin\Discounts\RecordPromotionUsageAction;
 use App\Actions\Admin\Discounts\ValidatePromotionPerCustomerLimitAction;
 use App\Actions\Admin\ProductDeliveryOption\ValidateBundleCompositionAction;
@@ -13,6 +14,7 @@ use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
+use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Product\BundleUnavailableReasonEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
@@ -38,6 +40,7 @@ final readonly class CreateOrderAction
         private BundleAvailabilityService $bundleAvailability,
         private ValidatePromotionPerCustomerLimitAction $validatePromotionPerCustomerLimit,
         private RecordPromotionUsageAction $recordPromotionUsage,
+        private IncrementDiscountUsageCountsAction $incrementDiscountUsageCounts,
         private CreateBundlePurchaseAction $createBundlePurchase,
         private ValidateBundleCompositionAction $validateBundleComposition,
     ) {}
@@ -211,6 +214,13 @@ final readonly class CreateOrderAction
             // Record one usage slot per applied Promotion — the pending slot
             // holds the per-customer allowance until completion/cancellation.
             $this->recordPromotionUsage->handle($order);
+
+            // An order created directly as COMPLETED never passes through
+            // OrderStatusService, so settle its usage counters here. The
+            // discount_usage_incremented_at flag keeps this idempotent.
+            if ($order->status === OrderStatusEnum::COMPLETED) {
+                $this->incrementDiscountUsageCounts->handle($order);
+            }
 
             // Enrollments are now created by OrderStatusService after payment.
 
