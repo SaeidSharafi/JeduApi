@@ -65,27 +65,23 @@ final class OrderContextData extends Data
          * condition's handler key, so a consuming action shares one read/write
          * shape with the condition that produced the decision.
          *
-         * @var array<string, array<string, mixed>>
+         * @var array<string, Data>
          */
         public array $condition_selections = [],
     ) {}
 
     /**
      * Publish a condition's eligibility selection for its consuming action.
-     *
-     * @param  array<string, mixed>  $selection
      */
-    public function publishSelection(string $handlerKey, array $selection): void
+    public function publishSelection(string $handlerKey, Data $selection): void
     {
         $this->condition_selections[$handlerKey] = $selection;
     }
 
     /**
      * Read a selection previously published by a condition handler.
-     *
-     * @return array<string, mixed>|null
      */
-    public function publishedSelection(string $handlerKey): ?array
+    public function publishedSelection(string $handlerKey): ?Data
     {
         return $this->condition_selections[$handlerKey] ?? null;
     }
