@@ -249,9 +249,9 @@ describe('DiscountPromotionController', function (): void {
                     'type'          => 'condition',
                     'handler'       => 'cart_value_over',
                     'configuration' => [
-                        'operator'            => App\Enums\Operators\MathOperatorEnum::GREATER_THAN->value,
-                        'value'               => 1000,
-                        'include_prepayments' => true,
+                        'operator'                 => App\Enums\Operators\MathOperatorEnum::GREATER_THAN->value,
+                        'value'                    => 1000,
+                        'measure_whole_commitment' => true,
                     ],
                 ],
             ],

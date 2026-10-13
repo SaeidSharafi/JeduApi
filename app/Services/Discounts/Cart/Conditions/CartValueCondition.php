@@ -25,10 +25,9 @@ final class CartValueCondition implements DiscountConditionContract
             return false;
         }
 
-        // HERE IS THE KEY LOGIC: Select the correct total based on the config flag
-        $comparisonValue = $configuration->include_prepayments
-            ? $context->subtotal_all_items
-            : $context->subtotal_full_payment_items;
+        // Both measurement options share one price basis; the flag only chooses
+        // which lines count (whole commitment vs full payment only).
+        $comparisonValue = $context->thresholdBasis($configuration->measure_whole_commitment);
 
         // Use a match statement for a clean and safe comparison
         return match ($configuration->operator) {

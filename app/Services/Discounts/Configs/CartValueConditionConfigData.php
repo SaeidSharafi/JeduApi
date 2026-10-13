@@ -13,7 +13,12 @@ final class CartValueConditionConfigData extends Data
     public function __construct(
         public MathOperatorEnum $operator,
         public int $value,      // The value to compare against
-        public bool $include_prepayments, // If true, check against the cart's full value
+        /**
+         * Measurement-only choice: measure the customer's whole commitment
+         * (deposit lines counted at their paid deposit) instead of only the
+         * lines being paid in full. Never changes what gets discounted.
+         */
+        public bool $measure_whole_commitment,
     ) {}
 
     /**
@@ -24,9 +29,9 @@ final class CartValueConditionConfigData extends Data
     public static function rules(): array
     {
         return [
-            'operator'            => ['required', Rule::enum(MathOperatorEnum::class)],
-            'value'               => ['required', 'integer', 'min:0'],
-            'include_prepayments' => ['boolean'],
+            'operator'                 => ['required', Rule::enum(MathOperatorEnum::class)],
+            'value'                    => ['required', 'integer', 'min:0'],
+            'measure_whole_commitment' => ['boolean'],
         ];
     }
 }

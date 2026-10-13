@@ -489,9 +489,9 @@ describe('CartService', function (): void {
             'type'                  => 'condition',
             'handler'               => 'cart_value_over',
             'configuration'         => [
-                'value'               => 100000,
-                'operator'            => '>=',
-                'include_prepayments' => true,
+                'value'                    => 100000,
+                'operator'                 => '>=',
+                'measure_whole_commitment' => true,
             ],
         ]);
         \App\Models\DiscountCoupon::factory()->create([
@@ -502,6 +502,92 @@ describe('CartService', function (): void {
 
         $this->expectException(ValidationException::class);
         resolve(CartService::class)->applyCoupon(new \App\Data\Shop\Cart\ApplyCouponData(coupon_code: 'NEED10K'));
+    });
+
+    it('measures a cart-value threshold on the same basis as checkout', function (): void {
+        $user = User::factory()->create();
+        $this->mock(CartIdentifier::class, function (MockInterface $mock) use ($user): void {
+            $mock->shouldReceive('userId')
+                ->atLeast()->once()
+                ->andReturn($user->id);
+            $mock->shouldReceive('guestToken')
+                ->zeroOrMoreTimes()
+                ->andReturnNull();
+        });
+
+        $cart    = Cart::factory()->create(['user_id' => $user->id]);
+        $product = Product::factory()->create();
+
+        // Full-payment line: 100,000 list, 80,000 after its product-level discount.
+        $fullOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'price'      => 100000,
+            'capacity'   => null,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+        ]);
+        \App\Models\ProductDeliveryOptionDiscountPrice::factory()->create([
+            'product_delivery_option_id' => $fullOption->id,
+            'discount_promotion_id'      => \App\Models\DiscountPromotion::factory()->create()->id,
+            'discounted_price'           => 80000,
+        ]);
+        CartItem::factory()->create([
+            'cart_id'                    => $cart->id,
+            'product_delivery_option_id' => $fullOption->id,
+            'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT,
+            'quantity'                   => 1,
+        ]);
+
+        // Deposit line: 50,000 course price, 10,000 deposit.
+        $depositOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'price'                   => 50000,
+            'capacity'                => null,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 10000,
+        ]);
+        CartItem::factory()->create([
+            'cart_id'                    => $cart->id,
+            'product_delivery_option_id' => $depositOption->id,
+            'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT,
+            'quantity'                   => 1,
+        ]);
+
+        // 120,000 sits between the effective all-lines value (90,000) and the
+        // base-priced all-lines total (150,000), so only the new basis fails it.
+        $promotion = \App\Models\DiscountPromotion::factory()->create([
+            'type'            => \App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'       => true,
+            'requires_coupon' => true,
+            'starts_at'       => now()->subDay(),
+            'ends_at'         => now()->addDay(),
+        ]);
+        \App\Models\DiscountPromotionRule::create([
+            'discount_promotion_id' => $promotion->id,
+            'type'                  => 'condition',
+            'handler'               => 'cart_value_over',
+            'configuration'         => [
+                'value'                    => 120000,
+                'operator'                 => '>=',
+                'measure_whole_commitment' => true,
+            ],
+        ]);
+        \App\Models\DiscountPromotionRule::create([
+            'discount_promotion_id' => $promotion->id,
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off',
+            'configuration'         => ['percentage' => 5],
+        ]);
+        \App\Models\DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'BASIS120',
+            'is_active'             => true,
+        ]);
+
+        // 5% of the discountable 80,000 line would be 4,000 if the base-priced
+        // all-lines total still decided the threshold.
+        $this->expectException(ValidationException::class);
+        resolve(CartService::class)->applyCoupon(new \App\Data\Shop\Cart\ApplyCouponData(coupon_code: 'BASIS120'));
     });
 
     it('returns zero totals for an empty cart and rejects an unknown coupon code', function (): void {
