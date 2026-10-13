@@ -134,6 +134,82 @@ function checkoutPendingWithGateway(): Illuminate\Testing\TestResponse
     ]);
 }
 
+/**
+ * One tiered campaign: one promotion carrying both the tier ladder condition
+ * and the config-free consuming action.
+ */
+function createTieredCampaignPromotion(): DiscountPromotion
+{
+    $promotion = DiscountPromotion::create([
+        'name'                             => 'Tiered Cart Campaign',
+        'type'                             => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'                        => true,
+        'priority'                         => 1,
+        'starts_at'                        => now()->subDay(),
+        'ends_at'                          => now()->addDay(),
+        'stop_processing_subsequent_rules' => false,
+        'requires_coupon'                  => false,
+        'usage_limit_total'                => 5,
+        'usage_limit_per_customer'         => 1,
+    ]);
+
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $promotion->id,
+        'type'                  => 'condition',
+        'handler'               => 'cart_value_tier',
+        'configuration'         => [
+            'tiers' => [
+                ['min_amount' => 3000000, 'percentage' => 5],
+                ['min_amount' => 5000000, 'percentage' => 8],
+            ],
+        ],
+    ]);
+
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $promotion->id,
+        'type'                  => 'action',
+        'handler'               => 'apply_tiered_percentage_off',
+        'configuration'         => [],
+    ]);
+
+    return $promotion;
+}
+
+describe('tiered campaign identity — shop checkout', function (): void {
+    test('one tiered campaign applies one tier and records exactly one usage row', function (): void {
+        $option    = createLimitDeliveryOption(6000000);
+        $promotion = createTieredCampaignPromotion();
+
+        $customer = User::factory()->create();
+        $customer->wallet->update(['balance' => 7000000]);
+        $this->customer($customer);
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $option->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        $orderId = checkoutWithWallet()->assertCreated()->json('data.order.id');
+
+        // One campaign object, one budget, one per-customer allowance.
+        assertDatabaseCount('discount_promotions', 1);
+
+        $order = Order::query()->findOrFail($orderId);
+
+        // The cart's 6,000,000 clears both rungs, so only the higher 8% applies.
+        expect($order->discount_amount)->toBe(480000)
+            ->and($order->applied_cart_discounts_json)->toHaveCount(1)
+            ->and($order->applied_cart_discounts_json[0]['promotion_id'])->toBe($promotion->id);
+
+        assertDatabaseHas('discount_promotion_usages', [
+            'discount_promotion_id' => $promotion->id,
+            'order_id'              => $orderId,
+            'customer_id'           => $customer->id,
+        ]);
+        assertDatabaseCount('discount_promotion_usages', 1);
+    });
+});
+
 describe('per-customer coupon limit — shop checkout', function (): void {
     test('a completed order consumes the slot and a second checkout is rejected', function (): void {
         $firstOption           = createLimitDeliveryOption();

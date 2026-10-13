@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use App\Enums\Order\DiscountTypeEnum;
 use App\Rules\CheckDiscountConfigurationRule;
+use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
+use App\Services\Discounts\Configs\ApplyTieredPercentageOffData;
+use App\Services\Discounts\Configs\CartValueConditionConfigData;
+use App\Services\Discounts\Configs\CartValueTierConditionConfigData;
 use App\Services\Discounts\DiscountMetadataService;
 
 beforeEach(function (): void {
@@ -406,5 +410,104 @@ describe('CheckDiscountConfigurationRule', function (): void {
 
         $this->rule->validate('rules', $rules, $fail);
         expect($failed)->toBeTrue();
+    });
+
+    it('fails when the consuming tier action has no tier condition', function (): void {
+        $this->rule->setData(['type' => 'cart_checkout']);
+
+        $this->mockService->shouldReceive('getConfigurationClass')
+            ->with('cart_value_over', 'condition', DiscountTypeEnum::CART_CHECKOUT)
+            ->andReturn(CartValueConditionConfigData::class);
+
+        $this->mockService->shouldReceive('getConfigurationClass')
+            ->with('apply_tiered_percentage_off', 'action', DiscountTypeEnum::CART_CHECKOUT)
+            ->andReturn(ApplyTieredPercentageOffData::class);
+
+        $failed = false;
+        $fail   = function ($message) use (&$failed): void {
+            $failed = true;
+            expect($message)->toBe(__('discount.validation.tier_pair_incomplete', ['attribute' => 'rules']));
+        };
+
+        $rules = [
+            [
+                'type'          => 'condition',
+                'handler'       => 'cart_value_over',
+                'configuration' => ['operator' => '>=', 'value' => 1000, 'measure_whole_commitment' => false],
+            ],
+            [
+                'type'          => 'action',
+                'handler'       => 'apply_tiered_percentage_off',
+                'configuration' => [],
+            ],
+        ];
+
+        $this->rule->validate('rules', $rules, $fail);
+        expect($failed)->toBeTrue();
+    });
+
+    it('fails when the tier condition has no consuming action', function (): void {
+        $this->rule->setData(['type' => 'cart_checkout']);
+
+        $this->mockService->shouldReceive('getConfigurationClass')
+            ->with('cart_value_tier', 'condition', DiscountTypeEnum::CART_CHECKOUT)
+            ->andReturn(CartValueTierConditionConfigData::class);
+
+        $this->mockService->shouldReceive('getConfigurationClass')
+            ->with('apply_percentage_off', 'action', DiscountTypeEnum::CART_CHECKOUT)
+            ->andReturn(ApplyPercentageDiscountConfigData::class);
+
+        $failed = false;
+        $fail   = function ($message) use (&$failed): void {
+            $failed = true;
+            expect($message)->toBe(__('discount.validation.tier_pair_incomplete', ['attribute' => 'rules']));
+        };
+
+        $rules = [
+            [
+                'type'          => 'condition',
+                'handler'       => 'cart_value_tier',
+                'configuration' => ['tiers' => [['min_amount' => 1000, 'percentage' => 5]]],
+            ],
+            [
+                'type'          => 'action',
+                'handler'       => 'apply_percentage_off',
+                'configuration' => ['percentage' => 10],
+            ],
+        ];
+
+        $this->rule->validate('rules', $rules, $fail);
+        expect($failed)->toBeTrue();
+    });
+
+    it('accepts a tier condition paired with its consuming action', function (): void {
+        $this->rule->setData(['type' => 'cart_checkout']);
+
+        $this->mockService->shouldReceive('getConfigurationClass')
+            ->with('cart_value_tier', 'condition', DiscountTypeEnum::CART_CHECKOUT)
+            ->andReturn(CartValueTierConditionConfigData::class);
+
+        $this->mockService->shouldReceive('getConfigurationClass')
+            ->with('apply_tiered_percentage_off', 'action', DiscountTypeEnum::CART_CHECKOUT)
+            ->andReturn(ApplyTieredPercentageOffData::class);
+
+        $fail = function ($message): void {
+            throw new Exception($message);
+        };
+
+        $rules = [
+            [
+                'type'          => 'condition',
+                'handler'       => 'cart_value_tier',
+                'configuration' => ['tiers' => [['min_amount' => 1000, 'percentage' => 5]]],
+            ],
+            [
+                'type'          => 'action',
+                'handler'       => 'apply_tiered_percentage_off',
+                'configuration' => [],
+            ],
+        ];
+
+        expect(fn () => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
     });
 });
