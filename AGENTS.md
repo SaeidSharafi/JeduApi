@@ -21,6 +21,9 @@ PEST only. AuthTestTrait, not actingAs(). Database reset is owned by the shared 
 ## Commands
 sail artisan always, never bare php artisan. Run `sail bin pint --dirty --format agent` before finalizing any PHP change.
 
+## Workspaces
+Worktrees live under `.worktrees/<name>` (ignored). Create one with `git worktree add .worktrees/<name> -b <branch> <base>`, then run `scripts/worktree-setup.sh .worktrees/<name>`; it copies `.env`, allocates the port block and Compose project, links the Typesense model cache, starts Sail and migrates. It is idempotent and must exit 0 before work starts there. Remove one with `scripts/worktree-teardown.sh .worktrees/<name>`. Never run those setup steps by hand, copy `docker/typesense-data` between worktrees, or delete a worktree directory by hand.
+
 ## Digest Maintenance
 Before finalizing any code task, check whether changes affect documented models/relations, schema, workflows/services/jobs, API contracts, or navigation. Update affected digest sections in same task, even when no commit requested:
 
