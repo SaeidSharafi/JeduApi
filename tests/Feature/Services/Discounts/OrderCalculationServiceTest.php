@@ -264,6 +264,11 @@ test('it sums every line\'s effective total into one all-lines measurement basis
     // Assert: 80,000 discounted line + 30,000 deposit + 50,000 bundle.
     expect($context->effective_subtotal_all_items)->toBe(160000)
         ->and($context->items->sum('total'))->toBe(160000)
+        // The full-payment threshold snapshot counts only what a markdown can
+        // reach: the 80,000 discounted line, never the deposit or the bundle.
+        ->and($context->effective_subtotal_discountable_items)->toBe(80000)
+        ->and($context->thresholdBasis(false))->toBe(80000)
+        ->and($context->thresholdBasis(true))->toBe(160000)
         // The legacy subtotals keep their own, unchanged meanings.
         ->and($context->subtotal_all_items)->toBe(350000)
         ->and($context->subtotal_full_payment_items)->toBe(130000);
@@ -630,3 +635,58 @@ test('it stops applying subsequent cart promotions when stop_processing_subseque
         ->and($context->applied_cart_discounts)->toHaveCount(1)
         ->and($context->applied_cart_discounts[0]['promotion_id'])->toBe(100);
 });
+
+test('a gift line measures the same threshold whichever promotion runs first', function (string $first): void {
+    $user         = User::factory()->create();
+    $courseOption = ProductDeliveryOption::factory()->create(['price' => 100000, 'is_prepayment_available' => false]);
+    $giftOption   = ProductDeliveryOption::factory()->create(['price' => 50000, 'is_prepayment_available' => false]);
+
+    $giftPromotion = DiscountPromotion::factory()->make([
+        'id'       => 200,
+        'type'     => DiscountTypeEnum::CART_CHECKOUT,
+        'priority' => 1,
+    ]);
+    $giftPromotion->setRelation('rules', collect([
+        ['type' => 'action', 'handler' => 'gift_product', 'configuration' => ['product_delivery_option_id' => $giftOption->id]],
+    ]));
+
+    // 120,000 sits between the cart's discountable worth (100,000) and the
+    // value the gift's *list* price would add (150,000), so the measured
+    // amount alone decides this condition.
+    $valuePromotion = DiscountPromotion::factory()->make([
+        'id'       => 201,
+        'type'     => DiscountTypeEnum::CART_CHECKOUT,
+        'priority' => 2,
+    ]);
+    $valuePromotion->setRelation('rules', collect([
+        [
+            'type'          => 'condition',
+            'handler'       => 'cart_value_over',
+            'configuration' => ['operator' => '>=', 'value' => 120000, 'measure_whole_commitment' => false],
+        ],
+        ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 10]],
+    ]));
+
+    mockPromotionFinderReturning($first === 'gift first'
+        ? [$giftPromotion, $valuePromotion]
+        : [$valuePromotion, $giftPromotion]);
+
+    $data = new OrderCreateData(
+        status: App\Enums\Order\OrderStatusEnum::PENDING->value,
+        customer_id: $user->id,
+        items: [new OrderItemCreateData(product_delivery_option_id: $courseOption->id, payment_type: 'full_payment')],
+        applied_coupon_code: null,
+    );
+
+    $context = app(OrderCalculationService::class)->calculate($data);
+    $course  = $context->items->first(fn ($item): bool => ! $item->is_gift);
+
+    // The gift is free, so it is worth 0 to the customer and must not carry the
+    // cart over the threshold. Before the measurement became a build-time
+    // snapshot, running the gift first pushed the measured full-payment total
+    // to 150,000 and the 10% markdown fired only in that order.
+    expect($context->effective_subtotal_discountable_items)->toBe(100000)
+        ->and($context->subtotal_full_payment_items)->toBe(150000)
+        ->and($course->discount_amount)->toBe(0)
+        ->and($course->total)->toBe(100000);
+})->with(['value condition first', 'gift first']);

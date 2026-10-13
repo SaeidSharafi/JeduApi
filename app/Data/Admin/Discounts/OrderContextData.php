@@ -70,6 +70,17 @@ final class OrderContextData extends Data
         public int $effective_subtotal_all_items = 0,
 
         /**
+         * The product-effective worth of exactly the lines a markdown may land
+         * on (no bundles, no deposit lines), captured at context-build time.
+         *
+         * This is the full-payment side of {@see self::thresholdBasis()}: a
+         * snapshot, so no later cart action — a gift line in particular — can
+         * change what a threshold measures, and it matches the line set
+         * `discountableItems()` exposes to every markdown action.
+         */
+        public int $effective_subtotal_discountable_items = 0,
+
+        /**
          * Selections published by condition handlers: eligibility decisions
          * only, never price or total mutations. Keyed by the publishing
          * condition's handler key, so a consuming action shares one read/write
@@ -99,22 +110,26 @@ final class OrderContextData extends Data
     /**
      * The single amount a value-based condition measures against.
      *
-     * The whole-commitment side is the product-effective snapshot
-     * (`effective_subtotal_all_items`), and the flag only selects the line set
-     * (deposit lines counted at their paid deposit) rather than a price basis.
+     * Both sides are context-build snapshots, so neither can be changed by a
+     * cart action that runs earlier in the same calculation: the whole
+     * commitment (`effective_subtotal_all_items`, deposit lines at their paid
+     * deposit) or the discountable line set
+     * (`effective_subtotal_discountable_items`, the same set every markdown
+     * action iterates). The flag only selects the line set, never a price
+     * basis.
      *
-     * The full-payment-only side is the legacy `subtotal_full_payment_items`
-     * field. That total is not purely product-effective: `GiftProductAction`
-     * also bumps it (and `subtotal_all_items`) by the gift's list price for the
-     * full-value audit trail, so a gift line is worth 0 to the customer while
-     * its list price can inflate the full-payment-only side measured later in
-     * the same calculation.
+     * The legacy `subtotal_full_payment_items` field is deliberately not used
+     * as a measurement any more. `GiftProductAction` bumps it (and
+     * `subtotal_all_items`) by the gift's list price for the full-value audit
+     * trail, so a gift line is worth 0 to the customer while its list price
+     * would otherwise inflate the full-payment-only measurement of a later
+     * promotion in the same calculation.
      */
     public function thresholdBasis(bool $measureWholeCommitment): int
     {
         return $measureWholeCommitment
             ? $this->effective_subtotal_all_items
-            : $this->subtotal_full_payment_items;
+            : $this->effective_subtotal_discountable_items;
     }
 
     /**

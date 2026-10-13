@@ -57,11 +57,12 @@ describe('GiftProductAction', function (): void {
         $config     = new GiftProductData(product_delivery_option_id: $giftOption->id);
 
         $context = OrderContextData::from([
-            'customer'                     => User::factory()->make(),
-            'items'                        => collect([]),
-            'subtotal_full_payment_items'  => 10000,
-            'subtotal_all_items'           => 10000,
-            'effective_subtotal_all_items' => 10000,
+            'customer'                              => User::factory()->make(),
+            'items'                                 => collect([]),
+            'subtotal_full_payment_items'           => 10000,
+            'subtotal_all_items'                    => 10000,
+            'effective_subtotal_all_items'          => 10000,
+            'effective_subtotal_discountable_items' => 10000,
         ]);
 
         $action->apply($context, $config);
@@ -71,6 +72,11 @@ describe('GiftProductAction', function (): void {
         // never mutated here.
         expect($context->effective_subtotal_all_items)->toBe(10000)
             ->and($context->items->sum('total'))->toBe(0)
+            // A gift must not move what a threshold measures either: the
+            // measurement snapshots stay at their build-time value.
+            ->and($context->effective_subtotal_discountable_items)->toBe(10000)
+            ->and($context->thresholdBasis(false))->toBe(10000)
+            ->and($context->thresholdBasis(true))->toBe(10000)
             // The legacy subtotals keep their existing gift-inflated behaviour.
             ->and($context->subtotal_all_items)->toBe(15000)
             ->and($context->subtotal_full_payment_items)->toBe(15000);

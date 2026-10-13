@@ -142,10 +142,11 @@ final class PromotionService
             );
         }
 
-        $subtotal_all_items           = 0;
-        $subtotal_full_payment_items  = 0;
-        $effective_subtotal_all_items = 0;
-        $calculatedItems              = collect();
+        $subtotal_all_items                    = 0;
+        $subtotal_full_payment_items           = 0;
+        $effective_subtotal_all_items          = 0;
+        $effective_subtotal_discountable_items = 0;
+        $calculatedItems                       = collect();
         foreach ($data->items as $itemData) {
             /** @var ProductDeliveryOption $option */
             $option = $deliveryOptions->get($itemData->product_delivery_option_id);
@@ -179,6 +180,14 @@ final class PromotionService
             if ($calculatedItem->payment_type === OrderItemPaymentTypeEnum::FULL_PAYMENT) {
                 $subtotal_full_payment_items += $startingPriceForCalc * $calculatedItem->qty;
             }
+
+            // The threshold snapshot: the same line set `discountableItems()`
+            // exposes to every markdown action, at its product-effective worth.
+            if (! $calculatedItem->is_bundle
+                && $calculatedItem->payment_type !== OrderItemPaymentTypeEnum::PRE_PAYMENT
+            ) {
+                $effective_subtotal_discountable_items += $calculatedItem->total;
+            }
         }
 
         return new OrderContextData(
@@ -187,6 +196,7 @@ final class PromotionService
             subtotal_full_payment_items: $subtotal_full_payment_items,
             subtotal_all_items: $subtotal_all_items,
             effective_subtotal_all_items: $effective_subtotal_all_items,
+            effective_subtotal_discountable_items: $effective_subtotal_discountable_items,
         );
     }
 

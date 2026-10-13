@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 it('passes when value is greater or equal', function (): void {
     $handler = new CartValueCondition();
     $config  = new CartValueConditionConfigData(operator: MathOperatorEnum::GREATER_THAN_OR_EQUAL, value: 10000, measure_whole_commitment: false);
-    $context = OrderContextData::from(['customer' => User::factory()->create(), 'items' => [], 'subtotal_full_payment_items' => 15000, 'subtotal_all_items' => 20000, 'effective_subtotal_all_items' => 12000]);
+    $context = OrderContextData::from(['customer' => User::factory()->create(), 'items' => [], 'subtotal_full_payment_items' => 15000, 'subtotal_all_items' => 20000, 'effective_subtotal_all_items' => 12000, 'effective_subtotal_discountable_items' => 15000]);
 
     expect($handler->passes($context, $config))->toBeTrue();
 });
@@ -20,7 +20,7 @@ it('passes when value is greater or equal', function (): void {
 it('fails when value is less than required', function (): void {
     $handler = new CartValueCondition();
     $config  = new CartValueConditionConfigData(operator: MathOperatorEnum::GREATER_THAN_OR_EQUAL, value: 10000, measure_whole_commitment: false);
-    $context = OrderContextData::from(['customer' => User::factory()->create(), 'items' => [], 'subtotal_full_payment_items' => 9000, 'subtotal_all_items' => 20000, 'effective_subtotal_all_items' => 12000]);
+    $context = OrderContextData::from(['customer' => User::factory()->create(), 'items' => [], 'subtotal_full_payment_items' => 9000, 'subtotal_all_items' => 20000, 'effective_subtotal_all_items' => 12000, 'effective_subtotal_discountable_items' => 9000]);
 
     expect($handler->passes($context, $config))->toBeFalse();
 });
@@ -44,14 +44,15 @@ it('measures the whole commitment on the effective basis, never the base-priced 
 
 it('switches only the measured line set and never the price basis', function (): void {
     // A cart with a product-discounted full-payment line and a deposit line:
-    //  - the full-payment line is worth 80,000 after its product discount (base 100,000)
+    //  - the discountable line is worth 80,000 after its product discount (base 100,000)
     //  - the deposit line is counted at its 10,000 deposit (base course price 100,000)
     $context = OrderContextData::from([
-        'customer'                     => User::factory()->create(),
-        'items'                        => [],
-        'subtotal_full_payment_items'  => 80000,
-        'subtotal_all_items'           => 180000, // base-priced all lines
-        'effective_subtotal_all_items' => 90000,  // product discounts applied, deposit at its deposit
+        'customer'                              => User::factory()->create(),
+        'items'                                 => [],
+        'subtotal_full_payment_items'           => 80000,
+        'subtotal_all_items'                    => 180000, // base-priced all lines
+        'effective_subtotal_all_items'          => 90000,  // product discounts applied, deposit at its deposit
+        'effective_subtotal_discountable_items' => 80000, // the lines a markdown may land on
     ]);
     $handler = new CartValueCondition();
 
@@ -71,7 +72,7 @@ it('switches only the measured line set and never the price basis', function ():
 
     expect($handler->passes($context, $aboveEffectiveBasis))->toBeFalse();
 
-    // 80,000 is the effective full-payment value; the base-priced full line is 100,000.
+    // 80,000 is the effective discountable value; the base-priced full line is 100,000.
     $atEffectiveFullPaymentValue = new CartValueConditionConfigData(operator: MathOperatorEnum::GREATER_THAN_OR_EQUAL, value: 80000, measure_whole_commitment: false);
 
     expect($handler->passes($context, $atEffectiveFullPaymentValue))->toBeTrue();
@@ -97,7 +98,7 @@ it('correctly evaluates all operators', function (MathOperatorEnum $operator, in
     $config  = new CartValueConditionConfigData(operator: $operator, value: $valueToTest, measure_whole_commitment: false);
 
     // The context's value is 10000
-    $context = OrderContextData::from(['customer' => User::factory()->make(), 'items' => [], 'subtotal_full_payment_items' => 10000, 'subtotal_all_items' => 20000, 'effective_subtotal_all_items' => 10000]);
+    $context = OrderContextData::from(['customer' => User::factory()->make(), 'items' => [], 'subtotal_full_payment_items' => 10000, 'subtotal_all_items' => 20000, 'effective_subtotal_all_items' => 10000, 'effective_subtotal_discountable_items' => 10000]);
 
     expect($handler->passes($context, $config))->toBe($expectedResult);
 })->with('operators');
@@ -131,11 +132,12 @@ it('evaluates a stored rule whose operator is the metadata name', function (): v
         'measure_whole_commitment' => false,
     ]);
     $context = OrderContextData::from([
-        'customer'                     => User::factory()->make(),
-        'items'                        => [],
-        'subtotal_full_payment_items'  => 15000,
-        'subtotal_all_items'           => 20000,
-        'effective_subtotal_all_items' => 15000,
+        'customer'                              => User::factory()->make(),
+        'items'                                 => [],
+        'subtotal_full_payment_items'           => 15000,
+        'subtotal_all_items'                    => 20000,
+        'effective_subtotal_all_items'          => 15000,
+        'effective_subtotal_discountable_items' => 15000,
     ]);
 
     expect($config->operator)->toBe(MathOperatorEnum::GREATER_THAN_OR_EQUAL)
