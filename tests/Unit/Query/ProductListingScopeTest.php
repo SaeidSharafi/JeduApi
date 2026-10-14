@@ -121,7 +121,7 @@ it('renders each availability status', function (AvailabilityStatusEnum $status,
     'ongoing'  => [AvailabilityStatusEnum::ONGOING, 'earliest_event_start_ts:<=1741996800 && latest_event_ended_ts:>=1741996800'],
 ]);
 
-it('renders the global search product scope without catalogue or availability clauses', function () use ($now): void {
+it('renders the global search product scope with the listing capacity filter and availability window', function () use ($now): void {
     $filter = new ProductFilterData(
         with_discounts: false,
         min_price: 100_000,
@@ -134,8 +134,69 @@ it('renders the global search product scope without catalogue or availability cl
     expect($scope->toTypesenseFilter())->toBe(
         'status:=published && is_visible:=true && productable_type:!=bundle'
         .' && productable_type:=course && has_discount:=false && price:>=100000'
+        .' && max_capacity_utilization:>=0.5'
+        .' && earliest_availability_start_ts:<=1742040000 && latest_availability_end_ts:>=1742040000'
+        .' && latest_event_ended_ts:>=1741996800'
     );
 });
+
+it('expresses the listing availability clauses in the global search scope', function (?ProductFilterData $filter, array $expectedClauses) use ($now): void {
+    $listing = ProductListingScope::forListing(ProductableEnum::COURSE, $filter, $now())->toTypesenseFilter();
+    $search  = ProductListingScope::forGlobalSearch(ProductableEnum::COURSE, $filter, $now())->toTypesenseFilter();
+
+    foreach ($expectedClauses as $clause) {
+        expect($search)->toContain($clause)
+            ->and($listing)->toContain($clause);
+    }
+})->with([
+    'default available-now window' => [
+        null,
+        [
+            'earliest_availability_start_ts:<=1742040000',
+            'latest_availability_end_ts:>=1742040000',
+            'latest_event_ended_ts:>=1741996800',
+        ],
+    ],
+    'available now' => [
+        new ProductFilterData(is_available_now: true),
+        [
+            'earliest_registration_start_ts:<=1742040000',
+            'latest_registration_end_ts:>=1742040000',
+            'earliest_availability_start_ts:<=1742040000',
+            'latest_availability_end_ts:>=1742040000',
+        ],
+    ],
+    'past status' => [
+        new ProductFilterData(availability_status: AvailabilityStatusEnum::PAST->value),
+        ['latest_event_ended_ts:<1741996800'],
+    ],
+    'upcoming status' => [
+        new ProductFilterData(availability_status: AvailabilityStatusEnum::UPCOMING->value),
+        ['earliest_event_start_ts:>1741996800'],
+    ],
+    'ongoing status' => [
+        new ProductFilterData(availability_status: AvailabilityStatusEnum::ONGOING->value),
+        ['earliest_event_start_ts:<=1741996800', 'latest_event_ended_ts:>=1741996800'],
+    ],
+    'registration window' => [
+        new ProductFilterData(
+            registration_starts_after: Carbon::parse('2025-09-01', 'UTC'),
+            registration_ends_before: Carbon::parse('2025-06-20', 'UTC'),
+        ),
+        ['latest_registration_end_ts:>=1756684800', 'earliest_registration_start_ts:<=1750377600'],
+    ],
+    'availability window' => [
+        new ProductFilterData(
+            available_from: Carbon::parse('2025-06-20', 'UTC'),
+            available_to: Carbon::parse('2025-09-01', 'UTC'),
+        ),
+        ['latest_availability_end_ts:>=1750377600', 'earliest_availability_start_ts:<=1756684800'],
+    ],
+    'capacity filter' => [
+        new ProductFilterData(near_capacity_only: true, capacity_threshold: 0.9),
+        ['max_capacity_utilization:>=0.9'],
+    ],
+]);
 
 it('does not render an explicit negative discount for the listing scope', function () use ($now): void {
     $filter = new ProductFilterData(with_discounts: false);
