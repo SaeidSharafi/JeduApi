@@ -37,12 +37,18 @@ final class ApiResponseService
 
     /**
      * Standard success response (200 OK)
+     *
+     * @param  array<string, mixed>  $metadata  Facts that describe the payload rather than belong to it.
      */
-    public function success(mixed $data = null, ?string $message = null, int $code = HttpStatus::HTTP_OK): ApiResponseInterface
-    {
+    public function success(
+        mixed $data = null,
+        ?string $message = null,
+        int $code = HttpStatus::HTTP_OK,
+        array $metadata = [],
+    ): ApiResponseInterface {
         $message ??= __('messages.success');
 
-        return new ApiSuccessResponse($message, $data, $code, [], $this->getGuestHeaders());
+        return new ApiSuccessResponse($message, $data, $code, $metadata, $this->getGuestHeaders());
     }
 
     /**

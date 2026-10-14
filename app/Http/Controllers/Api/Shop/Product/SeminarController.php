@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
+use App\Actions\Shop\Product\BuildListingMetadataAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Data\Shop\Product\ProductCardData;
@@ -21,9 +22,7 @@ use App\Services\ProductPriceService;
  */
 final class SeminarController extends Controller
 {
-    public function __construct(
-        private ProductPriceService $priceService,
-    ) {}
+    public function __construct(private ProductPriceService $priceService) {}
 
     /**
      * Seminar List
@@ -46,7 +45,7 @@ final class SeminarController extends Controller
      *
      * @responseFile resources/responses/shop/products/seminars/index.json
      */
-    public function index(ProductListRequestData $requestData): ApiResponseInterface
+    public function index(ProductListRequestData $requestData, BuildListingMetadataAction $buildMetadata): ApiResponseInterface
     {
         $requestData->type = ProductableEnum::SEMINAR->value;
         $courses           = ProductQueryService::make()
@@ -57,7 +56,7 @@ final class SeminarController extends Controller
                 return ProductCardData::fromModel($product, $priceData);
             });
 
-        return apiResponse()->success($courses);
+        return apiResponse()->success($courses, metadata: $buildMetadata->forListing(ProductableEnum::SEMINAR));
     }
 
     /**

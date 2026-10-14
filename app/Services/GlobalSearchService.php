@@ -15,6 +15,7 @@ use App\Enums\System\CacheKey;
 use App\Exceptions\CustomValidationException;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
+use App\Query\ProductListingScope;
 use App\Query\ProductQueryService;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -125,8 +126,13 @@ final class GlobalSearchService
             $prefix          = config('scout.prefix', '');
             $productIndex    = $prefix.(new Product())->searchableAs();
             $blogPostIndex   = $prefix.(new BlogPost())->searchableAs();
-            $searchProducts  = empty($searchData->result_types) || in_array('product', $searchData->result_types);
-            $searchBlogPosts = empty($searchData->result_types) || in_array('blog_post', $searchData->result_types);
+            $searchProducts  = $searchData->returnsProducts();
+            $searchBlogPosts = (empty($searchData->result_types) || in_array('blog_post', $searchData->result_types))
+                && ! $this->requestCarriesProductFilter($searchData);
+
+            if (! $searchProducts && ! $searchBlogPosts) {
+                return new LengthAwarePaginator([], 0, $searchData->per_page, $page);
+            }
 
             $rawResults = $this->performSearch(
                 $searchData,
@@ -306,8 +312,15 @@ final class GlobalSearchService
         $page = LengthAwarePaginator::resolveCurrentPage();
 
         // Determine which types to search
-        $searchProducts = empty($searchData->result_types) || in_array('product', $searchData->result_types);
+        $searchProducts  = $searchData->returnsProducts();
+        $searchBlogPosts = (empty($searchData->result_types) || in_array('blog_post', $searchData->result_types))
+            && ! $this->requestCarriesProductFilter($searchData);
+
         if (! $searchProducts) {
+            if (! $searchBlogPosts) {
+                return new LengthAwarePaginator([], 0, $searchData->per_page, $page)->withQueryString();
+            }
+
             return BlogPost::query()
                 ->where('status', PublicationStatusEnum::PUBLISHED)
                 ->where(function ($q) use ($searchData): void {
@@ -424,47 +437,10 @@ final class GlobalSearchService
 
     private function buildProductFilters(SearchData $searchData): string
     {
-        $baseFilters = [
-            'status:=published',
-            'is_visible:=true',
-            'productable_type:!='.ProductableEnum::BUNDLE->value,
-        ];
-
-        if (! empty($searchData->productable_type)) {
-            $baseFilters[] = "productable_type:={$searchData->productable_type}";
-        }
-
-        // Use filter data if available
-        if ($searchData->filter) {
-            if ($searchData->filter->with_discounts !== null) {
-                $value         = $searchData->filter->with_discounts ? 'true' : 'false';
-                $baseFilters[] = "has_discount:={$value}";
-            }
-
-            if (! empty($searchData->filter->category_slugs)) {
-                $slugs         = implode(',', $searchData->filter->category_slugs);
-                $baseFilters[] = "category_slugs:=[{$slugs}]";
-            }
-
-            if ($searchData->filter->min_price !== null && $searchData->filter->max_price !== null) {
-                $baseFilters[] = "price:[{$searchData->filter->min_price}..{$searchData->filter->max_price}]";
-            } elseif ($searchData->filter->min_price !== null) {
-                $baseFilters[] = "price:>={$searchData->filter->min_price}";
-            } elseif ($searchData->filter->max_price !== null) {
-                $baseFilters[] = "price:<={$searchData->filter->max_price}";
-            }
-
-            if (! empty($searchData->filter->difficulty_level)) {
-                $baseFilters[] = "difficulty_level:={$searchData->filter->difficulty_level}";
-            }
-
-            if (! empty($searchData->filter->fulfillment_types)) {
-                $types         = array_map(fn ($type): string => "fulfillment_types:={$type}", $searchData->filter->fulfillment_types);
-                $baseFilters[] = '('.implode(' || ', $types).')';
-            }
-        }
-
-        return implode(' && ', $baseFilters);
+        return ProductListingScope::forGlobalSearch(
+            ProductableEnum::tryFrom((string) $searchData->productable_type),
+            $searchData->filter,
+        )->toTypesenseFilter();
     }
 
     private function buildBlogFilters(SearchData $searchData): string
@@ -475,6 +451,29 @@ final class GlobalSearchService
         // For now, blog posts only filter by published status
 
         return implode(' && ', $baseFilters);
+    }
+
+    /**
+     * Does this request carry a filter that selects on a product's own attributes?
+     *
+     * Every field of {@see ProductFilterData} (categories, delivery method, difficulty, price,
+     * discounts, capacity, availability) can only be evaluated against a product, so an article
+     * can never satisfy one. When such a filter is present, blog posts are excluded from the
+     * result set even when the client explicitly asks for them.
+     */
+    private function requestCarriesProductFilter(SearchData $searchData): bool
+    {
+        if ($searchData->filter === null) {
+            return false;
+        }
+
+        foreach ($searchData->filter->toArray() as $value) {
+            if ($value !== null && $value !== []) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function shouldUseVectorSearch(?string $query): bool

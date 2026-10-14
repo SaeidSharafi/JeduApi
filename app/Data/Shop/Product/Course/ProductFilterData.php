@@ -9,6 +9,8 @@ use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\Product\AvailabilityStatusEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Fluent;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
@@ -48,9 +50,16 @@ final class ProductFilterData extends Data
             $prefix.'difficulty_level'    => [
                 'sometimes', 'string', Rule::enum(CourseDifficultyLevelEnum::class),
             ],
-            $prefix.'availability_status'       => ['sometimes', 'string', Rule::enum(AvailabilityStatusEnum::class)],
-            $prefix.'min_price'                 => ['sometimes', 'integer', 'min:0'],
-            $prefix.'max_price'                 => ['sometimes', 'integer', "gt:{$prefix}min_price"],
+            $prefix.'availability_status' => ['sometimes', 'string', Rule::enum(AvailabilityStatusEnum::class)],
+            $prefix.'min_price'           => ['sometimes', 'integer', 'min:0'],
+            $prefix.'max_price'           => [
+                'sometimes', 'integer',
+                // The ceiling stands on its own; it is only compared to the floor when one was sent.
+                Rule::when(
+                    static fn (Fluent $data): bool => Arr::get($data, $prefix.'min_price') !== null,
+                    ["gte:{$prefix}min_price"],
+                ),
+            ],
             $prefix.'with_discounts'            => ['sometimes', 'boolean'],
             $prefix.'near_capacity_only'        => ['sometimes', 'boolean'],
             $prefix.'capacity_threshold'        => ['sometimes', 'numeric', 'min:0', 'max:1'],
@@ -100,7 +109,7 @@ final class ProductFilterData extends Data
                 'example'     => 100_000,
             ],
             $prefix.'max_price' => [
-                'description' => 'Only include products with a maximum price less than or equal to this amount.',
+                'description' => 'Only include products with a maximum price less than or equal to this amount. Can be sent on its own, without `min_price`; when both are sent the maximum must be greater than or equal to the minimum.',
                 'example'     => 500_000,
             ],
             $prefix.'with_discounts' => [

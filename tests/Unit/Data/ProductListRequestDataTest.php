@@ -49,6 +49,17 @@ describe('ProductListRequestData Validation Rules', function (): void {
         ],
     ]);
 
+    it('accepts price bounds where the maximum stands alone or equals the minimum', function (array $filter): void {
+        $rules     = ProductListRequestData::rules();
+        $validator = Validator::make(['filter' => $filter], $rules);
+
+        expect($validator->fails())->toBeFalse();
+    })->with([
+        'minimum only' => [['min_price' => 100]],
+        'maximum only' => [['max_price' => 200]],
+        'equal bounds' => [['min_price' => 100, 'max_price' => 100]],
+    ]);
+
     it('passes validation with valid data', function (): void {
         $category  = Category::factory()->create();
         $validData = [

@@ -23,13 +23,9 @@ final class CategoryQueryService
      */
     public function getProductsForCategory(Category $category, ProductableEnum $type, int $limit, bool $paginate = false): LengthAwarePaginator|Collection
     {
-        $query = Product::query()
-            ->ofType($type)
+        $query = ProductListingScope::forCategoryListing($type)
+            ->applyToDatabase(Product::query())
             ->inCategory($category->id)
-            ->publishedAndVisible()
-            ->hasPublishedDeliveryOption()
-            ->publishedProductable()
-            ->activeTerm()
             ->forListing();
 
         if ($paginate) {

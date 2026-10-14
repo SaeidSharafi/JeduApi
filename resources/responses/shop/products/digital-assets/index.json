@@ -815,5 +815,12 @@
     "to": 12,
     "total": 12
   },
-  "metadata": []
+  "metadata": {
+    "filters": {
+      "price": {
+        "min": 50000,
+        "max": 500000
+      }
+    }
+  }
 }

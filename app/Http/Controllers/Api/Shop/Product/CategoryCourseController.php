@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
+use App\Actions\Shop\Product\BuildListingMetadataAction;
 use App\Data\Shop\PaginationRequestData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
@@ -29,10 +30,17 @@ final class CategoryCourseController extends Controller
      *
      * @responseFile resources/responses/shop/products/categories/courses.json
      */
-    public function __invoke(PaginationRequestData $data, Category $category, CategoryQueryService $service): \App\Contracts\ApiResponseInterface
-    {
+    public function __invoke(
+        PaginationRequestData $data,
+        Category $category,
+        CategoryQueryService $service,
+        BuildListingMetadataAction $buildMetadata,
+    ): \App\Contracts\ApiResponseInterface {
         $paginatedCourses = $service->getProductsForCategory($category, ProductableEnum::COURSE, $data->per_page, true);
 
-        return apiResponse()->success($paginatedCourses);
+        return apiResponse()->success(
+            $paginatedCourses,
+            metadata: $buildMetadata->forCategory($category, ProductableEnum::COURSE),
+        );
     }
 }

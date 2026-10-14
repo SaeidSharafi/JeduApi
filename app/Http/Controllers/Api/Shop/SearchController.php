@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop;
 
+use App\Actions\Shop\Search\BuildSearchMetadataAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Blog\BlogPostCardData;
 use App\Data\Shop\Product\ProductCardData;
@@ -28,8 +29,12 @@ final class SearchController extends Controller
      *
      * @responseFile 200 resources/responses/shop/search.json
      */
-    public function __invoke(SearchData $searchData, GlobalSearchService $service, ProductPriceService $priceService): ApiResponseInterface
-    {
+    public function __invoke(
+        SearchData $searchData,
+        GlobalSearchService $service,
+        ProductPriceService $priceService,
+        BuildSearchMetadataAction $buildMetadata,
+    ): ApiResponseInterface {
         // Pass SearchData DTO directly to service - no intermediate transformation needed!
         $results = $service->search($searchData);
 
@@ -50,6 +55,6 @@ final class SearchController extends Controller
             // @codeCoverageIgnoreEnd
         });
 
-        return apiResponse()->success($data);
+        return apiResponse()->success($data, metadata: $buildMetadata->handle($searchData));
     }
 }
