@@ -14,11 +14,14 @@ use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Category\CreateCategoryData;
 use App\Data\Admin\Category\SetGoodForStartData;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\System\CacheKey;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
+use App\Services\CataloguePriceBoundService;
+use App\Services\ProductPriceService;
 
 mutates(
     ArchiveProductAction::class,
@@ -30,6 +33,25 @@ mutates(
     DeleteCourseAction::class,
     SetGoodForStartAction::class,
 );
+
+/**
+ * Create an available, published course product whose only delivery option costs
+ * $price, and materialise its Purchase Price row.
+ */
+function createPriceBoundCourse(int $price, string $name): Product
+{
+    $product = Product::factory()
+        ->withDeliveryOptions(1, [[
+            'price'            => $price,
+            'fulfillment_type' => FulfillmentTypeEnum::DIGITAL->value,
+        ]])
+        ->withCourse(Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]))
+        ->create(['name' => $name]);
+
+    app(ProductPriceService::class)->updatePriceIndex($product->fresh());
+
+    return $product;
+}
 
 $warmListing = function (): void {
     app(CacheStore::class)->put(CacheKey::GoodForStart, ['slug' => 'programming', 'limit' => 10], ['stale']);
@@ -128,4 +150,27 @@ test('changing the good-for-start flag clears the good-for-start listing', funct
     ]));
 
     $assertListingCleared();
+});
+
+test('a catalog write makes the next read regenerate the course price bound', function (): void {
+    $bound = fn (): array => app(CataloguePriceBoundService::class)->forCourseCatalogue();
+
+    expect($bound())->toBe(['min' => null, 'max' => null]);
+
+    // Written straight through the factory and the price index, so no catalog write
+    // path runs and the bound the call above cached stays in place.
+    createPriceBoundCourse(150_000, 'Added While The Bound Was Cached');
+
+    expect($bound())->toBe(['min' => null, 'max' => null]);
+
+    Event::fake([
+        App\Events\ProductCacheInvalidated::class,
+        App\Events\ProductAvailabilityCacheInvalidated::class,
+        App\Events\ProductSearchIndexInvalidated::class,
+    ]);
+    $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+
+    app(ArchiveProductAction::class)->handle($product);
+
+    expect($bound())->toBe(['min' => 150_000, 'max' => 150_000]);
 });

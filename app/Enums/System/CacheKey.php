@@ -22,26 +22,27 @@ use InvalidArgumentException;
  */
 enum CacheKey: string
 {
-    case Slider             = 'shop.homepage.sliders';
-    case PartnersInHome     = 'shop.homepage.partners';
-    case StudentStory       = 'shop.homepage.student-stories:{hash}';
-    case PartnersInCourse   = 'shop.course.partners';
-    case Partners           = 'shop.partners';
-    case OrganizationPage   = 'shop.organization-page:{limit}';
-    case StudentQuizzes     = 'student_quizzes:{userId}';
-    case TeacherQuizzes     = 'teacher_quizzes:{userId}';
-    case GoodForStart       = 'shop.category.{slug}.good-for-start.courses-{limit}';
-    case Search             = 'search:{hash}';
-    case SearchSuggest      = 'search:suggest:{hash}';
-    case PgroongaEnabled    = 'database.pgroonga_enabled';
-    case DiscountHandlers   = 'discounts.handler_registry.cache';
-    case Settings           = 'settings.all';
-    case DigipayAccessToken = 'digipay_access_token';
-    case AccessToken        = 'AccessToken::{hash}';
-    case Tokenable          = 'token_{id}::id_{env}';
-    case OtpValue           = 'otp_{identifier}_{guard}_value_{type}';
-    case OtpMarker          = 'otp_{identifier}_{guard}_created_{type}';
-    case OtpAttempts        = 'otp_{identifier}_{guard}_verify_attempts_{type}';
+    case Slider              = 'shop.homepage.sliders';
+    case PartnersInHome      = 'shop.homepage.partners';
+    case StudentStory        = 'shop.homepage.student-stories:{hash}';
+    case PartnersInCourse    = 'shop.course.partners';
+    case Partners            = 'shop.partners';
+    case OrganizationPage    = 'shop.organization-page:{limit}';
+    case StudentQuizzes      = 'student_quizzes:{userId}';
+    case TeacherQuizzes      = 'teacher_quizzes:{userId}';
+    case GoodForStart        = 'shop.category.{slug}.good-for-start.courses-{limit}';
+    case CataloguePriceBound = 'shop.catalogue.price-bound.{scope}';
+    case Search              = 'search:{hash}';
+    case SearchSuggest       = 'search:suggest:{hash}';
+    case PgroongaEnabled     = 'database.pgroonga_enabled';
+    case DiscountHandlers    = 'discounts.handler_registry.cache';
+    case Settings            = 'settings.all';
+    case DigipayAccessToken  = 'digipay_access_token';
+    case AccessToken         = 'AccessToken::{hash}';
+    case Tokenable           = 'token_{id}::id_{env}';
+    case OtpValue            = 'otp_{identifier}_{guard}_value_{type}';
+    case OtpMarker           = 'otp_{identifier}_{guard}_created_{type}';
+    case OtpAttempts         = 'otp_{identifier}_{guard}_verify_attempts_{type}';
 
     /**
      * Substitute the named parameters into the key template.
@@ -83,6 +84,7 @@ enum CacheKey: string
             self::OtpAttempts                  => (int) config('otp.verify_attempt_window_seconds', 300),
             self::SearchSuggest                => 3600,
             self::GoodForStart                 => 1800,
+            self::CataloguePriceBound          => 1800,
             self::DigipayAccessToken           => 3300,
             self::AccessToken, self::Tokenable => 360,
             self::Settings, self::DiscountHandlers,
@@ -100,6 +102,7 @@ enum CacheKey: string
             self::Slider, self::PartnersInHome, self::PartnersInCourse,
             self::Partners, self::OrganizationPage, self::StudentStory, self::StudentQuizzes,
             self::TeacherQuizzes, self::Search => 900,
+            self::CataloguePriceBound          => 900,
             self::SearchSuggest                => 14400,
             default                            => null,
         };
@@ -114,8 +117,9 @@ enum CacheKey: string
             self::Slider, self::PartnersInHome,
             self::StudentStory => CacheTag::HomePage,
             self::PartnersInCourse, self::Partners, self::StudentQuizzes,
-            self::TeacherQuizzes                                     => CacheTag::Content,
-            self::GoodForStart, self::OrganizationPage               => CacheTag::Catalog,
+            self::TeacherQuizzes => CacheTag::Content,
+            self::GoodForStart, self::CataloguePriceBound,
+            self::OrganizationPage                                   => CacheTag::Catalog,
             self::Search, self::SearchSuggest, self::PgroongaEnabled => CacheTag::Search,
             self::DiscountHandlers                                   => CacheTag::Discounts,
             self::Settings, self::DigipayAccessToken                 => CacheTag::Settings,
