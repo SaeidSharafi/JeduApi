@@ -312,7 +312,9 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 - **Relationships:** 
   - `hasMany(DiscountPromotionRule::class)` - rules
   - `hasMany(DiscountCoupon::class)` - coupons
-- **Special Features:** Complex rule-based discount system with conditions and actions; index on `(is_active, starts_at, ends_at)` and `(type, priority)`; usage counters (`total_usage_count` for non-coupon promotions) increment only on successful checkout; coupon gating via `requires_coupon` with `findPromotionByCoupon()` on `PromotionService`.
+  - `hasMany(DiscountPromotionUsage::class)` - usages
+  - `hasMany(DiscountPromotionUsage::class)` - heldUsages (the `usages()` relation with the `held()` scope applied; the source of `reserved_usage_count`, loaded only through the model's `withReservedUsage()` query scope or `loadReservedUsage()` so the reported scope is chosen once)
+- **Special Features:** Complex rule-based discount system with conditions and actions; index on `(is_active, starts_at, ends_at)` and `(type, priority)`; usage caps (`usage_limit_total`, and the coupon's `usage_limit`) are decided by the count of `active()` reservation rows, while `total_usage_count` is the completion/reporting counter and increments only on successful checkout; `reserved_usage_count` on `DiscountPromotionData` instead counts `heldUsages`, so settled completions are never reported twice; coupon gating via `requires_coupon` with `findPromotionByCoupon()` on `PromotionService`.
 
 ### DiscountPromotionRule (`app/Models/DiscountPromotionRule.php`)
 - **Purpose:** Individual rules within discount promotions
@@ -324,6 +326,12 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 - **Purpose:** Coupon code management for discount promotions
 - **Key Fields:** `code`, `usage_limit`, `used_count`, coupon metadata
 - **Relationships:** `belongsTo(DiscountPromotion::class)` - discountPromotion
+
+### DiscountPromotionUsage (`app/Models/DiscountPromotionUsage.php`)
+- **Purpose:** One row per applied Promotion per order; holds the reserved capacity that the per-customer allowance, the promotion's `usage_limit_total` and the coupon's `usage_limit` are counted from while the order exists
+- **Key Fields:** `discount_promotion_id`, `discount_coupon_id` (nullable — the coupon used, counted for that coupon's `usage_limit`; coupon deletion never frees a slot), `customer_id` (required), `order_id`, `created_at` (the hold time the expiry window measures)
+- **Relationships:** `belongsTo(DiscountPromotion::class)` (`promotion`), `belongsTo(DiscountCoupon::class)` (`coupon`), `belongsTo(User::class)` (`customer`), `belongsTo(Order::class)` (`order`)
+- **Special Features:** `active()` is the single "still counts against a cap" scope: rows whose order is not cancelled/failed AND either settled (`completed`/`refunded`/`partially_refunded` — consumed permanently) or younger than `config('discounts.reservation_hold_minutes')` (env `DISCOUNT_RESERVATION_HOLD_MINUTES`, default 30 minutes); a stale pending/processing hold stops counting without deleting the row or cancelling the order. `held()` is `active()` restricted to rows whose order has not settled — fresh pending/processing holds only — and is what admin `reserved_usage_count` reports, so completed/refunded rows are not counted as capacity on top of `total_usage_count`. `unique(discount_promotion_id, order_id)` and index `(discount_promotion_id, customer_id)`; the per-customer allowance and `usage_limit_total` pool all rows of a promotion, while a coupon's `usage_limit` counts only rows carrying that `discount_coupon_id`. No casts are declared (timestamps are Eloquent-managed).
 
 ### Wallet (`app/Models/Wallet.php`)
 - **Purpose:** User wallet system for credits and transactions
@@ -490,6 +498,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### Order Provisioning Configuration
 - `config/order.php` controls increment ID pattern (simple/dated/prefixed) and provisioning trigger (`any_payment`/`full_payment`/`manual_approval`).
+- `config/discounts.php` sets the discount handler discovery paths and the promotion reservation hold window `reservation_hold_minutes` (env `DISCOUNT_RESERVATION_HOLD_MINUTES`, default 30 minutes, matching the abandoned-order canceller window). Held slots older than it stop counting; settled usage never expires.
 - `config/payments.php` centralizes Mellat, bank transfer, and wallet gateway configurations. Shared random transaction reference generation is documented in [PaymentTransactionReferenceService](DIGEST_CORE_LOGIC.md#paymenttransactionreferenceservice-appservicespaymenttransactionreferenceservicephp).
 
 ### Payment Transaction Tracking
@@ -502,7 +511,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 - Capacity is enforced at checkout time; `enrolled_count` is used against `capacity` when creating orders.
 
 ### DiscountPromotion & DiscountCoupon Counters
-- `DiscountPromotion.total_usage_count` and `DiscountCoupon.usage_count` increment only on successful checkout when the promotion/coupon is applied.
+- `DiscountPromotion.total_usage_count` and `DiscountCoupon.usage_count` increment only on successful checkout when the promotion/coupon is applied, and are never decremented. They are the completion/reporting metric; eligibility for `usage_limit_total`/`usage_limit` is counted from `active()` reservation rows instead.
 
 ### Payment Verification State
 - Payment verification starts with a gatekeeper check: if the payment is already `COMPLETED`, returns early; if the order has any other completed payment, throws `RuntimeException` preventing double-verification.
@@ -515,6 +524,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### Order & OrderItem Discount Snapshots
 - `Order.applied_cart_discounts_json` captures cart-level discounts at checkout.
+- `Order.reward_intents_json` (array cast) captures the promotion rewards this order intends to grant: promotion id/name, ledger credit type (`bonus` for `add_wallet_credit`, `gift` for `add_gift_credit`), amount, resolved description, rule configuration snapshot, and `expires_days`. It is written in the same transaction as the order and executed once when the order reaches `completed`.
 - `OrderItem.applied_discount_details_json` captures item-level discount details at checkout.
 
 ### ContactUsRequest (`app/Models/ContactUsRequest.php`)

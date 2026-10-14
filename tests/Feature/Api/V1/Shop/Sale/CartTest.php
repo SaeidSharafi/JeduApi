@@ -152,6 +152,45 @@ describe('Cart Discount Integration', function (): void {
         ]);
     });
 
+    test('coupon promotion created through the admin action stops discounting once the coupon is removed', function (): void {
+        $this->customer();
+
+        app(App\Actions\Admin\Discounts\CreateDiscountPromotionAction::class)->execute(
+            App\Data\Admin\Discounts\DiscountPromotionCreateData::from([
+                'name'      => 'Admin Coupon',
+                'type'      => App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT->value,
+                'is_active' => true,
+                'rules'     => [
+                    [
+                        'type'          => 'action',
+                        'handler'       => 'apply_percentage_off',
+                        'configuration' => ['percentage' => 10],
+                    ],
+                ],
+                'coupons' => [
+                    ['code' => 'ADMIN10', 'is_active' => true],
+                ],
+            ])
+        );
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+            'quantity'                     => 1,
+        ]);
+
+        $applied = postJson(route('api.v1.shop.cart.coupon.apply'), [
+            'coupon_code' => 'ADMIN10',
+        ])->json('data');
+
+        expect($applied['discount_amount'])->toBeGreaterThan(0);
+
+        $removed = deleteJson(route('api.v1.shop.cart.coupon.remove'))->json('data');
+
+        expect($removed['applied_coupon_code'])->toBeNull()
+            ->and($removed['discount_amount'])->toBe(0)
+            ->and($removed['grand_total'])->toBe($removed['subtotal']);
+    });
+
     test('guest cart shows zero discount_amount without coupon', function (): void {
 
         $response = postJson(route('api.v1.shop.cart.items.store'), [
@@ -196,6 +235,47 @@ describe('Cart Discount Integration', function (): void {
             'prepayment_amount'       => null,
             'is_prepayment_available' => false,
         ]);
+    });
+
+    test('a percentage coupon marks down only the fully paid line of a deposit cart', function (): void {
+        $this->customer();
+
+        $depositOption = ProductDeliveryOption::factory()->create([
+            'price'                   => 100000,
+            'prepayment_amount'       => 25000,
+            'is_prepayment_available' => true,
+            'uuid'                    => Str::uuid()->toString(),
+        ]);
+        $fullOption = ProductDeliveryOption::factory()->create([
+            'price' => 40000,
+            'uuid'  => Str::uuid()->toString(),
+        ]);
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $depositOption->uuid,
+            'payment_type'                 => 'pre_payment',
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $fullOption->uuid,
+            'payment_type'                 => 'full_payment',
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        $data = postJson(route('api.v1.shop.cart.coupon.apply'), [
+            'coupon_code' => 'SAVE10',
+        ])->assertOk()->json('data');
+
+        // 10% of 40000 lands on the fully paid line only.
+        expect($data['discount_amount'])->toBe(4000)
+            ->and($data['grand_total'])->toBe(61000)
+            ->and($data['items'][0]['cart_discount_amount'])->toBe(0)
+            ->and($data['items'][0]['total_discount_amount'])->toBe(0)
+            ->and($data['items'][0]['line_total'])->toBe(25000)
+            ->and($data['items'][1]['cart_discount_amount'])->toBe(4000)
+            ->and($data['items'][1]['total_discount_amount'])->toBe(4000)
+            ->and($data['items'][1]['line_total'])->toBe(36000);
     });
 });
 

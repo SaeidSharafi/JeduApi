@@ -78,7 +78,14 @@ services:
             TYPESENSE_API_KEY: '${TYPESENSE_API_KEY:-xyz}'
             TYPESENSE_ENABLE_CORS: '${TYPESENSE_ENABLE_CORS:-true}'
         volumes:
-            - './docker/typesense-data:/typesense-data'
+            # Worktrees set TYPESENSE_DATA_VOLUME to a project volume so their
+            # index stays out of the checkout; the primary checkout keeps using
+            # the host directory it already has.
+            - '${TYPESENSE_DATA_VOLUME:-./docker/typesense-data}:/typesense-data'
+            # The embedding models are shared by every worktree through a
+            # symlink to the primary checkout. Docker does not resolve symlinks
+            # inside a bind-mounted directory, so this path needs its own mount.
+            - './docker/typesense-data/models:/typesense-data/models'
         networks:
             - sail
         healthcheck:

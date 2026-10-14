@@ -2,11 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
-use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
-use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
@@ -15,138 +12,81 @@ use App\Services\Discounts\Cart\Actions\AddGiftCreditAction;
 use App\Services\Discounts\Configs\AddGiftCreditConfigData;
 use Tests\Support\Traits\AuthTestTrait;
 
+covers(AddGiftCreditAction::class);
+
 uses(AuthTestTrait::class);
 
 beforeEach(function (): void {
-    $this->user = User::factory()->create();
-
-    $this->wallet = $this->user->wallet;
-    $this->wallet->update([
-        'balance' => 10000,
-    ]);
+    $this->user      = User::factory()->create();
     $this->promotion = DiscountPromotion::factory()->create([
         'name' => 'Test Promotion',
     ]);
-
-    $this->mockRecordAction = $this->mock(RecordWalletTransactionAction::class);
-    $this->action           = new AddGiftCreditAction($this->mockRecordAction);
+    $this->action = app(AddGiftCreditAction::class);
 });
 
 it('returns correct config class', function (): void {
     expect(AddGiftCreditAction::getConfigClass())->toBe(AddGiftCreditConfigData::class);
 });
 
-it('applies fixed amount gift credit without expiration', function (): void {
+it('records a fixed amount gift credit intent without an expiry window', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 5000,
         per_item: false,
         expires_days: null,
-        description: 'Order completion gift'
+        description: 'Gift bonus'
     );
 
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return $transactionData->user_id                  === $this->user->id
-                && $transactionData->type                     === TransactionTypeEnum::GIFT
-                && $transactionData->amount                   === 5000
-                && $transactionData->source_type              === TransactionSourceEnum::PROMOTION
-                && $transactionData->description              === 'Order completion gift'
-                && $transactionData->expires_at               === null
-                && $transactionData->metadata['credit_type']  === 'gift'
-                && $transactionData->metadata['expires_days'] === null;
-        });
-
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1);
+
+    $intent = $context->reward_intents[0];
+    expect($intent['promotion_id'])->toBe($this->promotion->id)
+        ->and($intent['promotion_name'])->toBe('Test Promotion')
+        ->and($intent['ledger_type'])->toBe(TransactionTypeEnum::GIFT->value)
+        ->and($intent['amount'])->toBe(5000)
+        ->and($intent['description'])->toBe('Gift bonus')
+        // Only the window is stored; the expiry date is computed at grant time.
+        ->and($intent['expires_days'])->toBeNull()
+        ->and($intent)->not->toHaveKey('expires_at');
 });
 
-it('applies fixed amount gift credit with expiration', function (): void {
+it('stores the expiry window rather than a computed expiry date', function (): void {
     $config = new AddGiftCreditConfigData(
-        amount: 7500,
+        amount: 5000,
         per_item: false,
         expires_days: 30,
-        description: 'Limited time gift'
+        description: 'Gift bonus'
     );
 
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return $transactionData->user_id     === $this->user->id
-                && $transactionData->type        === TransactionTypeEnum::GIFT
-                && $transactionData->amount      === 7500
-                && $transactionData->source_type === TransactionSourceEnum::PROMOTION
-                && $transactionData->description === 'Limited time gift'
-                && $transactionData->expires_at !== null
-                && $transactionData->metadata['credit_type']  === 'gift'
-                && $transactionData->metadata['expires_days'] === 30;
-        });
-
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1)
+        ->and($context->reward_intents[0]['expires_days'])->toBe(30)
+        ->and($context->reward_intents[0]['configuration']['expires_days'])->toBe(30);
 });
 
-it('applies per-item gift credit', function (): void {
+it('records a per-item gift credit intent', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 1000,
         per_item: true,
         expires_days: 15,
-        description: 'Per item gift bonus'
+        description: 'Per item gift'
     );
 
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
-    $items = collect([
-        new CalculatedOrderItemData(
-            product_delivery_option: $deliveryOption,
-            qty: 2,
-            payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
-            price: 5000,
-            total: 10000
-        ),
-        new CalculatedOrderItemData(
-            product_delivery_option: $deliveryOption,
-            qty: 3,
-            payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
-            price: 3000,
-            total: 9000
-        ),
-    ]);
-
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: $items,
-        subtotal_full_payment_items: 19000,
-        subtotal_all_items: 19000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return $transactionData->amount                   === 5000 // (2 + 3) * 1000
-                && $transactionData->type                     === TransactionTypeEnum::GIFT
-                && $transactionData->metadata['expires_days'] === 15;
-        });
+    $context = discountRewardContext($this->user, $this->promotion, collect([
+        discountRewardFullPaymentItem($deliveryOption, 2, 5000),
+        discountRewardFullPaymentItem($deliveryOption, 3, 3000),
+    ]));
 
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1)
+        ->and($context->reward_intents[0]['amount'])->toBe(5000); // (2 + 3) * 1000
 });
 
 it('excludes prepayment items from per-item calculation', function (): void {
@@ -154,68 +94,44 @@ it('excludes prepayment items from per-item calculation', function (): void {
         amount: 1000,
         per_item: true,
         expires_days: null,
-        description: 'Per item gift bonus'
+        description: 'Per item gift'
     );
 
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
-    $items = collect([
-        new CalculatedOrderItemData(
-            product_delivery_option: $deliveryOption,
-            qty: 2,
-            payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
-            price: 5000,
-            total: 10000
-        ),
+    $context = discountRewardContext($this->user, $this->promotion, collect([
+        discountRewardFullPaymentItem($deliveryOption, 2, 5000),
         new CalculatedOrderItemData(
             product_delivery_option: $deliveryOption,
             qty: 3,
-            payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT, // This should be excluded
+            payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT, // This must be excluded
             price: 3000,
-            total: 9000
+            total: 9000,
         ),
-    ]);
-
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: $items,
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 19000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return $transactionData->amount === 2000; // Only 2 items * 1000
-        });
+    ]));
 
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1)
+        ->and($context->reward_intents[0]['amount'])->toBe(2000); // Only 2 items * 1000
 });
 
-it('does not apply gift credit for zero amount', function (): void {
+it('records no intent for zero amount', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 1000,
         per_item: true,
         expires_days: 7,
-        description: 'Per item gift bonus'
+        description: 'Per item gift'
     );
 
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]), // No items
-        subtotal_full_payment_items: 0,
-        subtotal_all_items: 0,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction->shouldNotReceive('execute');
-
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toBeEmpty();
 });
 
-it('does not apply gift credit when customer has no wallet', function (): void {
+it('records the intent even when the customer has no wallet', function (): void {
+    // Wallet ownership is an execution concern: it must not decide eligibility.
     $userWithoutWallet = User::factory()->create();
     $userWithoutWallet->wallet->delete();
     $userWithoutWallet->refresh();
@@ -224,20 +140,14 @@ it('does not apply gift credit when customer has no wallet', function (): void {
         amount: 5000,
         per_item: false,
         expires_days: null,
-        description: 'Order completion gift'
+        description: 'Gift bonus'
     );
 
-    $context = new OrderContextData(
-        customer: $userWithoutWallet,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction->shouldNotReceive('execute');
-
+    $context = discountRewardContext($userWithoutWallet, $this->promotion);
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1)
+        ->and($context->reward_intents[0]['amount'])->toBe(5000);
 });
 
 it('uses localized description when none provided', function (): void {
@@ -248,50 +158,14 @@ it('uses localized description when none provided', function (): void {
         description: null
     );
 
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return str_contains($transactionData->description, 'Test Promotion');
-        });
-
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $config);
+
+    expect($context->reward_intents)->toHaveCount(1)
+        ->and($context->reward_intents[0]['description'])->toContain('Test Promotion');
 });
 
-it('handles record action exceptions gracefully', function (): void {
-    $config = new AddGiftCreditConfigData(
-        amount: 5000,
-        per_item: false,
-        expires_days: 5,
-        description: 'Test gift credit'
-    );
-
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->andThrow(new Exception('Database error'));
-
-    // Should not throw exception
-    expect(fn () => $this->action->apply($context, $config))->not->toThrow(Exception::class);
-});
-
-it('does not apply gift credit for invalid configuration type', function (): void {
+it('records no intent for invalid configuration type', function (): void {
     $invalidConfig = new class extends Spatie\LaravelData\Data
     {
         public function toArray(): array
@@ -300,75 +174,8 @@ it('does not apply gift credit for invalid configuration type', function (): voi
         }
     };
 
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction->shouldNotReceive('execute');
-
+    $context = discountRewardContext($this->user, $this->promotion);
     $this->action->apply($context, $invalidConfig);
-});
 
-it('includes correct metadata in gift transaction', function (): void {
-    $config = new AddGiftCreditConfigData(
-        amount: 3000,
-        per_item: false,
-        expires_days: 45,
-        description: 'Special gift credit'
-    );
-
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            $metadata = $transactionData->metadata;
-
-            return $metadata['promotion_name'] === 'Test Promotion'
-                && $metadata['credit_type']    === 'gift'
-                && $metadata['expires_days']   === 45
-                && isset($metadata['configuration'])
-                && $metadata['configuration']['amount']   === 3000
-                && $metadata['configuration']['per_item'] === false;
-        });
-
-    $this->action->apply($context, $config);
-});
-
-it('handles zero expiration days correctly', function (): void {
-    $config = new AddGiftCreditConfigData(
-        amount: 2500,
-        per_item: false,
-        expires_days: 0,
-        description: 'Same day gift credit'
-    );
-
-    $context = new OrderContextData(
-        customer: $this->user,
-        items: collect([]),
-        subtotal_full_payment_items: 10000,
-        subtotal_all_items: 10000,
-        evaluating_promotion: $this->promotion
-    );
-
-    $this->mockRecordAction
-        ->shouldReceive('execute')
-        ->once()
-        ->withArgs(function ($transactionData): bool {
-            return $transactionData->expires_at !== null // Should set expiration even for 0 days
-                && $transactionData->metadata['expires_days'] === 0;
-        });
-
-    $this->action->apply($context, $config);
+    expect($context->reward_intents)->toBeEmpty();
 });

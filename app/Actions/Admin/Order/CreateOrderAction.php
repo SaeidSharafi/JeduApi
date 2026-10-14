@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Order;
 
 use App\Actions\Admin\Discounts\RecordPromotionUsageAction;
+use App\Actions\Admin\Discounts\SettleCompletedOrderAction;
 use App\Actions\Admin\Discounts\ValidatePromotionPerCustomerLimitAction;
 use App\Actions\Admin\ProductDeliveryOption\ValidateBundleCompositionAction;
 use App\Data\Admin\Order\OrderCreateData;
@@ -13,6 +14,7 @@ use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
+use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Product\BundleUnavailableReasonEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
@@ -38,6 +40,7 @@ final readonly class CreateOrderAction
         private BundleAvailabilityService $bundleAvailability,
         private ValidatePromotionPerCustomerLimitAction $validatePromotionPerCustomerLimit,
         private RecordPromotionUsageAction $recordPromotionUsage,
+        private SettleCompletedOrderAction $settleCompletedOrder,
         private CreateBundlePurchaseAction $createBundlePurchase,
         private ValidateBundleCompositionAction $validateBundleComposition,
     ) {}
@@ -69,9 +72,11 @@ final readonly class CreateOrderAction
             $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
             $context = $this->orderCalculationService->calculate($data);
 
-            // Enforce the per-customer promotion limit before anything else is
-            // reserved/created in this transaction (locks each applied promotion row).
-            $this->validatePromotionPerCustomerLimit->handle($context);
+            // Enforce the per-customer promotion limit for an explicitly supplied
+            // coupon before anything else is reserved/created in this transaction
+            // (locks the promotion row). Exhausted automatic promotions never get
+            // here: the calculation has already dropped them.
+            $this->validatePromotionPerCustomerLimit->handle($data->applied_coupon_code, $context->customer?->id);
 
             $originalInputItems = collect($data->items)->keyBy('product_delivery_option_id');
             $orderItemsData     = new Collection();
@@ -196,6 +201,11 @@ final readonly class CreateOrderAction
                     ? $context->applied_cart_discounts
                     : null,
 
+                // --- REWARDS EARNED BY THIS ORDER (executed on completion) ---
+                'reward_intents_json' => ! empty($context->reward_intents)
+                    ? $context->reward_intents
+                    : null,
+
                 'applied_coupon_code' => $context->triggered_by_coupon_code, // Get code from context
                 'admin_notes'         => $data->admin_notes,
             ]);
@@ -209,6 +219,13 @@ final readonly class CreateOrderAction
             // Record one usage slot per applied Promotion — the pending slot
             // holds the per-customer allowance until completion/cancellation.
             $this->recordPromotionUsage->handle($order);
+
+            // An order created directly as COMPLETED never passes through
+            // OrderStatusService, so settle its usage counters and rewards here.
+            // Both steps are internally idempotent.
+            if ($order->status === OrderStatusEnum::COMPLETED) {
+                $this->settleCompletedOrder->handle($order);
+            }
 
             // Enrollments are now created by OrderStatusService after payment.
 

@@ -159,4 +159,146 @@ describe('OrderPreviewController', function (): void {
             ]);
 
     });
+
+    it('keeps the base-priced and full-payment-only subtotals unchanged for a mixed cart', function (): void {
+        $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
+        $user    = User::factory()->create();
+        $product = App\Models\Product::factory()->create([
+            'name'   => 'Mixed Product',
+            'status' => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        // Full-payment line: 100,000 list, 80,000 after its product-level discount.
+        $fullOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'price'                   => 100000,
+            'is_prepayment_available' => false,
+        ]);
+        ProductDeliveryOptionDiscountPrice::factory()->create([
+            'product_delivery_option_id' => $fullOption->id,
+            'discount_promotion_id'      => DiscountPromotion::factory()->create()->id,
+            'discounted_price'           => 80000,
+        ]);
+
+        // Deposit line: 50,000 course price, 10,000 deposit.
+        $depositOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'price'                   => 50000,
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 10000,
+        ]);
+
+        $response = $this->postJson(route('api.v1.admin.orders.preview'), [
+            'status'      => OrderStatusEnum::PENDING->value,
+            'customer_id' => $user->id,
+            'items'       => [
+                [
+                    'product_delivery_option_id' => $fullOption->id,
+                    'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                    'qty_ordered'                => 1,
+                ],
+                [
+                    'product_delivery_option_id' => $depositOption->id,
+                    'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                    'qty_ordered'                => 1,
+                ],
+            ],
+            'applied_coupon_code' => null,
+        ]);
+
+        $response->assertOk();
+
+        // The response contract keeps its base-priced all-lines total
+        // (100,000 list + 50,000 list) and its effective full-payment-only
+        // total (80,000); neither meaning changed with the new basis.
+        expect($response->json('data.subtotal_all_items'))->toBe(150000)
+            ->and($response->json('data.subtotal_full_payment_items'))->toBe(80000);
+    });
+
+    it('evaluates a cart-value threshold on the same basis as cart and checkout', function (): void {
+        $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
+        $user    = User::factory()->create();
+        $product = App\Models\Product::factory()->create([
+            'name'   => 'Mixed Product',
+            'status' => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        $fullOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'price'                   => 100000,
+            'is_prepayment_available' => false,
+        ]);
+        ProductDeliveryOptionDiscountPrice::factory()->create([
+            'product_delivery_option_id' => $fullOption->id,
+            'discount_promotion_id'      => DiscountPromotion::factory()->create()->id,
+            'discounted_price'           => 80000,
+        ]);
+
+        $depositOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'price'                   => 50000,
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 10000,
+        ]);
+
+        // 120,000 sits between the effective all-lines value (90,000) and the
+        // base-priced all-lines total (150,000), so only the new basis fails it.
+        $promotion = DiscountPromotion::factory()->create([
+            'type'            => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'       => true,
+            'requires_coupon' => true,
+            'starts_at'       => now()->subDay(),
+            'ends_at'         => now()->addDay(),
+        ]);
+        DiscountPromotionRule::create([
+            'discount_promotion_id' => $promotion->id,
+            'type'                  => 'condition',
+            'handler'               => 'cart_value_over',
+            'configuration'         => [
+                'value'                    => 120000,
+                'operator'                 => '>=',
+                'measure_whole_commitment' => true,
+            ],
+        ]);
+        DiscountPromotionRule::create([
+            'discount_promotion_id' => $promotion->id,
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off',
+            'configuration'         => ['percentage' => 5],
+        ]);
+        $promotion->coupons()->create([
+            'code'        => 'BASIS120',
+            'is_active'   => true,
+            'usage_limit' => 100,
+        ]);
+
+        $response = $this->postJson(route('api.v1.admin.orders.preview'), [
+            'status'      => OrderStatusEnum::PENDING->value,
+            'customer_id' => $user->id,
+            'items'       => [
+                [
+                    'product_delivery_option_id' => $fullOption->id,
+                    'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                    'qty_ordered'                => 1,
+                ],
+                [
+                    'product_delivery_option_id' => $depositOption->id,
+                    'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                    'qty_ordered'                => 1,
+                ],
+            ],
+            'applied_coupon_code' => 'BASIS120',
+        ]);
+
+        $response->assertOk();
+
+        // 5% of the discountable 80,000 line would be 4,000 if the base-priced
+        // all-lines total still decided the threshold.
+        expect($response->json('data.applied_cart_discounts'))->toBe([])
+            ->and($response->json('data.items.0.discount_amount'))->toBe(0);
+    });
 });

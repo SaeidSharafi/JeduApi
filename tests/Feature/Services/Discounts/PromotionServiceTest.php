@@ -239,3 +239,220 @@ it('keeps a Bundle line at its reviewed selling price while an automatic cart pr
         ->and($context->items[1]->discount_amount)->toBe(0)
         ->and($context->items[1]->total)->toBe(500000);
 });
+
+it('does not let a tier selection reach the next promotion when that promotion has no tier condition', function (): void {
+    $user           = User::factory()->create();
+    $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+    // Priority 1: a proper tiered campaign publishes and consumes its selection.
+    $tieredPromotion = DiscountPromotion::factory()->create([
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'       => true,
+        'requires_coupon' => false,
+        'priority'        => 1,
+        'starts_at'       => now()->subDay(),
+        'ends_at'         => now()->addDay(),
+    ]);
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $tieredPromotion->id,
+        'type'                  => 'condition',
+        'handler'               => 'cart_value_tier',
+        'configuration'         => ['tiers' => [['min_amount' => 0, 'percentage' => 10]]],
+    ]);
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $tieredPromotion->id,
+        'type'                  => 'action',
+        'handler'               => 'apply_tiered_percentage_off',
+        'configuration'         => [],
+    ]);
+
+    // Priority 2: rules persisted before the pairing validation existed, so the
+    // consuming action is present with no tier condition to publish for it.
+    $legacyPromotion = DiscountPromotion::factory()->create([
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'       => true,
+        'requires_coupon' => false,
+        'priority'        => 2,
+        'starts_at'       => now()->subDay(),
+        'ends_at'         => now()->addDay(),
+    ]);
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $legacyPromotion->id,
+        'type'                  => 'action',
+        'handler'               => 'apply_tiered_percentage_off',
+        'configuration'         => [],
+    ]);
+
+    $data = new OrderCreateData(
+        status: OrderStatusEnum::PENDING->value,
+        customer_id: $user->id,
+        items: [
+            new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment'),
+        ],
+        applied_coupon_code: null,
+    );
+
+    $context = app(OrderCalculationService::class)->calculate($data);
+
+    // Only the tiered campaign marks the line down; the action-only promotion
+    // must not inherit its percentage.
+    expect($context->items[0]->discount_amount)->toBe(1000)
+        ->and($context->items[0]->total)->toBe(9000)
+        ->and($context->applied_cart_discounts)->toHaveCount(1)
+        ->and($context->applied_cart_discounts[0]['promotion_id'])->toBe($tieredPromotion->id);
+});
+
+/**
+ * Hold one reservation slot for a promotion (and coupon, when given) through a
+ * fresh pending order.
+ */
+it('drops an automatic promotion from the applicable cart promotions once its total cap is fully reserved', function (): void {
+    $promotion = DiscountPromotion::factory()->create([
+        'type'              => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'         => true,
+        'requires_coupon'   => false,
+        'usage_limit_total' => 1,
+        'starts_at'         => now()->subDay(),
+        'ends_at'           => now()->addDay(),
+    ]);
+
+    discountReserveUsageSlot($promotion);
+
+    $promotions = app(PromotionService::class)->findAllApplicableCartPromotions(null, User::factory()->create()->id);
+
+    expect($promotions->pluck('id'))->not->toContain($promotion->id);
+});
+
+it('keeps an automatic promotion applicable while its reserved capacity is below the total cap', function (): void {
+    $promotion = DiscountPromotion::factory()->create([
+        'type'              => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'         => true,
+        'requires_coupon'   => false,
+        'usage_limit_total' => 2,
+        'starts_at'         => now()->subDay(),
+        'ends_at'           => now()->addDay(),
+    ]);
+
+    discountReserveUsageSlot($promotion);
+
+    $promotions = app(PromotionService::class)->findAllApplicableCartPromotions(null, User::factory()->create()->id);
+
+    expect($promotions->pluck('id'))->toContain($promotion->id);
+});
+
+it('does not find a promotion by coupon while its total cap is fully reserved', function (): void {
+    $promotion = DiscountPromotion::factory()->create([
+        'is_active'         => true,
+        'usage_limit_total' => 1,
+    ]);
+    $coupon = DiscountCoupon::factory()->create([
+        'discount_promotion_id' => $promotion->id,
+        'code'                  => 'TOTALCAP',
+    ]);
+
+    discountReserveUsageSlot($promotion);
+
+    expect(app(PromotionService::class)->findPromotionByCoupon($coupon->code))->toBeNull();
+});
+
+it('does not find a coupon code whose own cap is fully reserved', function (): void {
+    $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+    $coupon    = DiscountCoupon::factory()->create([
+        'discount_promotion_id' => $promotion->id,
+        'code'                  => 'COUPONCAP',
+        'usage_limit'           => 1,
+    ]);
+
+    discountReserveUsageSlot($promotion, $coupon);
+
+    expect(app(PromotionService::class)->findPromotionByCoupon($coupon->code))->toBeNull();
+});
+
+it('finds a coupon code while its reserved capacity is below the cap', function (): void {
+    $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+    $coupon    = DiscountCoupon::factory()->create([
+        'discount_promotion_id' => $promotion->id,
+        'code'                  => 'COUPONROOM',
+        'usage_limit'           => 2,
+    ]);
+
+    discountReserveUsageSlot($promotion, $coupon);
+
+    $found = app(PromotionService::class)->findPromotionByCoupon($coupon->code);
+
+    expect($found?->id)->toBe($promotion->id);
+});
+
+it('drops a coupon-gated promotion from the applicable cart promotions once the supplied code cap is fully reserved', function (): void {
+    $promotion = DiscountPromotion::factory()->create([
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'       => true,
+        'requires_coupon' => true,
+        'starts_at'       => now()->subDay(),
+        'ends_at'         => now()->addDay(),
+    ]);
+    $coupon = DiscountCoupon::factory()->create([
+        'discount_promotion_id' => $promotion->id,
+        'code'                  => 'GATEDCAP',
+        'usage_limit'           => 1,
+    ]);
+
+    discountReserveUsageSlot($promotion, $coupon);
+
+    $promotions = app(PromotionService::class)->findAllApplicableCartPromotions('GATEDCAP', User::factory()->create()->id);
+
+    expect($promotions->pluck('id'))->not->toContain($promotion->id);
+});
+
+it('frees reserved cap capacity once the holding reservation expires', function (): void {
+    $promotion = DiscountPromotion::factory()->create([
+        'type'              => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'         => true,
+        'requires_coupon'   => false,
+        'usage_limit_total' => 1,
+        'starts_at'         => now()->subDay(),
+        'ends_at'           => now()->addDay(),
+    ]);
+
+    discountReserveUsageSlot($promotion);
+
+    $this->travel(31)->minutes();
+
+    $promotions = app(PromotionService::class)->findAllApplicableCartPromotions(null, User::factory()->create()->id);
+
+    expect($promotions->pluck('id'))->toContain($promotion->id);
+});
+
+it('does not gate a cap on the completion counters', function (): void {
+    $automaticPromotion = DiscountPromotion::factory()->create([
+        'type'              => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'         => true,
+        'requires_coupon'   => false,
+        'usage_limit_total' => 1,
+        'total_usage_count' => 5,
+        'starts_at'         => now()->subDay(),
+        'ends_at'           => now()->addDay(),
+    ]);
+
+    $couponPromotion = DiscountPromotion::factory()->create([
+        'type'            => DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'       => true,
+        'requires_coupon' => true,
+        'starts_at'       => now()->subDay(),
+        'ends_at'         => now()->addDay(),
+    ]);
+    $coupon = DiscountCoupon::factory()->create([
+        'discount_promotion_id' => $couponPromotion->id,
+        'code'                  => 'COUNTERONLY',
+        'usage_limit'           => 1,
+        'usage_count'           => 5,
+    ]);
+
+    $automaticPromotions = app(PromotionService::class)->findAllApplicableCartPromotions(null, User::factory()->create()->id);
+
+    expect($automaticPromotions->pluck('id'))->toContain($automaticPromotion->id);
+
+    // The counters are reporting values: with no reservations holding the
+    // capacity, the code is still found.
+    expect(app(PromotionService::class)->findPromotionByCoupon($coupon->code)?->id)->toBe($couponPromotion->id);
+});

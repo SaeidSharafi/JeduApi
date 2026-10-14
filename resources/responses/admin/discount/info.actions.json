@@ -43,8 +43,8 @@
       },
       {
         "key": "add_wallet_credit",
-        "name": "افزایش موجودی کیف پول",
-        "description": "مبلغی مشخص مستقیماً به موجودی اصلی کیف پول افزوده می‌شود.",
+        "name": "افزایش اعتبار هدیه (غیرقابل برداشت)",
+        "description": "مبلغی به‌صورت اعتبار هدیه به موجودی کیف پول مشتری افزوده می‌شود؛ این اعتبار قابل برداشت نقدی نیست.",
         "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\AddWalletCreditAction",
         "configuration_schema": {
           "amount": {
@@ -104,36 +104,10 @@
       },
       {
         "key": "apply_tiered_percentage_off",
-        "name": "تخفیف درصدی پلکانی",
-        "description": "اعمال تخفیف درصدی بر اساس پله‌های تعریف شده.",
+        "name": "اعمال تخفیف پله انتخاب‌شده",
+        "description": "درصد انتخاب‌شده توسط شرط «پله مبلغ سبد خرید» را روی اقلام قابل تخفیف سبد اعمال می‌کند. این عملیات تنظیمات اختصاصی ندارد.",
         "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyTieredPercentageOffAction",
-        "configuration_schema": {
-          "tiers": {
-            "key": "tiers",
-            "type": "array",
-            "label": "پله‌های تخفیف",
-            "required": true,
-            "description": "تعریف پله‌های مقداری و درصد تخفیف مربوطه.",
-            "item_type": "data",
-            "item_class": "App\\Services\\Discounts\\Configs\\TierData",
-            "item_schema": {
-              "min_amount": {
-                "key": "min_amount",
-                "type": "integer",
-                "label": "Min Amount",
-                "required": true,
-                "description": "Min Amount (integer)"
-              },
-              "percentage": {
-                "key": "percentage",
-                "type": "number",
-                "label": "Percentage",
-                "required": true,
-                "description": "Percentage (number)"
-              }
-            }
-          }
-        }
+        "configuration_schema": []
       },
       {
         "key": "gift_product",
@@ -173,6 +147,21 @@
         }
       },
       {
+        "key": "apply_fixed_price_product",
+        "name": "قیمت مقطوع محصول",
+        "description": "یک قیمت مقطوع برای محصول تعیین می‌کند و جایگزین قیمت اصلی می‌شود.",
+        "handler_class": "App\\Services\\Discounts\\Product\\Actions\\ApplyFixedPriceProductAction",
+        "configuration_schema": {
+          "fixed_price": {
+            "key": "fixed_price",
+            "type": "integer",
+            "label": "قیمت مقطوع",
+            "required": true,
+            "description": "قیمت مقطوع جهت اعمال روی محصول (به ریال)."
+          }
+        }
+      },
+      {
         "key": "apply_percentage_off_product",
         "name": "تخفیف درصدی محصول",
         "description": "درصد مشخصی از قیمت محصول کسر می‌شود.",
@@ -184,6 +173,39 @@
             "label": "درصد تخفیف",
             "required": true,
             "description": "درصد تخفیف."
+          }
+        }
+      },
+      {
+        "key": "apply_tiered_percentage_off_product",
+        "name": "تخفیف درصدی پلکانی محصول",
+        "description": "بر اساس پله‌های تعریف‌شده، تخفیف درصدی پلکانی روی قیمت محصول اعمال می‌کند.",
+        "handler_class": "App\\Services\\Discounts\\Product\\Actions\\ApplyTieredPercentageOffProductAction",
+        "configuration_schema": {
+          "tiers": {
+            "key": "tiers",
+            "type": "array",
+            "label": "پله‌های تخفیف",
+            "required": true,
+            "description": "تعریف پله‌های مقداری و درصد تخفیف مربوط به آن‌ها.",
+            "item_type": "data",
+            "item_class": "App\\Services\\Discounts\\Configs\\TierData",
+            "item_schema": {
+              "min_amount": {
+                "key": "min_amount",
+                "type": "integer",
+                "label": "Min Amount",
+                "required": true,
+                "description": "Min Amount (integer)"
+              },
+              "percentage": {
+                "key": "percentage",
+                "type": "number",
+                "label": "Percentage",
+                "required": true,
+                "description": "Percentage (number)"
+              }
+            }
           }
         }
       }

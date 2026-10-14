@@ -36,3 +36,4 @@ laradumps.yaml
 /graphify-out
 /.omo
 /docker/typesense-data/
+/.worktrees/

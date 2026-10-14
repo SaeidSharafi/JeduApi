@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Order\OrderStatusEnum;
 use App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob;
 use App\Models\DiscountPromotion;
 
@@ -230,6 +231,44 @@ describe('DiscountPromotionController', function (): void {
             ]);
     });
 
+    test('index exposes reserved capacity alongside completed usage', function (): void {
+        // Arrange
+        $promotion = DiscountPromotion::factory()->create([
+            'usage_limit_total' => 10,
+            'total_usage_count' => 3,
+        ]);
+        discountReserveUsageSlots($promotion, 2);
+        discountReserveUsageSlots($promotion, 1, OrderStatusEnum::COMPLETED);
+
+        // Act
+        $response = $this->get('/api/v1/admin/discount-promotions');
+
+        // Assert
+        $response->assertOk();
+        // The completed order's row consumes capacity but is not a hold, so it
+        // must not be reported as reserved-again alongside total_usage_count.
+        expect($response->json('data.data.0.reserved_usage_count'))->toBe(2)
+            ->and($response->json('data.data.0.total_usage_count'))->toBe(3);
+    });
+
+    test('show exposes reserved capacity alongside completed usage', function (): void {
+        // Arrange
+        $promotion = DiscountPromotion::factory()->create([
+            'usage_limit_total' => 10,
+            'total_usage_count' => 4,
+        ]);
+        discountReserveUsageSlots($promotion, 1);
+        discountReserveUsageSlots($promotion, 1, OrderStatusEnum::COMPLETED);
+
+        // Act
+        $response = $this->get("/api/v1/admin/discount-promotions/{$promotion->id}");
+
+        // Assert
+        $response->assertOk();
+        expect($response->json('data.reserved_usage_count'))->toBe(1)
+            ->and($response->json('data.total_usage_count'))->toBe(4);
+    });
+
     test('update modifies existing promotion', function (): void {
         // Arrange
         $promotion = DiscountPromotion::factory()->create(['name' => 'Old Name']);
@@ -249,9 +288,9 @@ describe('DiscountPromotionController', function (): void {
                     'type'          => 'condition',
                     'handler'       => 'cart_value_over',
                     'configuration' => [
-                        'operator'            => App\Enums\Operators\MathOperatorEnum::GREATER_THAN->value,
-                        'value'               => 1000,
-                        'include_prepayments' => true,
+                        'operator'                 => App\Enums\Operators\MathOperatorEnum::GREATER_THAN->value,
+                        'value'                    => 1000,
+                        'measure_whole_commitment' => true,
                     ],
                 ],
             ],

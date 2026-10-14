@@ -459,7 +459,7 @@ describe('CreateOrderAction', function (): void {
         $promotion->rules()->create([
             'type'          => 'condition',
             'handler'       => 'cart_value_over',
-            'configuration' => ['value' => 20000, 'operator' => '>=', 'include_prepayments' => false],
+            'configuration' => ['value' => 20000, 'operator' => '>=', 'measure_whole_commitment' => false],
         ]);
         $promotion->rules()->create([
             'type'          => 'action',
@@ -729,6 +729,137 @@ describe('CreateOrderAction', function (): void {
         expect($orderItem->total)->toBe(20000); // Just the prepayment_amount
     });
 
+    it('ignores a flat-amount coupon on a deposit-only order', function (): void {
+        $user = User::factory()->create();
+
+        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $option  = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'price'                   => 100000,
+            'prepayment_amount'       => 20000,
+            'is_prepayment_available' => true,
+            'capacity'                => 10,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        // A flat-amount cart action is the red-before case: it used to be
+        // distributed over every non-bundle line, deposit included.
+        $promotion = DiscountPromotion::factory()->create([
+            'type'            => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'       => true,
+            'requires_coupon' => true,
+        ]);
+        $promotion->rules()->create([
+            'type'          => 'action',
+            'handler'       => 'apply_fixed_amount_off',
+            'configuration' => ['amount' => 100000],
+        ]);
+        DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'FLATBIG',
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [
+                new OrderItemCreateData(
+                    product_delivery_option_id: $option->id,
+                    payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                    qty_ordered: 1,
+                ),
+            ],
+            applied_coupon_code: 'FLATBIG',
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        $orderItem = $order->items->first();
+
+        expect($order->grand_total)->toBe(20000)
+            ->and($order->discount_amount)->toBe(0)
+            ->and($orderItem->discount_amount)->toBe(0)
+            ->and($orderItem->total)->toBe(20000)
+            ->and($orderItem->pricing_metadata['paid_amount'])->toBe(20000)
+            ->and($orderItem->pricing_metadata['cart_discount_amount'])->toBe(0)
+            ->and($orderItem->pricing_metadata['total_discount_amount'])->toBe(0);
+    });
+
+    it('records no cart discount on the deposit line of a mixed prepayment order', function (): void {
+        $user = User::factory()->create();
+
+        $depositProduct = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $depositOption  = ProductDeliveryOption::factory()->create([
+            'product_id'              => $depositProduct->id,
+            'price'                   => 100000,
+            'prepayment_amount'       => 25000,
+            'is_prepayment_available' => true,
+            'capacity'                => 10,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        $fullProduct = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $fullOption  = ProductDeliveryOption::factory()->create([
+            'product_id' => $fullProduct->id,
+            'price'      => 25000,
+            'capacity'   => 10,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        // A flat-amount coupon would previously have eaten into the deposit line.
+        $promotion = DiscountPromotion::factory()->create([
+            'type'            => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'       => true,
+            'requires_coupon' => true,
+        ]);
+        $promotion->rules()->create([
+            'type'          => 'action',
+            'handler'       => 'apply_fixed_amount_off',
+            'configuration' => ['amount' => 3000],
+        ]);
+        DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'FLAT3K',
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [
+                new OrderItemCreateData(
+                    product_delivery_option_id: $depositOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                    qty_ordered: 1,
+                ),
+                new OrderItemCreateData(
+                    product_delivery_option_id: $fullOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                    qty_ordered: 1,
+                ),
+            ],
+            applied_coupon_code: 'FLAT3K',
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        $depositItem = $order->items->where('product_delivery_option_id', $depositOption->id)->first();
+        $fullItem    = $order->items->where('product_delivery_option_id', $fullOption->id)->first();
+
+        // The deposit line agrees with itself: no discount recorded, full deposit billed.
+        expect($depositItem->discount_amount)->toBe(0)
+            ->and($depositItem->total)->toBe(25000)
+            ->and($depositItem->pricing_metadata['paid_amount'])->toBe(25000)
+            ->and($depositItem->pricing_metadata['discount_amount'])->toBe(0)
+            ->and($depositItem->pricing_metadata['cart_discount_amount'])->toBe(0)
+            ->and($depositItem->pricing_metadata['total_discount_amount'])->toBe(0)
+            ->and($depositItem->pricing_metadata['product_discount_amount'])->toBe(0)
+            // The whole advertised amount lands on the fully paid line.
+            ->and($fullItem->discount_amount)->toBe(3000)
+            ->and($fullItem->total)->toBe(22000)
+            ->and($order->grand_total)->toBe(47000)
+            ->and($order->discount_amount)->toBe(3000);
+    });
+
     it('computes discount fields correctly for full payment with featured price and coupon', function (): void {
         $user           = User::factory()->create();
         $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
@@ -789,6 +920,141 @@ describe('CreateOrderAction', function (): void {
         expect($orderItem->discount_amount)->toBe(8000); // Cart discount
         expect($orderItem->total_discount_amount)->toBe(28000); // Total both
         expect($orderItem->total)->toBe(72000); // Final price after all discounts
+    });
+
+    it('keeps full_value_grand_total on the base-priced all-lines total for a mixed cart', function (): void {
+        $user    = User::factory()->create();
+        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+
+        // Full-payment line: 100,000 list, 80,000 after its product-level discount.
+        $fullOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+            'price'      => 100000,
+        ]);
+        App\Models\ProductDeliveryOptionDiscountPrice::factory()->create([
+            'product_delivery_option_id' => $fullOption->id,
+            'discount_promotion_id'      => DiscountPromotion::factory()->create()->id,
+            'discounted_price'           => 80000,
+        ]);
+
+        // Deposit line: 50,000 course price, 10,000 deposit.
+        $depositOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'price'                   => 50000,
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 10000,
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [
+                new OrderItemCreateData(
+                    product_delivery_option_id: $fullOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                    qty_ordered: 1
+                ),
+                new OrderItemCreateData(
+                    product_delivery_option_id: $depositOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                    qty_ordered: 1
+                ),
+            ],
+            applied_coupon_code: null,
+            admin_notes: null,
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // The balance/refund reference stays the base-priced all-lines value:
+        // 100,000 list + 50,000 list. The billable total uses the effective
+        // amounts: 80,000 discounted line + 10,000 deposit.
+        expect($order->full_value_grand_total)->toBe(150000)
+            ->and($order->grand_total)->toBe(90000)
+            ->and($order->subtotal)->toBe(130000);
+    });
+
+    it('evaluates a cart-value threshold on the same basis as the cart preview', function (): void {
+        // Same cart and promotion as the cart-preview agreement test: a
+        // product-discounted full-payment line (80,000 effective) plus a
+        // deposit line (10,000 deposit, 50,000 course price).
+        $user    = User::factory()->create();
+        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+
+        $fullOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+            'price'      => 100000,
+        ]);
+        App\Models\ProductDeliveryOptionDiscountPrice::factory()->create([
+            'product_delivery_option_id' => $fullOption->id,
+            'discount_promotion_id'      => DiscountPromotion::factory()->create()->id,
+            'discounted_price'           => 80000,
+        ]);
+
+        $depositOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'price'                   => 50000,
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 10000,
+        ]);
+
+        // 120,000 sits between the effective all-lines value (90,000) and the
+        // base-priced all-lines total (150,000), so only the new basis fails it.
+        $promotion = DiscountPromotion::factory()->create([
+            'type'            => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active'       => true,
+            'requires_coupon' => true,
+            'starts_at'       => now()->subDay(),
+            'ends_at'         => now()->addDay(),
+        ]);
+        $promotion->rules()->create([
+            'type'          => 'condition',
+            'handler'       => 'cart_value_over',
+            'configuration' => [
+                'value'                    => 120000,
+                'operator'                 => '>=',
+                'measure_whole_commitment' => true,
+            ],
+        ]);
+        $promotion->rules()->create([
+            'type'          => 'action',
+            'handler'       => 'apply_percentage_off',
+            'configuration' => ['percentage' => 5],
+        ]);
+        DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'BASIS120',
+            'is_active'             => true,
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [
+                new OrderItemCreateData(
+                    product_delivery_option_id: $fullOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                    qty_ordered: 1
+                ),
+                new OrderItemCreateData(
+                    product_delivery_option_id: $depositOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                    qty_ordered: 1
+                ),
+            ],
+            applied_coupon_code: 'BASIS120',
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // 5% of the discountable 80,000 line would be 4,000 if the base-priced
+        // all-lines total still decided the threshold.
+        expect($order->discount_amount)->toBe(0)
+            ->and($order->grand_total)->toBe(90000);
     });
 
     it('does not create enrollments', function (): void {

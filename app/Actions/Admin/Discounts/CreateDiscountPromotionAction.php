@@ -31,7 +31,7 @@ final class CreateDiscountPromotionAction
                 'usage_limit_total'                => $data->usage_limit_total,
                 'usage_limit_per_customer'         => $data->usage_limit_per_customer,
                 'total_usage_count'                => 0,
-                'requires_coupon'                  => ! $isCartSpecific && ! empty($data->coupons),
+                'requires_coupon'                  => $isCartSpecific && ! empty($data->coupons),
             ]);
 
             // Create rules

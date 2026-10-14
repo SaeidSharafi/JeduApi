@@ -31,6 +31,9 @@ final class DiscountPromotionStatusUpdateController extends Controller
     {
         Gate::authorize('update', $discountPromotion);
 
-        return apiResponse()->success(DiscountPromotionData::from($action->handle($discountPromotion)));
+        $promotion = $action->handle($discountPromotion);
+        $promotion->loadReservedUsage();
+
+        return apiResponse()->success(DiscountPromotionData::from($promotion));
     }
 }

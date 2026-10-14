@@ -5,14 +5,28 @@ declare(strict_types=1);
 namespace App\Services\Discounts\Cart\Actions;
 
 use App\Attributes\DiscountHandlerKey;
+use App\Contracts\Discounts\Cart\LineMarkdownActionContract;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Data\Admin\Discounts\OrderContextData;
+use App\Services\Discounts\Cart\Conditions\CartValueTierCondition;
 use App\Services\Discounts\Configs\ApplyTieredPercentageOffData;
+use App\Services\Discounts\Configs\TierData;
 use Spatie\LaravelData\Data;
 
-#[DiscountHandlerKey('apply_tiered_percentage_off')]
-final class ApplyTieredPercentageOffAction implements DiscountActionContract
+/**
+ * Config-free consumer of the tier {@see CartValueTierCondition} selected.
+ *
+ * The ladder and the eligibility decision live on the condition; this action
+ * only applies the published {@see TierData} percentage to the discountable
+ * lines. When nothing was published, the selection is not a `TierData`, or it
+ * carries no positive percentage, it does nothing at all rather than guessing a
+ * percentage.
+ */
+#[DiscountHandlerKey(self::HANDLER_KEY)]
+final class ApplyTieredPercentageOffAction implements DiscountActionContract, LineMarkdownActionContract
 {
+    public const string HANDLER_KEY = 'apply_tiered_percentage_off';
+
     public static function getConfigClass(): string
     {
         return ApplyTieredPercentageOffData::class;
@@ -20,31 +34,14 @@ final class ApplyTieredPercentageOffAction implements DiscountActionContract
 
     public function apply(OrderContextData $context, Data $configuration): void
     {
-        /** @var ApplyTieredPercentageOffData $configuration */
-        $applicablePercentage = 0;
+        $selection = $context->publishedSelection(CartValueTierCondition::HANDLER_KEY);
 
-        foreach ($configuration->tiers as $tier) {
-            if ($context->subtotal_all_items >= $tier->min_amount && $tier->percentage > $applicablePercentage) {
-                $applicablePercentage = $tier->percentage;
-            }
-        }
-
-        if ($applicablePercentage <= 0) {
+        if (! $selection instanceof TierData || $selection->percentage <= 0) {
             return;
         }
 
-        foreach ($context->items as $item) {
-            // Bundle lines keep their reviewed selling price — they never
-            // participate in tiered cart promotions.
-            if ($item->is_bundle) {
-                continue;
-            }
-
-            $itemDiscount = (int) ($item->total * ($applicablePercentage / 100));
-            $itemDiscount = min($itemDiscount, $item->total);
-
-            $item->discount_amount += $itemDiscount;
-            $item->total -= $itemDiscount;
+        foreach ($context->discountableItems() as $item) {
+            $item->applyDiscount((int) ($item->total * ($selection->percentage / 100)));
         }
     }
 }

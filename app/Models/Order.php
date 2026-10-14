@@ -45,6 +45,7 @@ final class Order extends Model implements WalletTransactionSourceableContract
             'currency_code',
             'applied_coupon_code',
             'applied_cart_discounts_json',
+            'reward_intents_json',
             'admin_notes',
             'created_by',
         ];
@@ -123,6 +124,30 @@ final class Order extends Model implements WalletTransactionSourceableContract
     }
 
     /**
+     * Every promotion this order used: a cart promotion that marked a line
+     * down (`applied_cart_discounts_json`), one that only granted a reward
+     * (`reward_intents_json`), or both — deduplicated, because a promotion can
+     * do both at once.
+     *
+     * Usage rows and the completion counters are cumulative per promotion, so
+     * reading only the price-discount log would leave a reward-only
+     * promotion's caps and per-customer allowance permanently unconsumed.
+     *
+     * @return list<int>
+     */
+    public function usedPromotionIds(): array
+    {
+        return collect($this->applied_cart_discounts_json ?? [])
+            ->pluck('promotion_id')
+            ->merge(collect($this->reward_intents_json ?? [])->pluck('promotion_id'))
+            ->filter()
+            ->map(fn (mixed $id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
      * Accessor to get the live payment status of the order.
      *
      * @return Attribute<string, never>
@@ -183,6 +208,7 @@ final class Order extends Model implements WalletTransactionSourceableContract
         return [
             'customer_snapshot_json'        => 'array',
             'applied_cart_discounts_json'   => 'array',
+            'reward_intents_json'           => 'array',
             'subtotal'                      => 'integer',
             'discount_amount'               => 'integer',
             'tax_amount'                    => 'integer',

@@ -320,4 +320,73 @@ describe('Coupon usage counters move to order completion', function (): void {
         expect($promotion->total_usage_count)->toBe(1);
         expect($coupon->usage_count)->toBe(1);
     });
+
+    test('an admin update straight to completed increments usage counters', function (): void {
+        $this->authorized_user([PermissionEnum::ORDER_UPDATE]);
+
+        $promotion = DiscountPromotion::factory()->create([
+            'name'      => 'Admin Completed',
+            'type'      => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active' => true,
+        ]);
+        $coupon = DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'ADMINCOMP',
+            'usage_limit'           => 10,
+        ]);
+
+        $customer = User::factory()->create();
+        $order    = Order::factory()->create([
+            'customer_id'                 => $customer->id,
+            'status'                      => OrderStatusEnum::PENDING,
+            'applied_coupon_code'         => 'ADMINCOMP',
+            'applied_cart_discounts_json' => [
+                [
+                    'promotion_id'   => $promotion->id,
+                    'promotion_name' => 'Admin Completed',
+                    'applied_amount' => 10000,
+                    'coupon_code'    => 'ADMINCOMP',
+                ],
+            ],
+        ]);
+
+        $this->putJson("/api/v1/admin/orders/{$order->id}", [
+            'status' => OrderStatusEnum::COMPLETED->value,
+        ])->assertOk();
+
+        expect($order->refresh()->discount_usage_incremented_at)->not->toBeNull();
+
+        $promotion->refresh();
+        $coupon->refresh();
+        expect($promotion->total_usage_count)->toBe(1);
+        expect($coupon->usage_count)->toBe(1);
+    });
+
+    test('creating a completed order through the admin increments usage counters', function (): void {
+        $this->authorized_user([PermissionEnum::ORDER_CREATE]);
+
+        $option    = createUsageCounterDeliveryOption();
+        $promotion = createUsageCounterPromotion('Admin Created Completed', ['percentage' => 10]);
+        $coupon    = $promotion->coupons->first();
+
+        $customer = User::factory()->create();
+
+        $this->postJson(route('api.v1.admin.orders.store'), [
+            'status'              => OrderStatusEnum::COMPLETED->value,
+            'customer_id'         => $customer->id,
+            'applied_coupon_code' => $coupon->code,
+            'items'               => [
+                [
+                    'product_delivery_option_id' => $option->id,
+                    'payment_type'               => 'full_payment',
+                    'qty_ordered'                => 1,
+                ],
+            ],
+        ])->assertCreated();
+
+        $promotion->refresh();
+        $coupon->refresh();
+        expect($promotion->total_usage_count)->toBe(1);
+        expect($coupon->usage_count)->toBe(1);
+    });
 });

@@ -5,18 +5,12 @@ declare(strict_types=1);
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
-use App\Enums\Product\DeliveryMethodEnum;
-use App\Enums\Product\FulfillmentTypeEnum;
-use App\Enums\Product\ProductableEnum;
 use App\Jobs\Provisioning\ProvisionEnrollmentProviderJob;
-use App\Models\Bundle;
 use App\Models\CartItem;
-use App\Models\Course;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
 use App\Models\Enrollment;
-use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\User;
@@ -31,73 +25,6 @@ use function Pest\Laravel\postJson;
 use function Pest\Laravel\putJson;
 
 uses(AuthTestTrait::class);
-
-/**
- * Create a published Course Productable Product with two alternate published,
- * open, uncapped PDOs for the same underlying productable.
- *
- * @return array{product: Product, pdo_a: ProductDeliveryOption, pdo_b: ProductDeliveryOption}
- */
-function v11CoursePair(int $price = 100000): array
-{
-    $course  = Course::factory()->create();
-    $product = Product::factory()->create([
-        'productable_type' => ProductableEnum::COURSE->value,
-        'productable_id'   => $course->id,
-        'status'           => PublicationStatusEnum::PUBLISHED,
-        'is_visible'       => true,
-    ]);
-
-    $make = fn (): ProductDeliveryOption => ProductDeliveryOption::factory()->create([
-        'product_id'              => $product->id,
-        'price'                   => $price,
-        'status'                  => PublicationStatusEnum::PUBLISHED,
-        'capacity'                => null,
-        'registration_start_date' => null,
-        'registration_end_date'   => null,
-        'available_from'          => null,
-        'available_to'            => null,
-    ]);
-
-    return ['product' => $product, 'pdo_a' => $make(), 'pdo_b' => $make()];
-}
-
-/**
- * Build a reviewed, on-sale Bundle PDO wrapping the given component PDOs.
- * The Bundle selling price equals the sum of the supplied allocations.
- *
- * @param  array<int, array{pdo: ProductDeliveryOption, allocation: int}>  $components
- */
-function v11BundleFor(array $components): ProductDeliveryOption
-{
-    $bundle        = Bundle::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
-    $bundleProduct = Product::factory()->create([
-        'productable_type' => ProductableEnum::BUNDLE->value,
-        'productable_id'   => $bundle->id,
-        'status'           => PublicationStatusEnum::PUBLISHED,
-        'is_visible'       => true,
-    ]);
-    $sellingPrice = (int) collect($components)->sum('allocation');
-    $bundleOption = ProductDeliveryOption::factory()->create([
-        'product_id'              => $bundleProduct->id,
-        'fulfillment_type'        => FulfillmentTypeEnum::COMPOSITE,
-        'delivery_method'         => DeliveryMethodEnum::BUNDLE,
-        'details_json'            => [],
-        'price'                   => $sellingPrice,
-        'status'                  => PublicationStatusEnum::PUBLISHED,
-        'capacity'                => null,
-        'registration_start_date' => null,
-        'registration_end_date'   => null,
-        'available_from'          => null,
-        'available_to'            => null,
-    ]);
-
-    foreach ($components as $component) {
-        $bundleOption->bundleComponents()->attach($component['pdo']->id, ['allocation' => $component['allocation']]);
-    }
-
-    return $bundleOption;
-}
 
 beforeEach(function (): void {
     Queue::fake([ProvisionEnrollmentProviderJob::class]);
@@ -446,6 +373,60 @@ it('applies a coupon to unrelated standalone lines only and never to the Bundle 
         ->and($data['grand_total'])->toBe(290000)
         ->and($standaloneLine['cart_discount_amount'])->toBe(10000)
         ->and($standaloneLine['line_total'])->toBe(90000)
+        ->and($bundleLine['cart_discount_amount'])->toBe(0)
+        ->and($bundleLine['total_discount_amount'])->toBe(0)
+        ->and($bundleLine['line_total'])->toBe(200000);
+});
+
+it('distributes a flat-amount coupon over standalone lines only, never the Bundle line', function (): void {
+    $promotion = DiscountPromotion::factory()->create([
+        'type'            => App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT,
+        'is_active'       => true,
+        'starts_at'       => now()->subDay(),
+        'ends_at'         => now()->addDay(),
+        'priority'        => 1,
+        'requires_coupon' => true,
+    ]);
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $promotion->id,
+        'type'                  => 'action',
+        'handler'               => 'apply_fixed_amount_off',
+        'configuration'         => ['amount' => 30000],
+    ]);
+    DiscountCoupon::factory()->create([
+        'discount_promotion_id' => $promotion->id,
+        'code'                  => 'BUNDLEFLAT',
+        'is_active'             => true,
+    ]);
+
+    $bundleCourse = v11CoursePair(100000);
+    $bundleOption = v11BundleFor([['pdo' => $bundleCourse['pdo_a'], 'allocation' => 200000]]);
+    $standalone   = v11CoursePair(100000);
+    $user         = User::factory()->create();
+    $this->customer($user);
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $standalone['pdo_a']->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $bundleOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    $data = postJson(route('api.v1.shop.cart.coupon.apply'), [
+        'coupon_code' => 'BUNDLEFLAT',
+    ])->assertOk()->json('data');
+
+    $lines          = collect($data['items'])->keyBy('product_name');
+    $bundleLine     = $lines->first(fn (array $line): bool => $line['product_name'] !== $standalone['product']->name);
+    $standaloneLine = $lines[$standalone['product']->name];
+
+    // The whole advertised amount lands on the only discountable line.
+    expect($data['discount_amount'])->toBe(30000)
+        ->and($data['grand_total'])->toBe(270000)
+        ->and($standaloneLine['cart_discount_amount'])->toBe(30000)
+        ->and($standaloneLine['line_total'])->toBe(70000)
         ->and($bundleLine['cart_discount_amount'])->toBe(0)
         ->and($bundleLine['total_discount_amount'])->toBe(0)
         ->and($bundleLine['line_total'])->toBe(200000);

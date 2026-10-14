@@ -322,6 +322,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - admin_notes (TEXT nullable)
   - created_by (BIGINT nullable) FK -> staff(id) SET NULL
   - applied_cart_discounts_json (JSON nullable)
+  - reward_intents_json (JSON nullable) — reward intents snapshotted at order creation; executed on completion
   - created_at/updated_at (TIMESTAMPS)
 - Indexes:
   - UNIQUE(increment_id)
@@ -462,12 +463,24 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: UNIQUE(code), INDEX(is_active, code) as idx_active_code
 
+### Table: `discount_promotion_usages`
+- Purpose: Promotion/coupon capacity reservations; one row per applied promotion per order. Rows are created at order placement and deleted on cancellation/failure.
+- Columns:
+  - id (BIGINT, PK)
+  - discount_promotion_id (BIGINT) FK -> discount_promotions(id) CASCADE
+  - discount_coupon_id (BIGINT nullable) FK -> discount_coupons(id) SET NULL (the coupon used; counts toward that coupon's `usage_limit`; SET NULL so coupon deletion never frees a consumed slot)
+  - customer_id (BIGINT) FK -> users(id) CASCADE
+  - order_id (BIGINT) FK -> orders(id) CASCADE
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: UNIQUE(discount_promotion_id, order_id) as uq_promotion_order_usage, INDEX(discount_promotion_id, customer_id) as idx_promotion_customer_usage
+
 ### Table: `product_delivery_option_discount_prices`
 - Purpose: Precomputed discounted prices per option and promotion.
 - Columns:
   - product_delivery_option_id (BIGINT, PK) FK -> product_delivery_options(id) CASCADE
   - discount_promotion_id (BIGINT) FK -> discount_promotions(id) CASCADE
   - discounted_price (BIGINT)
+  - starts_at/ends_at (DATETIME nullable)
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: PK(product_delivery_option_id), INDEX(product_delivery_option_id, discount_promotion_id) as idx_pdo_promotion
 
@@ -686,9 +699,9 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
 
   ## Behavior Clarifications
   - Capacity checks occur at checkout time using `product_delivery_options.capacity` against `enrolled_count`.
-  - Discount counters: `discount_promotions.total_usage_count` and `discount_coupons.usage_count` increment only on successful checkout.
+  - Discount counters: `discount_promotions.total_usage_count` and `discount_coupons.usage_count` increment once when an order reaches COMPLETED (including admin status flips/creations) and are never decremented. `discount_promotion_usages` rows are deleted only when the order becomes CANCELLED or FAILED; refunds keep the row. A held row stops counting toward the per-customer allowance once it is older than `config('discounts.reservation_hold_minutes')` (default 30 minutes) but stays in the table; rows of settled (completed/refunded) orders count forever. No column was added for this — `created_at` is the hold timestamp.
   - Payments: `payments.status` transitions from `PENDING` to `COMPLETED` via gateway verification; re-verification on non-pending payments is rejected.
-  - Orders: `orders.applied_cart_discounts_json` and `order_items.applied_discount_details_json` store immutable snapshots of applied discounts at checkout.
+  - Orders: `orders.applied_cart_discounts_json` and `order_items.applied_discount_details_json` store immutable snapshots of applied discounts at checkout; `orders.reward_intents_json` stores the promotion rewards to grant, executed (idempotently) when the order reaches COMPLETED.
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: INDEX(user_id, reviewable_type, reviewable_id), INDEX(status, is_featured), INDEX(reviewable_type, reviewable_id, status, is_featured), INDEX(reviewable_type, reviewable_id, status)
 

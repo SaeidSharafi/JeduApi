@@ -4,79 +4,46 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Discounts;
 
-use App\Data\Admin\Discounts\OrderContextData;
-use App\Enums\Order\OrderStatusEnum;
-use App\Models\DiscountPromotion;
-use App\Models\DiscountPromotionUsage;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\Discounts\PromotionService;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Enforces the per-customer promotion limit at checkout.
+ * Enforces the per-customer promotion limit for an explicitly supplied coupon.
  *
- * A customer's active usage of a Promotion is the count of their usage rows
- * whose order is not cancelled/failed (pending/processing reserve, completed/
- * refunded consume). When active usage reaches `usage_limit_per_customer`,
- * checkout is rejected with an explicit message that names a blocking pending
- * order when one exists.
+ * Automatic promotions never reach this action: an exhausted allowance makes
+ * them ineligible and ResolvePerCustomerPromotionEligibilityAction drops them
+ * from the calculation, so they cannot block a sale. A coupon the customer (or
+ * an admin) supplied on purpose is different — silently dropping it would hide
+ * why the discount disappeared — so it fails visibly, naming the pending order
+ * that holds the slot when one exists.
  *
- * Must run inside a DB transaction: each applicable promotion row is locked
- * for update so concurrent checkouts cannot both slip past the limit.
+ * Must run inside a DB transaction: the promotion row is locked for update so
+ * concurrent checkouts cannot both slip past the limit.
  */
 final readonly class ValidatePromotionPerCustomerLimitAction
 {
-    public function handle(OrderContextData $context): void
+    public function __construct(
+        private PromotionService $promotionService,
+        private ResolvePerCustomerPromotionEligibilityAction $perCustomerEligibility,
+    ) {}
+
+    public function handle(?string $appliedCouponCode, ?int $customerId): void
     {
-        $customerId = $context->customer?->id;
-        if (! $customerId) {
+        if (! $appliedCouponCode || ! $customerId) {
             return;
         }
 
-        foreach ($context->applied_cart_discounts as $discount) {
-            $promotionId = $discount['promotion_id'] ?? null;
-            if (! $promotionId) {
-                continue;
-            }
+        $promotion = $this->promotionService->findPromotionByCoupon($appliedCouponCode, lockForUpdate: true);
 
-            // Serialize concurrent per-customer checks for this promotion.
-            $promotion = DiscountPromotion::query()
-                ->whereKey($promotionId)
-                ->lockForUpdate()
-                ->first();
-            if (! $promotion || $promotion->usage_limit_per_customer === null) {
-                continue;
-            }
+        if (! $promotion) {
+            return;
+        }
 
-            $activeUsage = DiscountPromotionUsage::query()
-                ->where('discount_promotion_id', $promotionId)
-                ->where('customer_id', $customerId)
-                ->whereHas('order', fn (Builder $query): Builder => $query->whereNotIn('status', [
-                    OrderStatusEnum::CANCELLED->value,
-                    OrderStatusEnum::FAILED->value,
-                ]))
-                ->count();
+        $message = $this->perCustomerEligibility->blockingMessage($promotion, $customerId);
 
-            if ($activeUsage < $promotion->usage_limit_per_customer) {
-                continue;
-            }
-
-            $blockingOrder = DiscountPromotionUsage::query()
-                ->where('discount_promotion_id', $promotionId)
-                ->where('customer_id', $customerId)
-                ->whereHas('order', fn (Builder $query): Builder => $query->where('status', OrderStatusEnum::PENDING->value))
-                ->with('order')
-                ->latest('id')
-                ->first()
-                ?->order;
-
+        if ($message !== null) {
             throw ValidationException::withMessages([
-                'coupon' => [
-                    $blockingOrder
-                        ? __('messages.checkout.coupon_usage_pending_order_blocked', [
-                            'order_id' => $blockingOrder->increment_id,
-                        ])
-                        : __('messages.checkout.coupon_usage_limit_reached'),
-                ],
+                'coupon' => [$message],
             ]);
         }
     }

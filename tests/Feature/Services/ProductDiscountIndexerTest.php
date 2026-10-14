@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Contracts\Cache\CacheStore;
+use App\Enums\Order\DiscountTypeEnum;
 use App\Models\Category;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
@@ -285,6 +286,56 @@ describe('ProductDiscountIndexer', function (): void {
         $method->setAccessible(true);
         $result = $method->invoke($this->indexer, $promo, $option);
         expect($result)->toBeFalse();
+    });
+
+    it('indexes product-specific promotions only, never a cart-checkout tier ladder', function (): void {
+        $product = Product::factory()->create();
+        $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
+
+        $productPromotion = DiscountPromotion::factory()->create([
+            'type'     => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'priority' => 1,
+        ]);
+        DiscountPromotionRule::factory()->create([
+            'discount_promotion_id' => $productPromotion->id,
+            'type'                  => 'action',
+            'handler'               => 'apply_fixed_discount_product',
+            'configuration'         => ['amount' => 100],
+        ]);
+
+        $cartPromotion = DiscountPromotion::factory()->create([
+            'type'     => DiscountTypeEnum::CART_CHECKOUT,
+            'priority' => 2,
+        ]);
+        DiscountPromotionRule::factory()->create([
+            'discount_promotion_id' => $cartPromotion->id,
+            'type'                  => 'condition',
+            'handler'               => 'cart_value_tier',
+            'configuration'         => ['tiers' => [
+                ['min_amount' => 0, 'percentage' => 5],
+                ['min_amount' => 1000, 'percentage' => 8],
+            ]],
+        ]);
+        DiscountPromotionRule::factory()->create([
+            'discount_promotion_id' => $cartPromotion->id,
+            'type'                  => 'action',
+            'handler'               => 'apply_tiered_percentage_off',
+            'configuration'         => [],
+        ]);
+
+        $this->indexer->reIndexComplete();
+
+        $rows = ProductDeliveryOptionDiscountPrice::query()
+            ->where('product_delivery_option_id', $option->id)
+            ->get();
+
+        // The product-specific promotion produces a row; the cart-checkout tier
+        // ladder is measured at checkout and is never indexed as a product price.
+        expect($rows)->toHaveCount(1)
+            ->and($rows->first()->discount_promotion_id)->toBe($productPromotion->id)
+            ->and(ProductDeliveryOptionDiscountPrice::query()
+                ->where('discount_promotion_id', $cartPromotion->id)
+                ->exists())->toBeFalse();
     });
 
     describe('Bundle exclusion', function (): void {

@@ -24,6 +24,7 @@
     ],
     "total_items_count": 1,
     "applied_coupon_code": null,
+    "applied_coupon_error": null,
     "subtotal": 1800000,
     "discount_amount": 0,
     "grand_total": 1800000,

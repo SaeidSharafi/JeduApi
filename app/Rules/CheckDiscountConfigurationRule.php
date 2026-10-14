@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Rules;
 
 use App\Enums\Order\DiscountTypeEnum;
+use App\Services\Discounts\Cart\Actions\ApplyTieredPercentageOffAction;
+use App\Services\Discounts\Cart\Conditions\CartValueTierCondition;
 use App\Services\Discounts\DiscountMetadataService;
 use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;
@@ -27,6 +29,10 @@ final class CheckDiscountConfigurationRule implements DataAwareRule, ValidationR
         }
         $hasCondition = false;
         $hasAction    = false;
+        /** @var list<string> $conditionHandlers */
+        $conditionHandlers = [];
+        /** @var list<string> $actionHandlers */
+        $actionHandlers = [];
         foreach ($value as $rule) {
             if (! is_array($rule) || ! array_key_exists('type', $rule) || ! array_key_exists('handler', $rule)
                                   || ! array_key_exists('configuration', $rule)
@@ -36,10 +42,12 @@ final class CheckDiscountConfigurationRule implements DataAwareRule, ValidationR
                 return;
             }
             if (data_get($rule, 'type') === 'condition') {
-                $hasCondition = true;
+                $hasCondition        = true;
+                $conditionHandlers[] = (string) data_get($rule, 'handler');
             }
             if (data_get($rule, 'type') === 'action') {
-                $hasAction = true;
+                $hasAction        = true;
+                $actionHandlers[] = (string) data_get($rule, 'handler');
             }
             $type = data_get($this->data, 'type');
             $type = DiscountTypeEnum::tryFrom($type);
@@ -81,6 +89,15 @@ final class CheckDiscountConfigurationRule implements DataAwareRule, ValidationR
             return;
         }
 
+        // A tier ladder is one campaign: the consuming action and the condition
+        // that selects the tier must always travel together, or a saved
+        // promotion silently promises a markdown the engine cannot keep.
+        $hasTierCondition   = in_array(CartValueTierCondition::HANDLER_KEY, $conditionHandlers, true);
+        $hasConsumingAction = in_array(ApplyTieredPercentageOffAction::HANDLER_KEY, $actionHandlers, true);
+
+        if ($hasTierCondition !== $hasConsumingAction) {
+            $fail(__('discount.validation.tier_pair_incomplete', ['attribute' => $attribute]));
+        }
     }
 
     /**

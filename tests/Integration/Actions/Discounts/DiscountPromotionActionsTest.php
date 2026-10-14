@@ -92,6 +92,7 @@ describe('Discount Promotion Actions', function (): void {
             ->and($promotion->priority)->toBe(100)
             ->and($promotion->usage_limit_total)->toBe(1000)
             ->and($promotion->total_usage_count)->toBe(0)
+            ->and($promotion->requires_coupon)->toBeTrue()
             ->and($promotion->rules)->toHaveCount(2)
             ->and($promotion->coupons)->toHaveCount(1);
 
@@ -141,7 +142,8 @@ describe('Discount Promotion Actions', function (): void {
         $promotion = $action->execute($data);
 
         // Assert
-        expect($promotion->coupons)->toHaveCount(0);
+        expect($promotion->coupons)->toHaveCount(0)
+            ->and($promotion->requires_coupon)->toBeFalse();
     });
 
     test('UpdateDiscountPromotionAction updates existing promotion', function (): void {

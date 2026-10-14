@@ -49,6 +49,7 @@ final class DiscountPromotionController extends Controller
                 AllowedFilter::partial('search', 'name'),
             ])
             ->with(['rules', 'coupons'])
+            ->withReservedUsage()
             ->orderBy('created_at', 'desc')
             ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
@@ -68,6 +69,7 @@ final class DiscountPromotionController extends Controller
     {
         Gate::authorize('create', DiscountPromotion::class);
         $promotion = $action->execute($data);
+        $promotion->loadReservedUsage();
 
         return apiResponse()->created(DiscountPromotionData::from($promotion), model: DiscountPromotion::class);
     }
@@ -83,6 +85,7 @@ final class DiscountPromotionController extends Controller
     {
         Gate::authorize('view', $discountPromotion);
         $discountPromotion->load(['rules', 'coupons']);
+        $discountPromotion->loadReservedUsage();
 
         return apiResponse()->success(DiscountPromotionData::from($discountPromotion));
     }
@@ -102,6 +105,7 @@ final class DiscountPromotionController extends Controller
     ): ApiResponseInterface {
         Gate::authorize('update', $discountPromotion);
         $updatedPromotion = $action->execute($discountPromotion, $data);
+        $updatedPromotion->loadReservedUsage();
 
         return apiResponse()->success(DiscountPromotionData::from($updatedPromotion));
     }

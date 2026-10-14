@@ -130,12 +130,42 @@ describe('DiscountInfoController', function (): void {
         $cartValueCondition = $cartConditions->firstWhere('key', 'cart_value_over');
         expect($cartValueCondition['configuration_schema'])->toBeArray()
             ->and($cartValueCondition['configuration_schema'])->toHaveKeys([
-                'value', 'operator', 'include_prepayments',
+                'value', 'operator', 'measure_whole_commitment',
             ]);
 
         $productValueCondition = $poroductConditions->firstWhere('key', 'product_in_category');
         expect($productValueCondition['configuration_schema'])->toBeArray()
             ->and($productValueCondition['configuration_schema'])->toHaveKeys(['category_ids', 'match_policy']);
+    });
+
+    test('cart value condition exposes one measurement knob documented in both locales', function (): void {
+        foreach (['en', 'fa'] as $locale) {
+            app()->setLocale($locale);
+
+            $response = $this->get('/api/v1/admin/discount-info/conditions');
+            $response->assertOk();
+
+            $schema = collect($response->json('data.cart'))
+                ->firstWhere('key', 'cart_value_over')['configuration_schema'];
+
+            // The exact key set is pinned, so no other measurement knob (the
+            // old "include prepayments" flag included) can silently return.
+            expect(array_keys($schema))->toEqualCanonicalizing(['operator', 'value', 'measure_whole_commitment'])
+                // The copy is asserted through the translation it renders, so a
+                // wording edit in lang/ — the normal way to fix a label — does
+                // not fail an API contract test.
+                ->and($schema['measure_whole_commitment']['label'])
+                ->toBe(__('discount.handlers.cart_value_over.fields.measure_whole_commitment.label'))
+                ->and($schema['measure_whole_commitment']['description'])
+                ->toBe(__('discount.handlers.cart_value_over.fields.measure_whole_commitment.description'))
+                ->and($schema['measure_whole_commitment']['label'])->not->toBeEmpty()
+                ->and($schema['measure_whole_commitment']['description'])->not->toBeEmpty()
+                // Optional: a rule that omits the key measures the full-payment
+                // lines instead of failing to instantiate on the pricing path.
+                ->and($schema['measure_whole_commitment']['required'])->toBeFalse();
+        }
+
+        app()->setLocale('en');
     });
 
     test('actions returns available discount actions dynamically', function (): void {
@@ -268,6 +298,25 @@ describe('DiscountInfoController', function (): void {
         foreach ($conditions as $condition) {
             expect($condition)->toHaveKeys(['key', 'name', 'description', 'handler_class', 'configuration_schema']);
         }
+    });
+
+    test('lists the cart value tier condition and the config-free consuming action', function (): void {
+        $conditions = $this->get('/api/v1/admin/discount-info/conditions')->assertOk()->json('data.cart');
+        $tier       = collect($conditions)->firstWhere('key', 'cart_value_tier');
+
+        expect($tier)->not->toBeNull()
+            ->and($tier['name'])->toBe(__('discount.handlers.cart_value_tier.name'))
+            ->and($tier['handler_class'])->toBe(App\Services\Discounts\Cart\Conditions\CartValueTierCondition::class)
+            ->and(array_keys($tier['configuration_schema']))->toBe(['tiers'])
+            ->and($tier['configuration_schema']['tiers']['item_class'])->toBe(App\Services\Discounts\Configs\TierData::class)
+            ->and($tier['configuration_schema']['tiers']['item_schema'])->toHaveKeys(['min_amount', 'percentage']);
+
+        $actions = $this->get('/api/v1/admin/discount-info/actions')->assertOk()->json('data.cart');
+        $action  = collect($actions)->firstWhere('key', 'apply_tiered_percentage_off');
+
+        expect($action)->not->toBeNull()
+            ->and($action['name'])->toBe(__('discount.handlers.apply_tiered_percentage_off.name'))
+            ->and($action['configuration_schema'])->toBe([]);
     });
 
 })->group('unit', 'controllers', 'discounts');

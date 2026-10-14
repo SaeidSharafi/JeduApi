@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Actions\Admin\Discounts\ResolvePerCustomerPromotionEligibilityAction;
 use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
 use App\Contracts\CartIdentifier;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
@@ -23,6 +24,7 @@ use App\Models\CartItem;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
+use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\Discounts\PromotionService;
 use Illuminate\Database\QueryException;
@@ -39,6 +41,8 @@ final readonly class CartService
         private PromotionService $promotionService,
         private ProductPriceService $productPriceService,
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
+        private ResolvePerCustomerPromotionEligibilityAction $perCustomerEligibility,
+        private DiscountHandlerRegistry $handlerRegistry,
     ) {}
 
     public function findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart
@@ -194,10 +198,38 @@ final readonly class CartService
             applied_coupon_code: $data->coupon_code,
         );
 
-        if (! $this->promotionService->checkPromotionConditions($promotion, $orderData)) {
+        // One context serves both the conditions check and the discountability
+        // check, so the coupon is judged against exactly one view of the cart.
+        $context = $this->promotionService->buildOrderContext($orderData);
+
+        if (! $this->promotionService->promotionConditionsPass($promotion, $context)) {
             throw ValidationException::withMessages([
                 'coupon_code' => __('shop.cart.errors.coupon_does_not_exist'),
             ]);
+        }
+
+        // A coupon whose only effect is marking lines down can do nothing when
+        // every line is a deposit or a bundle: say so instead of storing a code
+        // that will never change the bill.
+        if (! $context->items->isEmpty()
+            && $context->discountableItems()->isEmpty()
+            && $this->promotionIsLineMarkdownOnly($promotion)
+        ) {
+            throw ValidationException::withMessages([
+                'coupon_code' => __('shop.cart.errors.coupon_nothing_discountable'),
+            ]);
+        }
+
+        // The customer's per-customer allowance is checked here, before the code
+        // is stored, so the cart never displays a discount checkout will refuse.
+        if ($userId !== null) {
+            $blockingMessage = $this->perCustomerEligibility->blockingMessage($promotion, $userId);
+
+            if ($blockingMessage !== null) {
+                throw ValidationException::withMessages([
+                    'coupon_code' => $blockingMessage,
+                ]);
+            }
         }
 
         // Update cart with coupon code
@@ -320,6 +352,29 @@ final readonly class CartService
     }
 
     /**
+     * True when every action rule of the promotion resolves to a registered
+     * line-markdown handler, and there is at least one such rule.
+     */
+    private function promotionIsLineMarkdownOnly(DiscountPromotion $promotion): bool
+    {
+        $actionRules = $promotion->rules->where('type', 'action');
+
+        if ($actionRules->isEmpty()) {
+            return false;
+        }
+
+        foreach ($actionRules as $rule) {
+            $handlerClass = $this->handlerRegistry->getCartActionHandler(data_get($rule, 'handler'));
+
+            if (! $this->handlerRegistry->isLineMarkdownAction($handlerClass)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Find a cart by the given identifying column, or create one.
      *
      * When $lockForUpdate is true, this MUST be called from within an
@@ -427,12 +482,21 @@ final readonly class CartService
             );
         });
 
+        // A code that is still stored but consumed by nothing is not applied to
+        // this cart: the coupon went inactive, its window closed, its cap
+        // filled, or the cart no longer meets the conditions. Checkout proceeds
+        // without the discount, so the payload has to say why.
+        $appliedCouponError = $cart->applied_coupon_code !== null && $context->triggered_by_coupon_code === null
+            ? __('shop.cart.errors.coupon_not_applied')
+            : null;
+
         return CartData::fromModel(
             $cart,
             $subtotal,
             $discountAmount,
             $grandTotal,
             CartItemData::collect($cartItems, DataCollection::class),
+            $appliedCouponError,
         );
     }
 

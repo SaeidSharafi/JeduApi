@@ -71,3 +71,39 @@ test('discounted prices relation', function (): void {
         ->and($discount->discountedPrices->first()->product_delivery_option_id)
         ->toEqual($price->product_delivery_option_id);
 });
+
+test('usages relation', function (): void {
+    $discount = DiscountPromotion::factory()->create();
+    $order    = App\Models\Order::factory()->create();
+    $usage    = App\Models\DiscountPromotionUsage::create([
+        'discount_promotion_id' => $discount->id,
+        'customer_id'           => $order->customer_id,
+        'order_id'              => $order->id,
+    ])->fresh();
+
+    expect($discount->usages)
+        ->toBeInstanceOf(Illuminate\Database\Eloquent\Collection::class)
+        ->and($discount->usages->first())
+        ->toBeInstanceOf(App\Models\DiscountPromotionUsage::class)
+        ->and($discount->usages->first()->id)
+        ->toEqual($usage->id);
+});
+
+test('held usages relation', function (): void {
+    $discount = DiscountPromotion::factory()->create();
+    $order    = App\Models\Order::factory()->create([
+        'status' => App\Enums\Order\OrderStatusEnum::PENDING->value,
+    ]);
+    $usage = App\Models\DiscountPromotionUsage::create([
+        'discount_promotion_id' => $discount->id,
+        'customer_id'           => $order->customer_id,
+        'order_id'              => $order->id,
+    ])->fresh();
+
+    expect($discount->heldUsages)
+        ->toBeInstanceOf(Illuminate\Database\Eloquent\Collection::class)
+        ->and($discount->heldUsages->first())
+        ->toBeInstanceOf(App\Models\DiscountPromotionUsage::class)
+        ->and($discount->heldUsages->first()->id)
+        ->toEqual($usage->id);
+});

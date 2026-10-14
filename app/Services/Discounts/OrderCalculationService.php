@@ -27,8 +27,11 @@ final class OrderCalculationService
         $context = $this->promotionService->buildOrderContext($data);
 
         // 2. Find all applicable CART_CHECKOUT promotions (stacked by priority).
+        // The customer id lets per-customer-exhausted promotions drop out so that
+        // cart preview and checkout always agree on the discount.
         $promotions = $this->promotionService->findAllApplicableCartPromotions(
             $data->applied_coupon_code,
+            $data->customer_id,
         );
 
         // 3. Apply each matching promotion in priority order, respecting stop_processing_subsequent_rules.
@@ -38,12 +41,20 @@ final class OrderCalculationService
             }
 
             $context->evaluating_promotion = $promotion;
+
             // Attribute the coupon code only to the promotion that requires it;
-            // automatic promotions must not inherit it in the audit trail.
-            $context->triggered_by_coupon_code = $promotion->requires_coupon
-                ? $data->applied_coupon_code
-                : null;
+            // automatic promotions must not inherit it in the audit trail. The
+            // handlers and the audit entry read the context while the actions
+            // run, so the field holds THIS promotion's attribution during them...
+            $appliedCouponCode                 = $promotion->requires_coupon ? $data->applied_coupon_code : null;
+            $consumedCouponCode                = $context->triggered_by_coupon_code;
+            $context->triggered_by_coupon_code = $appliedCouponCode;
             $this->applyActions($promotion, $context);
+
+            // ...and afterwards it accumulates. A later automatic promotion must
+            // not erase the code this calculation consumed: the order column and
+            // the coupon usage counter both read the field after the loop.
+            $context->triggered_by_coupon_code = $appliedCouponCode ?? $consumedCouponCode;
 
             if ($promotion->stop_processing_subsequent_rules) {
                 break; // Stop stacking further promotions
@@ -78,7 +89,7 @@ final class OrderCalculationService
                 throw new RuntimeException(__('messages.discount.no_config_dto', ['class' => $handlerClass]));
             }
 
-            $config = $configDtoClass::from(data_get($rule, 'configuration'));
+            $config = $configDtoClass::from((array) data_get($rule, 'configuration'));
             // The action handler mutates the $context object directly.
             $handler->apply($context, $config);
         }

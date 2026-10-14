@@ -85,3 +85,79 @@ it('dispatches OrderStatusUpdatedEvent exactly once and completes the order on a
     'pending order'    => [OrderStatusEnum::PENDING],
     'processing order' => [OrderStatusEnum::PROCESSING],
 ]);
+
+it('approves a deposit order because the required payment is the undiscounted deposit', function (): void {
+    Event::fake([OrderStatusUpdatedEvent::class]);
+
+    $customer = User::factory()->create();
+    $option   = ProductDeliveryOption::factory()->create(['price' => 100000, 'prepayment_amount' => 25000]);
+
+    $order = Order::factory()->create([
+        'customer_id' => $customer->id,
+        'status'      => OrderStatusEnum::PENDING,
+        'grand_total' => 25000,
+    ]);
+
+    OrderItem::factory()->create([
+        'order_id'                   => $order->id,
+        'product_delivery_option_id' => $option->id,
+        'qty_ordered'                => 1,
+        'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT,
+        'price'                      => 100000,
+        'prepayment_amount'          => 25000,
+        'discount_amount'            => 0,
+        'total'                      => 25000,
+        'status'                     => OrderItemStatusEnum::PENDING,
+    ]);
+
+    Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $customer->id,
+        'method'      => PaymentMethodEnum::WALLET,
+        'amount'      => 25000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    app(ApproveOrderAction::class)->handle($order);
+
+    expect($order->fresh()->status)->toBe(OrderStatusEnum::COMPLETED)
+        ->and($order->fresh()->items->first()->status)->toBe(OrderItemStatusEnum::COMPLETED);
+});
+
+it('refuses to approve a deposit order that underpaid the deposit', function (): void {
+    Event::fake([OrderStatusUpdatedEvent::class]);
+
+    $customer = User::factory()->create();
+    $option   = ProductDeliveryOption::factory()->create(['price' => 100000, 'prepayment_amount' => 25000]);
+
+    $order = Order::factory()->create([
+        'customer_id' => $customer->id,
+        'status'      => OrderStatusEnum::PENDING,
+        'grand_total' => 25000,
+    ]);
+
+    OrderItem::factory()->create([
+        'order_id'                   => $order->id,
+        'product_delivery_option_id' => $option->id,
+        'qty_ordered'                => 1,
+        'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT,
+        'price'                      => 100000,
+        'prepayment_amount'          => 25000,
+        'discount_amount'            => 0,
+        'total'                      => 25000,
+        'status'                     => OrderItemStatusEnum::PENDING,
+    ]);
+
+    Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $customer->id,
+        'method'      => PaymentMethodEnum::WALLET,
+        'amount'      => 20000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    expect(fn () => app(ApproveOrderAction::class)->handle($order))
+        ->toThrow(Illuminate\Validation\ValidationException::class);
+
+    expect($order->fresh()->status)->toBe(OrderStatusEnum::PENDING);
+});
