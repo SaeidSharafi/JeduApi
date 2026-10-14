@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
+use App\Actions\Shop\Product\BuildListingMetadataAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Data\Shop\Product\DigitalAssetDetailData;
@@ -12,7 +13,6 @@ use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Query\ProductQueryService;
-use App\Services\CataloguePriceBoundService;
 use App\Services\ProductPriceService;
 
 /**
@@ -22,10 +22,7 @@ use App\Services\ProductPriceService;
  */
 final class DigitalAssetController extends Controller
 {
-    public function __construct(
-        private ProductPriceService $priceService,
-        private CataloguePriceBoundService $priceBoundService,
-    ) {}
+    public function __construct(private ProductPriceService $priceService) {}
 
     /**
      * Digital Assets List
@@ -48,7 +45,7 @@ final class DigitalAssetController extends Controller
      *
      * @responseFile resources/responses/shop/products/digital-assets/index.json
      */
-    public function index(ProductListRequestData $requestData): ApiResponseInterface
+    public function index(ProductListRequestData $requestData, BuildListingMetadataAction $buildMetadata): ApiResponseInterface
     {
         $requestData->type = ProductableEnum::DIGITAL_ASSET->value;
         $courses           = ProductQueryService::make()
@@ -59,11 +56,7 @@ final class DigitalAssetController extends Controller
                 return ProductCardData::fromModel($product, $priceData);
             });
 
-        return apiResponse()->success($courses, metadata: [
-            'filters' => [
-                'price' => $this->priceBoundService->forCatalogue(ProductableEnum::DIGITAL_ASSET),
-            ],
-        ]);
+        return apiResponse()->success($courses, metadata: $buildMetadata->forListing(ProductableEnum::DIGITAL_ASSET));
     }
 
     /**

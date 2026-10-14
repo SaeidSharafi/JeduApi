@@ -205,6 +205,39 @@ it('reports null bounds for a category with no available products', function (Pr
         ->assertJsonPath('metadata.filters.price', ['min' => null, 'max' => null]);
 })->with('bound_category_listings');
 
+/**
+ * A category listing deliberately carries no availability window (its bound is the
+ * scope `CategoryQueryService` lists with), so it bounds the products the type
+ * listing's default available-now window excludes.
+ */
+it('bounds a category by its catalogue even when that catalogue is outside the availability window', function (ProductableEnum $type, string $categoryRoute, string $listingRoute): void {
+    $category = Category::factory()->create(['slug' => 'archive']);
+
+    $archived = createCatalogueBoundProduct($type, 150_000, 'Archived Product');
+    $archived->categories()->attach($category->id);
+
+    // Its only delivery option ended last month, so the type listing's default
+    // availability window leaves the type-wide catalogue empty.
+    $archived->productDeliveryOptions()->update([
+        'available_from' => now()->subMonths(2),
+        'available_to'   => now()->subMonth(),
+    ]);
+
+    $this->getJson(route($listingRoute))
+        ->assertOk()
+        ->assertJsonCount(0, 'data.data')
+        ->assertJsonPath('metadata.filters.price', ['min' => null, 'max' => null]);
+
+    $this->getJson(route($categoryRoute, $category))
+        ->assertOk()
+        ->assertJsonCount(1, 'data.data')
+        ->assertJsonPath('metadata.filters.price', ['min' => 150_000, 'max' => 150_000]);
+})->with([
+    'category courses'        => [ProductableEnum::COURSE, 'api.v1.shop.categories.courses', 'api.v1.shop.courses.index'],
+    'category seminars'       => [ProductableEnum::SEMINAR, 'api.v1.shop.categories.seminars', 'api.v1.shop.seminars.index'],
+    'category digital assets' => [ProductableEnum::DIGITAL_ASSET, 'api.v1.shop.categories.digital-assets', 'api.v1.shop.digital-assets.index'],
+]);
+
 it('keeps the price bound off the listings that do not own it', function (Closure $route): void {
     $this->getJson($route())
         ->assertOk()

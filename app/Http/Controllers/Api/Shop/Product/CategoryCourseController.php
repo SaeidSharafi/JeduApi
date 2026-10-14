@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
+use App\Actions\Shop\Product\BuildListingMetadataAction;
 use App\Data\Shop\PaginationRequestData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Query\CategoryQueryService;
-use App\Services\CataloguePriceBoundService;
 
 /**
  * @group Shop - Products - Categories
@@ -18,8 +18,6 @@ use App\Services\CataloguePriceBoundService;
  */
 final class CategoryCourseController extends Controller
 {
-    public function __construct(private CataloguePriceBoundService $priceBoundService) {}
-
     /**
      * Category Courses
      *
@@ -32,14 +30,17 @@ final class CategoryCourseController extends Controller
      *
      * @responseFile resources/responses/shop/products/categories/courses.json
      */
-    public function __invoke(PaginationRequestData $data, Category $category, CategoryQueryService $service): \App\Contracts\ApiResponseInterface
-    {
+    public function __invoke(
+        PaginationRequestData $data,
+        Category $category,
+        CategoryQueryService $service,
+        BuildListingMetadataAction $buildMetadata,
+    ): \App\Contracts\ApiResponseInterface {
         $paginatedCourses = $service->getProductsForCategory($category, ProductableEnum::COURSE, $data->per_page, true);
 
-        return apiResponse()->success($paginatedCourses, metadata: [
-            'filters' => [
-                'price' => $this->priceBoundService->forCategoryCatalogue($category, ProductableEnum::COURSE),
-            ],
-        ]);
+        return apiResponse()->success(
+            $paginatedCourses,
+            metadata: $buildMetadata->forCategory($category, ProductableEnum::COURSE),
+        );
     }
 }
