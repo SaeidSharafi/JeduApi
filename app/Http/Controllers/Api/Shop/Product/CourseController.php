@@ -62,7 +62,7 @@ final class CourseController extends Controller
 
         return apiResponse()->success($courses, metadata: [
             'filters' => [
-                'price' => $this->priceBoundService->forCourseCatalogue(),
+                'price' => $this->priceBoundService->forCatalogue(ProductableEnum::COURSE),
             ],
         ]);
     }

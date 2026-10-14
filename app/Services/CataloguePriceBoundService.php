@@ -8,8 +8,11 @@ use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\Product\Course\ProductFilterData;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\System\CacheKey;
+use App\Models\Category;
 use App\Models\Product;
 use App\Query\ProductListingScope;
+use Closure;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * The catalogue Price Bound of a listing scope: the lowest and highest Purchase
@@ -27,28 +30,44 @@ use App\Query\ProductListingScope;
  */
 final readonly class CataloguePriceBoundService
 {
-    /**
-     * The cache scope key of the whole course catalogue.
-     */
-    private const string COURSE_CATALOGUE_SCOPE = 'course';
-
     public function __construct(private CacheStore $cache) {}
 
     /**
-     * The Price Bound of the whole course catalogue.
+     * The Price Bound of one productable type's whole catalogue.
      *
-     * The listing's default availability window applies; request filters never do.
+     * The type listing's default availability window applies; request filters never do.
      *
      * @return array{min: int|null, max: int|null}
      */
-    public function forCourseCatalogue(): array
+    public function forCatalogue(ProductableEnum $productableType): array
     {
         return $this->forScope(
-            self::COURSE_CATALOGUE_SCOPE,
+            $productableType->value,
             ProductListingScope::forListing(
-                ProductableEnum::COURSE,
+                $productableType,
                 new ProductFilterData(),
             ),
+        );
+    }
+
+    /**
+     * The Price Bound of one category's catalogue for a productable type.
+     *
+     * The category listing scope applies — its catalogue invariants and the type, but
+     * no availability window, exactly as it lists — and the category restricts the
+     * aggregate, so two categories report their own ranges rather than the type-wide one.
+     *
+     * @return array{min: int|null, max: int|null}
+     */
+    public function forCategoryCatalogue(Category $category, ProductableEnum $productableType): array
+    {
+        $query = ProductListingScope::forCategoryListing($productableType)
+            ->applyToDatabase(Product::query())
+            ->inCategory($category->id);
+
+        return $this->remember(
+            sprintf('%s.category.%s', $productableType->value, $category->slug),
+            fn (): array => $this->aggregate($query),
         );
     }
 
@@ -62,21 +81,33 @@ final readonly class CataloguePriceBoundService
      */
     public function forScope(string $scope, ProductListingScope $listingScope): array
     {
-        /** @var array{min: int|null, max: int|null} */
-        return $this->cache->flexible(
-            CacheKey::CataloguePriceBound,
-            ['scope'     => $scope],
-            fn (): array => $this->aggregate($listingScope),
+        return $this->remember(
+            $scope,
+            fn (): array => $this->aggregate($listingScope->applyToDatabase(Product::query())),
         );
     }
 
     /**
+     * @param  Closure(): array{min: int|null, max: int|null}  $aggregate
      * @return array{min: int|null, max: int|null}
      */
-    private function aggregate(ProductListingScope $listingScope): array
+    private function remember(string $scope, Closure $aggregate): array
     {
-        $bound = $listingScope
-            ->applyToDatabase(Product::query())
+        /** @var array{min: int|null, max: int|null} */
+        return $this->cache->flexible(
+            CacheKey::CataloguePriceBound,
+            ['scope' => $scope],
+            $aggregate,
+        );
+    }
+
+    /**
+     * @param  Builder<Product>  $query
+     * @return array{min: int|null, max: int|null}
+     */
+    private function aggregate(Builder $query): array
+    {
+        $bound = $query
             ->join('product_prices', 'products.id', '=', 'product_prices.product_id')
             ->selectRaw('MIN(product_prices.min_price) AS min_price, MAX(product_prices.min_price) AS max_price')
             ->toBase()
