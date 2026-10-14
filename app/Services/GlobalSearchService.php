@@ -15,6 +15,7 @@ use App\Enums\System\CacheKey;
 use App\Exceptions\CustomValidationException;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
+use App\Query\ProductListingScope;
 use App\Query\ProductQueryService;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -424,47 +425,10 @@ final class GlobalSearchService
 
     private function buildProductFilters(SearchData $searchData): string
     {
-        $baseFilters = [
-            'status:=published',
-            'is_visible:=true',
-            'productable_type:!='.ProductableEnum::BUNDLE->value,
-        ];
-
-        if (! empty($searchData->productable_type)) {
-            $baseFilters[] = "productable_type:={$searchData->productable_type}";
-        }
-
-        // Use filter data if available
-        if ($searchData->filter) {
-            if ($searchData->filter->with_discounts !== null) {
-                $value         = $searchData->filter->with_discounts ? 'true' : 'false';
-                $baseFilters[] = "has_discount:={$value}";
-            }
-
-            if (! empty($searchData->filter->category_slugs)) {
-                $slugs         = implode(',', $searchData->filter->category_slugs);
-                $baseFilters[] = "category_slugs:=[{$slugs}]";
-            }
-
-            if ($searchData->filter->min_price !== null && $searchData->filter->max_price !== null) {
-                $baseFilters[] = "price:[{$searchData->filter->min_price}..{$searchData->filter->max_price}]";
-            } elseif ($searchData->filter->min_price !== null) {
-                $baseFilters[] = "price:>={$searchData->filter->min_price}";
-            } elseif ($searchData->filter->max_price !== null) {
-                $baseFilters[] = "price:<={$searchData->filter->max_price}";
-            }
-
-            if (! empty($searchData->filter->difficulty_level)) {
-                $baseFilters[] = "difficulty_level:={$searchData->filter->difficulty_level}";
-            }
-
-            if (! empty($searchData->filter->fulfillment_types)) {
-                $types         = array_map(fn ($type): string => "fulfillment_types:={$type}", $searchData->filter->fulfillment_types);
-                $baseFilters[] = '('.implode(' || ', $types).')';
-            }
-        }
-
-        return implode(' && ', $baseFilters);
+        return ProductListingScope::forGlobalSearch(
+            ProductableEnum::tryFrom((string) $searchData->productable_type),
+            $searchData->filter,
+        )->toTypesenseFilter();
     }
 
     private function buildBlogFilters(SearchData $searchData): string
