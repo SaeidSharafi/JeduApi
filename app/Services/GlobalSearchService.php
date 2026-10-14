@@ -126,7 +126,12 @@ final class GlobalSearchService
             $productIndex    = $prefix.(new Product())->searchableAs();
             $blogPostIndex   = $prefix.(new BlogPost())->searchableAs();
             $searchProducts  = empty($searchData->result_types) || in_array('product', $searchData->result_types);
-            $searchBlogPosts = empty($searchData->result_types) || in_array('blog_post', $searchData->result_types);
+            $searchBlogPosts = (empty($searchData->result_types) || in_array('blog_post', $searchData->result_types))
+                && ! $this->requestCarriesProductFilter($searchData);
+
+            if (! $searchProducts && ! $searchBlogPosts) {
+                return new LengthAwarePaginator([], 0, $searchData->per_page, $page);
+            }
 
             $rawResults = $this->performSearch(
                 $searchData,
@@ -306,8 +311,15 @@ final class GlobalSearchService
         $page = LengthAwarePaginator::resolveCurrentPage();
 
         // Determine which types to search
-        $searchProducts = empty($searchData->result_types) || in_array('product', $searchData->result_types);
+        $searchProducts  = empty($searchData->result_types) || in_array('product', $searchData->result_types);
+        $searchBlogPosts = (empty($searchData->result_types) || in_array('blog_post', $searchData->result_types))
+            && ! $this->requestCarriesProductFilter($searchData);
+
         if (! $searchProducts) {
+            if (! $searchBlogPosts) {
+                return new LengthAwarePaginator([], 0, $searchData->per_page, $page)->withQueryString();
+            }
+
             return BlogPost::query()
                 ->where('status', PublicationStatusEnum::PUBLISHED)
                 ->where(function ($q) use ($searchData): void {
@@ -475,6 +487,29 @@ final class GlobalSearchService
         // For now, blog posts only filter by published status
 
         return implode(' && ', $baseFilters);
+    }
+
+    /**
+     * Does this request carry a filter that selects on a product's own attributes?
+     *
+     * Every field of {@see ProductFilterData} (categories, delivery method, difficulty, price,
+     * discounts, capacity, availability) can only be evaluated against a product, so an article
+     * can never satisfy one. When such a filter is present, blog posts are excluded from the
+     * result set even when the client explicitly asks for them.
+     */
+    private function requestCarriesProductFilter(SearchData $searchData): bool
+    {
+        if ($searchData->filter === null) {
+            return false;
+        }
+
+        foreach ($searchData->filter->toArray() as $value) {
+            if ($value !== null && $value !== []) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function shouldUseVectorSearch(?string $query): bool
