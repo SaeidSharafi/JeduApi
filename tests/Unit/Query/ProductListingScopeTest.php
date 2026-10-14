@@ -122,7 +122,12 @@ it('renders each availability status', function (AvailabilityStatusEnum $status,
 ]);
 
 it('renders the global search product scope without catalogue or availability clauses', function () use ($now): void {
-    $filter = new ProductFilterData(with_discounts: false, min_price: 100_000);
+    $filter = new ProductFilterData(
+        with_discounts: false,
+        min_price: 100_000,
+        near_capacity_only: true,
+        capacity_threshold: 0.5,
+    );
 
     $scope = ProductListingScope::forGlobalSearch(ProductableEnum::COURSE, $filter, $now());
 
@@ -131,3 +136,52 @@ it('renders the global search product scope without catalogue or availability cl
         .' && productable_type:=course && has_discount:=false && price:>=100000'
     );
 });
+
+it('does not render an explicit negative discount for the listing scope', function () use ($now): void {
+    $filter = new ProductFilterData(with_discounts: false);
+
+    $expression = ProductListingScope::forListing(ProductableEnum::COURSE, $filter, $now())->toTypesenseFilter();
+
+    expect($expression)->not->toContain('has_discount');
+});
+
+it('falls back to the configured capacity threshold when the filter omits one', function () use ($now): void {
+    $filter = new ProductFilterData(near_capacity_only: true);
+
+    $expression = ProductListingScope::forListing(ProductableEnum::COURSE, $filter, $now())->toTypesenseFilter();
+
+    expect($expression)->toContain('max_capacity_utilization:>=0.8');
+});
+
+it('does not render the capacity clause when the filter disables it', function () use ($now): void {
+    $filter = new ProductFilterData(near_capacity_only: false);
+
+    $expression = ProductListingScope::forListing(ProductableEnum::COURSE, $filter, $now())->toTypesenseFilter();
+
+    expect($expression)->not->toContain('max_capacity_utilization');
+});
+
+it('stacks the registration window with an availability status', function () use ($now): void {
+    $filter = new ProductFilterData(
+        availability_status: AvailabilityStatusEnum::PAST->value,
+        registration_starts_after: Carbon::parse('2025-09-01', 'UTC'),
+    );
+
+    $expression = ProductListingScope::forListing(ProductableEnum::COURSE, $filter, $now())->toTypesenseFilter();
+
+    expect($expression)->toContain('latest_registration_end_ts:>=1756684800')
+        ->toContain('latest_event_ended_ts:<1741996800')
+        ->not->toContain('latest_availability_end_ts:>=1742040000');
+});
+
+it('renders a one-sided availability window instead of the default one', function (?Carbon $from, ?Carbon $to, string $expected) use ($now): void {
+    $filter = new ProductFilterData(available_from: $from, available_to: $to);
+
+    $expression = ProductListingScope::forListing(ProductableEnum::COURSE, $filter, $now())->toTypesenseFilter();
+
+    expect($expression)->toContain($expected)
+        ->not->toContain('latest_event_ended_ts');
+})->with([
+    'from only' => [Carbon::parse('2025-06-20', 'UTC'), null, 'latest_availability_end_ts:>=1750377600'],
+    'to only'   => [null, Carbon::parse('2025-09-01', 'UTC'), 'earliest_availability_start_ts:<=1756684800'],
+]);
