@@ -6,7 +6,7 @@ Headless Laravel API for educational commerce. Admin and shop interfaces share A
 
 Admin spreadsheet imports and private User exports enter through `app/Actions/Admin/ImportExport/`: preview, explicit atomic local approval, post-commit standalone provider-account jobs, run polling, and synchronous filtered export generation/authenticated download. Configured retention and the hourly cleanup command expire private artifacts and redact row snapshots while preserving safe run history. `UserQueryDefinition` shares list/export filters and deterministic ordering. Account capabilities are separate from Enrollment provisioning. The [core logic digest](DIGEST_CORE_LOGIC.md#spreadsheet-importexport-engine-appservicesimportexport) owns this workflow; [API interfaces](DIGEST_API_INTERFACES.md#importexport-controllers-apphttpcontrollersapiadminimportexport) owns request/result contracts.
 
-Catalog separates content (`Course`, `Seminar`, `DigitalAsset`, `Bundle`), commercial `Product`, and buyable `ProductDeliveryOption`. Checkout creates orders with purchase snapshots; payment and enrollment provisioning have separate lifecycles.
+Catalog separates content (`Course`, `Seminar`, `DigitalAsset`, `Bundle`), commercial `Product`, and buyable `ProductDeliveryOption`. Checkout creates orders with purchase snapshots; payment and enrollment provisioning have separate lifecycles. Filterable listings and global search report a per-scope **Price Bound** in response metadata; the bound is a catalogue constant of the endpoint's scope, not derived from the request's filters ([ADR 0018](../adr/0018-price-bounds-are-per-scope-catalogue-constants.md)).
 
 ## Using uploaded digests in chat
 
