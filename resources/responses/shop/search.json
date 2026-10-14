@@ -336,5 +336,12 @@
     "to": 10,
     "total": 90
   },
-  "metadata": []
+  "metadata": {
+    "filters": {
+      "price": {
+        "min": 150000,
+        "max": 1800000
+      }
+    }
+  }
 }
