@@ -18,6 +18,11 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
  */
 final class SearchData extends Data
 {
+    /**
+     * The result type that puts products in the result set.
+     */
+    public const string PRODUCT_RESULT_TYPE = 'product';
+
     public function __construct(
         public ?string $q,
         public ?int $per_page = 15,
@@ -40,6 +45,16 @@ final class SearchData extends Data
             'filter.*'         => ['sometimes'],
             ...$filters,
         ];
+    }
+
+    /**
+     * Whether the requested result types can contain products at all: the request
+     * either names no types (everything is searched) or names the product type.
+     */
+    public function returnsProducts(): bool
+    {
+        return empty($this->result_types)
+            || in_array(self::PRODUCT_RESULT_TYPE, $this->result_types, true);
     }
 
     /**

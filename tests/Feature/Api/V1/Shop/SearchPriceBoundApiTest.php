@@ -128,6 +128,28 @@ it('omits the price bound from a search that cannot return products', function (
         ->assertJsonPath('metadata', []);
 });
 
+it('omits the price bound for a productable type the shop does not sell', function (): void {
+    createSearchableProduct(9_000_000, 'Extreme Bundle', ProductableEnum::BUNDLE);
+
+    $this->getJson(route('api.v1.shop.search', ['productable_type' => ProductableEnum::BUNDLE->value]))
+        ->assertOk()
+        ->assertJsonCount(0, 'data.data')
+        ->assertJsonPath('metadata', []);
+});
+
+it('reports a bound for every shopped productable type', function (ProductableEnum $type): void {
+    createSearchableProduct(100_000, 'Shopped Product', $type);
+
+    $this->getJson(route('api.v1.shop.search', ['productable_type' => $type->value]))
+        ->assertOk()
+        ->assertJsonCount(1, 'data.data')
+        ->assertJsonPath('metadata.filters.price', ['min' => 100_000, 'max' => 100_000]);
+})->with([
+    'courses'        => [ProductableEnum::COURSE],
+    'seminars'       => [ProductableEnum::SEMINAR],
+    'digital assets' => [ProductableEnum::DIGITAL_ASSET],
+]);
+
 it('reports the same catalogue bound whatever product filter or query the search carries', function (array $query, int $expectedCount): void {
     $category = Category::factory()->create(['slug' => 'budget-courses']);
 

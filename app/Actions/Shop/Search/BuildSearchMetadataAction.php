@@ -21,9 +21,14 @@ use App\Services\CataloguePriceBoundService;
 final readonly class BuildSearchMetadataAction
 {
     /**
-     * The result type that puts products in the result set.
+     * The productable types of the shopped catalogue. A bundle is not one of them:
+     * `/bundles` carries no bound and bundles are never indexed for search.
      */
-    private const string PRODUCT_RESULT_TYPE = 'product';
+    private const array SHOPPED_TYPES = [
+        ProductableEnum::COURSE->value,
+        ProductableEnum::SEMINAR->value,
+        ProductableEnum::DIGITAL_ASSET->value,
+    ];
 
     /**
      * Cache scope of a search spanning every shopped productable type.
@@ -37,11 +42,11 @@ final readonly class BuildSearchMetadataAction
      */
     public function handle(SearchData $searchData): array
     {
-        if (! $this->canReturnProducts($searchData)) {
+        $productableType = ProductableEnum::tryFrom((string) $searchData->productable_type);
+
+        if (! $searchData->returnsProducts() || ! $this->isShoppedType($productableType)) {
             return [];
         }
-
-        $productableType = ProductableEnum::tryFrom((string) $searchData->productable_type);
 
         return [
             'filters' => [
@@ -54,12 +59,13 @@ final readonly class BuildSearchMetadataAction
     }
 
     /**
-     * Whether the requested result types can contain products at all.
+     * Whether the requested type belongs to the shopped catalogue. No type at all
+     * means every shopped type.
      */
-    private function canReturnProducts(SearchData $searchData): bool
+    private function isShoppedType(?ProductableEnum $productableType): bool
     {
-        return empty($searchData->result_types)
-            || in_array(self::PRODUCT_RESULT_TYPE, $searchData->result_types, true);
+        return $productableType === null
+            || in_array($productableType->value, self::SHOPPED_TYPES, true);
     }
 
     /**

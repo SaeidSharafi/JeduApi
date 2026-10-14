@@ -126,7 +126,7 @@ final class GlobalSearchService
             $prefix          = config('scout.prefix', '');
             $productIndex    = $prefix.(new Product())->searchableAs();
             $blogPostIndex   = $prefix.(new BlogPost())->searchableAs();
-            $searchProducts  = empty($searchData->result_types) || in_array('product', $searchData->result_types);
+            $searchProducts  = $searchData->returnsProducts();
             $searchBlogPosts = (empty($searchData->result_types) || in_array('blog_post', $searchData->result_types))
                 && ! $this->requestCarriesProductFilter($searchData);
 
@@ -312,7 +312,7 @@ final class GlobalSearchService
         $page = LengthAwarePaginator::resolveCurrentPage();
 
         // Determine which types to search
-        $searchProducts  = empty($searchData->result_types) || in_array('product', $searchData->result_types);
+        $searchProducts  = $searchData->returnsProducts();
         $searchBlogPosts = (empty($searchData->result_types) || in_array('blog_post', $searchData->result_types))
             && ! $this->requestCarriesProductFilter($searchData);
 
