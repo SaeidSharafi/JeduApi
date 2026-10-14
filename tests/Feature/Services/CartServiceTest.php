@@ -57,16 +57,20 @@ function makePlainCartOption(): ProductDeliveryOption
 }
 
 /**
- * Seed a cart item with quantity 0 — the same trick CartControllerTest uses —
- * so a later quantity bump passes the single-quantity guard.
+ * Seed a cart item at a quantity a shopper's cart can actually hold.
+ *
+ * @param  int  $quantity  Zero is the boundary a test may set deliberately: it
+ *                         is the only quantity at which addItem() still reaches
+ *                         its summed-quantity branch instead of refusing the
+ *                         duplicate first.
  */
-function seedCartItem(Cart $cart, ProductDeliveryOption $pdo, ?int $snapshotVersion = null): CartItem
+function seedCartItem(Cart $cart, ProductDeliveryOption $pdo, ?int $snapshotVersion = null, int $quantity = 1): CartItem
 {
     return CartItem::factory()->create([
         'cart_id'                    => $cart->id,
         'product_delivery_option_id' => $pdo->id,
         'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT,
-        'quantity'                   => 0,
+        'quantity'                   => $quantity,
         'composition_version'        => $snapshotVersion,
     ]);
 }
@@ -174,7 +178,7 @@ describe('CartService', function (): void {
                 ->andReturnNull();
         });
         $pdo  = makeBundleCartOption(version: 1);
-        $item = seedCartItem($cart, $pdo, snapshotVersion: 1);
+        $item = seedCartItem($cart, $pdo, snapshotVersion: 1, quantity: 0);
         // The Bundle changed after the item was added to the cart.
         $pdo->update(['composition_version' => 2]);
 
@@ -193,33 +197,44 @@ describe('CartService', function (): void {
         $cart = Cart::factory()->create(['user_id' => $user->id]);
         $this->mock(CartIdentifier::class, function (MockInterface $mock) use ($user): void {
             $mock->shouldReceive('userId')
-                ->times(2)
+                ->zeroOrMoreTimes()
                 ->andReturn($user->id);
             $mock->shouldReceive('guestToken')
                 ->zeroOrMoreTimes()
                 ->andReturnNull();
         });
 
-        $plainUpdate = makePlainCartOption();
-        $updateItem  = seedCartItem($cart, $plainUpdate, snapshotVersion: null);
+        $plain = makePlainCartOption();
+        $item  = seedCartItem($cart, $plain, snapshotVersion: null);
 
-        $plainAdd = makePlainCartOption();
-        $addItem  = seedCartItem($cart, $plainAdd, snapshotVersion: null);
-
-        $service = resolve(CartService::class);
-        $service->updateItem(
-            $updateItem->id,
+        resolve(CartService::class)->updateItem(
+            $item->id,
             new UpdateCartItemData(quantity: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT),
         );
-        $service->addItem(new AddCartItemData(
-            product_delivery_option_uuid: $plainAdd->uuid,
-            quantity: 1,
-        ));
 
-        expect($updateItem->fresh()->composition_version)->toBeNull()
-            ->and($updateItem->fresh()->quantity)->toBe(1)
-            ->and($addItem->fresh()->composition_version)->toBeNull()
-            ->and($addItem->fresh()->quantity)->toBe(1);
+        expect($item->fresh()->composition_version)->toBeNull()
+            ->and($item->fresh()->quantity)->toBe(1);
+    });
+
+    it('refuses to add a second line for an option the cart already holds', function (): void {
+        $user = User::factory()->create();
+        $cart = Cart::factory()->create(['user_id' => $user->id]);
+        $this->mock(CartIdentifier::class, function (MockInterface $mock) use ($user): void {
+            $mock->shouldReceive('userId')
+                ->zeroOrMoreTimes()
+                ->andReturn($user->id);
+            $mock->shouldReceive('guestToken')
+                ->zeroOrMoreTimes()
+                ->andReturnNull();
+        });
+
+        $plain = makePlainCartOption();
+        seedCartItem($cart, $plain, snapshotVersion: null);
+
+        expect(fn () => resolve(CartService::class)->addItem(new AddCartItemData(
+            product_delivery_option_uuid: $plain->uuid,
+            quantity: 1,
+        )))->toThrow(ValidationException::class);
     });
 
     it('moves guest bundle items into a user cart when no user cart exists yet', function (): void {
@@ -680,11 +695,16 @@ describe('CartService', function (): void {
             'quantity'                   => 1,
         ]);
 
-        $removed = resolve(CartService::class)->removeItem($item->id);
-        expect($removed->items)->toHaveCount(0)
-            ->and($removed->grand_total)->toBe(0);
+        $service = resolve(CartService::class);
+        $service->removeItem($item->id);
 
-        $cleared = resolve(CartService::class)->removeCoupon();
+        assertDatabaseMissing('cart_items', ['id' => $item->id]);
+
+        $afterRemoval = $service->getCart();
+        expect($afterRemoval->items)->toHaveCount(0)
+            ->and($afterRemoval->grand_total)->toBe(0);
+
+        $cleared = $service->removeCoupon();
         expect($cleared->applied_coupon_code)->toBeNull();
     });
 

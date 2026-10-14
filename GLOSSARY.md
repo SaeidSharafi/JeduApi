@@ -214,4 +214,22 @@ _Avoid_: State, stage
 The staff member currently responsible for following up an inbound request.
 _Avoid_: Handler, last handled by
 
+### Cart
+
+**Cart**:
+The mutable, pre-purchase selection of offerings owned by one Customer or one guest token. It holds Cart Items and is priced on read; it is not an Order, it reserves nothing, and its totals are a preview that checkout recomputes.
+_Avoid_: basket (in backend prose), pending order
+
+**Cart Item**:
+One line in a Cart, naming exactly one Product Delivery Option, its quantity, and its Payment Intent. A Cart may hold at most one Cart Item per Product Delivery Option — the `unique_cart_product` constraint — so a repeated add is a duplicate, not a second line.
+_Avoid_: cart line, basket entry, cart product
+
+**Payment Intent**:
+A Cart Item's choice to settle in full or place a deposit: `payment_type`, either `full_payment` or `pre_payment`. It is a property of the line, not of the Cart, the Customer, or the eventual Order, and it is set when the line is added and changed by updating the line.
+_Avoid_: payment method, payment plan, installment
+
+**Quantity Rule**:
+The per-Delivery-Option limit on how many units one Cart Item may hold. It reads the Productable type, and every Productable currently refuses multiple quantity, so the permitted quantity is exactly one; the option's own `allow_multiple_quantity` flag is not part of this rule. A request exceeding it is a `quantity` error, distinct from the add-path duplicate refusal.
+_Avoid_: stock limit, capacity, max per order
+
 > Distinction to keep sharp: a **Campaign** credits wallet gift balance; a **Promotion** (`DiscountPromotion`) discounts product prices. They are unrelated.

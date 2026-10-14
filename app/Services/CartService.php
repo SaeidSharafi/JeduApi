@@ -130,7 +130,7 @@ final readonly class CartService
             ->where('cart_id', $cart->id)
             ->firstOrFail();
         $deliveryOption = $cartItem->productDeliveryOption()->with('product')->firstOrFail();
-        $this->validateQuantity($deliveryOption, $data->quantity, $cartItem);
+        $this->validateQuantity($deliveryOption, $data->quantity);
         $this->validatePaymentType($deliveryOption, $data->payment_type);
         $this->validatePurchaseEligibility($cart, $deliveryOption);
         $cartItem->update([
@@ -147,8 +147,12 @@ final readonly class CartService
 
     /**
      * Remove an item from the cart.
+     *
+     * Resolves the cart only to scope which row may be deleted. Deliberately
+     * returns nothing: the DELETE endpoint answers 204, so pricing the cart
+     * here would be work no caller can observe.
      */
-    public function removeItem(int $cartItemId): CartData
+    public function removeItem(int $cartItemId): void
     {
         $cart = $this->findOrCreateCart();
 
@@ -158,11 +162,6 @@ final readonly class CartService
             ->firstOrFail();
 
         $cartItem->delete();
-
-        // Reload cart with relationships
-        $cart->load(['items.productDeliveryOption.product']);
-
-        return $this->buildCartDataWithTotals($cart);
     }
 
     /**
@@ -525,6 +524,17 @@ final readonly class CartService
         $this->validateNoDuplicatePurchases->handle($cart->user()->first(), $deliveryOptions);
     }
 
+    /**
+     * Enforce the Quantity Rule, and — when a conflicting row is supplied — the
+     * add path's refusal to hold one option twice.
+     *
+     * `$existingItem` is another row already holding this option, so only add
+     * passes it. Update passes none: the row it is changing is not a duplicate
+     * of itself, and it applies the requested quantity as an absolute value.
+     * A conflicting row is therefore refused against the create-time field
+     * `product_delivery_option_uuid`, while an unsupported quantity is refused
+     * against `quantity` on both paths.
+     */
     private function validateQuantity(
         ProductDeliveryOption $deliveryOption,
         int $quantity = 1,

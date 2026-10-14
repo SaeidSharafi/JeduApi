@@ -182,7 +182,7 @@ describe('update', function (): void {
         $cartItem = CartItem::factory()->create([
             'cart_id'                    => $cart->id,
             'product_delivery_option_id' => $deliveryOption->id,
-            'quantity'                   => 0, // we set this to 0 since we do not have any product that accept multiple quantities
+            'quantity'                   => 1,
             'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT,
         ]);
 
@@ -193,6 +193,7 @@ describe('update', function (): void {
 
         $response->assertOk();
         $response->assertJsonPath('data.items.0.quantity', 1);
+        $response->assertJsonPath('data.items.0.payment_type', OrderItemPaymentTypeEnum::PRE_PAYMENT->value);
 
         $this->assertDatabaseHas('cart_items', [
             'id'           => $cartItem->id,
@@ -239,7 +240,14 @@ describe('update', function (): void {
         ]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['product_delivery_option_uuid']);
+        $response->assertJsonValidationErrors(['quantity']);
+        $response->assertJsonPath('message', __('shop.cart.errors.multiple_quantity_not_allowed'));
+
+        $this->assertDatabaseHas('cart_items', [
+            'id'           => $cartItem->id,
+            'quantity'     => 1,
+            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+        ]);
     });
 
 });
@@ -261,6 +269,37 @@ describe('destroy', function (): void {
         $response->assertNoContent();
 
         $this->assertDatabaseMissing('cart_items', ['id' => $cartItem->id]);
+    });
+
+    it('should leave the rest of the cart intact when one item is removed', function (): void {
+        $user            = User::factory()->create();
+        $removedOption   = ProductDeliveryOption::factory()->create();
+        $remainingOption = ProductDeliveryOption::factory()->create();
+        $this->customer($user);
+
+        $cart        = Cart::factory()->create(['user_id' => $user->id]);
+        $removedItem = CartItem::factory()->create([
+            'cart_id'                    => $cart->id,
+            'product_delivery_option_id' => $removedOption->id,
+            'quantity'                   => 1,
+        ]);
+        $remainingItem = CartItem::factory()->create([
+            'cart_id'                    => $cart->id,
+            'product_delivery_option_id' => $remainingOption->id,
+            'quantity'                   => 1,
+        ]);
+
+        $response = deleteJson(route('api.v1.shop.cart.items.destroy', $removedItem));
+
+        $response->assertNoContent();
+
+        $this->assertDatabaseMissing('cart_items', ['id' => $removedItem->id]);
+        $this->assertDatabaseHas('cart_items', ['id' => $remainingItem->id, 'quantity' => 1]);
+
+        getJson(route('api.v1.shop.cart.index'))
+            ->assertOk()
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonPath('data.items.0.id', $remainingItem->id);
     });
 
     it('should fail to delete another user\'s cart item', function (): void {
@@ -385,7 +424,7 @@ describe('CartController - Guest Users', function (): void {
             $cartItem = CartItem::factory()->create([
                 'cart_id'                    => $cart->id,
                 'product_delivery_option_id' => $deliveryOption->id,
-                'quantity'                   => 0,
+                'quantity'                   => 1,
                 'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
             ]);
 

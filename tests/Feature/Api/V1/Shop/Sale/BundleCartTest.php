@@ -79,7 +79,9 @@ it('rejects Bundle quantities above one on add and on update', function (): void
     putJson(route('api.v1.shop.cart.items.update', $cartItem), [
         'quantity'     => 2,
         'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-    ])->assertUnprocessable()->assertJsonValidationErrors(['product_delivery_option_uuid']);
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors(['quantity'])
+        ->assertJsonPath('message', __('shop.cart.errors.multiple_quantity_not_allowed'));
 
     assertDatabaseHas('cart_items', [
         'id'       => $cartItem->id,
