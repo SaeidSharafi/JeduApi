@@ -64,9 +64,19 @@ it('renders a single price bound without the other', function (?int $minPrice, ?
     expect($expression)->toContain($expectedBound)
         ->and($expression)->not->toContain($absentBound);
 })->with([
-    'minimum only' => [100_000, null, 'price:>=100000', 'price:<='],
-    'maximum only' => [null, 500_000, 'price:<=500000', 'price:>='],
+    'minimum only'    => [100_000, null, 'price:>=100000', 'price:<='],
+    'maximum only'    => [null, 500_000, 'price:<=500000', 'price:>='],
+    'minimum of zero' => [0, null, 'price:>=0', 'price:<='],
+    'maximum of zero' => [null, 0, 'price:<=0', 'price:>='],
 ]);
+
+it('renders equal zero bounds as an inclusive zero range', function () use ($now): void {
+    $filter = new ProductFilterData(min_price: 0, max_price: 0);
+
+    $expression = ProductListingScope::forListing(ProductableEnum::COURSE, $filter, $now())->toTypesenseFilter();
+
+    expect($expression)->toContain('price:[0..0]');
+});
 
 it('renders the available-now window and lets it supersede the default window', function () use ($now): void {
     $filter = new ProductFilterData(is_available_now: true, availability_status: AvailabilityStatusEnum::PAST->value);

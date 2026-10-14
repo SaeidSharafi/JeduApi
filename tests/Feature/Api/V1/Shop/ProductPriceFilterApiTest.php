@@ -74,6 +74,35 @@ describe('Product price range filter - :dataset', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['filter.max_price']);
     })->with('product_types');
+
+    it('treats a maximum price of zero as a free-only ceiling', function (string $factoryMethod, string $routePrefix): void {
+        createPriceFilterProduct($factoryMethod, 'Free Product', 0);
+        createPriceFilterProduct($factoryMethod, 'Paid Product', 100_000);
+
+        $response = $this->getJson(route("api.v1.shop.{$routePrefix}.index", [
+            'filter' => ['max_price' => '0'],
+        ]));
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data.data')
+            ->assertJsonFragment(['name' => 'Free Product'])
+            ->assertJsonMissing(['name' => 'Paid Product']);
+    })->with('product_types');
+
+    it('treats equal zero bounds as exactly the free products', function (string $factoryMethod, string $routePrefix): void {
+        createPriceFilterProduct($factoryMethod, 'Free Product', 0);
+        createPriceFilterProduct($factoryMethod, 'Paid Product', 100_000);
+
+        $response = $this->getJson(route("api.v1.shop.{$routePrefix}.index", [
+            'filter' => ['min_price' => '0', 'max_price' => '0'],
+            'sortBy' => 'price',
+        ]));
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data.data')
+            ->assertJsonFragment(['name' => 'Free Product'])
+            ->assertJsonMissing(['name' => 'Paid Product']);
+    })->with('product_types');
 })->group('product-listing');
 
 describe('Search price range filter', function (): void {

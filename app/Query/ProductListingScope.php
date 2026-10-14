@@ -196,10 +196,7 @@ final readonly class ProductListingScope
      */
     public function joinsProductPrices(): bool
     {
-        $filter = $this->filter;
-
-        return $filter !== null
-            && (bool) ($filter->min_price || $filter->max_price || $filter->with_discounts);
+        return $this->hasPriceConstraints();
     }
 
     /**
@@ -208,6 +205,26 @@ final readonly class ProductListingScope
     public function capacityThreshold(): float
     {
         return $this->filter?->capacity_threshold ?? $this->defaultCapacityThreshold;
+    }
+
+    /**
+     * Whether the scope constrains the materialised price row, which every renderer
+     * that needs it answers by joining `product_prices`.
+     *
+     * A bound of `0` is a real constraint — a free product legitimately reports `0`
+     * — so only an absent bound is unconstrained.
+     */
+    private function hasPriceConstraints(): bool
+    {
+        $filter = $this->filter;
+
+        if ($filter === null) {
+            return false;
+        }
+
+        return $filter->min_price !== null
+            || $filter->max_price !== null
+            || (bool) $filter->with_discounts;
     }
 
     /**
@@ -375,7 +392,7 @@ final readonly class ProductListingScope
                 ->whereIn('categories.slug', $filter->category_slugs));
         }
 
-        if ($filter->min_price || $filter->max_price || $filter->with_discounts) {
+        if ($this->hasPriceConstraints()) {
             $query->addSelect('products.*')
                 ->join('product_prices', 'products.id', '=', 'product_prices.product_id');
 
