@@ -73,6 +73,18 @@ _Avoid_: Completion record, final enrollment
 A customer is eligible to purchase an offering only when they have not previously acquired its educational content, directly or through a Bundle. Owning any Bundle component makes that Bundle ineligible.
 _Avoid_: SKU-only ownership
 
+**Purchase Price**:
+The cheapest currently-buyable price across a product's published Product Delivery Options, after any featured or promotion discount; persisted as `product_prices.min_price`. It is the number a product card shows as `price`, the number `sortBy=price` orders by, and the basis of the price filter and the Price Bound.
+_Avoid_: product price range, listed price
+
+**Delivery Option Price**:
+The price of one published Product Delivery Option, after any featured or promotion discount on that option (a Bundle Product Delivery Option prices at its plain selling price). A product's Purchase Price is the cheapest of its Delivery Option Prices, not the price of every option.
+_Avoid_: bundle price, product price, option original price
+
+**Price Bound**:
+The lowest and highest Purchase Price in a scope — an endpoint's default catalogue with the request's filters ignored, reported as `metadata.filters.price`. Null members mean the scope has no priced product. It is a catalogue constant, unlike a card's per-product `price_range`, which spans that one product's published Product Delivery Options.
+_Avoid_: price slider range, result-set price range
+
 **Component Allocation**:
 The portion of a Bundle's selling price assigned to one component, representing the amount actually paid for that component.
 _Avoid_: Component base price
