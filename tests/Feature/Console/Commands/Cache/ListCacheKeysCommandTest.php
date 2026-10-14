@@ -19,6 +19,7 @@ it('lists every registry case with its template, durations and group', function 
                 ['StudentQuizzes', 'student_quizzes:{userId}', '300', '900', 'content'],
                 ['TeacherQuizzes', 'teacher_quizzes:{userId}', '300', '900', 'content'],
                 ['GoodForStart', 'shop.category.{slug}.good-for-start.courses-{limit}', '1800', 'none', 'catalog'],
+                ['CataloguePriceBound', 'shop.catalogue.price-bound.{scope}', '1800', '900', 'catalog'],
                 ['Search', 'search:{hash}', '300', '900', 'search'],
                 ['SearchSuggest', 'search:suggest:{hash}', '3600', '14400', 'search'],
                 ['PgroongaEnabled', 'database.pgroonga_enabled', 'forever', 'none', 'search'],
