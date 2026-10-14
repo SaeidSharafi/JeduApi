@@ -12,6 +12,7 @@ use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Query\ProductQueryService;
+use App\Services\CataloguePriceBoundService;
 use App\Services\ProductPriceService;
 
 /**
@@ -23,6 +24,7 @@ final class DigitalAssetController extends Controller
 {
     public function __construct(
         private ProductPriceService $priceService,
+        private CataloguePriceBoundService $priceBoundService,
     ) {}
 
     /**
@@ -57,7 +59,11 @@ final class DigitalAssetController extends Controller
                 return ProductCardData::fromModel($product, $priceData);
             });
 
-        return apiResponse()->success($courses);
+        return apiResponse()->success($courses, metadata: [
+            'filters' => [
+                'price' => $this->priceBoundService->forCatalogue(ProductableEnum::DIGITAL_ASSET),
+            ],
+        ]);
     }
 
     /**

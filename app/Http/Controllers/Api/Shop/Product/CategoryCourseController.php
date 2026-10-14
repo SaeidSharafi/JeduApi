@@ -9,6 +9,7 @@ use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Query\CategoryQueryService;
+use App\Services\CataloguePriceBoundService;
 
 /**
  * @group Shop - Products - Categories
@@ -17,6 +18,8 @@ use App\Query\CategoryQueryService;
  */
 final class CategoryCourseController extends Controller
 {
+    public function __construct(private CataloguePriceBoundService $priceBoundService) {}
+
     /**
      * Category Courses
      *
@@ -33,6 +36,10 @@ final class CategoryCourseController extends Controller
     {
         $paginatedCourses = $service->getProductsForCategory($category, ProductableEnum::COURSE, $data->per_page, true);
 
-        return apiResponse()->success($paginatedCourses);
+        return apiResponse()->success($paginatedCourses, metadata: [
+            'filters' => [
+                'price' => $this->priceBoundService->forCategoryCatalogue($category, ProductableEnum::COURSE),
+            ],
+        ]);
     }
 }

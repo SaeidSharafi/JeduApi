@@ -15,6 +15,7 @@ use App\Data\Admin\Category\CreateCategoryData;
 use App\Data\Admin\Category\SetGoodForStartData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Enums\System\CacheKey;
 use App\Models\Category;
 use App\Models\Course;
@@ -153,7 +154,7 @@ test('changing the good-for-start flag clears the good-for-start listing', funct
 });
 
 test('a catalog write makes the next read regenerate the course price bound', function (): void {
-    $bound = fn (): array => app(CataloguePriceBoundService::class)->forCourseCatalogue();
+    $bound = fn (): array => app(CataloguePriceBoundService::class)->forCatalogue(ProductableEnum::COURSE);
 
     expect($bound())->toBe(['min' => null, 'max' => null]);
 
@@ -173,4 +174,32 @@ test('a catalog write makes the next read regenerate the course price bound', fu
     app(ArchiveProductAction::class)->handle($product);
 
     expect($bound())->toBe(['min' => 150_000, 'max' => 150_000]);
+});
+
+test('keeps a category price bound in its own cache entry', function (): void {
+    $category = Category::factory()->create(['slug' => 'scoped-category']);
+
+    $catalogue     = fn (): array => app(CataloguePriceBoundService::class)->forCatalogue(ProductableEnum::COURSE);
+    $categoryBound = fn (): array => app(CataloguePriceBoundService::class)->forCategoryCatalogue($category, ProductableEnum::COURSE);
+
+    expect($catalogue())->toBe(['min' => null, 'max' => null]);
+
+    // Written behind the gateway: the catalogue keeps its cached empty bound, while the
+    // category entry is a different key and computes the new product on its next read.
+    createPriceBoundCourse(150_000, 'Added Behind The Gateway')->categories()->attach($category->id);
+
+    expect($catalogue())->toBe(['min' => null, 'max' => null])
+        ->and($categoryBound())->toBe(['min' => 150_000, 'max' => 150_000]);
+
+    Event::fake([
+        App\Events\ProductCacheInvalidated::class,
+        App\Events\ProductAvailabilityCacheInvalidated::class,
+        App\Events\ProductSearchIndexInvalidated::class,
+    ]);
+    $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+
+    app(ArchiveProductAction::class)->handle($product);
+
+    expect($catalogue())->toBe(['min' => 150_000, 'max' => 150_000])
+        ->and($categoryBound())->toBe(['min' => 150_000, 'max' => 150_000]);
 });
