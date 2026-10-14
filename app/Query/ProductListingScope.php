@@ -79,8 +79,9 @@ final readonly class ProductListingScope
 
     /**
      * The global search product mapping. It keeps global search's narrower publish scope
-     * and renders an explicit `with_discounts: false`; catalogue invariants and the
-     * availability window are not part of global search yet.
+     * and renders an explicit `with_discounts: false`, but it carries the same capacity
+     * filter and availability window (status, registration, availability dates and the
+     * default available-now window) as the listings.
      */
     public static function forGlobalSearch(
         ?ProductableEnum $productableType,
@@ -92,8 +93,8 @@ final readonly class ProductListingScope
             filter: $filter,
             excludesBundles: true,
             appliesCatalogueInvariants: false,
-            appliesAvailabilityWindow: false,
-            appliesCapacityFilter: false,
+            appliesAvailabilityWindow: true,
+            appliesCapacityFilter: true,
             rendersNegativeDiscount: true,
             now: $now ?? Carbon::now(),
             defaultCapacityThreshold: (float) config('products.availability.capacity_threshold', 0.8),
