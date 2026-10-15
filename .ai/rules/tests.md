@@ -6,10 +6,18 @@ paths:
 # Tests
 
 ## Commands
-- Always pass `--parallel` to every Pest command, including single-file runs.
-  Full suite: `vendor/bin/sail artisan test --compact --parallel`. Focused: `vendor/bin/sail bin pest <scope> --parallel`.
-- Run exactly one Pest command at a time and never kill one mid-run. Interleaving or killing corrupts the `testing_test_*` databases (symptom: ~149 migration/table failures).
-- Fix corruption by dropping the per-process `testing_test_*` test databases/tables (the next parallel run recreates them). Use `vendor/bin/sail down -v && vendor/bin/sail up -d` only if dropping them doesn't work.
+- **One Pest process per Sail stack at a time** — one per checkout/worktree, counting background jobs and subagents. Two runs against the same stack corrupt its shared `testing_test_*` databases (symptom: ~149 migration/table failures), and killing a run mid-flight leaves them half-migrated.
+- A second worktree is a second stack: its own Compose project, pgsql container, and test databases, so running the suite in two worktrees (or in a worktree and the primary checkout) at once is fine. `scripts/reset-test-databases.sh` only touches the stack you run it from. Several full parallel suites at once compete for CPU and RAM.
+- `--parallel` is **not** the cause of that corruption and stays on for every run. Do not "fix" it by dropping to `--processes=1` or to a serial run: that changes nothing about safety and slows the suite down. The fix is exclusivity within one stack.
+- `--parallel` accepts exactly one path argument. For several files use `--filter`, or run them as separate strictly sequential commands.
+  Full suite: `vendor/bin/sail artisan test --compact --parallel`. Focused: `vendor/bin/sail bin pest <one path> --parallel`.
+- Recover a corrupted run with `scripts/reset-test-databases.sh` (drops `testing_test_*`; the next parallel run recreates them). A raw `DROP DATABASE … WITH (FORCE)` silently no-ops while a connection is still attached. Use `vendor/bin/sail down -v && vendor/bin/sail up -d` only if that fails.
+- Inspect the database with `scripts/db.sh "<sql>"` — add `-d testing` for the test database.
+
+## Never in a test
+- A second Pest run against the same stack while one is in flight, or killing a run: see Commands. This includes delegating a review or verification task to a subagent while your own run is going — say explicitly in the subagent prompt that it must not run the suite.
+- DDL on shared tables (`CREATE/DROP INDEX`, `CREATE EXTENSION`, `ALTER TABLE`). It locks tables the shared `TestCase` tears down per process and deadlocks under `--parallel`. Prove such DDL by running the command against a real database instead.
+- The live Typesense server. CI has no Typesense, so the suite exercises that code path through the recorded-engine seam (`RecordingProductScoutEngine` in `tests/Feature/Search/ProductTypesenseIndexTest.php`). A temporary probe that needs a real server is allowed, but it must be marked `->group('typesense-live')`: `phpunit.xml` excludes that group, so CI never collects it. Run it locally with `vendor/bin/sail bin pest --group=typesense-live <path>`.
 
 ## Workflow: behavior, then coverage, then mutation
 1. **Write behavior tests** for the feature: the happy path plus the edge cases that carry real business decisions (limits, state transitions, permissions, money, concurrency guards, validation of untrusted input). Run the focused scope.

@@ -24,6 +24,6 @@ Generated API documentation is authority for client integration when available. 
 
 ## Maintenance rule
 
-Prefer existing digest sections for model, schema, workflow, and API coverage. Add architecture notes for non-obvious decisions, reasons, and failure modes. Avoid temporary handoffs, progress reports, and copies of third-party documentation. Keep each fact in its owning reference; cross-link elsewhere with enough context for understanding.
+Prefer existing digest sections for model, schema, workflow, and API coverage. Add architecture notes for non-obvious decisions, reasons, and failure modes. Keep handoffs and progress reports out of `docs/`: session handoffs belong in the git-ignored `.scratch/`, and a plan worth keeping belongs in `docs/plans/`. Avoid copies of third-party documentation. Keep each fact in its owning reference; cross-link elsewhere with enough context for understanding.
 
 Follow **Digest Maintenance** in `AGENTS.md` before finalizing code tasks. Update affected sections only; preserve reference detail needed without repo access. Update an Architecture note only when underlying boundary or invariant changes.

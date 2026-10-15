@@ -18,6 +18,14 @@
             <directory>tests/Architecture</directory>
         </testsuite>
     </testsuites>
+    <!-- Tests that need a live external service (there is no Typesense in CI) must be
+         marked ->group('typesense-live'); that group is excluded here, so no run collects
+         those tests unless the group is requested explicitly. See .ai/rules/tests.md. -->
+    <groups>
+        <exclude>
+            <group>typesense-live</group>
+        </exclude>
+    </groups>
     <source>
         <include>
             <directory>app</directory>

@@ -4,24 +4,44 @@ Jedu API (Laravel). Project rules below override generic Boost guidelines on con
 For repo work, locate affected code through Graphify/search; read scoped code and tests first. Consult relevant digest sections only for unresolved domain meaning, workflow boundaries, or cross-module effects, or when path rules require them. `docs/Digestions/CODEBASE_DIGEST.md` is optional orientation for unfamiliar domains. No mandatory digest preload. Reuse context already read; avoid reading code and digests for same facts. Digest maintenance remains required below.
 Digests also serve chatbots receiving only uploaded digestion files; preserve standalone reference coverage. With repo access, current code, migrations, configuration, and tests decide implementation details. Without access, use supplied docs and flag missing details; never infer contracts from class names. Scope unclear → ask, no assumptions. Smallest change that fulfills requirement, preserve API contracts, no unrelated refactor.
 
-## Codebase Search
-graphify-out/graph.json exists → use `graphify query "<question>"` (or `graphify path`, `graphify explain`). Prefer over grep/glob.
-
 ## Path-Scoped Rules
 Before editing any file, check .ai/rules/index.md for a glob matching the path in scope. Read the matching rule file first — it is load-bearing, not optional context.
 
 ## API Contract
-- spatie/laravel-data DTOs only. NO Form Requests. NO API Resources.
+- spatie/laravel-data DTOs only. NO Form Requests. NO API Resources — this overrides the Boost "APIs & Eloquent Resources" guideline below.
 - apiResponse() for every response. No raw arrays/JSON.
 - Business logic in app/Actions/. Controllers thin, no logic in them.
 
 ## Testing
-PEST only. AuthTestTrait, not actingAs(). Database reset is owned by the shared `Tests\TestCase` — never add a refresh trait to an individual test.
+PEST only. AuthTestTrait, not actingAs(). Database reset is owned by the shared `Tests\TestCase` — never add a refresh trait to an individual test. Command shape and the one-run-per-Sail-stack rule: `.ai/rules/tests.md`.
 
 ## Commands
-sail artisan always, never bare php artisan. Run `sail bin pint --dirty --format agent` before finalizing any PHP change.
+- `sail artisan` always, never bare `php artisan` (same for composer and node).
+- Pint: `sail bin pint --dirty --format agent` before finalizing any PHP change. `--dirty` (or an explicit file list) is mandatory — a repo-wide `sail bin pint --format` rewrites unrelated files that were already drifted.
+- Database: `scripts/db.sh "<sql>"` — add `-d <database>` to target a database other than the one in `.env`.
+- Never pipe a check through `tail`/`head` without `set -o pipefail`; the pipe's exit status hides the failure and the harness reports exit 0.
+
+## Scratch Space
+`/tmp` does not survive a tool call and writes outside the workspace are sandbox-denied, so keep scratch inside the repo:
+
+- `.tmp/` — git-ignored, ephemeral: backups, probes, generated files, logs. Delete freely; never reference it from a tracked file.
+- `.scratch/` — git-ignored, session-scoped: handoffs from or to another session (`handoff-<topic>-<date>.md`) and per-session exploration notes, referenced by bare filename (`@handoff-…`). A handoff states its base commit SHA and one verification command per claim.
+- Anything that must survive a clone, a review, or a later session goes in `docs/` (tracked): plans and ideas to revisit → `docs/plans/`; agent-facing references → `docs/agents/`. `.scratch/` is never committed — if a note matters later, move it into `docs/` and delete the scratch copy.
+- When a skill tells a subagent to save notes or artifacts "outside the repo", use `.scratch/<topic>/` — writes outside the workspace are denied.
+
+## Tools & Delegation
+- Laravel Boost skills are installed under `.agents/skills/**` and the harness loads them; activate the matching one before working in its domain. Framework and package guidance lives there and in the Boost blocks at the end of this file; `.ai/rules/` holds this project's own rules.
+- The Boost MCP tools (`search-docs`, `database-query`, `database-schema`, `browser-logs`, `get-absolute-url`, `record-rule`) only exist where the harness starts the server in `.mcp.json`. Where they are absent: read the package source under `vendor/`, use `sail artisan tinker --execute '…'` and `scripts/db.sh "<sql>"` for data, `sail artisan route:list` / `config:show` for wiring, and the official docs on the web for version-specific APIs.
+- Record a durable rule by writing `.ai/rules/<topic>.md` (with `paths:` front matter) and adding a row to `.ai/rules/index.md`. That is the only shared place rules persist.
+- Deployment: Deployer → Nexus/frankenphp (`.forgejo/workflows/pipeline.yml`, `deploy.php`).
+- Delegation: a subagent writes its full report to `.scratch/<topic>.md` and returns at most ~20 lines plus that path. Never let a subagent run tests while your own Pest run is in flight.
+- Do not poll: `list_agents` and `job_output` return the same state until a job finishes, and completion notices arrive on their own. Never `sleep` to wait for a background job.
+- Read whole files with the `read` tool, not `cat`/`sed -n` chunking: shell inspection does not satisfy read-before-edit, and re-printing ranges wastes context.
 
 ## Workspaces
+Default to the primary checkout on `main`. Create a worktree when the user asks for one, when the skill they invoked requires it (`/implement-spec` gives each implementer subagent its own), or after they approve one — otherwise ask first. Never keep the same change in two trees: read-before-edit is tracked per absolute path.
+Inside a worktree, git-dependent tooling fails in Sail because the worktree's `.git` file points outside the bind mount, so `pint --dirty` cannot see the diff. Pass files explicitly: `git diff --name-only main...HEAD -- '*.php' | xargs vendor/bin/sail bin pint --format agent`.
+
 Worktrees live under `.worktrees/<name>` (ignored). Create one with `git worktree add .worktrees/<name> -b <branch> <base>`, then run `scripts/worktree-setup.sh .worktrees/<name>`; it copies `.env`, allocates the port block and Compose project, links the Typesense model cache, starts Sail and migrates. It is idempotent and must exit 0 before work starts there. Remove one with `scripts/worktree-teardown.sh .worktrees/<name>`. Never run those setup steps by hand, copy `docker/typesense-data` between worktrees, or delete a worktree directory by hand.
 
 ## Digest Maintenance
@@ -67,10 +87,6 @@ This application is a Laravel application running on PHP 8.4. You are an expert 
 Before relying on a package's API, confirm its installed version:
 - PHP packages: run `composer show --direct` to list direct dependencies with versions, or `composer show <vendor/package>` for a single package.
 - JS packages: check `package.json` for the installed versions.
-
-## Skills Activation
-
-This project has domain-specific skills available in `**/skills/**`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
 
 ## Conventions
 
@@ -153,12 +169,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
 - Use array shape type definitions in PHPDoc blocks.
 
-=== deployments rules ===
-
-# Deployment
-
-- Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
-
 === sail rules ===
 
 # Laravel Sail
@@ -238,13 +248,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - Casts can and likely should be set in a `casts()` method on a model rather than the `$casts` property. Follow existing conventions from other models.
 
-=== pint/core rules ===
-
-# Laravel Pint Code Formatter
-
-- If you have modified any PHP files, you must run `vendor/bin/sail bin pint --dirty --format agent` before finalizing changes to ensure your code matches the project's expected style.
-- Do not run `vendor/bin/sail bin pint --test --format agent`, simply run `vendor/bin/sail bin pint --format agent` to fix any formatting issues.
-
 === pest/core rules ===
 
 # Pest
@@ -260,5 +263,16 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Rerun a test after each change to it.
 - Run `vendor/bin/sail bin pest` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
 - After the feature tests pass, ask the user to run the complete suite with `vendor/bin/sail artisan test --compact`.
+
+=== maatwebsite/excel/core rules ===
+
+# Laravel Excel
+
+- Use `maatwebsite/excel` for spreadsheet exports, imports, queued spreadsheet work, CSV handling, and PhpSpreadsheet integration in Laravel applications.
+- Prefer explicit export/import classes with package concerns over ad-hoc spreadsheet generation in controllers, jobs, or commands.
+- Activate the `laravel-excel` skill when working with `Excel::download()`, `Excel::store()`, `Excel::queue()`, `Excel::raw()`, `Excel::import()`, `Excel::toArray()`, `Excel::toCollection()`, export/import concerns, queued imports/exports, validation, CSV settings, styling, events, formulas, charts, drawings, multiple sheets, mapped cells, macros, config, cache, transactions, temporary files, or `Excel::fake()`.
+- For broad docs, all-feature tasks, or missing-feature audits, use the skill's `references/package.md` feature matrix before answering.
+- For large datasets, prefer `FromQuery` with queued exports or `WithChunkReading` and `WithBatchInserts` for imports.
+- Test spreadsheet behavior with `Excel::fake()` when asserting dispatch/download/store/import intent, and inspect generated files only when cell contents, formatting, sheets, or writer behavior must be proven.
 
 </laravel-boost-guidelines>
