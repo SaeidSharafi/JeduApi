@@ -55,6 +55,28 @@ enum SettingKeyEnum: string
     }
 
     /**
+     * The storefront cache tags a write to this setting invalidates.
+     *
+     * The single registry for public-facing settings: a key that is rendered on
+     * the storefront names the tags its change disturbs, and every other key
+     * (integration credentials, the search-engine choice, payment gateways)
+     * names none, so writing one never notifies the storefront.
+     *
+     * @return list<StorefrontTag>
+     */
+    public function storefrontTags(): array
+    {
+        return match ($this) {
+            self::HEADER        => [StorefrontTag::SettingsHeader],
+            self::FOOTER        => [StorefrontTag::SettingsFooter],
+            self::ABOUT_US      => [StorefrontTag::CmsAboutUs],
+            self::CONTACT_INFO  => [StorefrontTag::CmsContactUs],
+            self::COLLABORATION => [StorefrontTag::CmsCollaboration],
+            default             => [],
+        };
+    }
+
+    /**
      * Whether this key carries any encrypted secret fields.
      */
     public function hasSecrets(): bool

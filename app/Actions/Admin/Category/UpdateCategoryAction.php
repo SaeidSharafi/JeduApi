@@ -7,6 +7,8 @@ namespace App\Actions\Admin\Category;
 use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Category\CreateCategoryData;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 
@@ -38,5 +40,6 @@ final readonly class UpdateCategoryAction
         });
 
         $this->cache->invalidate(CacheTag::HomePage, CacheTag::Catalog, CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::CatalogCategories, StorefrontTag::SettingsCategories, StorefrontTag::SettingsFooter, StorefrontTag::HomeBlocks));
     }
 }

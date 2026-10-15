@@ -7,6 +7,8 @@ namespace App\Actions\Admin\Slider;
 use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Slider\SliderCreateData;
 use App\Enums\System\CacheKey;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Slider;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Media;
@@ -34,6 +36,7 @@ final class CreateSliderAction
         });
 
         $this->cache->forget(CacheKey::Slider);
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::HomeSliders);
 
         return $slider;
     }

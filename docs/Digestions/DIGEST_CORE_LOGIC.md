@@ -49,7 +49,7 @@ Reference for uploaded-doc chat: workflows, side effects, events/jobs, invariant
 #### UpdateProductPricingJob (`app/Jobs/UpdateProductPricingJob.php`)
 - **Purpose:** Asynchronous batch pricing index update for products
 - **Signature:** `handle(ProductPriceService $priceService): void`
-- **Functionality:** Accepts array of product IDs, recalculates pricing data via `ProductPriceService`, upserts to `product_prices` table, updates `price_data_cache` JSON column on products, then bumps `CacheTag::Catalog` and `CacheTag::Search` through the `CacheStore` gateway
+- **Functionality:** Accepts array of product IDs, recalculates pricing data via `ProductPriceService`, upserts to `product_prices` table, updates `price_data_cache` JSON column on products, then bumps `CacheTag::Catalog` and `CacheTag::Search` through the `CacheStore` gateway, and dispatches `StorefrontCacheInvalidated` with `StorefrontTag::catalog()` + `HomeBlocks` so the storefront's cached prices are cleared in the same step (see [Storefront Cache Revalidation](#storefront-cache-revalidation-appeventsstorefrontcacheinvalidatedphp))
 - **Dispatch:** Triggered by `ProductCacheInvalidated` event listener, admin pricing changes, and scheduled commands
 - **Performance:** Processes products in batches to avoid memory exhaustion
 
@@ -57,7 +57,7 @@ Reference for uploaded-doc chat: workflows, side effects, events/jobs, invariant
 - **Purpose:** Recomputes denormalized availability snapshots for a batch of products
 - **Signature:** `handle(CacheStore $cache, BundleAvailabilityService $bundleAvailabilityService): void`
 - **Functionality:** Loads products with published delivery options, productable, and term; computes the snapshot columns (`has_published_delivery_option`, `productable_status`, `is_term_active`, `earliest/latest` registration & availability window boundaries, `near_capacity`, `max_capacity_utilization`) where capacity utilization counts committed seats (`enrolled_count + reserved_count`) against `config('products.availability.capacity_threshold', 0.8)`; persists only changed rows via `saveQuietly()`
-- **Side effects:** Bumps `CacheTag::Catalog` and `CacheTag::Search` through the gateway and dispatches `ProductSearchIndexInvalidated` for products whose snapshot changed
+- **Side effects:** Bumps `CacheTag::Catalog` and `CacheTag::Search` through the gateway, dispatches `ProductSearchIndexInvalidated` for products whose snapshot changed, and dispatches `StorefrontCacheInvalidated` (`StorefrontTag::catalog()` + `HomeBlocks`) so storefront availability is not served from its cache
 - **Dispatch:** From `IndexAllProductAvailabilityCommand`, and triggered by availability-affecting mutations (term/productable status flips)
 
 #### SynchronizeProductSearchIndexJob (`app/Jobs/SynchronizeProductSearchIndexJob.php`)
@@ -141,6 +141,11 @@ Reference for uploaded-doc chat: workflows, side effects, events/jobs, invariant
 - **Purpose:** Recover from a bad deploy by invalidating one cache group without flushing the whole cache
 - **Signature:** `cache:invalidate {group}`
 - **Functionality:** Resolves `{group}` against `CacheTag` and calls `CacheStore::invalidate()` on exactly that tag, then prints the bumped version. An unknown group prints the available groups and exits with `Command::FAILURE`, leaving every counter untouched.
+
+#### RevalidateStorefrontCacheCommand (`app/Console/Commands/Storefront/RevalidateStorefrontCacheCommand.php`)
+- **Purpose:** Operator escape hatch for the storefront cache webhook — after a deploy, after a tag drift was logged, or when someone suspects the storefront is stale and will not wait for its TTL
+- **Signature:** `storefront:revalidate {--tag=* : repeatable} {--all}`
+- **Functionality:** Resolves the requested tags against `StorefrontTag` (an unknown tag prints the available list and exits `Command::FAILURE`, like `cache:invalidate`), refuses to run when `storefront.url`/`storefront.revalidate_secret` are unset rather than reporting a success that sent nothing, and runs the revalidation **synchronously** through the service (`revalidate()` returns whether the storefront cleared the tags) so the operator sees the storefront's answer and gets a truthful exit code — `1` when the storefront refuses the payload, instead of a success message for a call that changed nothing. See [Storefront Cache Revalidation](#storefront-cache-revalidation-appeventsstorefrontcacheinvalidatedphp).
 
 #### SetSearchEngineCommand (`app/Console/Commands/SetSearchEngineCommand.php`)
 - **Purpose:** Choose the deployment's full-text search engine and make the database match it, as one operation
@@ -1129,7 +1134,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 
 ### Review Aggregation Pipeline
 - **Event:** `ReviewableAggregatesChanged` (`app/Events/ReviewableAggregatesChanged.php`) carries the reviewable ID/type whenever reviews change.
-- **Listener:** `RecalculateReviewableAggregates` (`app/Listeners/RecalculateReviewableAggregates.php`) runs on the queue, filters to models using the `HasReview` trait, recomputes `review_count` & `average_rating` from approved reviews, then bumps `CacheTag::Search` because cached search result pages carry those aggregates.
+- **Listener:** `RecalculateReviewableAggregates` (`app/Listeners/RecalculateReviewableAggregates.php`) runs on the queue, filters to models using the `HasReview` trait, recomputes `review_count` & `average_rating` from approved reviews, then bumps `CacheTag::Search` because cached search result pages carry those aggregates, and dispatches `StorefrontCacheInvalidated` (`StorefrontTag::catalog()` + `BlogPosts`) because `reviews_count`/`average_rating` are also fields of the cached course, digital-asset and blog payloads. `UpdateReviewFeaturedStatusAction` dispatches the same payload.
 - **Impact:** Keeps course/seminar/digital asset review snapshots synchronized for storefront queries without heavy joins.
 - **Student submissions do not move aggregates:** `SubmitReviewAction` creates `PENDING` reviews and dispatches nothing; only the admin `ApproveReviewAction`/`RejectReviewAction`/`UpdateReviewStatusAction` change approved-review counts, and each of those dispatches the event. On a model without the `HasReview` trait the listener is a no-op.
 
@@ -1138,6 +1143,27 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **Listener:** `QueueProductPriceCacheUpdate` (`app/Listeners/QueueProductPriceCacheUpdate.php`) asynchronously dispatches `UpdateProductPricingJob` for the affected product.
 - **Job:** `UpdateProductPricingJob` (`app/Jobs/UpdateProductPricingJob.php`) recalculates price data via `ProductPriceService`, persists it to `price_data_cache`, and invalidates `CacheTag::Catalog` and `CacheTag::Search` through the gateway.
 - **Result:** Ensures shop endpoints read precomputed pricing snapshots while remaining consistent after admin edits.
+
+### Storefront Cache Revalidation (`app/Events/StorefrontCacheInvalidated.php`)
+- **Purpose:** clears the storefront's Next Data Cache when an admin write changes public content, instead of waiting for that cache's TTL. The contract is the storefront repository's `docs/caching-plan.md` §5: `POST {storefront}/api/revalidate`, header `x-revalidate-secret`, body `{"tags": [...]}`.
+- **Chain:** a write path dispatches `StorefrontCacheInvalidated` (variadic `StorefrontTag ...$tags`, `ShouldDispatchAfterCommit`) → `QueueStorefrontCacheRevalidation` (auto-discovered listener, synchronous) → `RevalidateStorefrontCacheJob` (queued; `$tries = 3`, `$timeout = 15`, `backoff() = [5, 30]`) → `StorefrontRevalidationService` (`app/Services/Storefront/StorefrontRevalidationService.php`), the only class that knows the URL shape and the status-code semantics.
+- **Vocabulary:** `StorefrontTag` (`app/Enums/System/StorefrontTag.php`) holds the 18 tag strings the storefront accepts, copied from its `REVALIDATE_TAGS`, plus `catalog()` returning the four catalogue collection tags. `CacheTag`/`CacheKey` are deliberately untouched: the two vocabularies are not isomorphic — `Search` (Typesense) is not cached on the storefront at all, and `Auth`/`Discounts` have no storefront meaning.
+- **Ordering rule (load-bearing):** dispatch after the *last* backend invalidation for that change. Content, marketing, blog, settings, review, teacher and term writes dispatch from the action; price and availability dispatch from inside `UpdateProductPricingJob` and `UpdateProductAvailabilityJob`, because those jobs are the only writers of the price projection and the availability snapshot and they are queued. Dispatching earlier (for example from a listener on `ProductCacheInvalidated`) races them, and the storefront would re-fetch from this API while its cache still holds the previous generation — caching the stale response under a fresh TTL that this API's own invalidation can no longer reach.
+- **Tag selection is deliberately coarse:** a catalogue write clears all four collection tags plus `home:blocks` (home blocks reference products, categories and blog posts by id); a category write additionally clears `catalog:categories`, `settings:categories` and `settings:footer` (the footer embeds category names/slugs); a blog write clears `blog:posts` and `home:blocks`; settings writes clear only their own `settings:*`/`cms:*` tag via a `SettingKeyEnum → StorefrontTag[]` map in `SettingsService::set()`.
+- **Unconfigured is a no-op:** with no `storefront.url` or `storefront.revalidate_secret` the service sends nothing and logs at debug. `STOREFRONT_URL` has **no fallback**: it is a server-to-server target, and the browser-facing `FRONTEND_SHOP_DOMAIN` resolves to the API container itself, so defaulting to it turned "only the secret is set" into connection errors on every write, so local development and the test suite (sync queue plus `Http::preventStrayRequests()`) never reach out, and a half-deployed environment degrades to TTL-based freshness instead of erroring.
+- **Failure behaviour:** `200` clears. `400` (a tag the storefront's allowlist refuses — the response's `rejected` names it), `401` (the two secrets differ), `404` (the running storefront build predates the endpoint), `405`, and `503` (the storefront is missing its own `REVALIDATE_SECRET`) are logged at error and **not** retried, because an identical request fails identically. Transport failures and 5xx other than `503` throw so the queue retries; revalidating twice is idempotent. The secret is never logged.
+- **Fan-out:** the only burst sources are bundle component loops and bulk spreadsheet imports; the import path dispatches once per batch rather than per row. There is no job-level de-duplication, because a `ShouldBeUnique` lock keyed on the tag set can drop a superset payload that arrives while a subset is queued.
+- **Not gaps, already checked (do not re-derive):** a seminar or other productable edit *does* refresh
+  search results — `ProductableAvailabilityObserver` plus `SynchronizeProductSearchIndexJob` bump
+  `CacheTag::Search`, and Scout's `toSearchableArray()` is a document definition rather than an
+  invalidation hook; the spreadsheet import engine imports **users only** (`SpreadsheetResourceEnum` has
+  one case), which no storefront tag covers.
+- **Deployment dependencies:** nothing is sent without a running queue worker, and `queue:work` workers
+  keep the configuration they booted with — a secret change needs `config:clear` **and** `queue:restart`
+  (`queue:listen` reloads per job). The rule for adding a new write path, including the "ask the developer
+  when the storefront has no tag for it yet" step, is `.ai/rules/storefront-cache.md`.
+- **Per-instance caveat:** the storefront's cache is a file inside each container, so one call clears one replica. The current deployment runs a single container; scaling it needs fan-out or accepting the TTL on the other replicas.
+- **Enforcement:** `tests/Architecture/StorefrontRevalidationTest.php` pins the enum against a frozen copy of the storefront's allowlist and checks the dispatch inventory, so drift or a forgotten dispatch fails the suite instead of silently serving stale content. See [ADR 0019](../adr/0019-storefront-revalidation-is-an-explicit-outbound-side-effect.md).
 
 ### FullTextSearchProvider (`app/Providers/FullTextSearchProvider.php`)
 - **Purpose:** Registers database-agnostic full-text search macros for Eloquent builders.

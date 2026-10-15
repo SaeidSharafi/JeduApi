@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Admin\LearningPath;
 
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\LearningPath;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -23,5 +25,7 @@ final readonly class DeleteLearningPathAction
             $learningPath->detachMedia($learningPath->media()->get());
             $learningPath->delete();
         });
+
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::CatalogLearningPaths);
     }
 }

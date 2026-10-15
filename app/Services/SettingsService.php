@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheKey;
 use App\Enums\System\SettingKeyEnum;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\AdminActionLog;
 use App\Models\Setting;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -112,6 +113,12 @@ final class SettingsService
         }
 
         $this->auditIntegrationWrite($key, $value);
+
+        $storefrontTags = $key->storefrontTags();
+
+        if ($storefrontTags !== []) {
+            StorefrontCacheInvalidated::dispatch(...$storefrontTags);
+        }
 
         return $setting;
     }

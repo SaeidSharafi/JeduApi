@@ -6,6 +6,8 @@ namespace App\Actions\Admin\Setting\StudentStory;
 
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\StudentStory;
 use Illuminate\Support\Facades\DB;
 
@@ -21,5 +23,6 @@ final class DeleteStudentStoryAction
         });
 
         $this->cache->invalidate(CacheTag::HomePage);
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::HomeStudentStories);
     }
 }

@@ -8,6 +8,8 @@ use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\ChangeStatusData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\System\CacheKey;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Slider;
 
 final class UpdateSliderStatusAction
@@ -20,6 +22,7 @@ final class UpdateSliderStatusAction
         $slider->save();
 
         $this->cache->forget(CacheKey::Slider);
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::HomeSliders);
 
         return $slider;
     }

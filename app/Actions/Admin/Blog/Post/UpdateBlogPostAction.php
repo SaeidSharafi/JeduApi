@@ -9,6 +9,8 @@ use App\Data\Admin\Blog\Post\BlogPostUpdateData;
 use App\Enums\MediaTagEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Blog\BlogPost;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
@@ -58,6 +60,7 @@ final readonly class UpdateBlogPostAction
         $post->refresh();
 
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::BlogPosts, StorefrontTag::HomeBlocks);
 
         return $post;
     }

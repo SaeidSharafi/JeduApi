@@ -8,6 +8,8 @@ use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Category\SetGoodForStartData;
 use App\Enums\System\CacheTag;
 use App\Enums\System\MorphTypeEnum;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Categorizable;
 use App\Models\Category;
 
@@ -25,6 +27,7 @@ final readonly class SetGoodForStartAction
 
         if ($count > 0) {
             $this->cache->invalidate(CacheTag::Catalog);
+            StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::HomeBlocks));
         }
 
         return $count;

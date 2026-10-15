@@ -7,6 +7,8 @@ namespace App\Console\Commands;
 use App\Contracts\Cache\CacheStore;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Blog\BlogPost;
 use Illuminate\Console\Command;
 
@@ -43,6 +45,7 @@ final class PublishPostCommand extends Command
         // The mass update bypasses the model events and blog post actions, so the
         // search results cached for the old status are cleared here explicitly.
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::BlogPosts, StorefrontTag::HomeBlocks);
 
         $this->info("Successfully published {$updatedCount} post(s).");
     }

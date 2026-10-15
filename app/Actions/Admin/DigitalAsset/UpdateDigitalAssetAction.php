@@ -8,6 +8,8 @@ use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\DigitalAsset\CreateDigitalAssetData;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\DigitalAsset;
 use Illuminate\Support\Facades\DB;
 
@@ -46,5 +48,6 @@ final readonly class UpdateDigitalAssetAction
         });
 
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::CatalogCategories, StorefrontTag::HomeBlocks));
     }
 }

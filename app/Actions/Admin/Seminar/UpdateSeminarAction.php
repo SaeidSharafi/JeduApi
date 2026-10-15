@@ -6,6 +6,8 @@ namespace App\Actions\Admin\Seminar;
 
 use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Data\Admin\Seminar\CreateSeminarData;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Seminar;
 use Illuminate\Support\Facades\DB;
 
@@ -34,5 +36,7 @@ final class UpdateSeminarAction
                 }
             }
         });
+
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::CatalogCategories, StorefrontTag::HomeBlocks));
     }
 }

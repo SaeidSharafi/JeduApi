@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Review;
 
 use App\Data\Admin\Review\FeaturedStatusData;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Review;
 
 final class UpdateReviewFeaturedStatusAction
@@ -13,9 +15,10 @@ final class UpdateReviewFeaturedStatusAction
     {
         if ($featuredStatusData->is_featured !== null) {
             $review->update(['is_featured' => $featuredStatusData->is_featured]);
-
-            return;
+        } else {
+            $review->update(['is_featured' => ! $review->is_featured]);
         }
-        $review->update(['is_featured' => ! $review->is_featured]);
+
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::BlogPosts));
     }
 }

@@ -9,6 +9,8 @@ use App\Data\Admin\Blog\Post\BlogPostCreateData;
 use App\Enums\MediaTagEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Blog\BlogPost;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
@@ -74,6 +76,7 @@ final readonly class CreateBlogPostAction
         });
 
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::BlogPosts, StorefrontTag::HomeBlocks);
 
         return $post;
     }

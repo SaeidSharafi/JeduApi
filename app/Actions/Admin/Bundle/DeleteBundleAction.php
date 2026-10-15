@@ -6,6 +6,8 @@ namespace App\Actions\Admin\Bundle;
 
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Bundle;
 use Illuminate\Validation\ValidationException;
 
@@ -19,6 +21,7 @@ final readonly class DeleteBundleAction
             $bundle->update(['status' => 'archived']);
 
             $this->cache->invalidate(CacheTag::Search);
+            StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalog());
 
             return;
         }
@@ -34,5 +37,6 @@ final readonly class DeleteBundleAction
         $bundle->delete();
 
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalog());
     }
 }

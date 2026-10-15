@@ -8,6 +8,8 @@ use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Seminar\CreateSeminarData;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Seminar;
 
 final class CreateSeminarAction
@@ -33,5 +35,6 @@ final class CreateSeminarAction
 
         // The model observer that used to clear search on a Seminar save is gone.
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::CatalogCategories, StorefrontTag::HomeBlocks));
     }
 }

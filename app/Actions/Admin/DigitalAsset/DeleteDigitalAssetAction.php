@@ -8,6 +8,8 @@ use App\Actions\Admin\LearningPath\EnsureProductableHasNoLearningPathReferencesA
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheTag;
 use App\Enums\System\MorphTypeEnum;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\DigitalAsset;
 use App\Models\Product;
@@ -36,5 +38,6 @@ final readonly class DeleteDigitalAssetAction
         });
 
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::CatalogCategories, StorefrontTag::HomeBlocks));
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Teacher;
 
 use App\Data\Admin\Teacher\CreateTeacherData;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Teacher;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Media;
@@ -29,5 +31,7 @@ final readonly class UpdateTeacherAction
             $teacher->syncMedia($avatarMedia, 'avatar');
 
         });
+
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::HomeBlocks));
     }
 }
