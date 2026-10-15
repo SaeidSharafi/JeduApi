@@ -1,18 +1,21 @@
 {
     "agents": [
-        "opencode",
-        "copilot"
+        "opencode"
     ],
     "cloud": false,
     "guidelines": true,
     "mcp": true,
     "nightwatch": false,
+    "packages": [
+        "maatwebsite/excel"
+    ],
     "sail": true,
     "skills": [
         "infer-conventions",
         "laravel-best-practices",
         "testing-best-practices",
         "configuring-horizon",
-        "scout-development"
+        "scout-development",
+        "laravel-excel"
     ]
 }
