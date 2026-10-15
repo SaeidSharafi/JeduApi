@@ -1108,7 +1108,8 @@ Administrative status and access-date changes reconcile deliberately with applic
 ## Observers, Events & Async Processing
 
 ### ProductableAvailabilityObserver (`app/Observers/ProductableAvailabilityObserver.php`)
-- **Purpose:** Keeps availability snapshots and search index in sync when productable (Course/Seminar/DigitalAsset) content changes
+- **Purpose:** Keeps availability snapshots and search index in sync when productable (Course/Seminar/DigitalAsset/**Bundle**) content changes
+- **Registered for:** `Course`, `Seminar`, `DigitalAsset` and `Bundle` (`app/Providers/EventServiceProvider.php`). Bundle is the fourth productable and carries the same contract, so omitting it left a bundle status change unable to refresh its products' denormalized availability snapshot — with `products.availability.use_denormalized` (default true) that meant a published bundle could stay out of the catalogue listings and an archived one stay in them until the hourly `products:index-availability` command. Bundle products are never searchable (`Product::shouldBeSearchable()` returns false for `productable_type = bundle`), so only the availability half of the observer has an effect for them.
 - **Mechanism:** On `updated`:
   - If `status` changed (either direction — PUBLISHED↔non-published both flip availability): dispatches `ProductAvailabilityCacheInvalidated` for all linked product IDs
   - If any searchable field changed (`full_name`, `short_name`, `description`, `difficulty_level`, `slug`): dispatches `ProductSearchIndexInvalidated` for linked product IDs

@@ -8,6 +8,7 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Enums\System\CacheTag;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Bundle;
@@ -105,6 +106,42 @@ it('rejects an invalid bundle create request', function (): void {
     ])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['full_name', 'slug', 'description', 'status', 'media']);
+});
+
+it('accepts an empty slug on update and keeps the current one', function (): void {
+    $bundle  = Bundle::factory()->create(['slug' => 'keep-me']);
+    $product = Product::factory()->create([
+        'productable_type' => ProductableEnum::BUNDLE->value,
+        'productable_id'   => $bundle->id,
+        'slug'             => 'keep-me',
+    ]);
+    $this->authorized_user([PermissionEnum::BUNDLE_UPDATE->value]);
+
+    $this->putJson(route('api.v1.admin.bundles.update', $bundle), bundleAdminPayload([
+        'slug'  => '',
+        'media' => ['cover' => [$this->cover->id], 'gallery' => [], 'video' => []],
+    ]))->assertOk()->assertJsonMissingValidationErrors('slug');
+
+    assertDatabaseHas('bundles', ['id' => $bundle->id, 'slug' => 'keep-me']);
+    assertDatabaseHas('products', ['id' => $product->id, 'slug' => 'keep-me']);
+});
+
+it('propagates a new slug to the bundle products on update', function (): void {
+    $bundle  = Bundle::factory()->create(['slug' => 'old-slug']);
+    $product = Product::factory()->create([
+        'productable_type' => ProductableEnum::BUNDLE->value,
+        'productable_id'   => $bundle->id,
+        'slug'             => 'old-slug',
+    ]);
+    $this->authorized_user([PermissionEnum::BUNDLE_UPDATE->value]);
+
+    $this->putJson(route('api.v1.admin.bundles.update', $bundle), bundleAdminPayload([
+        'slug'  => 'new-slug',
+        'media' => ['cover' => [$this->cover->id], 'gallery' => [], 'video' => []],
+    ]))->assertOk();
+
+    assertDatabaseHas('bundles', ['id' => $bundle->id, 'slug' => 'new-slug']);
+    assertDatabaseHas('products', ['id' => $product->id, 'slug' => 'new-slug']);
 });
 
 it('can update a bundle and synchronize its media', function (): void {
