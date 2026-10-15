@@ -1,0 +1,6 @@
+# Written by install.sh; holds generated secrets and must never be committed.
+.env
+.env.*
+!.env.example
+# Rotated copies from --reset-env.
+*.bak

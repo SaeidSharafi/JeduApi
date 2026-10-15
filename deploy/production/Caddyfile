@@ -1,0 +1,43 @@
+# Reverse proxy for the Jedu production stack.
+#
+# Every value in {$...} comes from the caddy service environment in
+# docker-compose.yml, so this one file serves both modes:
+#
+#   TLS (default)  CADDY_GLOBAL_OPTIONS="email ops@jedu.ir"
+#                  CADDY_SITE_ADDRESS_PREFIX=""
+#                  -> Caddy obtains and renews Let's Encrypt certificates.
+#
+#   --no-tls       CADDY_GLOBAL_OPTIONS=""
+#                  CADDY_SITE_ADDRESS_PREFIX="http://"
+#                  -> plain HTTP on :80, for a host-level proxy that already
+#                     terminates TLS (the site address scheme is what stops
+#                     Caddy from requesting certificates for them).
+#
+# CADDY_ADMIN_SITE is written by install.sh: the admin hostname normally, or a
+# plain-HTTP placeholder while --skip-admin keeps the panel out of the stack
+# (which also keeps Caddy from requesting a certificate for a site that cannot
+# answer).
+#
+# Validate after editing:
+#   docker compose run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile
+{
+	{$CADDY_GLOBAL_OPTIONS}
+}
+
+{$CADDY_SITE_ADDRESS_PREFIX}{$API_DOMAIN} {
+	encode zstd gzip
+	# The api service binds :8000 inside its own container.
+	reverse_proxy api:8000
+}
+
+{$CADDY_SITE_ADDRESS_PREFIX}{$SHOP_DOMAIN} {
+	encode zstd gzip
+	# Next's standalone server listens on :80 (PORT=80 in the shop Dockerfile).
+	reverse_proxy shop:80
+}
+
+{$CADDY_ADMIN_SITE} {
+	encode zstd gzip
+	# nginx serving the built SPA on :80.
+	reverse_proxy {$CADDY_ADMIN_UPSTREAM}
+}

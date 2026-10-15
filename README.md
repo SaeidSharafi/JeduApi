@@ -44,6 +44,21 @@ docker run --rm \
 ./vendor/bin/sail pest
 ```
 
+## Production deployment
+
+The Docker images published to `nexus.jedu.ir` are installed by a single script,
+together with the storefront and admin images and the datastores they need:
+
+```bash
+cd deploy/production
+./install.sh --domain jedu.ir --email ops@jedu.ir
+```
+
+See [deploy/production/README.md](deploy/production/README.md) for the
+configuration keys, the day-to-day commands and the go-live checklist. CI
+publishes the API image from `.forgejo/workflows/pipeline.yml`; `scripts/build.sh`
+builds the same image locally.
+
 # Database Support
 
 This project is built and tested with a "PostgreSQL First" approach. All Continuous Integration (CI) and automated tests are run against PostgreSQL, which we consider the primary, fully-supported database environment.
