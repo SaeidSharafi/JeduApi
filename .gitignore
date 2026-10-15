@@ -37,3 +37,5 @@ laradumps.yaml
 /.omo
 /docker/typesense-data/
 /.worktrees/
+/.tmp/
+/.scratch/
