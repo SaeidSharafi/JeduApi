@@ -56,6 +56,18 @@ task('search:rebuild', function () {
     run('cd {{release_path}} && {{php_binary}} artisan scout:delete-index "App\\Models\\Product"');
     run('cd {{release_path}} && {{php_binary}} artisan scout:import "App\\Models\\Product"');
 });
+/**
+ * This environment's full-text search engine, stated as fact rather than inferred.
+ *
+ * The engine is a stored setting, but a deploy cannot rely on the row surviving:
+ * `migrate-fresh` (used while this project is in development) removes it, and the
+ * migrations that once created the PGroonga indexes will never run again on a live
+ * database. Passing the engine explicitly makes this task the one place that establishes
+ * it, and it is idempotent — a deploy that changes nothing performs no DDL.
+ */
+task('search:engine', function () {
+    run('cd {{release_path}} && {{php_binary}} artisan pgroonga:engine typesense');
+});
 task('search:rebuild-if-needed', function () {
     if (get('migrate-fresh') || get('rebuild-search-index')) {
         invoke('search:rebuild');
@@ -78,6 +90,7 @@ task('deploy', [
     'permission:update',
     'artisan:optimize',
     'db:seed:demo',
+    'search:engine',
     'search:rebuild-if-needed',
     'deploy:publish',
     'php-fpm:reload',

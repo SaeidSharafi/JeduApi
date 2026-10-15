@@ -11,6 +11,7 @@ use App\Query\ProductAvailabilityFilter;
 use App\Query\ProductListing;
 use App\Query\ProductQueryService;
 use App\Services\ProductSearch;
+use App\Services\SearchEngineService;
 use Illuminate\Validation\Rules\In;
 
 it('keeps product sort fields in one enum-backed source of truth', function (): void {
@@ -96,6 +97,7 @@ it('falls through to database search when Scout fails', function (): void {
     ProductDeliveryOption::factory()->for($product)->create();
 
     $search = new ProductSearch(
+        engine: app(SearchEngineService::class),
         typesenseAvailability: fn (): bool => true,
         scoutSearch: fn () => throw new RuntimeException('Scout unavailable'),
     );

@@ -12,6 +12,7 @@ use App\Data\Shop\Search\SearchSuggestionData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\System\CacheKey;
+use App\Enums\System\SearchEngine;
 use App\Exceptions\CustomValidationException;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
@@ -30,6 +31,7 @@ final class GlobalSearchService
 
     public function __construct(
         private readonly CacheStore $cache,
+        private readonly SearchEngineService $engine,
         private readonly SearchQueryPreparer $queryPreparer = new SearchQueryPreparer(),
     ) {
         $this->typesenseClient = new Client(config('scout.typesense.client-settings'));
@@ -486,7 +488,6 @@ final class GlobalSearchService
      */
     private function isTypesenseAvailable(): bool
     {
-        return config('scout.driver') === 'typesense'
-            && ! empty(config('scout.typesense.client-settings.api_key'));
+        return $this->engine->engine() === SearchEngine::TYPESENSE;
     }
 }

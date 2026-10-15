@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\Product\ProductSortFieldEnum;
+use App\Enums\System\SearchEngine;
 use App\Models\Product;
 use App\Query\ProductListing;
 use App\Query\ProductListingScope;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 final class ProductSearch
 {
     public function __construct(
+        private readonly SearchEngineService $engine,
         private readonly ?Closure $typesenseAvailability = null,
         private readonly ?Closure $scoutSearch = null,
     ) {}
@@ -128,8 +130,6 @@ final class ProductSearch
             return (bool) ($this->typesenseAvailability)();
         }
 
-        return config('scout.driver') === 'typesense'
-            && ! empty(config('scout.typesense.client-settings.api_key'))
-            && ! app()->runningUnitTests();
+        return $this->engine->engine() === SearchEngine::TYPESENSE;
     }
 }

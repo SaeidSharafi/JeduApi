@@ -34,7 +34,6 @@ enum CacheKey: string
     case CataloguePriceBound = 'shop.catalogue.price-bound.{scope}';
     case Search              = 'search:{hash}';
     case SearchSuggest       = 'search:suggest:{hash}';
-    case PgroongaEnabled     = 'database.pgroonga_enabled';
     case DiscountHandlers    = 'discounts.handler_registry.cache';
     case Settings            = 'settings.all';
     case DigipayAccessToken  = 'digipay_access_token';
@@ -78,17 +77,16 @@ enum CacheKey: string
         return match ($this) {
             self::Slider, self::PartnersInHome, self::PartnersInCourse,
             self::Partners, self::OrganizationPage, self::StudentStory, self::StudentQuizzes,
-            self::TeacherQuizzes, self::Search => 300,
-            self::OtpValue                     => (int) config('otp.ttl_seconds', 300),
-            self::OtpMarker                    => (int) config('otp.marker_ttl_seconds', 900),
-            self::OtpAttempts                  => (int) config('otp.verify_attempt_window_seconds', 300),
-            self::SearchSuggest                => 3600,
-            self::GoodForStart                 => 1800,
-            self::CataloguePriceBound          => 1800,
-            self::DigipayAccessToken           => 3300,
-            self::AccessToken, self::Tokenable => 360,
-            self::Settings, self::DiscountHandlers,
-            self::PgroongaEnabled => null,
+            self::TeacherQuizzes, self::Search     => 300,
+            self::OtpValue                         => (int) config('otp.ttl_seconds', 300),
+            self::OtpMarker                        => (int) config('otp.marker_ttl_seconds', 900),
+            self::OtpAttempts                      => (int) config('otp.verify_attempt_window_seconds', 300),
+            self::SearchSuggest                    => 3600,
+            self::GoodForStart                     => 1800,
+            self::CataloguePriceBound              => 1800,
+            self::DigipayAccessToken               => 3300,
+            self::AccessToken, self::Tokenable     => 360,
+            self::Settings, self::DiscountHandlers => null,
         };
     }
 
@@ -119,10 +117,10 @@ enum CacheKey: string
             self::PartnersInCourse, self::Partners, self::StudentQuizzes,
             self::TeacherQuizzes => CacheTag::Content,
             self::GoodForStart, self::CataloguePriceBound,
-            self::OrganizationPage                                   => CacheTag::Catalog,
-            self::Search, self::SearchSuggest, self::PgroongaEnabled => CacheTag::Search,
-            self::DiscountHandlers                                   => CacheTag::Discounts,
-            self::Settings, self::DigipayAccessToken                 => CacheTag::Settings,
+            self::OrganizationPage                   => CacheTag::Catalog,
+            self::Search, self::SearchSuggest        => CacheTag::Search,
+            self::DiscountHandlers                   => CacheTag::Discounts,
+            self::Settings, self::DigipayAccessToken => CacheTag::Settings,
             self::AccessToken, self::Tokenable,
             self::OtpValue, self::OtpMarker, self::OtpAttempts => CacheTag::Auth,
         };

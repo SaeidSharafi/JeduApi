@@ -39,9 +39,6 @@ return new class extends Migration
                 $table->fullText(['title', 'body', 'excerpt', 'slug'], 'blog_post_fulltext_index');
             }
         });
-        if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::unprepared('CREATE INDEX blog_posts_pgroonga_index ON blog_posts USING pgroonga (title, body, excerpt, slug) WHERE use_pgroonga();');
-        }
     }
 
     public function down(): void

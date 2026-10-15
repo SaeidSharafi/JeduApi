@@ -49,9 +49,5 @@ return new class extends Migration
                     'seminars_fulltext_index');
             }
         });
-
-        if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::unprepared('CREATE INDEX seminars_pgroonga_index ON seminars USING pgroonga (full_name, short_name, slug, description, keywords) WHERE use_pgroonga();');
-        }
     }
 };

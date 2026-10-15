@@ -2,6 +2,8 @@
 
 Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read affected tables. Model semantics in `DIGEST_DATA_MODELS.md` when uploaded. Repo access optional; missing details → flag gap. Reading guide: `CODEBASE_DIGEST.md` when uploaded.
 
+**Not in the migrations: the five PGroonga indexes.** `products`, `courses`, `seminars`, `digital_assets` and `blog_posts` each carry a `<table>_pgroonga_index` (plain, `USING pgroonga`) that is **not** created by any migration. Their existence is a deployment decision reconciled by `pgroonga:engine`, and they exist exactly when the deployment's stored search engine is `pgroonga` — a PGroonga index makes the planner load the library (~200 ms) on every connection that plans against the table, whether or not the deployment searches. The `pgroonga` extension itself *is* created by migration (`0000_00_000000_setup_pgroonga_extension`) and stays installed either way, because the extension alone costs nothing. See `DIGEST_CORE_LOGIC.md` → `SearchEngineService` and `SetSearchEngineCommand`.
+
 ## User & Staff Management
 
 ### Table: `users`
@@ -179,7 +181,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - promo_video_external_url (VARCHAR nullable), estimated_duration_desc (VARCHAR nullable), difficulty_level (VARCHAR nullable)
   - provides_certificate (BOOLEAN default false)
   - faq (JSON nullable), keywords (TEXT nullable)
-  - Indexes: FULLTEXT (full_name, short_name, slug, description, keywords) plus optional PGroonga index when using PostgreSQL
+  - Indexes: FULLTEXT (full_name, short_name, slug, description, keywords) in the migration; the PGroonga index is not in the migration (see the note at the top of this file)
   - short_name (VARCHAR(100) not null), full_name (VARCHAR(191) not null) [replaces name]
   - slug (unique), description (TEXT nullable)
   - thumbnail_url (VARCHAR nullable), version (VARCHAR(50) nullable)

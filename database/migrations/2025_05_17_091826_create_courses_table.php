@@ -42,8 +42,5 @@ return new class extends Migration
                 $table->fullText(['full_name', 'short_name', 'slug', 'description'], 'courses_fulltext_index');
             }
         });
-        if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::unprepared('CREATE INDEX courses_pgroonga_index ON courses USING pgroonga (full_name, short_name, slug, description) WHERE use_pgroonga();');
-        }
     }
 };

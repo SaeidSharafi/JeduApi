@@ -19,6 +19,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\ProductPrice;
 use App\Models\Term;
 use App\Services\ProductSearch;
+use App\Services\SearchEngineService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Scout\Builder as ScoutBuilder;
@@ -189,7 +190,10 @@ it('composes Typesense capacity and price constraints and sorts utilization desc
         sortOrder: 'asc',
     );
 
-    (new ProductSearch(typesenseAvailability: fn (): bool => true))->searchScout($request);
+    (new ProductSearch(
+        engine: app(SearchEngineService::class),
+        typesenseAvailability: fn (): bool => true,
+    ))->searchScout($request);
 
     expect($engine->lastBuilder)->not->toBeNull()
         ->and($engine->lastBuilder->options)->not->toHaveKey('filter_by')

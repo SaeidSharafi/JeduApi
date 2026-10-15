@@ -8,6 +8,8 @@ Admin spreadsheet imports and private User exports enter through `app/Actions/Ad
 
 Catalog separates content (`Course`, `Seminar`, `DigitalAsset`, `Bundle`), commercial `Product`, and buyable `ProductDeliveryOption`. Checkout creates orders with purchase snapshots; payment and enrollment provisioning have separate lifecycles. Filterable listings and global search report a per-scope **Price Bound** in response metadata; the bound is a catalogue constant of the endpoint's scope, not derived from the request's filters ([ADR 0018](../adr/0018-price-bounds-are-per-scope-catalogue-constants.md)).
 
+Full-text search has one deployment-level **search engine** — `pgroonga` or `typesense` — stored as a setting and owned by `SearchEngineService` (`app/Services/SearchEngineService.php`), which is the single answer both the PGroonga query path and the Typesense availability checks consult. The five PGroonga indexes exist exactly when that engine is `pgroonga`, because an index makes the planner load the library on every connection (~200 ms) whether or not the deployment searches; `pgroonga:engine` moves the setting and the indexes together. Entry points: `SearchEngineService` and the two operator commands in [core logic digest](DIGEST_CORE_LOGIC.md#searchengineservice-appservicessearchengineservicephp), table-level detail in the [schema digest](DIGEST_SCHEMA.md).
+
 ## Using uploaded digests in chat
 
 These files support questions about codebase without repository access. Use uploaded content as reference; code paths and class names identify implementation locations, not files chatbot can open. No `AGENTS.md`, README, or other repository documents required to follow this guide.

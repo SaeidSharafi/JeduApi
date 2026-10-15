@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Services\PgroongaService;
-use Illuminate\Database\Connection;
+use App\Services\SearchEngineService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -29,12 +28,14 @@ final class FullTextSearchProvider extends ServiceProvider
     public function boot(): void
     {
         Builder::macro('withPgroonga', function (): Builder {
-            /** @var Builder<Model> $this */
-            $connection = $this->getConnection();
-            if ($connection instanceof Connection && $connection->getDriverName() === 'pgsql') {
-                $this->whereRaw('use_pgroonga()');
-            }
-
+            /**
+             * A marker only. It used to emit `use_pgroonga()` so queries matched the
+             * partial predicate on the PGroonga indexes; the indexes are plain now and
+             * the predicate helper is gone, because a predicate can never avoid the
+             * library load the planner pays when it opens an index.
+             *
+             * @var Builder<Model> $this
+             */
             return $this;
         });
 
@@ -58,7 +59,7 @@ final class FullTextSearchProvider extends ServiceProvider
             $columns          = (array) $columns;
 
             // PostgreSQL with PGroonga
-            if ($dbDriver === 'pgsql' && app(PgroongaService::class)->isPgroongaEnabled()) {
+            if ($dbDriver === 'pgsql' && app(SearchEngineService::class)->usesPgroonga()) {
                 if (count($columns) === 1) {
                     $this->whereRaw("\"{$columns[0]}\" &@~ ?", [$value]);
                 } else {
@@ -144,7 +145,7 @@ final class FullTextSearchProvider extends ServiceProvider
             $connectionConfig = config("database.connections.{$driver}");
             $dbDriver         = $connectionConfig['driver'] ?? 'mysql';
 
-            if ($dbDriver === 'pgsql' && app(PgroongaService::class)->isPgroongaEnabled()) {
+            if ($dbDriver === 'pgsql' && app(SearchEngineService::class)->usesPgroonga()) {
                 return $this->orderBy($scoreColumn, $direction);
             }
 
@@ -156,7 +157,7 @@ final class FullTextSearchProvider extends ServiceProvider
             $connectionConfig = config("database.connections.{$driver}");
             $dbDriver         = $connectionConfig['driver'] ?? 'mysql';
 
-            if ($dbDriver === 'pgsql' && app(PgroongaService::class)->isPgroongaEnabled()) {
+            if ($dbDriver === 'pgsql' && app(SearchEngineService::class)->usesPgroonga()) {
                 $table = $table ? "{$table}." : '';
 
                 return $this->addSelect(DB::raw("pgroonga_score({$table}tableoid, {$table}ctid) as {$scoreColumn}"));

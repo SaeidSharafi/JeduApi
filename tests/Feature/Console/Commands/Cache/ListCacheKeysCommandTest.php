@@ -22,7 +22,6 @@ it('lists every registry case with its template, durations and group', function 
                 ['CataloguePriceBound', 'shop.catalogue.price-bound.{scope}', '1800', '900', 'catalog'],
                 ['Search', 'search:{hash}', '300', '900', 'search'],
                 ['SearchSuggest', 'search:suggest:{hash}', '3600', '14400', 'search'],
-                ['PgroongaEnabled', 'database.pgroonga_enabled', 'forever', 'none', 'search'],
                 ['DiscountHandlers', 'discounts.handler_registry.cache', 'forever', 'none', 'discounts'],
                 ['Settings', 'settings.all', 'forever', 'none', 'settings'],
                 ['DigipayAccessToken', 'digipay_access_token', '3300', 'none', 'settings'],

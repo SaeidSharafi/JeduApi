@@ -22,6 +22,8 @@ enum SettingKeyEnum: string
     case SMS_IPPANEL       = 'sms.ippanel';
     case SMS_NOTIFICATIONS = 'sms_notifications';
 
+    case SEARCH_ENGINE = 'search.engine';
+
     case MELLAT        = 'payments.mellat';
     case WALLET        = 'payments.wallet';
     case BANK_TRANSFER = 'payments.bank_transfer';

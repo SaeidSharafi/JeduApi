@@ -44,8 +44,5 @@ return new class extends Migration
                     'digital_assets_fulltext_index');
             }
         });
-        if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::unprepared('CREATE INDEX digital_assets_pgroonga_index ON digital_assets USING pgroonga (full_name, short_name, slug, description, keywords) WHERE use_pgroonga();');
-        }
     }
 };
