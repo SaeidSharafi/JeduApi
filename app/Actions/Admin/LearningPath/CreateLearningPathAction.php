@@ -7,6 +7,8 @@ namespace App\Actions\Admin\LearningPath;
 use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Data\Admin\LearningPath\LearningPathCreateData;
 use App\Enums\MediaTagEnum;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\LearningPath;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +18,7 @@ final readonly class CreateLearningPathAction
 
     public function handle(LearningPathCreateData $data): LearningPath
     {
-        return DB::transaction(function () use ($data): LearningPath {
+        $learningPath = DB::transaction(function () use ($data): LearningPath {
             $createData                  = $data->except('steps', 'media')->toArray();
             $createData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
             $learningPath                = LearningPath::create($createData);
@@ -25,6 +27,10 @@ final readonly class CreateLearningPathAction
 
             return $learningPath->fresh();
         });
+
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::CatalogLearningPaths);
+
+        return $learningPath;
     }
 
     /**

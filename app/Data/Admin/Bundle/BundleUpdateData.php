@@ -17,6 +17,7 @@ final class BundleUpdateData extends Data
     public function __construct(
         public string $full_name,
         public string $description,
+        public ?string $slug = null,
         public string $status = 'draft',
         public ?string $short_name = null,
         public ?string $thumbnail_url = null,
@@ -42,7 +43,7 @@ final class BundleUpdateData extends Data
             'properties'      => ['nullable', 'array'],
             'additional_info' => ['nullable', 'array'],
             'faq'             => ['nullable', 'array'],
-            'slug'            => ['sometimes', 'alpha_dash', 'unique:bundles,slug,'.$id],
+            'slug'            => ['sometimes', 'nullable', 'alpha_dash', 'max:255', 'unique:bundles,slug,'.$id],
             'media'           => ['required', 'array'],
             'media.gallery'   => ['nullable', 'array'],
             'media.cover'     => ['required', 'array'],

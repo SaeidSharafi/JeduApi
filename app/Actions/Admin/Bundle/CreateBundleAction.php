@@ -8,6 +8,8 @@ use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Bundle\BundleCreateData;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Bundle;
 use Illuminate\Support\Facades\DB;
 
@@ -39,6 +41,7 @@ final readonly class CreateBundleAction
         });
 
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalog());
 
         return $bundle;
     }

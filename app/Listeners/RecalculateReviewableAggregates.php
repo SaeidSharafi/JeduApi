@@ -8,7 +8,9 @@ use App\Contracts\Cache\CacheStore;
 use App\Enums\Content\ReviewStatusEnum;
 use App\Enums\System\CacheTag;
 use App\Enums\System\MorphTypeEnum;
+use App\Enums\System\StorefrontTag;
 use App\Events\ReviewableAggregatesChanged;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Review;
 use App\Traits\HasReview;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -43,7 +45,10 @@ final class RecalculateReviewableAggregates implements ShouldQueue
             'average_rating' => $stats->avg_rating ?? 0.00,
         ]);
 
-        // Search result pages cache the review aggregates of the products they return.
+        // Search result pages cache the review aggregates of the products they return,
+        // and the storefront caches them inside its product and blog payloads.
         $this->cache->invalidate(CacheTag::Search);
+
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::BlogPosts));
     }
 }

@@ -7,6 +7,8 @@ namespace App\Actions\Admin\Setting\StudentStory;
 use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Settings\StudentStory\StudentStoryCreateData;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\StudentStory;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Media;
@@ -33,6 +35,7 @@ final class CreateStudentStoryAction
         });
 
         $this->cache->invalidate(CacheTag::HomePage);
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::HomeStudentStories);
 
         return $story;
     }

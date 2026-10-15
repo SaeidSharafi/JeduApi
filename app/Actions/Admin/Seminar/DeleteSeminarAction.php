@@ -8,6 +8,8 @@ use App\Actions\Admin\LearningPath\EnsureProductableHasNoLearningPathReferencesA
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheTag;
 use App\Enums\System\MorphTypeEnum;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\Product;
 use App\Models\Seminar;
@@ -39,5 +41,6 @@ final readonly class DeleteSeminarAction
 
         // The model observer that used to clear search on a Seminar delete is gone.
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::CatalogCategories, StorefrontTag::HomeBlocks));
     }
 }

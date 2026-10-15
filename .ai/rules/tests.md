@@ -19,7 +19,7 @@ paths:
 5. Fix survivors only when the mutant is a real decision (removed branch, flipped comparison, changed return, skipped side effect). Ignore equivalent mutants. Never exclude broad classes of code to hide survivors.
 
 ## Scope limits (keep tests few and meaningful)
-- One `covers()` target per test file: the single class under test. Never list many classes; it makes mutation runs huge.
+- One `mutates()` target per test file: the single class under test. Never use `covers()` — it is not the convention here; `mutates()` marks the class for the mutation run and is what existing tests use. Never list many classes in one call; it makes mutation runs huge.
 - One test per decision. Use datasets for variations of the same rule instead of copy-pasted tests.
 - Test the code you wrote or changed in this task, not the code around it.
 

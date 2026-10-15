@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Blog\Category;
 
 use App\Data\Admin\Blog\Category\BlogCategoryUpdateData;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Blog\BlogCategory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -14,7 +16,7 @@ final readonly class UpdateBlogCategoryAction
 {
     public function handle(BlogCategory $category, BlogCategoryUpdateData $data): BlogCategory
     {
-        return DB::transaction(function () use ($data, $category): BlogCategory {
+        $blogCategory = DB::transaction(function () use ($data, $category): BlogCategory {
             $slug = $data->slug ?? Str::slug($data->name);
             $icon = null;
             if ($data->icon) {
@@ -35,5 +37,8 @@ final readonly class UpdateBlogCategoryAction
             return $category->fresh();
         });
 
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::BlogCategories, StorefrontTag::BlogPosts, StorefrontTag::HomeBlocks);
+
+        return $blogCategory;
     }
 }

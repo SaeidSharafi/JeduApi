@@ -6,6 +6,8 @@ namespace App\Actions\Admin\Blog\Post;
 
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Blog\BlogPost;
 
 final readonly class DeleteBlogPostAction
@@ -18,5 +20,6 @@ final readonly class DeleteBlogPostAction
         $post->delete();
 
         $this->cache->invalidate(CacheTag::Search);
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::BlogPosts, StorefrontTag::HomeBlocks);
     }
 }

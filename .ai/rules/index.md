@@ -11,5 +11,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Models/**, app/Models/User.php | .ai/rules/models.md |
 | tests/Feature/Api/V1/Shop/Sale/** | .ai/rules/sale.md |
 | app/Subscribers/** | .ai/rules/subscribers.md |
+| app/Actions/Admin/**, app/Jobs/**, app/Listeners/**, app/Observers/**, app/Services/**, app/Enums/System/**, config/**, tests/Architecture/** | .ai/rules/storefront-cache.md |
 | tests/** | .ai/rules/tests.md |
 | app/Services/ImportExport/**, app/Actions/Admin/ImportExport/**, app/Http/Controllers/Api/Admin/ImportExport/** | .ai/rules/import-export.md |

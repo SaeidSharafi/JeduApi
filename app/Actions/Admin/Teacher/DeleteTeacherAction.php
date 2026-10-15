@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Teacher;
 
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\Product;
 use App\Models\Teacher;
@@ -23,5 +25,7 @@ final readonly class DeleteTeacherAction
             $teacher->media()->delete();
             $teacher->delete();
         });
+
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::HomeBlocks));
     }
 }

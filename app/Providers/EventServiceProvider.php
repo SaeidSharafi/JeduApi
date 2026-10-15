@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Bundle;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
@@ -30,6 +31,11 @@ final class EventServiceProvider extends ServiceProvider
         Course::observe(ProductableAvailabilityObserver::class);
         Seminar::observe(ProductableAvailabilityObserver::class);
         DigitalAsset::observe(ProductableAvailabilityObserver::class);
+        // Bundle is the fourth productable: without it a bundle status change never
+        // refreshes the denormalized availability snapshot of its products, so a
+        // published bundle could stay out of the catalogue listings and an archived
+        // one could stay in them until the hourly availability reindex.
+        Bundle::observe(ProductableAvailabilityObserver::class);
         Term::observe(TermAvailabilityObserver::class);
         Enrollment::observe(EnrollmentObserver::class);
     }

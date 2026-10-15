@@ -9,6 +9,8 @@ use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Course\CreateCourseData;
 use App\Enums\MediaTagEnum;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Course;
 use Illuminate\Support\Facades\DB;
 
@@ -44,5 +46,6 @@ final readonly class UpdateCourseAction
         });
 
         $this->cache->invalidate(CacheTag::HomePage, CacheTag::Catalog);
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::CatalogCategories, StorefrontTag::HomeBlocks));
     }
 }

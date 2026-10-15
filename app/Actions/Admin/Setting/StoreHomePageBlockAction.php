@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Setting;
 
 use App\Data\Admin\Settings\HomePageBlock\HomePageBlockCreateData;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\HomePageBlock;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Media;
@@ -13,7 +15,7 @@ final class StoreHomePageBlockAction
 {
     public function handle(HomePageBlockCreateData $data): HomePageBlock
     {
-        return DB::transaction(function () use ($data) {
+        $storedBlock = DB::transaction(function () use ($data) {
 
             if (isset($data->content['image_id'])) {
                 $media                      = Media::findOrFail($data->content['image_id']);
@@ -34,5 +36,9 @@ final class StoreHomePageBlockAction
 
             return $block;
         });
+
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::HomeBlocks);
+
+        return $storedBlock;
     }
 }

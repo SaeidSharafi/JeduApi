@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Term;
 
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\Product;
 use App\Models\Term;
@@ -16,5 +18,7 @@ final class DeleteTermAction
             throw new ModelHasRelationshipDataException(Product::class);
         }
         $term->delete();
+
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::HomeBlocks));
     }
 }

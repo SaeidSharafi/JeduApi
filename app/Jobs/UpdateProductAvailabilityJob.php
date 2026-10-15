@@ -8,8 +8,10 @@ use App\Contracts\Cache\CacheStore;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
 use App\Enums\TermStatusEnum;
 use App\Events\ProductSearchIndexInvalidated;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Services\BundleAvailabilityService;
@@ -94,6 +96,11 @@ final class UpdateProductAvailabilityJob implements ShouldQueue
 
         if ($changedProductIds !== []) {
             $cache->invalidate(CacheTag::Catalog, CacheTag::Search);
+
+            // Availability is part of every cached catalogue card, and this job is
+            // the last writer of the denormalized snapshot, so the storefront may
+            // only clear its tags after this invalidate has run.
+            StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::HomeBlocks));
 
             ProductSearchIndexInvalidated::dispatch($changedProductIds);
         }

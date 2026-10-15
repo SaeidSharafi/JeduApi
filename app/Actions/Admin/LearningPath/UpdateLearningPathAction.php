@@ -8,6 +8,8 @@ use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Data\Admin\LearningPath\LearningPathUpdateData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\MediaTagEnum;
+use App\Enums\System\StorefrontTag;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\LearningPath;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -20,7 +22,7 @@ final readonly class UpdateLearningPathAction
     {
         $this->validateStatusTransition($learningPath, $data->status);
 
-        return DB::transaction(function () use ($data, $learningPath): LearningPath {
+        $learningPath = DB::transaction(function () use ($data, $learningPath): LearningPath {
             $validatedData                  = $data->except('steps', 'media')->toArray();
             $validatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
 
@@ -34,6 +36,10 @@ final readonly class UpdateLearningPathAction
 
             return $learningPath->fresh();
         });
+
+        StorefrontCacheInvalidated::dispatch(StorefrontTag::CatalogLearningPaths);
+
+        return $learningPath;
     }
 
     private function validateStatusTransition(LearningPath $learningPath, string $status): void

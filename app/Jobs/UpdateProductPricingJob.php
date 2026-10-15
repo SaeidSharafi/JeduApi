@@ -6,7 +6,9 @@ namespace App\Jobs;
 
 use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheTag;
+use App\Enums\System\StorefrontTag;
 use App\Events\ProductSearchIndexInvalidated;
+use App\Events\StorefrontCacheInvalidated;
 use App\Models\Product;
 use App\Services\ProductPriceService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -72,5 +74,10 @@ final class UpdateProductPricingJob implements ShouldQueue
     private function clearCachesForProducts(): void
     {
         app(CacheStore::class)->invalidate(CacheTag::Catalog, CacheTag::Search);
+
+        // This job is the last writer of the products' price index, so the
+        // storefront may only clear its tags once this invalidate has run:
+        // notifying earlier would let it re-fetch the pre-recalculation prices.
+        StorefrontCacheInvalidated::dispatch(...StorefrontTag::catalogWith(StorefrontTag::HomeBlocks));
     }
 }
