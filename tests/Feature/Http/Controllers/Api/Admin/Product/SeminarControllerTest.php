@@ -6,6 +6,8 @@ use App\Models\Category;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
+mutates(App\Data\Admin\Seminar\CreateSeminarData::class);
+
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
@@ -480,4 +482,102 @@ describe('SeminarController', function (): void {
             ->assertJsonValidationErrors(['full_name']);
     });
 
+});
+
+describe('rich text fields', function (): void {
+    beforeEach(function (): void {
+        // A CKEditor / Word paste: a heading that must be downgraded, pasted
+        // styling and classes, a script, an image and a table that do not
+        // belong in compact copy.
+        $this->dirtyText = '<h1 class="title">Heading</h1>'
+            .'<p class="lead" style="color: red; text-align: right">First <strong>para</strong></p>'
+            .'<ul class="list"><li>One</li><li>Two</li></ul>'
+            .'<img src="x.png" onerror="alert(1)">'
+            .'<script>alert(1)</script>'
+            .'<table><tr><td>cell</td></tr></table>';
+
+        // The table, its rows and cells are unwrapped rather than dropped, so
+        // its text survives; every other disallowed construct is gone.
+        $this->cleanText = '<h2>Heading</h2>'
+            .'<p style="text-align: right">First <strong>para</strong></p>'
+            .'<ul><li>One</li><li>Two</li></ul>cell';
+
+        $this->plainFullName        = 'Seminar <b>Name</b>';
+        $this->plainMetaDescription = str_repeat('Plain meta text ', 5).'< 5';
+    });
+
+    it('sanitizes compact fields when a seminar is created', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::SEMINAR_CREATE->value,
+        ]);
+
+        $seminarData = App\Models\Seminar::factory()->make()->toArray();
+
+        $response = $this->postJson(route('api.v1.admin.seminars.store'), [
+            ...$seminarData,
+            'full_name'               => $this->plainFullName,
+            'description'             => $this->dirtyText,
+            'curriculum_summary_text' => $this->dirtyText,
+            'target_audience'         => $this->dirtyText,
+            'prerequisites'           => $this->dirtyText,
+            'meta_description'        => $this->plainMetaDescription,
+            'categories'              => [Category::factory()->create()->id],
+            'digital_assets'          => [],
+            'media'                   => [
+                'cover'   => [$this->cover->id],
+                'gallery' => [$this->gallery->id],
+                'video'   => [$this->video->id],
+            ],
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('seminars', [
+            'slug'                    => $seminarData['slug'],
+            'description'             => $this->cleanText,
+            'curriculum_summary_text' => $this->cleanText,
+            'target_audience'         => $this->cleanText,
+            'prerequisites'           => $this->cleanText,
+            'full_name'               => $this->plainFullName,
+            'meta_description'        => $this->plainMetaDescription,
+        ]);
+    });
+
+    it('sanitizes compact fields when a seminar is updated', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::SEMINAR_UPDATE->value,
+        ]);
+
+        $seminar     = App\Models\Seminar::factory()->create();
+        $seminarData = App\Models\Seminar::factory()->make()->toArray();
+
+        $response = $this->putJson(route('api.v1.admin.seminars.update', ['seminar' => $seminar->id]), [
+            ...$seminarData,
+            'full_name'               => $this->plainFullName,
+            'description'             => $this->dirtyText,
+            'curriculum_summary_text' => $this->dirtyText,
+            'target_audience'         => $this->dirtyText,
+            'prerequisites'           => $this->dirtyText,
+            'meta_description'        => $this->plainMetaDescription,
+            'categories'              => [Category::factory()->create()->id],
+            'digital_assets'          => [],
+            'media'                   => [
+                'cover'   => [$this->cover->id],
+                'gallery' => [$this->gallery->id],
+                'video'   => [$this->video->id],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('seminars', [
+            'id'                      => $seminar->id,
+            'description'             => $this->cleanText,
+            'curriculum_summary_text' => $this->cleanText,
+            'target_audience'         => $this->cleanText,
+            'prerequisites'           => $this->cleanText,
+            'full_name'               => $this->plainFullName,
+            'meta_description'        => $this->plainMetaDescription,
+        ]);
+    });
 });

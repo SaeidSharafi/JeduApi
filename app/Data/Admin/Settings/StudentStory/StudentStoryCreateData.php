@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings\StudentStory;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Enums\Content\RichTextLevelEnum;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -13,6 +16,7 @@ final class StudentStoryCreateData extends Data
         public string $student_name,
         public string $course_name,
         public string $course_url,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::INLINE)]
         public string $story_text,
         public ?int $avatar,
         public bool $is_visible,
@@ -61,7 +65,7 @@ final class StudentStoryCreateData extends Data
                 'example'     => 'https://jedu.ir/courses/advanced-math',
             ],
             'story_text' => [
-                'description' => 'Text of the student story.',
+                'description' => 'Text of the student story. HTML; sanitized on save.',
                 'example'     => 'This course helped me excel in university.',
             ],
             'avatar' => [

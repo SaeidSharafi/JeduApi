@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Seminar;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Rules\DigitalAssetIsAttachableRule;
 use App\Traits\ValidatesMetaTags;
@@ -28,13 +31,18 @@ final class CreateSeminarData extends Data
         #[WithCast(EnumCast::class)]
         public CourseDifficultyLevelEnum $difficulty_level,
         public bool $provides_certificate,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $description,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $curriculum_summary_text,
         public ?array $outcomes_json,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $target_audience,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $prerequisites,
         public ?string $promo_video_external_url,
         public ?string $estimated_duration_desc,
+        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public ?array $faq,
         public ?string $keywords,
         public ?string $meta_title,
@@ -164,11 +172,11 @@ final class CreateSeminarData extends Data
                 'example'     => true,
             ],
             'description' => [
-                'description' => 'Detailed description of the course',
+                'description' => 'Detailed description of the course. HTML; sanitized on save.',
                 'example'     => 'This is a detailed description of the course.',
             ],
             'curriculum_summary_text' => [
-                'description' => 'Summary of the course curriculum',
+                'description' => 'Summary of the course curriculum. HTML; sanitized on save.',
                 'example'     => 'This course covers the following topics...',
             ],
             'outcomes_json' => [
@@ -176,11 +184,11 @@ final class CreateSeminarData extends Data
                 'example'     => 'By the end of this course, you will be able to...',
             ],
             'target_audience' => [
-                'description' => 'Target audience for the course',
+                'description' => 'Target audience for the course. HTML; sanitized on save.',
                 'example'     => 'This course is designed for...',
             ],
             'prerequisites' => [
-                'description' => 'Prerequisites for the course',
+                'description' => 'Prerequisites for the course. HTML; sanitized on save.',
                 'example'     => 'Before taking this course, you should have...',
             ],
             'promo_video_external_url' => [
@@ -203,7 +211,7 @@ final class CreateSeminarData extends Data
                 'example'     => 'What is the course about?',
             ],
             'faq.*.answer' => [
-                'description' => 'Answer to the FAQ question',
+                'description' => 'Answer to the FAQ question. HTML; sanitized on save.',
                 'example'     => 'This course covers...',
             ],
             'keywords' => [

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Organization;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Data\Casts\SanitizeRichTextArray;
+use App\Enums\Content\RichTextLevelEnum;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -16,10 +20,13 @@ final class OrganizationPageUpdateData extends Data
     public function __construct(
         public int $vendor_id,
         public ?string $hero_title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $hero_description,
         public ?string $ims_portal_url,
         public ?string $request_section_title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $request_section_explanation,
+        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public array $faqs,
         public array $media,
     ) {}
@@ -64,7 +71,7 @@ final class OrganizationPageUpdateData extends Data
                 'example'     => 'Organization services',
             ],
             'hero_description' => [
-                'description' => 'Organization page hero description.',
+                'description' => 'Organization page hero description. HTML; sanitized on save.',
                 'example'     => 'Department information for organizations.',
             ],
             'ims_portal_url' => [
@@ -76,7 +83,7 @@ final class OrganizationPageUpdateData extends Data
                 'example'     => 'Request training',
             ],
             'request_section_explanation' => [
-                'description' => 'Explanation for the Organization Training Request introduction.',
+                'description' => 'Explanation for the Organization Training Request introduction. HTML; sanitized on save.',
                 'example'     => 'Tell us what your organization needs.',
             ],
             'faqs' => [
@@ -92,7 +99,7 @@ final class OrganizationPageUpdateData extends Data
                 'example'     => 'What can we request?',
             ],
             'faqs.*.answer' => [
-                'description' => 'FAQ answer.',
+                'description' => 'FAQ answer. HTML; sanitized on save.',
                 'example'     => 'A custom training plan.',
             ],
             'faqs.*.is_visible' => [

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Course;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Rules\DigitalAssetIsAttachableRule;
 use App\Traits\ValidatesMetaTags;
@@ -23,15 +26,20 @@ final class CreateCourseData extends Data
         public string $slug,
         public string $full_name,
         public string $short_name,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $description,
         public ?int $duration,
         #[WithCast(EnumCast::class)]
         public CourseDifficultyLevelEnum $difficulty_level,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $career_prospects_text,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::INLINE)]
         public ?string $curriculum_summary_text,
         public ?array $outcomes_json,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::INLINE)]
         public ?string $default_teacher_info,
         public bool $provides_certificate,
+        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public ?array $faq,
         public ?array $additional_info,
         public ?string $meta_title,
@@ -162,7 +170,7 @@ final class CreateCourseData extends Data
                 'example'     => 'Short Course Name',
             ],
             'description' => [
-                'description' => 'Description of the course',
+                'description' => 'Description of the course. HTML; sanitized on save.',
                 'required'    => false,
                 'example'     => 'This is a course description',
             ],
@@ -177,12 +185,12 @@ final class CreateCourseData extends Data
                 'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
             ],
             'career_prospects_text' => [
-                'description' => 'Career prospects text of the course',
+                'description' => 'Career prospects text of the course. HTML; sanitized on save.',
                 'required'    => false,
                 'example'     => 'Career prospects text',
             ],
             'curriculum_summary_text' => [
-                'description' => 'Curriculum summary text of the course',
+                'description' => 'Curriculum summary text of the course. HTML; sanitized on save.',
                 'required'    => false,
                 'example'     => 'Curriculum summary text',
             ],
@@ -192,7 +200,7 @@ final class CreateCourseData extends Data
                 'example'     => json_encode(['outcome1' => 'Text', 'outcome2' => 'Text']),
             ],
             'default_teacher_info' => [
-                'description' => 'Default teacher info of the course',
+                'description' => 'Default teacher info of the course. HTML; sanitized on save.',
                 'required'    => false,
                 'example'     => 'Default teacher info',
             ],
@@ -212,7 +220,7 @@ final class CreateCourseData extends Data
                 'example'     => 'What is the course about?',
             ],
             'faq.*.answer' => [
-                'description' => 'Answer to the FAQ question',
+                'description' => 'Answer to the FAQ question. HTML; sanitized on save.',
                 'example'     => 'This course covers...',
             ],
             'additional_info' => [

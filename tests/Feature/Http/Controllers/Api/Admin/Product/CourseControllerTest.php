@@ -9,6 +9,8 @@ use function Pest\Laravel\assertDatabaseHas;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
+mutates(App\Data\Admin\Course\CreateCourseData::class);
+
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
@@ -331,6 +333,53 @@ it('can create a new course with valid data', function (): void {
         'digital_asset_id' => $ditialAssets[1]->id,
         'assetable_id'     => $course->id,
         'assetable_type'   => MorphTypeEnum::COURSE->value,
+    ]);
+});
+
+it('sanitizes the inline course fields on create and update', function (): void {
+    $this->authorized_user([
+        App\Enums\PermissionEnum::COURSE_CREATE->value,
+        App\Enums\PermissionEnum::COURSE_UPDATE->value,
+    ]);
+
+    $courseData = App\Models\Course::factory()->make([
+        'curriculum_summary_text' => '<p>فصل اول</p><p>فصل دوم</p><script>alert(1)</script>',
+        'default_teacher_info'    => '<p>استاد اول</p><p>استاد دوم</p>',
+    ]);
+    $categories    = App\Models\Category::factory()->create()->pluck('id')->toArray();
+    $digitalAssets = App\Models\DigitalAsset::factory()->create();
+
+    $payload = [
+        ...$courseData->toArray(),
+        'categories'     => $categories,
+        'digital_assets' => $digitalAssets->pluck('id')->toArray(),
+        'media'          => [
+            'gallery'     => [$this->gallery->id],
+            'thumbnail'   => [],
+            'cover'       => [$this->cover->id],
+            'certificate' => [],
+        ],
+    ];
+
+    $response = $this->postJson(route('api.v1.admin.courses.store'), $payload);
+    $response->assertStatus(201);
+    $this->assertDatabaseHas('courses', [
+        'slug'                    => $courseData->slug,
+        'curriculum_summary_text' => 'فصل اول<br />فصل دوم',
+        'default_teacher_info'    => 'استاد اول<br />استاد دوم',
+    ]);
+
+    $course   = App\Models\Course::query()->where('slug', $courseData->slug)->firstOrFail();
+    $response = $this->putJson(route('api.v1.admin.courses.update', $course->id), [
+        ...$payload,
+        'curriculum_summary_text' => '<p>خط اول</p><p>خط دوم</p>',
+        'default_teacher_info'    => '<p>نام اول</p><p>نام دوم</p>',
+    ]);
+    $response->assertStatus(200);
+    $this->assertDatabaseHas('courses', [
+        'id'                      => $course->id,
+        'curriculum_summary_text' => 'خط اول<br />خط دوم',
+        'default_teacher_info'    => 'نام اول<br />نام دوم',
     ]);
 });
 
@@ -712,4 +761,143 @@ it('can not delete course if there is related data', function (): void {
     $this->assertDatabaseHas('courses', [
         'id' => $course->id,
     ]);
+});
+
+it('sanitizes each FAQ answer without touching the other FAQ fields when creating a course', function (): void {
+    $courseData = App\Models\Course::factory()->make();
+
+    $this->authorized_user([
+        App\Enums\PermissionEnum::COURSE_CREATE->value,
+    ]);
+
+    $category = App\Models\Category::factory()->create();
+
+    $response = $this->postJson(route('api.v1.admin.courses.store'), [
+        ...$courseData->toArray(),
+        'categories'     => [$category->id],
+        'digital_assets' => [],
+        'media'          => [
+            'gallery'     => [$this->gallery->id],
+            'thumbnail'   => [],
+            'cover'       => [$this->cover->id],
+            'certificate' => [],
+        ],
+        'faq' => [
+            [
+                'question' => 'What is <em class="editor-mark">covered</em>?',
+                'answer'   => '<p>Safe</p><script>alert(1)</script>',
+            ],
+            [
+                'question' => 'Sibling question',
+                'answer'   => 'Plain answer',
+            ],
+        ],
+    ]);
+
+    $response->assertStatus(201);
+
+    $course = App\Models\Course::query()->where('slug', $courseData->slug)->firstOrFail();
+
+    expect($course->faq)->toBe([
+        [
+            'question' => 'What is <em class="editor-mark">covered</em>?',
+            'answer'   => '<p>Safe</p>',
+        ],
+        [
+            'question' => 'Sibling question',
+            'answer'   => 'Plain answer',
+        ],
+    ]);
+});
+
+describe('rich text fields', function (): void {
+    beforeEach(function (): void {
+        // A CKEditor / Word paste: a heading that must be downgraded, pasted
+        // styling and classes, a script, an image and a table that do not
+        // belong in compact copy.
+        $this->dirtyText = '<h1 class="title">Heading</h1>'
+            .'<p class="lead" style="color: red; text-align: right">First <strong>para</strong></p>'
+            .'<ul class="list"><li>One</li><li>Two</li></ul>'
+            .'<img src="x.png" onerror="alert(1)">'
+            .'<script>alert(1)</script>'
+            .'<table><tr><td>cell</td></tr></table>';
+
+        // The table, its rows and cells are unwrapped rather than dropped, so
+        // its text survives; every other disallowed construct is gone.
+        $this->cleanText = '<h2>Heading</h2>'
+            .'<p style="text-align: right">First <strong>para</strong></p>'
+            .'<ul><li>One</li><li>Two</li></ul>cell';
+
+        $this->plainFullName        = 'Course <b>Name</b>';
+        $this->plainMetaDescription = str_repeat('Plain meta text ', 5).'< 5';
+    });
+
+    it('sanitizes compact fields when a course is created', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_CREATE->value,
+        ]);
+
+        $courseData = App\Models\Course::factory()->make()->toArray();
+
+        $response = $this->postJson(route('api.v1.admin.courses.store'), [
+            ...$courseData,
+            'full_name'             => $this->plainFullName,
+            'description'           => $this->dirtyText,
+            'career_prospects_text' => $this->dirtyText,
+            'meta_description'      => $this->plainMetaDescription,
+            'categories'            => [App\Models\Category::factory()->create()->id],
+            'digital_assets'        => [],
+            'media'                 => [
+                'gallery'     => [],
+                'thumbnail'   => [],
+                'cover'       => [$this->cover->id],
+                'certificate' => [],
+            ],
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('courses', [
+            'slug'                  => $courseData['slug'],
+            'description'           => $this->cleanText,
+            'career_prospects_text' => $this->cleanText,
+            'full_name'             => $this->plainFullName,
+            'meta_description'      => $this->plainMetaDescription,
+        ]);
+    });
+
+    it('sanitizes compact fields when a course is updated', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_UPDATE->value,
+        ]);
+
+        $course     = App\Models\Course::factory()->create();
+        $courseData = App\Models\Course::factory()->make()->toArray();
+
+        $response = $this->putJson(route('api.v1.admin.courses.update', $course->id), [
+            ...$courseData,
+            'full_name'             => $this->plainFullName,
+            'description'           => $this->dirtyText,
+            'career_prospects_text' => $this->dirtyText,
+            'meta_description'      => $this->plainMetaDescription,
+            'categories'            => [App\Models\Category::factory()->create()->id],
+            'digital_assets'        => [],
+            'media'                 => [
+                'gallery'     => [],
+                'thumbnail'   => [],
+                'cover'       => [$this->cover->id],
+                'certificate' => [],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('courses', [
+            'id'                    => $course->id,
+            'description'           => $this->cleanText,
+            'career_prospects_text' => $this->cleanText,
+            'full_name'             => $this->plainFullName,
+            'meta_description'      => $this->plainMetaDescription,
+        ]);
+    });
 });

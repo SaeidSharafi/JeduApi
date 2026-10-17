@@ -141,6 +141,33 @@ describe('BlogCategoryController CRUD', function (): void {
         $response->assertNotFound();
     });
 
+    it('sanitizes a multi-paragraph description on create and update', function (): void {
+        $this->authorized_user([PermissionEnum::BLOG_CATEGORY_CREATE, PermissionEnum::BLOG_CATEGORY_UPDATE]);
+
+        $data = BlogCategory::factory()->make([
+            'icon'        => $this->media->id,
+            'description' => '<p>پاراگراف اول</p><p>پاراگراف دوم</p><script>alert(1)</script>',
+        ])->toArray();
+        $response = $this->postJson(route('api.v1.admin.blog.categories.store'), $data);
+        $response->assertCreated();
+        $this->assertDatabaseHas('blog_categories', [
+            'name'        => $data['name'],
+            'description' => 'پاراگراف اول<br />پاراگراف دوم',
+        ]);
+
+        $category = BlogCategory::query()->where('name', $data['name'])->firstOrFail();
+        $update   = BlogCategory::factory()->make([
+            'icon'        => $this->media->id,
+            'description' => '<p>خط اول</p><p>خط دوم <em>تأکید</em></p>',
+        ])->toArray();
+        $response = $this->putJson(route('api.v1.admin.blog.categories.update', ['category' => $category]), $update);
+        $response->assertOk();
+        $this->assertDatabaseHas('blog_categories', [
+            'id'          => $category->id,
+            'description' => 'خط اول<br />خط دوم <em>تأکید</em>',
+        ]);
+    });
+
     it('should update a category', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_UPDATE]);
         $category = BlogCategory::factory()->create();

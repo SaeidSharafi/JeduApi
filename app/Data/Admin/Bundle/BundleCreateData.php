@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Bundle;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Traits\ValidatesMetaTags;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
 final class BundleCreateData extends Data
@@ -16,6 +20,7 @@ final class BundleCreateData extends Data
     public function __construct(
         public string $full_name,
         public string $slug,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $description,
         public string $status = 'draft',
         public ?string $short_name = null,
@@ -25,6 +30,7 @@ final class BundleCreateData extends Data
         public ?string $meta_keywords = null,
         public ?array $properties = null,
         public ?array $additional_info = null,
+        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public ?array $faq = null,
         public array $media = [],
     ) {}
@@ -67,7 +73,7 @@ final class BundleCreateData extends Data
                 'example'     => 'full-stack-package',
             ],
             'description' => [
-                'description' => 'The bundle description.',
+                'description' => 'The bundle description. HTML; sanitized on save.',
                 'example'     => 'A bundle of full stack courses.',
             ],
             'status' => [
@@ -89,6 +95,10 @@ final class BundleCreateData extends Data
             'faq' => [
                 'description' => 'List of FAQ items.',
                 'example'     => [['question' => 'Refunds?', 'answer' => 'Within 7 days']],
+            ],
+            'faq.*.answer' => [
+                'description' => 'The answer of a FAQ item. HTML; sanitized on save.',
+                'example'     => 'Within 7 days',
             ],
             'media' => [
                 'description' => 'Media object containing cover, gallery, and video.',

@@ -25,6 +25,7 @@ use App\Services\Integrations\NiliroomService;
 use App\Services\Integrations\SkyroomService;
 use App\Services\Integrations\SpotPlayerService;
 use App\Services\RequestDataCacheService;
+use App\Services\RichText\RichTextSanitizer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -52,6 +53,10 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(SkyroomClientContract::class, SkyroomService::class);
         $this->app->bind(NiliroomClientContract::class, NiliroomService::class);
         $this->app->bind(CacheStore::class, LaravelCacheStore::class);
+
+        // Singleton so the per-level Symfony sanitizers are built once per
+        // process instead of once per sanitized value.
+        $this->app->singleton(RichTextSanitizer::class);
 
         if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);

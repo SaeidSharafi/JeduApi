@@ -100,7 +100,7 @@ final class AboutUsCreateData extends Data
                 'example'     => 'Who We Are',
             ],
             'main_block.content' => [
-                'description' => 'Content of the main block.',
+                'description' => 'Content of the main block. HTML; sanitized on save.',
                 'example'     => 'Jedu Academy is a leading provider of online education.',
             ],
             'main_block.icon' => [
@@ -128,7 +128,7 @@ final class AboutUsCreateData extends Data
                 'example'     => 'Active Courses',
             ],
             'active_course_groups_block.content' => [
-                'description' => 'Content of the active course groups block.',
+                'description' => 'Content of the active course groups block. HTML; sanitized on save.',
                 'example'     => 'We offer a variety of active courses.',
             ],
             'active_course_groups_block.icon' => [
@@ -148,7 +148,7 @@ final class AboutUsCreateData extends Data
                 'example'     => 'Our Capabilities',
             ],
             'capabilities_block.content' => [
-                'description' => 'Content of the capabilities block.',
+                'description' => 'Content of the capabilities block. HTML; sanitized on save.',
                 'example'     => 'We provide top-notch learning tools.',
             ],
             'capabilities_block.icon' => [
@@ -168,7 +168,7 @@ final class AboutUsCreateData extends Data
                 'example'     => 'Online Course 1',
             ],
             'about_online_course_block_1.content' => [
-                'description' => 'Content of the first online course block.',
+                'description' => 'Content of the first online course block. HTML; sanitized on save.',
                 'example'     => 'Description of online course 1.',
             ],
             'about_online_course_block_1.icon' => [
@@ -188,7 +188,7 @@ final class AboutUsCreateData extends Data
                 'example'     => 'Online Course 2',
             ],
             'about_online_course_block_2.content' => [
-                'description' => 'Content of the second online course block.',
+                'description' => 'Content of the second online course block. HTML; sanitized on save.',
                 'example'     => 'Description of online course 2.',
             ],
             'about_online_course_block_2.icon' => [

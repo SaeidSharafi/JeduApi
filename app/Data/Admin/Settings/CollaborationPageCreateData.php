@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Enums\Content\RichTextLevelEnum;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
 final class CollaborationPageCreateData extends Data
 {
     public function __construct(
         public string $title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $content,
         public ?int $image,
 
@@ -35,7 +39,7 @@ final class CollaborationPageCreateData extends Data
                 'example'     => 'فرصت همکاری',
             ],
             'content' => [
-                'description' => 'The HTML content of the collaboration page.',
+                'description' => 'The HTML content of the collaboration page. Sanitized on save.',
                 'example'     => '<h3>فرصت همکاری با موسسه آموزشی جهاد دانشگاهی استان قزوین</h3>',
             ],
             'image' => [

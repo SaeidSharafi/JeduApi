@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings;
 
+use App\Data\Casts\SanitizeRichTextArray;
+use App\Enums\Content\RichTextLevelEnum;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -19,6 +22,7 @@ final class FooterCreateData extends Data
         public array $categories,
         #[DataCollectionOf(SocialMediaLinkData::class)]
         public DataCollection $social_media_links,
+        #[WithCast(SanitizeRichTextArray::class, 'html', RichTextLevelEnum::INLINE)]
         public ?array $certifications
     ) {}
 
@@ -141,8 +145,8 @@ final class FooterCreateData extends Data
                 'example'     => 5,
             ],
             'certifications.*.html' => [
-                'description' => 'Optional HTML snippet for the certification.',
-                'example'     => '<img src="/cert.png">',
+                'description' => 'Optional HTML snippet for the certification. HTML; sanitized on save. Only http(s) image sources are kept.',
+                'example'     => '<img src="https://cdn.example.com/cert.png" alt="SSL Secure">',
             ],
         ];
     }

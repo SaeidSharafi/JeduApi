@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings\HomePageBlock;
 
+use App\Data\Casts\SanitizeHomePageBlockContent;
 use App\Enums\Content\HomePageBlockTypeEnum;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -17,6 +19,7 @@ final class HomePageBlockCreateData extends Data
         public string $location,
         public int $order,
         public bool $is_active,
+        #[WithCast(SanitizeHomePageBlockContent::class)]
         public array $content,
     ) {}
 
@@ -80,11 +83,11 @@ final class HomePageBlockCreateData extends Data
             'content.image_url'    => ['description' => 'The URL of the image media. This field is auto-populated based on the provided image_id.'],
             'content.action'       => ['description' => 'The action URL or link associated with the banner. Required for Banner type.'],
             'content.action_title' => ['description' => 'The title of the action button or link. Required for Banner type.'],
-            'content.content'      => ['description' => 'Optional textual content or description for the banner.'],
+            'content.content'      => ['description' => 'Optional textual content or description for the banner. HTML; sanitized on save.'],
             'content.preset'       => ['description' => 'Optional preset style for the banner.'],
             // if type is Webinar Banner
             'content.product_id' => ['description' => 'The ID of the product associated with the webinar banner. Required for Webinar Banner type.'],
-            'content.text'       => ['description' => 'The text to be displayed on the webinar banner. Required for Webinar Banner type.'],
+            'content.text'       => ['description' => 'The text to be displayed on the webinar banner. Required for Webinar Banner type. HTML; sanitized on save.'],
             // if type is Dynamic List
             'content.entity_type'  => ['description' => 'The type of entities to list dynamically. Options: course_products, seminar_products, digital_asset_products, blog_post, all_products. Required for Dynamic List type.'],
             'content.sort_by'      => ['description' => 'How to sort the entities. Options: created_at:desc, created_at:asc, updated_at:desc, updated_at:asc, name:asc, name:desc, popular, featured. Required for Dynamic List type.'],

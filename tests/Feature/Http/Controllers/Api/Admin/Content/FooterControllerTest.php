@@ -214,3 +214,53 @@ it('returns default values when no footer setting exists', function (): void {
     $data = $response->json('data');
     expect($data['caption'])->toBe('شریک شما در آموزش مدرن');
 });
+
+it('sanitizes certification html without touching the certification name or image', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::SETTING_UPDATE->value]);
+    Storage::fake('public');
+
+    $category = App\Models\Category::factory()->create(['name' => 'Cat1']);
+
+    $response = $this->putJson(route('api.v1.admin.settings.footer.update'), [
+        'logo'                  => null,
+        'caption'               => 'Caption',
+        'support_email_address' => 'support@jedu.ir',
+        'addresses'             => ['Address 1'],
+        'categories'            => [$category->id],
+        'social_media_links'    => [
+            [
+                'platform' => 'instagram',
+                'link'     => 'https://instagram.com/jedushop',
+            ],
+        ],
+        'certifications' => [
+            [
+                'name'  => 'Enamad',
+                'image' => null,
+                'html'  => '<strong>Certified</strong><script>alert(1)</script>',
+            ],
+            [
+                'name'  => 'Samandehi',
+                'image' => null,
+                'html'  => 'Plain certification',
+            ],
+        ],
+    ]);
+
+    $response->assertStatus(200);
+
+    $setting = App\Models\Setting::where('key', 'footer')->first();
+
+    expect($setting->value['certifications'])->toBe([
+        [
+            'name'  => 'Enamad',
+            'image' => null,
+            'html'  => '<strong>Certified</strong>',
+        ],
+        [
+            'name'  => 'Samandehi',
+            'image' => null,
+            'html'  => 'Plain certification',
+        ],
+    ]);
+});

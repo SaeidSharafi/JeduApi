@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Discounts;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\Order\DiscountTypeEnum;
 use App\Helpers\JalaliDateHelper;
 use App\Rules\CheckDiscountConfigurationRule;
@@ -24,6 +26,7 @@ final class DiscountPromotionCreateData extends Data
         #[DataCollectionOf(DiscountPromotionRuleCreateData::class)]
         public array $rules,
         public bool $is_active,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $description = null,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Carbon $starts_at = null,
@@ -105,7 +108,7 @@ final class DiscountPromotionCreateData extends Data
                 'example'     => DiscountTypeEnum::CART_CHECKOUT->value,
             ],
             'description' => [
-                'description' => 'Description of the promotion.',
+                'description' => 'Description of the promotion. HTML; sanitized on save.',
                 'example'     => 'Special discount for school supplies.',
             ],
             'is_active' => [

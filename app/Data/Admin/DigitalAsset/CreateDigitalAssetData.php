@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\DigitalAsset;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Helpers\JalaliDateHelper;
 use App\Rules\ValidNormalizedJalaliDateRule;
@@ -25,12 +28,14 @@ final class CreateDigitalAssetData extends Data
         public string $short_name,
         public string $full_name,
         public string $slug,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $description,
         public ?string $version,
         public bool $is_attachable_to_course,
         public string $difficulty_level,
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
+        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public ?array $faq,
         public ?int $created_by,
         public ?string $keywords,
@@ -170,7 +175,7 @@ final class CreateDigitalAssetData extends Data
                 'example'     => 'digital-asset-name',
             ],
             'description' => [
-                'description' => 'A brief description of the digital asset.',
+                'description' => 'A brief description of the digital asset. HTML; sanitized on save.',
                 'example'     => 'This is a description of the digital asset.',
             ],
             'version' => [
@@ -213,7 +218,7 @@ final class CreateDigitalAssetData extends Data
                 'example'     => 'What is the course about?',
             ],
             'faq.*.answer' => [
-                'description' => 'Answer to the FAQ question',
+                'description' => 'Answer to the FAQ question. HTML; sanitized on save.',
                 'example'     => 'This course covers...',
             ],
             'keywords' => [

@@ -325,6 +325,39 @@ describe('StudentStoryController', function (): void {
         $response->assertStatus(403);
     });
 
+    it('round-trips a multi-paragraph story as line breaks on create and update', function (): void {
+        $this->authorized_user([PermissionEnum::STUDENT_STORY_CREATE, PermissionEnum::STUDENT_STORY_UPDATE]);
+
+        $payload = [
+            'student_name' => 'Alice Johnson',
+            'course_name'  => 'React for Beginners',
+            'course_url'   => 'https://example.com/courses/react-for-beginners',
+            'story_text'   => '<p>پاراگراف اول</p><p>پاراگراف دوم <strong>مهم</strong></p><script>alert(1)</script>',
+            'is_visible'   => true,
+            'avatar'       => $this->avatar->id,
+        ];
+
+        $response = $this->postJson('/api/v1/admin/settings/student-stories', $payload);
+        $response->assertCreated();
+        expect($response->json('data.story_text'))->toBe('پاراگراف اول<br />پاراگراف دوم <strong>مهم</strong>');
+        $this->assertDatabaseHas('student_stories', [
+            'student_name' => 'Alice Johnson',
+            'story_text'   => 'پاراگراف اول<br />پاراگراف دوم <strong>مهم</strong>',
+        ]);
+
+        $response = $this->putJson("/api/v1/admin/settings/student-stories/{$response->json('data.id')}", [
+            ...$payload,
+            'student_name' => 'Alice Johnson Updated',
+            'story_text'   => '<p>خط اول</p><p>خط دوم</p>',
+        ]);
+        $response->assertOk();
+        expect($response->json('data.story_text'))->toBe('خط اول<br />خط دوم');
+        $this->assertDatabaseHas('student_stories', [
+            'student_name' => 'Alice Johnson Updated',
+            'story_text'   => 'خط اول<br />خط دوم',
+        ]);
+    });
+
     it('reflects a category slug change on the next student-story request', function (): void {
         $this->authorized_user([PermissionEnum::CATEGORY_UPDATE]);
 

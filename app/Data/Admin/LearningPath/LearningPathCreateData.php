@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\LearningPath;
 
+use App\Data\Casts\SanitizeRichText;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Rules\LearningPathProductableExistRule;
 use App\Rules\LearningPathStepsRule;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
 final class LearningPathCreateData extends Data
@@ -16,10 +19,13 @@ final class LearningPathCreateData extends Data
     public function __construct(
         public string $title,
         public string $slug,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $description,
         public string $introduction_title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $introduction_description,
         public string $conclusion_title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $conclusion_description,
         public string $status = 'draft',
         public ?string $meta_title = null,
@@ -93,7 +99,7 @@ final class LearningPathCreateData extends Data
                 'example'     => 'backend-engineering-path',
             ],
             'description' => [
-                'description' => 'The learning path description.',
+                'description' => 'The learning path description. HTML; sanitized on save.',
                 'example'     => 'A guided path for backend engineering.',
             ],
             'introduction_title' => [
@@ -101,7 +107,7 @@ final class LearningPathCreateData extends Data
                 'example'     => 'Start here',
             ],
             'introduction_description' => [
-                'description' => 'Required description shown for the path introduction.',
+                'description' => 'Required description shown for the path introduction. HTML; sanitized on save.',
                 'example'     => 'Begin with the foundations.',
             ],
             'conclusion_title' => [
@@ -109,7 +115,7 @@ final class LearningPathCreateData extends Data
                 'example'     => 'Keep building',
             ],
             'conclusion_description' => [
-                'description' => 'Required description shown for the path conclusion.',
+                'description' => 'Required description shown for the path conclusion. HTML; sanitized on save.',
                 'example'     => 'Apply what you learned.',
             ],
             'status' => [
