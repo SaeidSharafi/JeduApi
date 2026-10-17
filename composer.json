@@ -32,6 +32,7 @@
         "spatie/laravel-permission": "^6.18",
         "spatie/laravel-query-builder": "^6.3",
         "spatie/laravel-webhook-client": "^3.4",
+        "symfony/html-sanitizer": "^8.1",
         "typesense/typesense-php": "^5.1"
     },
     "require-dev": {
