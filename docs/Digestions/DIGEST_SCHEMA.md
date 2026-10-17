@@ -143,7 +143,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - name (VARCHAR, unique)
   - slug (VARCHAR, unique)
   - status (VARCHAR, default published, indexed)
-  - description (VARCHAR, nullable)
+  - description (TEXT, nullable)
   - image_url (VARCHAR, nullable)
   - icon_url (VARCHAR, nullable)
   - educational_calendar_url (VARCHAR, nullable)

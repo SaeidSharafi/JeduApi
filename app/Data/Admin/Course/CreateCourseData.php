@@ -33,8 +33,10 @@ final class CreateCourseData extends Data
         public CourseDifficultyLevelEnum $difficulty_level,
         #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $career_prospects_text,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::INLINE)]
         public ?string $curriculum_summary_text,
         public ?array $outcomes_json,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::INLINE)]
         public ?string $default_teacher_info,
         public bool $provides_certificate,
         #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]

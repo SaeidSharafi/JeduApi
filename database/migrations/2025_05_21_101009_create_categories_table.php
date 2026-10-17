@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('slug')->unique();
             $table->string('status')->index()->default(App\Enums\Content\PublicationStatusEnum::PUBLISHED->value);
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->string('image_url')->nullable();
             $table->string('icon_url')->nullable();
             $table->string('educational_calendar_url')->nullable();
