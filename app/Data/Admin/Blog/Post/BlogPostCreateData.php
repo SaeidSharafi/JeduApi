@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Blog\Post;
 
+use App\Data\Casts\SanitizeRichText;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Helpers\JalaliDateHelper;
 use App\Rules\ValidNormalizedJalaliDateRule;
@@ -23,6 +25,7 @@ final class BlogPostCreateData extends Data
     public function __construct(
         public string $title,
         public ?string $slug,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::ARTICLE)]
         public string $body,
         public string $excerpt,
         public string $status,
