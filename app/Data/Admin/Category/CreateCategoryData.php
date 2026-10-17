@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Category;
 
+use App\Data\Casts\SanitizeRichText;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Traits\ValidatesMetaTags;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
@@ -23,6 +25,7 @@ final class CreateCategoryData extends Data
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
         public ?int $parent_id,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::INLINE)]
         public ?string $description,
         public ?string $color_scheme,
         public ?string $meta_title,

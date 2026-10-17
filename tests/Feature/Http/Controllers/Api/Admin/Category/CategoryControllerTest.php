@@ -114,6 +114,52 @@ it('can create category', function (): void {
     ]);
 });
 
+it('round-trips a multi-paragraph category description on create and update', function (): void {
+    $this->authorized_user([
+        App\Enums\PermissionEnum::CATEGORY_CREATE->value,
+        App\Enums\PermissionEnum::CATEGORY_UPDATE->value,
+    ]);
+
+    $first       = str_repeat('پاراگراف اول ', 11).'پایان اول';
+    $second      = str_repeat('پاراگراف دوم ', 11).'پایان دوم';
+    $description = "<p>{$first}</p><p>{$second}</p>";
+
+    $payload = [
+        'name'             => 'Rich description category',
+        'slug'             => 'rich-description-category',
+        'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+        'parent_id'        => null,
+        'description'      => $description,
+        'color_scheme'     => null,
+        'meta_title'       => 'Rich description category',
+        'meta_description' => 'A meta description long enough to satisfy the minimum length rule of seventy characters.',
+        'meta_keywords'    => null,
+        'properties'       => null,
+        'additional_info'  => null,
+        'media'            => [],
+    ];
+
+    $response = $this->postJson(route('api.v1.admin.categories.store'), $payload);
+    $response->assertStatus(201);
+    $this->assertDatabaseHas('categories', [
+        'slug'        => 'rich-description-category',
+        'description' => $first.'<br />'.$second,
+    ]);
+
+    $category = App\Models\Category::query()->where('slug', 'rich-description-category')->firstOrFail();
+    $response = $this->putJson(route('api.v1.admin.categories.update', ['category' => $category->id]), [
+        ...$payload,
+        'name'        => 'Updated rich description category',
+        'slug'        => 'updated-rich-description-category',
+        'description' => '<p>خط اول</p><p>خط دوم</p>',
+    ]);
+    $response->assertStatus(200);
+    $this->assertDatabaseHas('categories', [
+        'id'          => $category->id,
+        'description' => 'خط اول<br />خط دوم',
+    ]);
+});
+
 it('can update category', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_UPDATE->value]);
     Storage::fake('public');
