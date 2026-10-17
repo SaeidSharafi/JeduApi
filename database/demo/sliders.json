@@ -6,7 +6,7 @@
     "image_url": "slider-learning.webp",
     "image_alt": "اسلایدر معرفی دوره‌های مهارت‌محور علوم رایانه برای ورود به بازار کار",
     "status": "published",
-    "link": "/products?category=10",
+    "link": "/courses/categories/computer-science",
     "order": 1
   },
   {
@@ -16,7 +16,7 @@
     "image_url": "slider-creative.webp",
     "image_alt": "اسلایدر معرفی کارگاه‌های هنر و روایت تصویری",
     "status": "published",
-    "link": "/products?category=4",
+    "link": "/courses/categories/art",
     "order": 2
   },
   {
@@ -26,7 +26,7 @@
     "image_url": "slider-winter-registration.webp",
     "image_alt": "اسلایدر اطلاع‌رسانی آغاز ثبت‌نام دوره‌های زمستان",
     "status": "published",
-    "link": "/products?term=2",
+    "link": "/courses/all",
     "order": 3
   }
 ]
