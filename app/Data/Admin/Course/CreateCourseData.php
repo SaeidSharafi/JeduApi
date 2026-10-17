@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Course;
 
+use App\Data\Casts\SanitizeRichText;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Rules\DigitalAssetIsAttachableRule;
 use App\Traits\ValidatesMetaTags;
@@ -23,10 +25,12 @@ final class CreateCourseData extends Data
         public string $slug,
         public string $full_name,
         public string $short_name,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $description,
         public ?int $duration,
         #[WithCast(EnumCast::class)]
         public CourseDifficultyLevelEnum $difficulty_level,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $career_prospects_text,
         public ?string $curriculum_summary_text,
         public ?array $outcomes_json,
