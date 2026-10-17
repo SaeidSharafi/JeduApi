@@ -37,7 +37,7 @@ describe('removing hostile markup', function (): void {
             ->toBe('<p>x</p>');
     });
 
-    it('drops unsafe URL schemes', function (string $html, string $expected): void {
+    it('drops URLs outside the scheme policy', function (string $html, string $expected): void {
         expect($this->sanitizer->sanitize($html, RichTextLevelEnum::ARTICLE))->toBe($expected);
     })->with([
         'javascript href'       => ['<a href="javascript:alert(1)">x</a>', '<a rel="noopener noreferrer">x</a>'],
@@ -46,6 +46,9 @@ describe('removing hostile markup', function (): void {
         'data image source'     => ['<img src="data:image/svg+xml;base64,PHN2Zz4=" alt="x">', '<img alt="x" />'],
         'vbscript image source' => ['<img src="vbscript:alert(1)">', '<img />'],
         'mixed-case scheme'     => ['<a href="JaVaScRiPt:alert(1)">x</a>', '<a rel="noopener noreferrer">x</a>'],
+        'relative href'         => ['<a href="/courses/laravel">x</a>', '<a rel="noopener noreferrer">x</a>'],
+        'fragment href'         => ['<a href="#section-2">x</a>', '<a rel="noopener noreferrer">x</a>'],
+        'protocol-relative src' => ['<img src="//cdn.test/a.png" alt="a">', '<img alt="a" />'],
     ]);
 
     it('removes a dropped element nested in kept content and keeps the text around it', function (): void {
@@ -102,12 +105,11 @@ describe('keeping allowed constructs', function (): void {
         'bookmark id' => ['<a id="section-2">x</a>', '<a id="section-2" rel="noopener noreferrer">x</a>'],
         'mailto'      => ['<a href="mailto:a@example.test">x</a>', '<a href="mailto:a&#64;example.test" rel="noopener noreferrer">x</a>'],
         'tel'         => ['<a href="tel:+15551234">x</a>', '<a href="tel:&#43;15551234" rel="noopener noreferrer">x</a>'],
-        'relative'    => ['<a href="/courses/laravel">x</a>', '<a href="/courses/laravel" rel="noopener noreferrer">x</a>'],
     ]);
 
-    it('keeps a relatively addressed image', function (): void {
-        expect($this->sanitizer->sanitize('<img src="/storage/a.png" alt="a">', RichTextLevelEnum::ARTICLE))
-            ->toBe('<img src="/storage/a.png" alt="a" />');
+    it('drops a relative image source and keeps its other allowed attributes', function (): void {
+        expect($this->sanitizer->sanitize('<img src="/storage/a.png" alt="a" width="10">', RichTextLevelEnum::ARTICLE))
+            ->toBe('<img alt="a" width="10" />');
     });
 
     it('unwraps an unknown element and keeps its text', function (): void {

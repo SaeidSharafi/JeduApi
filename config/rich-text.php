@@ -113,9 +113,9 @@ return [
     |
     | Link schemes are limited to http, https, mailto and tel; media sources to
     | http and https, so `javascript:` and `data:` payloads cannot be stored.
-    | Relative URLs (a path or a fragment with no scheme) are allowed because
-    | they cannot smuggle a scheme and the editor's uploads and internal links
-    | are written that way; they are still scheme-checked when parsed.
+    | A relative URL (a path or a fragment with no scheme) is not part of the
+    | policy: it is not scheme-qualified, so it cannot be checked against the
+    | allowlist and is dropped, leaving the element and its other attributes.
     |
     */
     'schemes' => [
@@ -123,7 +123,7 @@ return [
         'media' => ['http', 'https'],
     ],
 
-    'allow_relative_urls' => true,
+    'allow_relative_urls' => false,
 
     /*
     |--------------------------------------------------------------------------
