@@ -201,10 +201,34 @@ describe('rewriting a media embed', function (): void {
 });
 
 describe('bounding the input', function (): void {
-    it('truncates input at the configured cap', function (): void {
-        $sanitized = $this->sanitizer->sanitize(str_repeat('a', 600_000), RichTextLevelEnum::ARTICLE);
+    it('truncates ascii input just over the cap in characters', function (): void {
+        $sanitized = $this->sanitizer->sanitize(str_repeat('a', 500_010), RichTextLevelEnum::ARTICLE);
 
         expect($sanitized)->toHaveLength(500_000);
+    });
+
+    it('never empties a multibyte article just over the cap', function (): void {
+        $sanitized = $this->sanitizer->sanitize(str_repeat('ا', 500_010), RichTextLevelEnum::ARTICLE);
+
+        expect($sanitized)
+            ->not->toBeEmpty()
+            ->and(mb_strlen($sanitized, 'UTF-8'))->toBeLessThanOrEqual(500_000)
+            ->and(mb_check_encoding($sanitized, 'UTF-8'))->toBeTrue()
+            ->and($sanitized)->not->toContain("\u{FFFD}");
+    });
+
+    it('does not empty an article whose byte cut would split a codepoint', function (): void {
+        $sanitized = $this->sanitizer->sanitize('a'.str_repeat('ا', 250_000), RichTextLevelEnum::ARTICLE);
+
+        expect($sanitized)
+            ->toStartWith('a')
+            ->and(mb_strlen($sanitized, 'UTF-8'))->toBe(250_001);
+    });
+
+    it('leaves input at the cap unchanged', function (): void {
+        $html = str_repeat('a', 500_000);
+
+        expect($this->sanitizer->sanitize($html, RichTextLevelEnum::ARTICLE))->toBe($html);
     });
 
     it('keeps an article longer than the library default', function (): void {

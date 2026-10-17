@@ -32,9 +32,11 @@ return [
     | Input cap
     |--------------------------------------------------------------------------
     |
-    | Maximum number of input bytes handed to the sanitizer. Set explicitly so
-    | a long article is never silently halved by the library default (20,000).
-    | Longer inputs are truncated at this cap before any other rule runs.
+    | Maximum number of input characters. Set explicitly so a long article is
+    | never silently halved by the library default (20,000). The sanitizer
+    | truncates the value at this cap, in characters and before the pre-pass,
+    | so a multibyte article is never cut inside a codepoint. Longer inputs
+    | are truncated at this cap before any other rule runs.
     |
     */
     'input_cap' => 500_000,

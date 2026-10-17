@@ -39,6 +39,11 @@ final class RichTextSanitizer
             return $html;
         }
 
+        // The cap is a character count. Truncating here, before the pre-pass,
+        // keeps a multibyte article whole: the library truncates bytes and
+        // returns an empty string when the cut splits a UTF-8 codepoint.
+        $html = mb_substr($html, 0, (int) config('rich-text.input_cap'), 'UTF-8');
+
         return $this->sanitizerFor($level)->sanitize($this->prePass($html, $level));
     }
 
@@ -52,7 +57,10 @@ final class RichTextSanitizer
         $config = (new HtmlSanitizerConfig())
             // Anything not allowed is unwrapped, not dropped, so an unknown wrapper keeps its text.
             ->defaultAction(HtmlSanitizerAction::Block)
-            ->withMaxInputLength((int) config('rich-text.input_cap'))
+            // The service already capped characters, so this only has to be
+            // wide enough for the widest UTF-8 encoding (4 bytes per
+            // character) and never re-truncates the pre-pass output.
+            ->withMaxInputLength(4 * (int) config('rich-text.input_cap'))
             ->allowLinkSchemes(config('rich-text.schemes.links'))
             ->allowMediaSchemes(config('rich-text.schemes.media'))
             ->allowRelativeLinks((bool) config('rich-text.allow_relative_urls'))
