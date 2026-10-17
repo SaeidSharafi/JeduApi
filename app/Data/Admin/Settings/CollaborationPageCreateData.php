@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Enums\Content\RichTextLevelEnum;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
 final class CollaborationPageCreateData extends Data
 {
     public function __construct(
         public string $title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $content,
         public ?int $image,
 
