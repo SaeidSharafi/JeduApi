@@ -716,6 +716,53 @@ it('can not delete course if there is related data', function (): void {
     ]);
 });
 
+it('sanitizes each FAQ answer without touching the other FAQ fields when creating a course', function (): void {
+    $courseData = App\Models\Course::factory()->make();
+
+    $this->authorized_user([
+        App\Enums\PermissionEnum::COURSE_CREATE->value,
+    ]);
+
+    $category = App\Models\Category::factory()->create();
+
+    $response = $this->postJson(route('api.v1.admin.courses.store'), [
+        ...$courseData->toArray(),
+        'categories'     => [$category->id],
+        'digital_assets' => [],
+        'media'          => [
+            'gallery'     => [$this->gallery->id],
+            'thumbnail'   => [],
+            'cover'       => [$this->cover->id],
+            'certificate' => [],
+        ],
+        'faq' => [
+            [
+                'question' => 'What is <em class="editor-mark">covered</em>?',
+                'answer'   => '<p>Safe</p><script>alert(1)</script>',
+            ],
+            [
+                'question' => 'Sibling question',
+                'answer'   => 'Plain answer',
+            ],
+        ],
+    ]);
+
+    $response->assertStatus(201);
+
+    $course = App\Models\Course::query()->where('slug', $courseData->slug)->firstOrFail();
+
+    expect($course->faq)->toBe([
+        [
+            'question' => 'What is <em class="editor-mark">covered</em>?',
+            'answer'   => '<p>Safe</p>',
+        ],
+        [
+            'question' => 'Sibling question',
+            'answer'   => 'Plain answer',
+        ],
+    ]);
+});
+
 describe('rich text fields', function (): void {
     beforeEach(function (): void {
         // A CKEditor / Word paste: a heading that must be downgraded, pasted
