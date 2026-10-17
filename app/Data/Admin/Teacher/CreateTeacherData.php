@@ -127,7 +127,7 @@ final class CreateTeacherData extends Data
                 'example'     => 'Doe',
             ],
             'bio' => [
-                'description' => __('validation.attributes.teacher.bio'),
+                'description' => __('validation.attributes.teacher.bio').' HTML; sanitized on save.',
                 'example'     => 'An experienced teacher with a passion for education.',
             ],
             'rate' => [

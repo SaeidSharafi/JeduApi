@@ -54,7 +54,7 @@ final class BlogCategoryCreateData extends Data
                 'example'     => 'tech-news',
             ],
             'description' => [
-                'description' => 'A description for the category.',
+                'description' => 'A description for the category. HTML; sanitized on save.',
                 'example'     => 'Latest updates in technology.',
             ],
             'parent_id' => [

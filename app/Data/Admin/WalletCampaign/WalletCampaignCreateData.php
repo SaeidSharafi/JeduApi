@@ -120,7 +120,7 @@ final class WalletCampaignCreateData extends Data
                 'example'     => 'Spring Bonus',
             ],
             'description' => [
-                'description' => 'Detailed description of the campaign purpose and terms.',
+                'description' => 'Detailed description of the campaign purpose and terms. HTML; sanitized on save.',
                 'example'     => 'Special bonus for spring season.',
             ],
             'type' => [

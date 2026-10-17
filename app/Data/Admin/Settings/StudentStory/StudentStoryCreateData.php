@@ -65,7 +65,7 @@ final class StudentStoryCreateData extends Data
                 'example'     => 'https://jedu.ir/courses/advanced-math',
             ],
             'story_text' => [
-                'description' => 'Text of the student story.',
+                'description' => 'Text of the student story. HTML; sanitized on save.',
                 'example'     => 'This course helped me excel in university.',
             ],
             'avatar' => [

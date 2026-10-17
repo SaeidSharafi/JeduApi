@@ -39,7 +39,7 @@ final class CollaborationPageCreateData extends Data
                 'example'     => 'فرصت همکاری',
             ],
             'content' => [
-                'description' => 'The HTML content of the collaboration page.',
+                'description' => 'The HTML content of the collaboration page. Sanitized on save.',
                 'example'     => '<h3>فرصت همکاری با موسسه آموزشی جهاد دانشگاهی استان قزوین</h3>',
             ],
             'image' => [

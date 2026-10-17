@@ -172,11 +172,11 @@ final class CreateSeminarData extends Data
                 'example'     => true,
             ],
             'description' => [
-                'description' => 'Detailed description of the course',
+                'description' => 'Detailed description of the course. HTML; sanitized on save.',
                 'example'     => 'This is a detailed description of the course.',
             ],
             'curriculum_summary_text' => [
-                'description' => 'Summary of the course curriculum',
+                'description' => 'Summary of the course curriculum. HTML; sanitized on save.',
                 'example'     => 'This course covers the following topics...',
             ],
             'outcomes_json' => [
@@ -184,11 +184,11 @@ final class CreateSeminarData extends Data
                 'example'     => 'By the end of this course, you will be able to...',
             ],
             'target_audience' => [
-                'description' => 'Target audience for the course',
+                'description' => 'Target audience for the course. HTML; sanitized on save.',
                 'example'     => 'This course is designed for...',
             ],
             'prerequisites' => [
-                'description' => 'Prerequisites for the course',
+                'description' => 'Prerequisites for the course. HTML; sanitized on save.',
                 'example'     => 'Before taking this course, you should have...',
             ],
             'promo_video_external_url' => [
@@ -211,7 +211,7 @@ final class CreateSeminarData extends Data
                 'example'     => 'What is the course about?',
             ],
             'faq.*.answer' => [
-                'description' => 'Answer to the FAQ question',
+                'description' => 'Answer to the FAQ question. HTML; sanitized on save.',
                 'example'     => 'This course covers...',
             ],
             'keywords' => [

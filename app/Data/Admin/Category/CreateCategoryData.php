@@ -130,7 +130,7 @@ final class CreateCategoryData extends Data
                 'example'     => 1,
             ],
             'description' => [
-                'description' => 'A brief description of the category.',
+                'description' => 'A brief description of the category. HTML; sanitized on save.',
                 'example'     => 'This category includes all courses related to web development.',
             ],
             'color_scheme' => [

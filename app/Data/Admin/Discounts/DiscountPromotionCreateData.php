@@ -108,7 +108,7 @@ final class DiscountPromotionCreateData extends Data
                 'example'     => DiscountTypeEnum::CART_CHECKOUT->value,
             ],
             'description' => [
-                'description' => 'Description of the promotion.',
+                'description' => 'Description of the promotion. HTML; sanitized on save.',
                 'example'     => 'Special discount for school supplies.',
             ],
             'is_active' => [

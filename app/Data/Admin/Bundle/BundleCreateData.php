@@ -73,7 +73,7 @@ final class BundleCreateData extends Data
                 'example'     => 'full-stack-package',
             ],
             'description' => [
-                'description' => 'The bundle description.',
+                'description' => 'The bundle description. HTML; sanitized on save.',
                 'example'     => 'A bundle of full stack courses.',
             ],
             'status' => [
@@ -95,6 +95,10 @@ final class BundleCreateData extends Data
             'faq' => [
                 'description' => 'List of FAQ items.',
                 'example'     => [['question' => 'Refunds?', 'answer' => 'Within 7 days']],
+            ],
+            'faq.*.answer' => [
+                'description' => 'The answer of a FAQ item. HTML; sanitized on save.',
+                'example'     => 'Within 7 days',
             ],
             'media' => [
                 'description' => 'Media object containing cover, gallery, and video.',

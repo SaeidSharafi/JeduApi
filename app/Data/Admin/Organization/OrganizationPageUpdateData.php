@@ -71,7 +71,7 @@ final class OrganizationPageUpdateData extends Data
                 'example'     => 'Organization services',
             ],
             'hero_description' => [
-                'description' => 'Organization page hero description.',
+                'description' => 'Organization page hero description. HTML; sanitized on save.',
                 'example'     => 'Department information for organizations.',
             ],
             'ims_portal_url' => [
@@ -83,7 +83,7 @@ final class OrganizationPageUpdateData extends Data
                 'example'     => 'Request training',
             ],
             'request_section_explanation' => [
-                'description' => 'Explanation for the Organization Training Request introduction.',
+                'description' => 'Explanation for the Organization Training Request introduction. HTML; sanitized on save.',
                 'example'     => 'Tell us what your organization needs.',
             ],
             'faqs' => [
@@ -99,7 +99,7 @@ final class OrganizationPageUpdateData extends Data
                 'example'     => 'What can we request?',
             ],
             'faqs.*.answer' => [
-                'description' => 'FAQ answer.',
+                'description' => 'FAQ answer. HTML; sanitized on save.',
                 'example'     => 'A custom training plan.',
             ],
             'faqs.*.is_visible' => [

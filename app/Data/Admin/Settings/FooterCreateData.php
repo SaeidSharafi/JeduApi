@@ -145,8 +145,8 @@ final class FooterCreateData extends Data
                 'example'     => 5,
             ],
             'certifications.*.html' => [
-                'description' => 'Optional HTML snippet for the certification.',
-                'example'     => '<img src="/cert.png">',
+                'description' => 'Optional HTML snippet for the certification. HTML; sanitized on save. Only http(s) image sources are kept.',
+                'example'     => '<img src="https://cdn.example.com/cert.png" alt="SSL Secure">',
             ],
         ];
     }

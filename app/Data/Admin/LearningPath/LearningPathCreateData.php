@@ -99,7 +99,7 @@ final class LearningPathCreateData extends Data
                 'example'     => 'backend-engineering-path',
             ],
             'description' => [
-                'description' => 'The learning path description.',
+                'description' => 'The learning path description. HTML; sanitized on save.',
                 'example'     => 'A guided path for backend engineering.',
             ],
             'introduction_title' => [
@@ -107,7 +107,7 @@ final class LearningPathCreateData extends Data
                 'example'     => 'Start here',
             ],
             'introduction_description' => [
-                'description' => 'Required description shown for the path introduction.',
+                'description' => 'Required description shown for the path introduction. HTML; sanitized on save.',
                 'example'     => 'Begin with the foundations.',
             ],
             'conclusion_title' => [
@@ -115,7 +115,7 @@ final class LearningPathCreateData extends Data
                 'example'     => 'Keep building',
             ],
             'conclusion_description' => [
-                'description' => 'Required description shown for the path conclusion.',
+                'description' => 'Required description shown for the path conclusion. HTML; sanitized on save.',
                 'example'     => 'Apply what you learned.',
             ],
             'status' => [

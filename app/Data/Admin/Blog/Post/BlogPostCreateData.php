@@ -122,7 +122,7 @@ final class BlogPostCreateData extends Data
                 'example'     => 'how-to-use-laravel-data',
             ],
             'body' => [
-                'description' => 'The main content of the blog post.',
+                'description' => 'The main content of the blog post. HTML; sanitized on save.',
                 'example'     => 'This is the body of the blog post.',
             ],
             'excerpt' => [

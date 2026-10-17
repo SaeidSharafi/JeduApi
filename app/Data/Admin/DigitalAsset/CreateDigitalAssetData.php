@@ -175,7 +175,7 @@ final class CreateDigitalAssetData extends Data
                 'example'     => 'digital-asset-name',
             ],
             'description' => [
-                'description' => 'A brief description of the digital asset.',
+                'description' => 'A brief description of the digital asset. HTML; sanitized on save.',
                 'example'     => 'This is a description of the digital asset.',
             ],
             'version' => [
@@ -218,7 +218,7 @@ final class CreateDigitalAssetData extends Data
                 'example'     => 'What is the course about?',
             ],
             'faq.*.answer' => [
-                'description' => 'Answer to the FAQ question',
+                'description' => 'Answer to the FAQ question. HTML; sanitized on save.',
                 'example'     => 'This course covers...',
             ],
             'keywords' => [

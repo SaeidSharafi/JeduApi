@@ -170,7 +170,7 @@ final class CreateCourseData extends Data
                 'example'     => 'Short Course Name',
             ],
             'description' => [
-                'description' => 'Description of the course',
+                'description' => 'Description of the course. HTML; sanitized on save.',
                 'required'    => false,
                 'example'     => 'This is a course description',
             ],
@@ -185,12 +185,12 @@ final class CreateCourseData extends Data
                 'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
             ],
             'career_prospects_text' => [
-                'description' => 'Career prospects text of the course',
+                'description' => 'Career prospects text of the course. HTML; sanitized on save.',
                 'required'    => false,
                 'example'     => 'Career prospects text',
             ],
             'curriculum_summary_text' => [
-                'description' => 'Curriculum summary text of the course',
+                'description' => 'Curriculum summary text of the course. HTML; sanitized on save.',
                 'required'    => false,
                 'example'     => 'Curriculum summary text',
             ],
@@ -200,7 +200,7 @@ final class CreateCourseData extends Data
                 'example'     => json_encode(['outcome1' => 'Text', 'outcome2' => 'Text']),
             ],
             'default_teacher_info' => [
-                'description' => 'Default teacher info of the course',
+                'description' => 'Default teacher info of the course. HTML; sanitized on save.',
                 'required'    => false,
                 'example'     => 'Default teacher info',
             ],
@@ -220,7 +220,7 @@ final class CreateCourseData extends Data
                 'example'     => 'What is the course about?',
             ],
             'faq.*.answer' => [
-                'description' => 'Answer to the FAQ question',
+                'description' => 'Answer to the FAQ question. HTML; sanitized on save.',
                 'example'     => 'This course covers...',
             ],
             'additional_info' => [
