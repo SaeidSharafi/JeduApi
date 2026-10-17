@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Blog\Category;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Traits\ValidatesMetaTags;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -16,6 +19,7 @@ final class BlogCategoryCreateData extends Data
     public function __construct(
         public string $name,
         public ?string $slug = null,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::INLINE)]
         public ?string $description = null,
         public ?int $parent_id = null,
         public ?int $icon = null,
