@@ -130,7 +130,7 @@ describe('TeacherController Test', function (): void {
             App\Enums\PermissionEnum::TEACHER_VIEW,
         ]);
 
-        $data          = App\Models\Teacher::factory()->make([
+        $data = App\Models\Teacher::factory()->make([
             'bio' => '<p>پاراگراف اول</p><p>پاراگراف دوم</p><script>alert(1)</script>',
         ]);
         $data['media']      = ['avatar' => $this->avatar->id];

@@ -144,7 +144,7 @@ describe('BlogCategoryController CRUD', function (): void {
     it('sanitizes a multi-paragraph description on create and update', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_CREATE, PermissionEnum::BLOG_CATEGORY_UPDATE]);
 
-        $data     = BlogCategory::factory()->make([
+        $data = BlogCategory::factory()->make([
             'icon'        => $this->media->id,
             'description' => '<p>پاراگراف اول</p><p>پاراگراف دوم</p><script>alert(1)</script>',
         ])->toArray();
