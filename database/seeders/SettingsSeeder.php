@@ -92,7 +92,7 @@ final class SettingsSeeder extends Seeder
 
         // Rules Settings (placeholder)
         Setting::setValue(SettingKeyEnum::RULES, [
-            'text' => '<h1>قوانین و مقررات</h1><p>این بخش شامل قوانین و مقررات استفاده از سایت است.</p>',
+            'text' => '<h2>قوانین و مقررات</h2><p>این بخش شامل قوانین و مقررات استفاده از سایت است.</p>',
         ], 'json', 'rules');
 
         // Sliders Settings (placeholder)
