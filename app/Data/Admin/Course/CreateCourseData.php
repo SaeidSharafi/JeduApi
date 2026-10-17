@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Course;
 
+use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Rules\DigitalAssetIsAttachableRule;
 use App\Traits\ValidatesMetaTags;
@@ -32,6 +34,7 @@ final class CreateCourseData extends Data
         public ?array $outcomes_json,
         public ?string $default_teacher_info,
         public bool $provides_certificate,
+        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public ?array $faq,
         public ?array $additional_info,
         public ?string $meta_title,
