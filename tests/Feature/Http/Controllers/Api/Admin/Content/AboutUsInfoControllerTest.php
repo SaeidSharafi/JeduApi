@@ -4,6 +4,27 @@ declare(strict_types=1);
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
+mutates(App\Data\ArticleSectionCreateData::class);
+
+beforeEach(function (): void {
+    // A compact-level CKEditor / Word paste: a heading to downgrade, an event
+    // handler, pasted typography and colour, a highlight, a scheme-less link, a
+    // list, an executable subtree, an HTML-embed subtree and an image (which
+    // the compact level does not allow, so it disappears).
+    $this->dirtyContent = '<h1 onclick="alert(1)">عنوان</h1>'
+        .'<p class="lead" style="font-family: Arial; color: red; text-align: center">متن <mark>مهم</mark> '
+        .'<a href="javascript:alert(1)" target="_blank">لینک</a></p>'
+        .'<ul><li>یک</li><li>دو</li></ul>'
+        .'<script>alert(1)</script>'
+        .'<div class="raw-html-embed"><p>arbitrary</p></div>'
+        .'<img src="https://example.test/pic.png" alt="pic">';
+
+    $this->cleanContent = '<h2>عنوان</h2>'
+        .'<p style="text-align: center">متن <mark>مهم</mark> '
+        .'<a target="_blank" rel="noopener noreferrer">لینک</a></p>'
+        .'<ul><li>یک</li><li>دو</li></ul>';
+});
+
 it('can get about us settings', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SETTING_VIEW_ANY->value]);
     $response = $this->getJson(route('api.v1.admin.settings.about-us.show'));
@@ -379,3 +400,106 @@ it('returns default values when no about us setting exists', function (): void {
         ->and($data['about_online_course_block_1']['title'])->toBe('دوره‌های آنلاین جدویار')
         ->and($data['about_online_course_block_2']['title'])->toBe('چرا دوره‌های آنلاین جدویار؟');
 });
+
+it('stores sanitized content for all five about us blocks and leaves the rest untouched', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::SETTING_UPDATE->value]);
+    Storage::fake('public');
+    $icon = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('icon.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $image = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image.jpg'))
+        ->toDisk('public')
+        ->upload();
+
+    $payload = aboutUsSettingsPayload($this->dirtyContent, $icon->id, [$image->id]);
+
+    $response = $this->putJson(route('api.v1.admin.settings.about-us.update'), $payload);
+    $response->assertOk();
+
+    $stored = App\Models\Setting::where('key', 'about_us')->firstOrFail()->value;
+
+    foreach (aboutUsBlockNames() as $blockName) {
+        expect($stored[$blockName]['content'])->toBe($this->cleanContent)
+            ->and($response->json("data.{$blockName}.content"))->toBe($this->cleanContent)
+            ->and($stored[$blockName]['title'])->toBe('بلوک <b>عنوان</b>')
+            ->and($stored[$blockName]['subtitle'])->toBe('<i>زیرنویس</i>');
+    }
+
+    expect($stored['title'])->toBe('درباره ما <b>عنوان</b>')
+        ->and($stored['main_block']['icon'])->toBe($icon->id)
+        ->and($stored['active_course_groups_block']['icon'])->toBeNull()
+        ->and($stored['images'])->toBe([$image->id]);
+});
+
+it('round-trips the sanitized about us payload byte-identically through the read and write endpoints', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::SETTING_UPDATE->value, App\Enums\PermissionEnum::SETTING_VIEW_ANY->value]);
+    Storage::fake('public');
+    $icon = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('icon.jpg'))
+        ->toDisk('public')
+        ->upload();
+
+    $this->putJson(
+        route('api.v1.admin.settings.about-us.update'),
+        aboutUsSettingsPayload($this->dirtyContent, $icon->id)
+    )->assertOk();
+
+    $stored = App\Models\Setting::where('key', 'about_us')->firstOrFail()->value;
+    expect($stored['main_block']['content'])->toBe($this->cleanContent);
+
+    $served = $this->getJson(route('api.v1.admin.settings.about-us.show'))->json('data');
+
+    $roundTrip = [
+        'title'  => $served['title'],
+        'images' => array_map(static fn (array $servedImage): int => $servedImage['id'], $served['images']),
+    ];
+
+    foreach (aboutUsBlockNames() as $blockName) {
+        $roundTrip[$blockName] = [
+            'title'    => $served[$blockName]['title'],
+            'content'  => $served[$blockName]['content'],
+            'icon'     => $served[$blockName]['icon']['id'] ?? null,
+            'subtitle' => $served[$blockName]['subtitle'],
+        ];
+    }
+
+    $this->putJson(route('api.v1.admin.settings.about-us.update'), $roundTrip)->assertOk();
+
+    expect(App\Models\Setting::where('key', 'about_us')->firstOrFail()->value)->toBe($stored);
+});
+
+/**
+ * @return list<string>
+ */
+function aboutUsBlockNames(): array
+{
+    return [
+        'main_block',
+        'active_course_groups_block',
+        'capabilities_block',
+        'about_online_course_block_1',
+        'about_online_course_block_2',
+    ];
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function aboutUsSettingsPayload(string $content, ?int $iconId = null, array $imageIds = []): array
+{
+    $block = static fn (string $blockContent, ?int $blockIcon = null): array => [
+        'title'    => 'بلوک <b>عنوان</b>',
+        'content'  => $blockContent,
+        'icon'     => $blockIcon,
+        'subtitle' => '<i>زیرنویس</i>',
+    ];
+
+    return [
+        'title'                       => 'درباره ما <b>عنوان</b>',
+        'main_block'                  => $block($content, $iconId),
+        'images'                      => $imageIds,
+        'active_course_groups_block'  => $block($content),
+        'capabilities_block'          => $block($content),
+        'about_online_course_block_1' => $block($content),
+        'about_online_course_block_2' => $block($content),
+    ];
+}
