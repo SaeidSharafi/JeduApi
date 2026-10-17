@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Seminar;
 
+use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Rules\DigitalAssetIsAttachableRule;
 use App\Traits\ValidatesMetaTags;
@@ -35,6 +37,7 @@ final class CreateSeminarData extends Data
         public ?string $prerequisites,
         public ?string $promo_video_external_url,
         public ?string $estimated_duration_desc,
+        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public ?array $faq,
         public ?string $keywords,
         public ?string $meta_title,

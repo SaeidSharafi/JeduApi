@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Bundle;
 
+use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Traits\ValidatesMetaTags;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
 final class BundleCreateData extends Data
@@ -25,6 +28,7 @@ final class BundleCreateData extends Data
         public ?string $meta_keywords = null,
         public ?array $properties = null,
         public ?array $additional_info = null,
+        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public ?array $faq = null,
         public array $media = [],
     ) {}

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\DigitalAsset;
 
+use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Helpers\JalaliDateHelper;
 use App\Rules\ValidNormalizedJalaliDateRule;
@@ -31,6 +33,7 @@ final class CreateDigitalAssetData extends Data
         public string $difficulty_level,
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
+        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public ?array $faq,
         public ?int $created_by,
         public ?string $keywords,
