@@ -83,8 +83,11 @@ final readonly class CreateBlogPostAction
 
     private function calculateReadTime(string $body): int
     {
-        // str_word_count() only recognises ASCII words, so Persian text would count as zero.
-        $words     = preg_split('/[\s\p{Z}]+/u', strip_tags($body), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        // str_word_count() only recognises ASCII words, so Persian text would count as
+        // zero, and entities are decoded first so an `&nbsp;` separates words instead
+        // of gluing them into one token or counting as a word itself.
+        $text      = html_entity_decode(strip_tags($body), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $words     = preg_split('/[\s\p{Z}]+/u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
         $wordCount = count($words);
 
         return max(1, (int) ceil($wordCount / 200)); // 200 wpm average

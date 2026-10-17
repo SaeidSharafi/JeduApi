@@ -200,4 +200,52 @@ describe('CreateBlogPostAction', function (): void {
 
         expect($post->read_time_minutes)->toBe(1); // 199 words / 200 wpm rounds up to 1 minute
     });
+
+    it('counts words separated by entities', function (): void {
+        // 399 Persian words glued by non-breaking-space entities count as one
+        // token unless the entity is decoded first.
+        $body = '<p>'.implode('&nbsp;', array_fill(0, 399, 'کلمه')).'</p>';
+
+        $data = BlogPostCreateData::from(
+            [
+                'title'        => 'Entity Heavy Blog Post',
+                'slug'         => null,
+                'body'         => $body,
+                'excerpt'      => 'خلاصه',
+                'status'       => 'published',
+                'author_id'    => $this->staff->id,
+                'published_at' => now(),
+                'is_featured'  => false,
+                'category_ids' => [],
+                'media'        => ['cover' => [$this->media->id]],
+            ]
+        );
+
+        $post = app(CreateBlogPostAction::class)->handle($data);
+
+        expect($post->read_time_minutes)->toBe(2); // 399 words / 200 wpm = 2 minutes
+    });
+
+    it('keeps the one-minute floor for a body of entities only', function (): void {
+        $body = '<p>'.str_repeat('&nbsp;', 50).'</p>';
+
+        $data = BlogPostCreateData::from(
+            [
+                'title'        => 'Whitespace Blog Post',
+                'slug'         => null,
+                'body'         => $body,
+                'excerpt'      => 'خلاصه',
+                'status'       => 'published',
+                'author_id'    => $this->staff->id,
+                'published_at' => now(),
+                'is_featured'  => false,
+                'category_ids' => [],
+                'media'        => ['cover' => [$this->media->id]],
+            ]
+        );
+
+        $post = app(CreateBlogPostAction::class)->handle($data);
+
+        expect($post->read_time_minutes)->toBe(1);
+    });
 });

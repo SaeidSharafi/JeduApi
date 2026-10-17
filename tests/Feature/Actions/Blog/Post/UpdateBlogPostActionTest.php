@@ -160,4 +160,50 @@ describe('UpdateBlogPostAction', function (): void {
 
         expect($updatedPost->read_time_minutes)->toBe(1);
     });
+
+    it('counts words separated by entities', function (): void {
+        // 399 Persian words glued by non-breaking-space entities count as one
+        // token unless the entity is decoded first.
+        $body = '<p>'.implode('&nbsp;', array_fill(0, 399, 'کلمه')).'</p>';
+
+        $data = BlogPostUpdateData::from(
+            [
+                'title'        => 'Entity Heavy Blog Post',
+                'slug'         => null,
+                'body'         => $body,
+                'excerpt'      => 'خلاصه',
+                'status'       => 'published',
+                'author_id'    => $this->staff->id,
+                'published_at' => now(),
+                'is_featured'  => false,
+                'category_ids' => [$this->category2->id],
+                'media'        => ['cover' => [$this->media->id]],
+            ]
+        );
+
+        $updatedPost = app(UpdateBlogPostAction::class)->handle($this->post, $data);
+
+        expect($updatedPost->read_time_minutes)->toBe(2); // 399 words / 200 wpm = 2 minutes
+    });
+
+    it('keeps the one-minute floor for a body of entities only', function (): void {
+        $data = BlogPostUpdateData::from(
+            [
+                'title'        => 'Whitespace Blog Post',
+                'slug'         => null,
+                'body'         => '<p>'.str_repeat('&nbsp;', 50).'</p>',
+                'excerpt'      => 'خلاصه',
+                'status'       => 'published',
+                'author_id'    => $this->staff->id,
+                'published_at' => now(),
+                'is_featured'  => false,
+                'category_ids' => [$this->category2->id],
+                'media'        => ['cover' => [$this->media->id]],
+            ]
+        );
+
+        $updatedPost = app(UpdateBlogPostAction::class)->handle($this->post, $data);
+
+        expect($updatedPost->read_time_minutes)->toBe(1);
+    });
 });
