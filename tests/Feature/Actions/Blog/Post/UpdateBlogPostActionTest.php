@@ -6,6 +6,8 @@ use App\Actions\Admin\Blog\Post\UpdateBlogPostAction;
 use App\Data\Admin\Blog\Post\BlogPostUpdateData;
 use App\Models\Course;
 
+mutates(UpdateBlogPostAction::class);
+
 describe('UpdateBlogPostAction', function (): void {
     beforeEach(function (): void {
         $this->staff = App\Models\Staff::factory()->create();
@@ -112,5 +114,50 @@ describe('UpdateBlogPostAction', function (): void {
             ->and($updatedPost->main_productable_type)->toBeNull()
             ->and($updatedPost->related_productables->pluck('id')->toArray())->toBe([])
             ->and($updatedPost->read_time_minutes)->toBe(1); // Assuming ~200 words per minute
+    });
+
+    it('measures reading time for a Persian body', function (): void {
+        // 40 repetitions of a 10-word Persian sentence = 400 words.
+        $longPersianBody = '<p>'.str_repeat('این یک متن آزمایشی فارسی برای سنجش زمان مطالعه است. ', 40).'</p>';
+
+        $data = BlogPostUpdateData::from(
+            [
+                'title'        => 'Persian Blog Post',
+                'slug'         => null,
+                'body'         => $longPersianBody,
+                'excerpt'      => 'خلاصه',
+                'status'       => 'published',
+                'author_id'    => $this->staff->id,
+                'published_at' => now(),
+                'is_featured'  => false,
+                'category_ids' => [$this->category2->id],
+                'media'        => ['cover' => [$this->media->id]],
+            ]
+        );
+
+        $updatedPost = app(UpdateBlogPostAction::class)->handle($this->post, $data);
+
+        expect($updatedPost->read_time_minutes)->toBe(2); // 400 words / 200 wpm = 2 minutes
+    });
+
+    it('keeps the one-minute floor for a short body', function (): void {
+        $data = BlogPostUpdateData::from(
+            [
+                'title'        => 'Short Blog Post',
+                'slug'         => null,
+                'body'         => '<p><strong>سلام</strong> دنیا</p>',
+                'excerpt'      => 'خلاصه',
+                'status'       => 'published',
+                'author_id'    => $this->staff->id,
+                'published_at' => now(),
+                'is_featured'  => false,
+                'category_ids' => [$this->category2->id],
+                'media'        => ['cover' => [$this->media->id]],
+            ]
+        );
+
+        $updatedPost = app(UpdateBlogPostAction::class)->handle($this->post, $data);
+
+        expect($updatedPost->read_time_minutes)->toBe(1);
     });
 });
