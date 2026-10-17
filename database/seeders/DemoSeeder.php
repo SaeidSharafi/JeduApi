@@ -826,7 +826,13 @@ final class DemoSeeder extends Seeder
         $model = new $modelClass();
         $table = $model->getTable();
 
-        $collection = collect(json_decode(FileFacade::get($path), true));
+        $demoData = str_replace(
+            '{API_DOMAIN}',
+            mb_rtrim((string) config('app.url'), '/'),
+            FileFacade::get($path),
+        );
+
+        $collection = collect(json_decode($demoData, true));
 
         // Store original collection (before modification) for afterInsert callback
         $originalCollection = $collection;
