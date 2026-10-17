@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\WalletCampaign;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use App\Helpers\JalaliDateHelper;
@@ -19,6 +21,7 @@ final class WalletCampaignCreateData extends Data
 {
     public function __construct(
         public string $name,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $description,
         public string $type,
         public string $threshold_scope,

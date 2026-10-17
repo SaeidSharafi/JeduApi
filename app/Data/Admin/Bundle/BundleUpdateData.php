@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Bundle;
 
+use App\Data\Casts\SanitizeRichText;
 use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Content\RichTextLevelEnum;
@@ -19,6 +20,7 @@ final class BundleUpdateData extends Data
 
     public function __construct(
         public string $full_name,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $description,
         public ?string $slug = null,
         public string $status = 'draft',

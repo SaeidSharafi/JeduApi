@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Organization;
 
+use App\Data\Casts\SanitizeRichText;
 use App\Data\Casts\SanitizeRichTextArray;
 use App\Enums\Content\RichTextLevelEnum;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -19,9 +20,11 @@ final class OrganizationPageUpdateData extends Data
     public function __construct(
         public int $vendor_id,
         public ?string $hero_title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $hero_description,
         public ?string $ims_portal_url,
         public ?string $request_section_title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $request_section_explanation,
         #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::COMPACT)]
         public array $faqs,
