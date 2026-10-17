@@ -280,27 +280,75 @@ final class RichTextSanitizer
 
     /**
      * Trims a trailing `<br>` (and the whitespace a flattened block left behind).
+     *
+     * Flattening can leave the break inside the last inline element —
+     * `<a><p>x</p></a>` becomes `<a>x<br></a>` — so the trim descends through
+     * the last-child chain to the deepest end of the value. A break that
+     * separates two values is never touched, because only a break with nothing
+     * after it is removed.
      */
     private function trimTrailingBreaks(\Dom\Element $container): void
     {
-        while (null !== $last = $container->lastChild) {
-            if ($last instanceof \Dom\Element && mb_strtolower($last->tagName) === 'br') {
-                $last->remove();
-
-                continue;
-            }
-
-            if (! $last instanceof \Dom\Text || mb_trim($last->textContent) !== '') {
-                return;
-            }
-
-            $previous = $last->previousSibling;
-
-            if (! $previous instanceof \Dom\Element || mb_strtolower($previous->tagName) !== 'br') {
-                return;
-            }
-
-            $last->remove();
+        while ($this->trimTrailingBreakIn($this->deepestTrailingElement($container))) {
         }
+    }
+
+    /**
+     * The deepest element that ends the value: follow the last non-blank child
+     * while it is an element, stopping at the `<br>` the trim removes.
+     */
+    private function deepestTrailingElement(\Dom\Element $container): \Dom\Element
+    {
+        $element = $container;
+
+        while (true) {
+            $last = $this->lastNonBlankChild($element);
+
+            if (! $last instanceof \Dom\Element || mb_strtolower($last->tagName) === 'br') {
+                return $element;
+            }
+
+            $element = $last;
+        }
+    }
+
+    private function lastNonBlankChild(\Dom\Element $element): ?\Dom\Node
+    {
+        $node = $element->lastChild;
+
+        while ($node instanceof \Dom\Text && mb_trim($node->textContent) === '') {
+            $node = $node->previousSibling;
+        }
+
+        return $node;
+    }
+
+    /**
+     * Removes the whitespace-only text that follows a trailing `<br>`, or the
+     * trailing `<br>` itself. Returns whether anything was removed.
+     */
+    private function trimTrailingBreakIn(\Dom\Element $element): bool
+    {
+        $last = $element->lastChild;
+
+        if ($last instanceof \Dom\Element && mb_strtolower($last->tagName) === 'br') {
+            $last->remove();
+
+            return true;
+        }
+
+        if (! $last instanceof \Dom\Text || mb_trim($last->textContent) !== '') {
+            return false;
+        }
+
+        $previous = $last->previousSibling;
+
+        if (! $previous instanceof \Dom\Element || mb_strtolower($previous->tagName) !== 'br') {
+            return false;
+        }
+
+        $last->remove();
+
+        return true;
     }
 }

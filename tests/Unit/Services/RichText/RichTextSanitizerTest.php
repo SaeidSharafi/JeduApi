@@ -177,6 +177,8 @@ describe('flattening an inline value', function (): void {
         'paragraph and text'  => ['<p>a</p>tail', 'a<br />tail'],
         'existing breaks'     => ['<p>line1<br>line2</p>', 'line1<br />line2'],
         'empty paragraph'     => ['<p>a</p><p></p><p>b</p>', 'a<br />b'],
+        'break inside a link' => ['<a><p>x</p></a>', '<a rel="noopener noreferrer">x</a>'],
+        'break inside marks'  => ['<strong><p>x</p></strong>', '<strong>x</strong>'],
     ]);
 
     it('keeps block structure at the compact and article levels', function (RichTextLevelEnum $level): void {
