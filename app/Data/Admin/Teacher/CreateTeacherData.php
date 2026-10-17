@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Teacher;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\User\GenderEnum;
 use App\Helpers\JalaliDateHelper;
 use App\Rules\ValidNormalizedJalaliDateRule;
@@ -20,6 +22,7 @@ final class CreateTeacherData extends Data
     public function __construct(
         public string $first_name,
         public string $last_name,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::INLINE)]
         public string $bio,
         public float $rate,
         public string $email,

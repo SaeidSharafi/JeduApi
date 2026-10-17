@@ -123,6 +123,39 @@ describe('TeacherController Test', function (): void {
             'media_id'      => $this->avatar->id,
         ]);
     });
+    it('round-trips a multi-paragraph bio as line breaks on create and update', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::TEACHER_CREATE,
+            App\Enums\PermissionEnum::TEACHER_UPDATE,
+            App\Enums\PermissionEnum::TEACHER_VIEW,
+        ]);
+
+        $data          = App\Models\Teacher::factory()->make([
+            'bio' => '<p>پاراگراف اول</p><p>پاراگراف دوم</p><script>alert(1)</script>',
+        ]);
+        $data['media']      = ['avatar' => $this->avatar->id];
+        $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
+
+        $response = $this->postJson(route('api.v1.admin.teachers.store'), $data->toArray());
+        $response->assertCreated();
+        $this->assertDatabaseHas('teachers', [
+            'email' => $data->email,
+            'bio'   => 'پاراگراف اول<br />پاراگراف دوم',
+        ]);
+
+        $teacher  = App\Models\Teacher::query()->where('email', $data->email)->firstOrFail();
+        $response = $this->putJson(route('api.v1.admin.teachers.update', ['teacher' => $teacher]), [
+            ...$data->toArray(),
+            'bio' => '<p>خط اول</p><p>خط دوم <em>تأکید</em></p>',
+        ]);
+        $response->assertOk();
+        expect($teacher->refresh()->bio)->toBe('خط اول<br />خط دوم <em>تأکید</em>');
+
+        $this->getJson(route('api.v1.admin.teachers.show', ['teacher' => $teacher]))
+            ->assertOk()
+            ->assertJsonPath('data.bio', 'خط اول<br />خط دوم <em>تأکید</em>');
+    });
+
     it('should remove teacher avatar if it\'s null', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_UPDATE]);
         $teacher = App\Models\Teacher::factory()->create();
