@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\LearningPath;
 
+use App\Data\Casts\SanitizeRichText;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Content\RichTextLevelEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Rules\LearningPathProductableExistRule;
 use App\Rules\LearningPathStepsRule;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
 final class LearningPathCreateData extends Data
@@ -16,10 +19,13 @@ final class LearningPathCreateData extends Data
     public function __construct(
         public string $title,
         public string $slug,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $description,
         public string $introduction_title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $introduction_description,
         public string $conclusion_title,
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public string $conclusion_description,
         public string $status = 'draft',
         public ?string $meta_title = null,

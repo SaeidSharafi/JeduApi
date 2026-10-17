@@ -515,15 +515,15 @@ describe('rich text fields', function (): void {
 
         $response = $this->postJson(route('api.v1.admin.seminars.store'), [
             ...$seminarData,
-            'full_name'                => $this->plainFullName,
-            'description'              => $this->dirtyText,
-            'curriculum_summary_text'  => $this->dirtyText,
-            'target_audience'          => $this->dirtyText,
-            'prerequisites'            => $this->dirtyText,
-            'meta_description'         => $this->plainMetaDescription,
-            'categories'               => [Category::factory()->create()->id],
-            'digital_assets'           => [],
-            'media'                    => [
+            'full_name'               => $this->plainFullName,
+            'description'             => $this->dirtyText,
+            'curriculum_summary_text' => $this->dirtyText,
+            'target_audience'         => $this->dirtyText,
+            'prerequisites'           => $this->dirtyText,
+            'meta_description'        => $this->plainMetaDescription,
+            'categories'              => [Category::factory()->create()->id],
+            'digital_assets'          => [],
+            'media'                   => [
                 'cover'   => [$this->cover->id],
                 'gallery' => [$this->gallery->id],
                 'video'   => [$this->video->id],
@@ -533,13 +533,13 @@ describe('rich text fields', function (): void {
         $response->assertCreated();
 
         $this->assertDatabaseHas('seminars', [
-            'slug'                     => $seminarData['slug'],
-            'description'              => $this->cleanText,
-            'curriculum_summary_text'  => $this->cleanText,
-            'target_audience'          => $this->cleanText,
-            'prerequisites'            => $this->cleanText,
-            'full_name'                => $this->plainFullName,
-            'meta_description'         => $this->plainMetaDescription,
+            'slug'                    => $seminarData['slug'],
+            'description'             => $this->cleanText,
+            'curriculum_summary_text' => $this->cleanText,
+            'target_audience'         => $this->cleanText,
+            'prerequisites'           => $this->cleanText,
+            'full_name'               => $this->plainFullName,
+            'meta_description'        => $this->plainMetaDescription,
         ]);
     });
 
@@ -553,15 +553,15 @@ describe('rich text fields', function (): void {
 
         $response = $this->putJson(route('api.v1.admin.seminars.update', ['seminar' => $seminar->id]), [
             ...$seminarData,
-            'full_name'                => $this->plainFullName,
-            'description'              => $this->dirtyText,
-            'curriculum_summary_text'  => $this->dirtyText,
-            'target_audience'          => $this->dirtyText,
-            'prerequisites'            => $this->dirtyText,
-            'meta_description'         => $this->plainMetaDescription,
-            'categories'               => [Category::factory()->create()->id],
-            'digital_assets'           => [],
-            'media'                    => [
+            'full_name'               => $this->plainFullName,
+            'description'             => $this->dirtyText,
+            'curriculum_summary_text' => $this->dirtyText,
+            'target_audience'         => $this->dirtyText,
+            'prerequisites'           => $this->dirtyText,
+            'meta_description'        => $this->plainMetaDescription,
+            'categories'              => [Category::factory()->create()->id],
+            'digital_assets'          => [],
+            'media'                   => [
                 'cover'   => [$this->cover->id],
                 'gallery' => [$this->gallery->id],
                 'video'   => [$this->video->id],
@@ -571,13 +571,13 @@ describe('rich text fields', function (): void {
         $response->assertOk();
 
         $this->assertDatabaseHas('seminars', [
-            'id'                       => $seminar->id,
-            'description'              => $this->cleanText,
-            'curriculum_summary_text'  => $this->cleanText,
-            'target_audience'          => $this->cleanText,
-            'prerequisites'            => $this->cleanText,
-            'full_name'                => $this->plainFullName,
-            'meta_description'         => $this->plainMetaDescription,
+            'id'                      => $seminar->id,
+            'description'             => $this->cleanText,
+            'curriculum_summary_text' => $this->cleanText,
+            'target_audience'         => $this->cleanText,
+            'prerequisites'           => $this->cleanText,
+            'full_name'               => $this->plainFullName,
+            'meta_description'        => $this->plainMetaDescription,
         ]);
     });
 });

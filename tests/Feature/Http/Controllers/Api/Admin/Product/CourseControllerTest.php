@@ -734,7 +734,7 @@ describe('rich text fields', function (): void {
             .'<p style="text-align: right">First <strong>para</strong></p>'
             .'<ul><li>One</li><li>Two</li></ul>cell';
 
-        $this->plainFullName      = 'Course <b>Name</b>';
+        $this->plainFullName        = 'Course <b>Name</b>';
         $this->plainMetaDescription = str_repeat('Plain meta text ', 5).'< 5';
     });
 
