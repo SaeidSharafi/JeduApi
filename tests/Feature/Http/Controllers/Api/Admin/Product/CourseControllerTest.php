@@ -9,6 +9,8 @@ use function Pest\Laravel\assertDatabaseHas;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
+mutates(App\Data\Admin\Course\CreateCourseData::class);
+
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
@@ -712,4 +714,96 @@ it('can not delete course if there is related data', function (): void {
     $this->assertDatabaseHas('courses', [
         'id' => $course->id,
     ]);
+});
+
+describe('rich text fields', function (): void {
+    beforeEach(function (): void {
+        // A CKEditor / Word paste: a heading that must be downgraded, pasted
+        // styling and classes, a script, an image and a table that do not
+        // belong in compact copy.
+        $this->dirtyText = '<h1 class="title">Heading</h1>'
+            .'<p class="lead" style="color: red; text-align: right">First <strong>para</strong></p>'
+            .'<ul class="list"><li>One</li><li>Two</li></ul>'
+            .'<img src="x.png" onerror="alert(1)">'
+            .'<script>alert(1)</script>'
+            .'<table><tr><td>cell</td></tr></table>';
+
+        // The table, its rows and cells are unwrapped rather than dropped, so
+        // its text survives; every other disallowed construct is gone.
+        $this->cleanText = '<h2>Heading</h2>'
+            .'<p style="text-align: right">First <strong>para</strong></p>'
+            .'<ul><li>One</li><li>Two</li></ul>cell';
+
+        $this->plainFullName        = 'Course <b>Name</b>';
+        $this->plainMetaDescription = str_repeat('Plain meta text ', 5).'< 5';
+    });
+
+    it('sanitizes compact fields when a course is created', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_CREATE->value,
+        ]);
+
+        $courseData = App\Models\Course::factory()->make()->toArray();
+
+        $response = $this->postJson(route('api.v1.admin.courses.store'), [
+            ...$courseData,
+            'full_name'             => $this->plainFullName,
+            'description'           => $this->dirtyText,
+            'career_prospects_text' => $this->dirtyText,
+            'meta_description'      => $this->plainMetaDescription,
+            'categories'            => [App\Models\Category::factory()->create()->id],
+            'digital_assets'        => [],
+            'media'                 => [
+                'gallery'     => [],
+                'thumbnail'   => [],
+                'cover'       => [$this->cover->id],
+                'certificate' => [],
+            ],
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('courses', [
+            'slug'                  => $courseData['slug'],
+            'description'           => $this->cleanText,
+            'career_prospects_text' => $this->cleanText,
+            'full_name'             => $this->plainFullName,
+            'meta_description'      => $this->plainMetaDescription,
+        ]);
+    });
+
+    it('sanitizes compact fields when a course is updated', function (): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_UPDATE->value,
+        ]);
+
+        $course     = App\Models\Course::factory()->create();
+        $courseData = App\Models\Course::factory()->make()->toArray();
+
+        $response = $this->putJson(route('api.v1.admin.courses.update', $course->id), [
+            ...$courseData,
+            'full_name'             => $this->plainFullName,
+            'description'           => $this->dirtyText,
+            'career_prospects_text' => $this->dirtyText,
+            'meta_description'      => $this->plainMetaDescription,
+            'categories'            => [App\Models\Category::factory()->create()->id],
+            'digital_assets'        => [],
+            'media'                 => [
+                'gallery'     => [],
+                'thumbnail'   => [],
+                'cover'       => [$this->cover->id],
+                'certificate' => [],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('courses', [
+            'id'                    => $course->id,
+            'description'           => $this->cleanText,
+            'career_prospects_text' => $this->cleanText,
+            'full_name'             => $this->plainFullName,
+            'meta_description'      => $this->plainMetaDescription,
+        ]);
+    });
 });
