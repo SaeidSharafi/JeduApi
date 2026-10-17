@@ -680,3 +680,77 @@ describe('HomePageBlockController additional scenarios', function (): void {
         expect($response->json('data.content.entity_type'))->toBe('blog_post');
     });
 });
+
+describe('HomePageBlockController rich text', function (): void {
+    it('sanitizes a banner content at the inline level and keeps the other content keys intact', function (): void {
+        $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
+
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), [
+            'type'      => HomePageBlockTypeEnum::BANNER->value,
+            'title'     => 'Rich banner',
+            'location'  => 'homepage_top',
+            'order'     => 1,
+            'is_active' => true,
+            'content'   => [
+                'image_id'     => $this->image->id,
+                'action'       => 'go_to_shop',
+                'action_title' => 'Shop Now',
+                'content'      => '<p class="lead" onclick="alert(1)">خط اول</p><p>خط دوم</p><script>alert(1)</script>',
+                'preset'       => 'default',
+            ],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.title', 'Rich banner')
+            ->assertJsonPath('data.content.content', 'خط اول<br />خط دوم')
+            ->assertJsonPath('data.content.action', 'go_to_shop')
+            ->assertJsonPath('data.content.action_title', 'Shop Now')
+            ->assertJsonPath('data.content.preset', 'default');
+
+        $stored = HomePageBlock::findOrFail($response->json('data.id'));
+
+        expect($stored->content['content'])->toBe('خط اول<br />خط دوم')
+            ->and($stored->content['image_id'])->toBe($this->image->id)
+            ->and($stored->content['image_url'])->toBe($this->image->getUrl())
+            ->and($stored->content['action'])->toBe('go_to_shop')
+            ->and($stored->content['action_title'])->toBe('Shop Now')
+            ->and($stored->content['preset'])->toBe('default');
+    });
+
+    it('sanitizes a webinar banner text at the inline level and keeps the other content keys intact', function (): void {
+        $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
+
+        $product = App\Models\Product::factory()->create([
+            'productable_type' => ProductableEnum::SEMINAR->value,
+            'productable_id'   => App\Models\Seminar::factory(),
+        ]);
+
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), [
+            'type'      => HomePageBlockTypeEnum::WEBINAR_BANNER->value,
+            'title'     => 'Rich webinar banner',
+            'location'  => 'homepage_top',
+            'order'     => 2,
+            'is_active' => true,
+            'content'   => [
+                'product_id' => $product->id,
+                'text'       => '<p>خط اول</p><p>خط دوم</p><script>alert(1)</script>',
+                'image_id'   => $this->image->id,
+                'preset'     => 'default',
+            ],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.title', 'Rich webinar banner')
+            ->assertJsonPath('data.content.text', 'خط اول<br />خط دوم')
+            ->assertJsonPath('data.content.product_id', $product->id)
+            ->assertJsonPath('data.content.image_id', $this->image->id);
+
+        $stored = HomePageBlock::findOrFail($response->json('data.id'));
+
+        expect($stored->content['text'])->toBe('خط اول<br />خط دوم')
+            ->and($stored->content['product_id'])->toBe($product->id)
+            ->and($stored->content['image_id'])->toBe($this->image->id)
+            ->and($stored->content['image_url'])->toBe($this->image->getUrl())
+            ->and($stored->content['preset'])->toBe('default');
+    });
+});
