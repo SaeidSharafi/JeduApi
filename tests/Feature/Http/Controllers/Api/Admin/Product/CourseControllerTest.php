@@ -334,6 +334,53 @@ it('can create a new course with valid data', function (): void {
     ]);
 });
 
+it('sanitizes the inline course fields on create and update', function (): void {
+    $this->authorized_user([
+        App\Enums\PermissionEnum::COURSE_CREATE->value,
+        App\Enums\PermissionEnum::COURSE_UPDATE->value,
+    ]);
+
+    $courseData = App\Models\Course::factory()->make([
+        'curriculum_summary_text' => '<p>فصل اول</p><p>فصل دوم</p><script>alert(1)</script>',
+        'default_teacher_info'    => '<p>استاد اول</p><p>استاد دوم</p>',
+    ]);
+    $categories    = App\Models\Category::factory()->create()->pluck('id')->toArray();
+    $digitalAssets = App\Models\DigitalAsset::factory()->create();
+
+    $payload = [
+        ...$courseData->toArray(),
+        'categories'     => $categories,
+        'digital_assets' => $digitalAssets->pluck('id')->toArray(),
+        'media'          => [
+            'gallery'     => [$this->gallery->id],
+            'thumbnail'   => [],
+            'cover'       => [$this->cover->id],
+            'certificate' => [],
+        ],
+    ];
+
+    $response = $this->postJson(route('api.v1.admin.courses.store'), $payload);
+    $response->assertStatus(201);
+    $this->assertDatabaseHas('courses', [
+        'slug'                    => $courseData->slug,
+        'curriculum_summary_text' => 'فصل اول<br />فصل دوم',
+        'default_teacher_info'    => 'استاد اول<br />استاد دوم',
+    ]);
+
+    $course   = App\Models\Course::query()->where('slug', $courseData->slug)->firstOrFail();
+    $response = $this->putJson(route('api.v1.admin.courses.update', $course->id), [
+        ...$payload,
+        'curriculum_summary_text' => '<p>خط اول</p><p>خط دوم</p>',
+        'default_teacher_info'    => '<p>نام اول</p><p>نام دوم</p>',
+    ]);
+    $response->assertStatus(200);
+    $this->assertDatabaseHas('courses', [
+        'id'                      => $course->id,
+        'curriculum_summary_text' => 'خط اول<br />خط دوم',
+        'default_teacher_info'    => 'نام اول<br />نام دوم',
+    ]);
+});
+
 it('can not create a new course with invalid data', function (): void {
     $courseData = App\Models\Course::factory()->make([
         'slug'                 => null,
