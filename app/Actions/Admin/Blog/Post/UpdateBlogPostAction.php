@@ -67,7 +67,9 @@ final readonly class UpdateBlogPostAction
 
     private function calculateReadTime(string $body): int
     {
-        $wordCount = str_word_count(strip_tags($body));
+        // str_word_count() only recognises ASCII words, so Persian text would count as zero.
+        $words     = preg_split('/[\s\p{Z}]+/u', strip_tags($body), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $wordCount = count($words);
 
         return max(1, (int) ceil($wordCount / 200)); // 200 wpm average
     }
