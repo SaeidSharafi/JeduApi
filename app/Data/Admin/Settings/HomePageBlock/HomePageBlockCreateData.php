@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings\HomePageBlock;
 
+use App\Data\Casts\SanitizeHomePageBlockContent;
 use App\Enums\Content\HomePageBlockTypeEnum;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -17,6 +19,7 @@ final class HomePageBlockCreateData extends Data
         public string $location,
         public int $order,
         public bool $is_active,
+        #[WithCast(SanitizeHomePageBlockContent::class)]
         public array $content,
     ) {}
 
