@@ -133,6 +133,53 @@ it('fully replaces page content and mediable attachments', function (): void {
     ]);
 });
 
+it('sanitizes the rich page fields and the faq answers on save', function (): void {
+    $this->authorized_user([PermissionEnum::SETTING_UPDATE]);
+
+    $vendor = Vendor::factory()->create();
+
+    $hostileDescription = '<p class="lead" style="font-family: Arial; font-size: 12px">Safe <strong>hero</strong></p>'
+        .'<script>alert(1)</script>';
+    $hostileExplanation = '<ul class="menu"><li>one</li></ul><font>legacy</font>';
+    $hostileAnswer      = '<p>Answer</p><script>alert(1)</script><ul><li>kept</li></ul>';
+    $question           = 'what is <em class="editor-mark">covered</em>?';
+
+    $response = $this->putJson(route('api.v1.admin.landing-pages.organization.update'), [
+        'vendor_id'                   => $vendor->id,
+        'hero_title'                  => 'Organization services',
+        'hero_description'            => $hostileDescription,
+        'ims_portal_url'              => null,
+        'request_section_title'       => 'Request training',
+        'request_section_explanation' => $hostileExplanation,
+        'faqs'                        => [[
+            'question'   => $question,
+            'answer'     => $hostileAnswer,
+            'is_visible' => false,
+        ]],
+        'media' => [
+            'hero'                 => null,
+            'educational_calendar' => null,
+        ],
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.hero_description', '<p>Safe <strong>hero</strong></p>')
+        ->assertJsonPath('data.request_section_explanation', '<ul><li>one</li></ul>legacy')
+        ->assertJsonPath('data.faqs.0.answer', '<p>Answer</p><ul><li>kept</li></ul>')
+        ->assertJsonPath('data.faqs.0.question', $question)
+        ->assertJsonPath('data.faqs.0.is_visible', false);
+
+    $page = OrganizationPage::query()->firstOrFail();
+
+    expect($page->hero_description)->toBe('<p>Safe <strong>hero</strong></p>')
+        ->and($page->request_section_explanation)->toBe('<ul><li>one</li></ul>legacy')
+        ->and($page->faqs)->toBe([[
+            'question'   => $question,
+            'answer'     => '<p>Answer</p><ul><li>kept</li></ul>',
+            'is_visible' => false,
+        ]]);
+});
+
 it('requires a linked vendor for page settings updates', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_UPDATE]);
 
