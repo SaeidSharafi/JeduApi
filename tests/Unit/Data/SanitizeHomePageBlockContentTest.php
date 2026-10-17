@@ -110,3 +110,12 @@ it('leaves the payload untouched when the declared type is absent or unrecognise
     'type null'         => [['type' => null]],
     'type unrecognised' => [['type' => 'RAW_HTML']],
 ]);
+
+it('takes the rich key from the policy file, not from code', function (): void {
+    config(['rich-text.home_page_block_keys.BANNER' => 'action_title']);
+
+    $content = ['content' => '<p>a</p><p>b</p>', 'action_title' => '<p>c</p><p>d</p>'];
+
+    expect(castHomePageBlockContent(['type' => HomePageBlockTypeEnum::BANNER], $content))
+        ->toBe(['content' => '<p>a</p><p>b</p>', 'action_title' => 'c<br />d']);
+});

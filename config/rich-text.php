@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Content\HomePageBlockTypeEnum;
 use App\Enums\Content\RichTextLevelEnum;
 
 /*
@@ -181,6 +182,21 @@ return [
     'downgrade_elements' => ['h1' => 'h2'],
 
     'embed_elements' => ['oembed'],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rich key per home page block type
+    |--------------------------------------------------------------------------
+    |
+    | A home page block stores its rich value under the key its declared type
+    | names, never under whichever rich key happens to be present. A type
+    | missing here has no rich field, so its payload passes through untouched.
+    |
+    */
+    'home_page_block_keys' => [
+        HomePageBlockTypeEnum::BANNER->value         => 'content',
+        HomePageBlockTypeEnum::WEBINAR_BANNER->value => 'text',
+    ],
 
     /*
     |--------------------------------------------------------------------------
