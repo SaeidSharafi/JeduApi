@@ -2,20 +2,33 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Admin\Dashboard;
+namespace App\Http\Controllers\Api\Admin\Dashboard;
 
+use App\Contracts\ApiResponseInterface;
+use App\Data\Admin\Dashboard\DashboardPeriodQueryData;
+use App\Data\Admin\Dashboard\DashboardRankingsData;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\PermissionEnum;
+use App\Enums\System\CacheKey;
+use App\Http\Controllers\Controller;
+use App\Services\Dashboard\DashboardBlockCache;
+use App\Services\Dashboard\DashboardPeriod;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 /**
- * Computes the product, category and vendor rankings of the admin dashboard.
+ * @group Admin - Dashboard
  *
- * Cohort: orders created in the period with at least one completed order payment and a
- * positive grand total. Free orders are excluded: they carry no collectable revenue and a zero
- * denominator for the paid ratio.
+ * @authenticated
+ *
+ * Computes the product, category and vendor rankings of the dashboard.
+ *
+ * Cohort: orders created in the period with at least one completed order payment and a positive
+ * grand total. Free orders are excluded: they carry no collectable revenue and a zero denominator
+ * for the paid ratio.
  *
  * A line is worth `total × (order paid ÷ order grand total) − total_refunded`, where the order's
  * paid amount is the sum of its completed order payments.
@@ -32,7 +45,7 @@ use Illuminate\Support\Facades\DB;
  *
  * A line with no vendor cannot be attributed and is omitted from the vendor leaderboard.
  */
-final readonly class GenerateDashboardRankingsAction
+final class RankingsController extends Controller
 {
     private const int TOP_PRODUCTS_LIMIT = 6;
 
@@ -41,13 +54,39 @@ final readonly class GenerateDashboardRankingsAction
     private const int VENDORS_LIMIT = 4;
 
     /**
+     * Get the top products, categories and vendors of the selected period.
+     *
+     * Revenue follows the order's paid ratio and is netted by line refunds. A Bundle Purchase
+     * counts once as its Bundle product and belongs to the Bundle's vendor, so Bundle Component
+     * Order Items never appear. Category revenue overlaps on purpose: a line counts in every
+     * category of its productable, so category revenue must not be summed into a period total.
+     *
+     * @responseFile 200 resources/responses/admin/dashboard/rankings.json
+     */
+    public function __invoke(DashboardPeriodQueryData $query, DashboardBlockCache $cache): ApiResponseInterface
+    {
+        Gate::authorize(PermissionEnum::DASHBOARD_FINANCIALS->value);
+
+        $period = DashboardPeriod::resolve($query->period);
+
+        $block = $cache->remember(
+            CacheKey::AdminDashboardRankings,
+            ['period'    => $period->key()],
+            fn (): array => $this->rankings($period->current()->start, $period->current()->end),
+            $query->fresh,
+        );
+
+        return apiResponse()->success(DashboardRankingsData::from($block['payload']), metadata: $block['metadata']);
+    }
+
+    /**
      * @return array{
      *     top_products: list<array{name: string, orders: int, revenue: int, share_pct: float}>,
      *     categories: list<array{name: string, orders: int, revenue: int, share_pct: float}>,
      *     vendors: list<array{name: string, orders: int, revenue: int, share_pct: float}>,
      * }
      */
-    public function handle(CarbonImmutable $start, CarbonImmutable $end): array
+    private function rankings(CarbonImmutable $start, CarbonImmutable $end): array
     {
         $lines = $this->rankingLines($start, $end);
 
