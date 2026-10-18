@@ -23,8 +23,6 @@ use Hekmatinasser\Verta\Verta;
  */
 final class DashboardBlockCache
 {
-    private const string TIMEZONE = 'Asia/Tehran';
-
     private const string CURRENCY = 'IRR';
 
     public function __construct(private readonly CacheStore $cache) {}
@@ -63,7 +61,7 @@ final class DashboardBlockCache
         $payload = $compute();
 
         $entry = [
-            'generated_at' => CarbonImmutable::now(self::TIMEZONE)->toIso8601String(),
+            'generated_at' => CarbonImmutable::now(DashboardPeriod::TIMEZONE)->toIso8601String(),
             'payload'      => $payload,
         ];
 
@@ -92,7 +90,7 @@ final class DashboardBlockCache
             'generated_at' => Verta::instance(CarbonImmutable::parse($generatedAt))->format('Y-m-d H:i:s'),
             'cached'       => $cached,
             'cache_ttl'    => (int) $key->ttl(),
-            'timezone'     => self::TIMEZONE,
+            'timezone'     => DashboardPeriod::TIMEZONE,
             'currency'     => self::CURRENCY,
         ];
     }

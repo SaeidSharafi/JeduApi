@@ -280,10 +280,54 @@ it('counts one line in both of its categories without deduplicating or setting a
     expect($categories->keys()->sort()->values()->all())->toBe(['Design', 'Programming'])
         ->and($categories['Programming']['revenue'])->toBe(90_000)
         ->and($categories['Design']['revenue'])->toBe(90_000)
-        ->and($categories['Programming']['share_pct'])->toEqual(50.0)
-        ->and($categories['Design']['share_pct'])->toEqual(50.0);
+        ->and($categories['Programming']['share_pct'])->toEqual(100.0)
+        ->and($categories['Design']['share_pct'])->toEqual(100.0);
+
+    expect(array_sum(array_column($response->json('data.categories'), 'share_pct')))->toEqual(200.0);
 
     $response->assertJsonMissingPath('data.total_revenue');
+});
+
+it('attributes a line to the product categories and the productable categories without duplication', function (): void {
+    $this->authorized_user([PermissionEnum::DASHBOARD_FINANCIALS->value]);
+    $vendor = Vendor::factory()->create(['name' => 'Catalogue Vendor']);
+    $course = Course::factory()->create();
+
+    $shared          = Category::factory()->create(['name' => 'Shared']);
+    $productableOnly = Category::factory()->create(['name' => 'Course Only']);
+    $productOnly     = Category::factory()->create(['name' => 'Product Only']);
+
+    $course->categories()->attach([$shared->id, $productableOnly->id]);
+
+    $product = Product::factory()->create([
+        'vendor_id'        => $vendor->id,
+        'name'             => 'Two Source Product',
+        'productable_type' => ProductableEnum::COURSE->value,
+        'productable_id'   => $course->id,
+    ]);
+    $product->categories()->attach([$shared->id, $productOnly->id]);
+
+    $option = ProductDeliveryOption::factory()->create([
+        'product_id' => $product->id,
+        'price'      => 90_000,
+    ]);
+
+    $order = rankingsOrder(90_000);
+    rankingsPay($order, 90_000);
+    rankingsLine($order, $option, $vendor, 90_000);
+
+    $response = getJson(RANKINGS_ENDPOINT);
+
+    $response->assertOk();
+    $response->assertJsonCount(3, 'data.categories');
+
+    $categories = collect($response->json('data.categories'))->keyBy('name');
+
+    expect($categories->keys()->sort()->values()->all())->toBe(['Course Only', 'Product Only', 'Shared'])
+        ->and($categories['Shared']['revenue'])->toBe(90_000)
+        ->and($categories['Shared']['orders'])->toBe(1)
+        ->and($categories['Course Only']['revenue'])->toBe(90_000)
+        ->and($categories['Product Only']['revenue'])->toBe(90_000);
 });
 
 it('caps top products at six rows', function (): void {
@@ -301,8 +345,13 @@ it('caps top products at six rows', function (): void {
 
     $response->assertOk();
     $response->assertJsonCount(6, 'data.top_products');
-    expect(collect($response->json('data.top_products'))->pluck('name')->all())
-        ->toBe(['Product 7', 'Product 6', 'Product 5', 'Product 4', 'Product 3', 'Product 2']);
+
+    $products = $response->json('data.top_products');
+
+    expect(collect($products)->pluck('name')->all())
+        ->toBe(['Product 7', 'Product 6', 'Product 5', 'Product 4', 'Product 3', 'Product 2'])
+        ->and($products[0]['share_pct'])->toEqual(25.0)
+        ->and(round(array_sum(array_column($products, 'share_pct')), 1))->toEqual(96.4);
 });
 
 it('caps vendors at four rows', function (): void {
@@ -320,8 +369,44 @@ it('caps vendors at four rows', function (): void {
 
     $response->assertOk();
     $response->assertJsonCount(4, 'data.vendors');
-    expect(collect($response->json('data.vendors'))->pluck('name')->all())
-        ->toBe(['Vendor 5', 'Vendor 4', 'Vendor 3', 'Vendor 2']);
+
+    $vendors = $response->json('data.vendors');
+
+    expect(collect($vendors)->pluck('name')->all())
+        ->toBe(['Vendor 5', 'Vendor 4', 'Vendor 3', 'Vendor 2'])
+        ->and($vendors[0]['share_pct'])->toEqual(33.3)
+        ->and(round(array_sum(array_column($vendors, 'share_pct')), 1))->toEqual(93.3);
+});
+
+it('leaves a line with no vendor out of the vendor share of the cohort total', function (): void {
+    $this->authorized_user([PermissionEnum::DASHBOARD_FINANCIALS->value]);
+    $vendor = Vendor::factory()->create(['name' => 'Attributed Vendor']);
+    $order  = rankingsOrder(100_000);
+    rankingsPay($order, 100_000);
+
+    [, $attributedOption] = rankingsProduct($vendor, 'Attributed Product', 60_000);
+    rankingsLine($order, $attributedOption, $vendor, 60_000);
+
+    [, $unattributedOption] = rankingsProduct($vendor, 'Unattributed Product', 40_000);
+    OrderItem::factory()->create([
+        'order_id'                   => $order->id,
+        'product_delivery_option_id' => $unattributedOption->id,
+        'vendor_id'                  => null,
+        'name'                       => $unattributedOption->name,
+        'price'                      => 40_000,
+        'total'                      => 40_000,
+        'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT,
+        'status'                     => OrderItemStatusEnum::COMPLETED,
+        'total_refunded'             => 0,
+    ]);
+
+    $response = getJson(RANKINGS_ENDPOINT);
+
+    $response->assertOk();
+    $response->assertJsonCount(1, 'data.vendors');
+    $response->assertJsonPath('data.vendors.0.name', 'Attributed Vendor');
+    $response->assertJsonPath('data.vendors.0.revenue', 60_000);
+    $response->assertJsonPath('data.vendors.0.share_pct', 60.0);
 });
 
 it('excludes free orders from every ranking', function (): void {

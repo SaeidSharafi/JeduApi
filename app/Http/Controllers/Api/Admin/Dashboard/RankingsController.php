@@ -11,10 +11,11 @@ use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\System\CacheKey;
+use App\Enums\System\MorphTypeEnum;
 use App\Http\Controllers\Controller;
 use App\Services\Dashboard\DashboardBlockCache;
 use App\Services\Dashboard\DashboardPeriod;
-use Carbon\CarbonImmutable;
+use App\Services\Dashboard\DashboardPeriodWindow;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -38,10 +39,13 @@ use Illuminate\Support\Facades\Gate;
  * `total_refunded` sums of its component lines. It is grouped as the Bundle product and attributed
  * to that product's vendor, never to its component products or vendors.
  *
- * Category attribution follows the productable behind the product (`course`, `seminar`,
- * `digital_asset` or `bundle`) through `categorizables`, because that is where the catalogue
- * categories live. A line contributes its full value to every one of those categories, so category
- * revenue deliberately overlaps and must not be summed into a period total.
+ * Category attribution unions two `categorizables` sources: the productable behind the product
+ * (`course`, `seminar`, `digital_asset` or `bundle`) and the product itself (`product`). A line
+ * contributes its full value to every distinct category of either source, so category revenue
+ * deliberately overlaps and must not be summed into a period total.
+ *
+ * `share_pct` is one decimal of the cohort's total included line revenue, computed before any cap,
+ * so a cap leaves the remainder visible instead of renormalising the returned rows to 100 %.
  *
  * A line with no vendor cannot be attributed and is omitted from the vendor leaderboard.
  */
@@ -59,7 +63,8 @@ final class RankingsController extends Controller
      * Revenue follows the order's paid ratio and is netted by line refunds. A Bundle Purchase
      * counts once as its Bundle product and belongs to the Bundle's vendor, so Bundle Component
      * Order Items never appear. Category revenue overlaps on purpose: a line counts in every
-     * category of its productable, so category revenue must not be summed into a period total.
+     * category of its productable and of the product itself, so category revenue must not be
+     * summed into a period total. Shares are of the cohort total, not of the returned rows.
      *
      * @responseFile 200 resources/responses/admin/dashboard/rankings.json
      */
@@ -72,7 +77,7 @@ final class RankingsController extends Controller
         $block = $cache->remember(
             CacheKey::AdminDashboardRankings,
             ['period'    => $period->key()],
-            fn (): array => $this->rankings($period->current()->start, $period->current()->end),
+            fn (): array => $this->rankings($period->current()),
             $query->fresh,
         );
 
@@ -80,20 +85,24 @@ final class RankingsController extends Controller
     }
 
     /**
+     * The cohort's total included line revenue is computed once, before any cap or dedup, and is
+     * the denominator every row's `share_pct` uses.
+     *
      * @return array{
      *     top_products: list<array{name: string, orders: int, revenue: int, share_pct: float}>,
      *     categories: list<array{name: string, orders: int, revenue: int, share_pct: float}>,
      *     vendors: list<array{name: string, orders: int, revenue: int, share_pct: float}>,
      * }
      */
-    private function rankings(CarbonImmutable $start, CarbonImmutable $end): array
+    private function rankings(DashboardPeriodWindow $window): array
     {
-        $lines = $this->rankingLines($start, $end);
+        $lines         = $this->rankingLines($window);
+        $cohortRevenue = array_sum(array_column($lines, 'value'));
 
         return [
-            'top_products' => $this->products($lines),
-            'categories'   => $this->categories($lines),
-            'vendors'      => $this->vendors($lines),
+            'top_products' => $this->products($lines, $cohortRevenue),
+            'categories'   => $this->categories($lines, $cohortRevenue),
+            'vendors'      => $this->vendors($lines, $cohortRevenue),
         ];
     }
 
@@ -112,7 +121,7 @@ final class RankingsController extends Controller
      *     value: float,
      * }>
      */
-    private function rankingLines(CarbonImmutable $start, CarbonImmutable $end): array
+    private function rankingLines(DashboardPeriodWindow $window): array
     {
         $completedOrderPayments = DB::table('payments')
             ->selectRaw('order_id, SUM(amount) AS paid')
@@ -121,8 +130,8 @@ final class RankingsController extends Controller
             ->whereNotNull('order_id')
             ->groupBy('order_id');
 
-        $rows = $this->standaloneLineQuery($start, $end, $completedOrderPayments)
-            ->unionAll($this->bundleLineQuery($start, $end, $completedOrderPayments))
+        $rows = $this->standaloneLineQuery($window, $completedOrderPayments)
+            ->unionAll($this->bundleLineQuery($window, $completedOrderPayments))
             ->get();
 
         $lines = [];
@@ -136,10 +145,10 @@ final class RankingsController extends Controller
                 'product_id'       => $row->product_id       === null ? null : (int) $row->product_id,
                 'productable_type' => $row->productable_type === null ? null : (string) $row->productable_type,
                 'productable_id'   => $row->productable_id   === null ? null : (int) $row->productable_id,
-                'product_name'     => $this->name($row->product_name),
+                'product_name'     => $this->normalizedName($row->product_name),
                 'snapshot_name'    => (string) $row->snapshot_name,
                 'vendor_id'        => $row->vendor_id === null ? null : (int) $row->vendor_id,
-                'vendor_name'      => $this->name($row->vendor_name),
+                'vendor_name'      => $this->normalizedName($row->vendor_name),
                 'value'            => (int) $row->line_total * $ratio - (int) $row->line_refunded,
             ];
         }
@@ -151,8 +160,7 @@ final class RankingsController extends Controller
      * Standalone order items: Bundle Component Order Items are excluded here.
      */
     private function standaloneLineQuery(
-        CarbonImmutable $start,
-        CarbonImmutable $end,
+        DashboardPeriodWindow $window,
         Builder $completedOrderPayments,
     ): Builder {
         return DB::table('order_items as items')
@@ -162,7 +170,7 @@ final class RankingsController extends Controller
             ->leftJoin('products as products', 'products.id', '=', 'options.product_id')
             ->leftJoin('vendors as vendors', 'vendors.id', '=', 'items.vendor_id')
             ->whereNull('items.bundle_purchase_id')
-            ->whereBetween('orders.created_at', [$start, $end])
+            ->whereBetween('orders.created_at', [$window->start, $window->end])
             ->where('orders.grand_total', '>', 0)
             ->select([
                 'items.order_id as order_id',
@@ -184,8 +192,7 @@ final class RankingsController extends Controller
      * Bundle Purchases: one line at `selling_price`, net of the component lines' refunds.
      */
     private function bundleLineQuery(
-        CarbonImmutable $start,
-        CarbonImmutable $end,
+        DashboardPeriodWindow $window,
         Builder $completedOrderPayments,
     ): Builder {
         $componentRefunds = DB::table('order_items')
@@ -200,7 +207,7 @@ final class RankingsController extends Controller
             ->leftJoin('products as products', 'products.id', '=', 'options.product_id')
             ->leftJoin('vendors as vendors', 'vendors.id', '=', 'products.vendor_id')
             ->leftJoinSub($componentRefunds, 'component_refunds', 'component_refunds.bundle_purchase_id', '=', 'purchases.id')
-            ->whereBetween('orders.created_at', [$start, $end])
+            ->whereBetween('orders.created_at', [$window->start, $window->end])
             ->where('orders.grand_total', '>', 0)
             ->select([
                 'purchases.order_id as order_id',
@@ -234,7 +241,7 @@ final class RankingsController extends Controller
      * }>  $lines
      * @return list<array{name: string, orders: int, revenue: int, share_pct: float}>
      */
-    private function products(array $lines): array
+    private function products(array $lines, float $cohortRevenue): array
     {
         $groups = [];
 
@@ -252,7 +259,7 @@ final class RankingsController extends Controller
             $groups[$key]['revenue'] += $line['value'];
         }
 
-        return $this->top($groups, self::TOP_PRODUCTS_LIMIT);
+        return $this->rankedRows($groups, self::TOP_PRODUCTS_LIMIT, $cohortRevenue);
     }
 
     /**
@@ -271,7 +278,7 @@ final class RankingsController extends Controller
      * }>  $lines
      * @return list<array{name: string, orders: int, revenue: int, share_pct: float}>
      */
-    private function vendors(array $lines): array
+    private function vendors(array $lines, float $cohortRevenue): array
     {
         $groups = [];
 
@@ -287,11 +294,12 @@ final class RankingsController extends Controller
             $groups[$key]['revenue'] += $line['value'];
         }
 
-        return $this->top($groups, self::VENDORS_LIMIT);
+        return $this->rankedRows($groups, self::VENDORS_LIMIT, $cohortRevenue);
     }
 
     /**
-     * Attribute every line to each catalogue category of its productable, preserving overlap.
+     * Attribute every line to each distinct catalogue category of its productable and of the
+     * product itself, preserving overlap but never counting the same category twice for one line.
      *
      * @param  list<array{
      *     order_id: int,
@@ -306,32 +314,42 @@ final class RankingsController extends Controller
      * }>  $lines
      * @return list<array{name: string, orders: int, revenue: int, share_pct: float}>
      */
-    private function categories(array $lines): array
+    private function categories(array $lines, float $cohortRevenue): array
     {
         $links  = $this->categoryLinks($lines);
         $groups = [];
 
         foreach ($lines as $line) {
-            if ($line['productable_type'] === null || $line['productable_id'] === null) {
-                continue;
+            $categories = [];
+
+            if ($line['productable_type'] !== null && $line['productable_id'] !== null) {
+                $productable = $line['productable_type'].':'.$line['productable_id'];
+
+                foreach ($links[$productable] ?? [] as $category) {
+                    $categories[$category['id']] = $category['name'];
+                }
             }
 
-            $productable = $line['productable_type'].':'.$line['productable_id'];
+            if ($line['product_id'] !== null) {
+                foreach ($links[MorphTypeEnum::PRODUCT->value.':'.$line['product_id']] ?? [] as $category) {
+                    $categories[$category['id']] = $category['name'];
+                }
+            }
 
-            foreach ($links[$productable] ?? [] as $category) {
-                $key = 'category:'.$category['id'];
+            foreach ($categories as $id => $name) {
+                $key = 'category:'.$id;
 
-                $groups[$key] ??= ['name' => $category['name'], 'order_ids' => [], 'revenue' => 0.0];
+                $groups[$key] ??= ['name' => $name, 'order_ids' => [], 'revenue' => 0.0];
                 $groups[$key]['order_ids'][$line['order_id']] = true;
                 $groups[$key]['revenue'] += $line['value'];
             }
         }
 
-        return $this->top($groups, self::CATEGORIES_LIMIT);
+        return $this->rankedRows($groups, self::CATEGORIES_LIMIT, $cohortRevenue);
     }
 
     /**
-     * Category links of the productables referenced by the cohort, keyed `type:id`.
+     * Category links of the productables and products referenced by the cohort, keyed `type:id`.
      *
      * @param  list<array{
      *     order_id: int,
@@ -351,11 +369,13 @@ final class RankingsController extends Controller
         $idsByType = [];
 
         foreach ($lines as $line) {
-            if ($line['productable_type'] === null || $line['productable_id'] === null) {
-                continue;
+            if ($line['productable_type'] !== null && $line['productable_id'] !== null) {
+                $idsByType[$line['productable_type']][$line['productable_id']] = true;
             }
 
-            $idsByType[$line['productable_type']][$line['productable_id']] = true;
+            if ($line['product_id'] !== null) {
+                $idsByType[MorphTypeEnum::PRODUCT->value][$line['product_id']] = true;
+            }
         }
 
         if ($idsByType === []) {
@@ -392,15 +412,15 @@ final class RankingsController extends Controller
     }
 
     /**
-     * Sort by revenue, then orders, then name; cap the list and compute its share of the capped total.
+     * Sort by revenue, then orders, then name; cap the list and share the cohort total.
      *
-     * `share_pct` is one decimal of the revenue included in this block (after the cap), not of the
-     * whole cohort, so the returned rows always read as a self-contained ranking.
+     * `share_pct` is one decimal of the cohort's total included line revenue, which is computed
+     * before the cap and before category dedup, so the returned rows never renormalise to 100 %.
      *
      * @param  array<string, array{name: string, order_ids: array<int, true>, revenue: float}>  $groups
      * @return list<array{name: string, orders: int, revenue: int, share_pct: float}>
      */
-    private function top(array $groups, int $limit): array
+    private function rankedRows(array $groups, int $limit, float $cohortRevenue): array
     {
         $rows = [];
 
@@ -418,20 +438,19 @@ final class RankingsController extends Controller
             $first['revenue'], $first['orders'], $second['name'],
         ]);
 
-        $rows            = array_slice($rows, 0, $limit);
-        $includedRevenue = array_sum(array_column($rows, 'revenue'));
+        $rows = array_slice($rows, 0, $limit);
 
         return array_map(static fn (array $row): array => [
             'name'      => $row['name'],
             'orders'    => $row['orders'],
             'revenue'   => $row['revenue'],
-            'share_pct' => $includedRevenue > 0
-                ? round($row['revenue'] / $includedRevenue * 100, 1)
+            'share_pct' => $cohortRevenue > 0
+                ? round($row['revenue'] / $cohortRevenue * 100, 1)
                 : 0.0,
         ], $rows);
     }
 
-    private function name(mixed $value): ?string
+    private function normalizedName(mixed $value): ?string
     {
         if (! is_string($value)) {
             return null;
