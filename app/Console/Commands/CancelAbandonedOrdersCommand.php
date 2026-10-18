@@ -118,8 +118,7 @@ final class CancelAbandonedOrdersCommand extends Command
      * retry window is therefore measured from the most recent activity: order
      * creation/update, payment creation, or the payment's last attempt. Orders with
      * a completed payment are never eligible, even if their status is still pending.
-     */
-    /**
+     *
      * @return Builder<Order>
      */
     private function abandonedOrdersQuery(CarbonInterface $threshold): Builder
