@@ -121,7 +121,11 @@ it('returns successful outcome after wallet payment without a gateway redirect',
 it('redirects real declined callbacks to details with failed status', function (bool $topup): void {
     $payment = $topup
         ? Payment::factory()->topup()->create(['method' => 'mellat_gateway', 'status' => PaymentStatusEnum::PENDING])
-        : Payment::factory()->create(['method' => 'mellat_gateway', 'status' => PaymentStatusEnum::PENDING]);
+        : Payment::factory()->create([
+            'method'   => 'mellat_gateway',
+            'status'   => PaymentStatusEnum::PENDING,
+            'order_id' => Order::factory()->create(['status' => OrderStatusEnum::PENDING])->id,
+        ]);
     $transaction = App\Models\PaymentTransaction::factory()->initiated()->create(['payment_id' => $payment->id]);
 
     $response = $this->postJson(route('api.v1.shop.payment.gateway.callback', $payment->uuid), [
