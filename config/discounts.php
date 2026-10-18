@@ -23,12 +23,13 @@ return [
     |--------------------------------------------------------------------------
     |
     | Minutes a discount usage reservation keeps counting toward a customer's
-    | allowance before it goes stale. Defaults to config('order.abandonment_minutes')
-    | (30), the same window used by orders:cancel-abandoned and
-    | payments:expire-pending. Reservations belonging to completed or refunded
-    | orders are consumed permanently and never expire.
+    | allowance before it goes stale. Unless set explicitly through
+    | DISCOUNT_RESERVATION_HOLD_MINUTES, it follows ORDER_ABANDONMENT_MINUTES so
+    | the promotion hold expires together with the abandoned-order window it
+    | mirrors (both default to 30 minutes). Reservations belonging to completed
+    | or refunded orders are consumed permanently and never expire.
     |
     */
 
-    'reservation_hold_minutes' => (int) env('DISCOUNT_RESERVATION_HOLD_MINUTES', 30),
+    'reservation_hold_minutes' => (int) env('DISCOUNT_RESERVATION_HOLD_MINUTES', env('ORDER_ABANDONMENT_MINUTES', 30)),
 ];

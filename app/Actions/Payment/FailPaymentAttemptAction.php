@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Payment;
 
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Payment\PaymentTransactionErrorCodeEnum;
 use App\Enums\Payment\PaymentTransactionStatusEnum;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +21,9 @@ final readonly class FailPaymentAttemptAction
      *
      * @return bool Whether the payment was still pending and got failed.
      */
-    public function handle(int $paymentId, string $errorCode, string $errorMessage): bool
+    public function handle(int $paymentId, PaymentTransactionErrorCodeEnum $errorCode): bool
     {
-        return DB::transaction(function () use ($paymentId, $errorCode, $errorMessage): bool {
+        return DB::transaction(function () use ($paymentId, $errorCode): bool {
             $payment = Payment::query()->whereKey($paymentId)->lockForUpdate()->first();
 
             if ($payment === null || $payment->status !== PaymentStatusEnum::PENDING) {
@@ -34,8 +35,8 @@ final readonly class FailPaymentAttemptAction
                 ->whereNull('completed_at')
                 ->update([
                     'status'        => PaymentTransactionStatusEnum::FAILED,
-                    'error_code'    => $errorCode,
-                    'error_message' => $errorMessage,
+                    'error_code'    => $errorCode->value,
+                    'error_message' => $errorCode->translate(),
                     'completed_at'  => now(),
                 ]);
 

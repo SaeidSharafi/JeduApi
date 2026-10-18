@@ -27,19 +27,17 @@ final readonly class FailPendingOrderPaymentsAction
 
     public function handle(int $orderId): void
     {
-        /** @var list<int|string> $paymentIds */
-        $paymentIds = Payment::query()
+        $payments = Payment::query()
+            ->select('id')
             ->where('order_id', $orderId)
             ->where('status', PaymentStatusEnum::PENDING)
-            ->pluck('id')
-            ->all();
+            ->get();
 
-        foreach ($paymentIds as $paymentId) {
+        foreach ($payments as $payment) {
             try {
                 $this->failPaymentAttempt->handle(
-                    paymentId: (int) $paymentId,
-                    errorCode: PaymentTransactionErrorCodeEnum::ORDER_CLOSED->value,
-                    errorMessage: 'The order was closed before the payment attempt resolved.',
+                    paymentId: $payment->id,
+                    errorCode: PaymentTransactionErrorCodeEnum::ORDER_CLOSED,
                 );
             } catch (Throwable $exception) {
                 // The order is already closed; a failed cascade must not turn a
@@ -47,7 +45,7 @@ final readonly class FailPendingOrderPaymentsAction
                 // is the safety net for this row.
                 Log::error('Failed to close a pending payment attempt for a closed order', [
                     'order_id'   => $orderId,
-                    'payment_id' => $paymentId,
+                    'payment_id' => $payment->id,
                     'error'      => $exception->getMessage(),
                 ]);
             }

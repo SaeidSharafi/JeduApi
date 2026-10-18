@@ -11,16 +11,13 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 use function Pest\Laravel\artisan;
 
 mutates(ExpirePendingPaymentsCommand::class);
 
-it('expires pending payment attempts that have not completed after the threshold', function (): void {
-    Log::spy();
-
-    $order   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+it('expires a stale attempt on an order that is no longer payable', function (): void {
+    $order   = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
     $payment = Payment::factory()->create([
         'order_id' => $order->id,
         'status'   => PaymentStatusEnum::PENDING,
@@ -48,10 +45,31 @@ it('expires pending payment attempts that have not completed after the threshold
         ->and($stuckTransaction->completed_at)->not->toBeNull();
 });
 
-it('uses ORDER_CLOSED when the payment belongs to a closed order', function (): void {
-    Log::spy();
+it('leaves attempts on a pending order to the abandoned-order canceller', function (): void {
+    $order   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+    $payment = Payment::factory()->create([
+        'order_id' => $order->id,
+        'status'   => PaymentStatusEnum::PENDING,
+    ]);
 
-    $order = Order::factory()->create(['status' => OrderStatusEnum::CANCELLED]);
+    $transaction = PaymentTransaction::factory()->create([
+        'payment_id'            => $payment->id,
+        'status'                => PaymentTransactionStatusEnum::INITIATED,
+        'transaction_reference' => '200000001',
+        'initiated_at'          => now()->subMinutes(45),
+        'completed_at'          => null,
+    ]);
+
+    artisan('payments:expire-pending --threshold=30')
+        ->expectsOutput('No pending payment attempts to expire.')
+        ->assertExitCode(0);
+
+    expect($payment->fresh()->status)->toBe(PaymentStatusEnum::PENDING)
+        ->and($transaction->fresh()->status)->toBe(PaymentTransactionStatusEnum::INITIATED);
+});
+
+it('uses ORDER_CLOSED when the payment belongs to a closed order', function (): void {
+    $order   = Order::factory()->create(['status' => OrderStatusEnum::CANCELLED]);
     $payment = Payment::factory()->create([
         'order_id' => $order->id,
         'status'   => PaymentStatusEnum::PENDING,
@@ -75,9 +93,7 @@ it('uses ORDER_CLOSED when the payment belongs to a closed order', function (): 
 });
 
 it('does not overwrite a payment completed after it was selected', function (): void {
-    Log::spy();
-
-    $order   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+    $order   = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
     $payment = Payment::factory()->create([
         'order_id' => $order->id,
         'status'   => PaymentStatusEnum::PENDING,
@@ -108,14 +124,10 @@ it('does not overwrite a payment completed after it was selected', function (): 
 
     expect($payment->fresh()->status)->toBe(PaymentStatusEnum::COMPLETED)
         ->and($stuckTransaction->fresh()->status)->toBe(PaymentTransactionStatusEnum::INITIATED);
-
-    Log::shouldNotHaveReceived('warning');
 });
 
 it('keeps a payment active while a newer attempt is still in flight', function (): void {
-    Log::spy();
-
-    $order   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+    $order   = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
     $payment = Payment::factory()->create([
         'order_id' => $order->id,
         'status'   => PaymentStatusEnum::PENDING,
@@ -144,13 +156,9 @@ it('keeps a payment active while a newer attempt is still in flight', function (
     expect($payment->fresh()->status)->toBe(PaymentStatusEnum::PENDING)
         ->and($stale->fresh()->status)->toBe(PaymentTransactionStatusEnum::INITIATED)
         ->and($fresh->fresh()->status)->toBe(PaymentTransactionStatusEnum::INITIATED);
-
-    Log::shouldNotHaveReceived('warning');
 });
 
 it('expires a pending wallet top-up payment with no order', function (): void {
-    Log::spy();
-
     $payment = Payment::factory()->topup()->create([
         'status' => PaymentStatusEnum::PENDING,
     ]);
@@ -169,13 +177,28 @@ it('expires a pending wallet top-up payment with no order', function (): void {
 
     expect($payment->fresh()->order_id)->toBeNull()
         ->and($payment->fresh()->status)->toBe(PaymentStatusEnum::FAILED)
-        ->and($stuckTransaction->fresh()->status)->toBe(PaymentTransactionStatusEnum::FAILED);
+        ->and($stuckTransaction->fresh()->status)->toBe(PaymentTransactionStatusEnum::FAILED)
+        ->and($stuckTransaction->fresh()->error_code)->toBe(PaymentTransactionErrorCodeEnum::STUCK_TIMEOUT->value);
+});
+
+it('expires a wallet top-up that never reached the gateway', function (): void {
+    $payment = Payment::factory()->topup()->create([
+        'status'            => PaymentStatusEnum::PENDING,
+        'created_at'        => now()->subMinutes(45),
+        'last_attempted_at' => now()->subMinutes(45),
+    ]);
+
+    expect($payment->transactions()->exists())->toBeFalse();
+
+    artisan('payments:expire-pending --threshold=30')
+        ->expectsOutput('Found 1 pending payment attempt(s):')
+        ->assertExitCode(0);
+
+    expect($payment->fresh()->status)->toBe(PaymentStatusEnum::FAILED);
 });
 
 it('does not detect payments within threshold', function (): void {
-    Log::spy();
-
-    $order   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+    $order   = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
     $payment = Payment::factory()->create([
         'order_id' => $order->id,
         'status'   => PaymentStatusEnum::PENDING,
@@ -193,14 +216,10 @@ it('does not detect payments within threshold', function (): void {
     artisan('payments:expire-pending --threshold=30')
         ->expectsOutput('No pending payment attempts to expire.')
         ->assertExitCode(0);
-
-    Log::shouldNotHaveReceived('warning');
 });
 
 it('ignores completed transactions', function (): void {
-    Log::spy();
-
-    $order   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+    $order   = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
     $payment = Payment::factory()->create([
         'order_id' => $order->id,
         'status'   => PaymentStatusEnum::COMPLETED,
@@ -218,14 +237,10 @@ it('ignores completed transactions', function (): void {
     artisan('payments:expire-pending --threshold=30')
         ->expectsOutput('No pending payment attempts to expire.')
         ->assertExitCode(0);
-
-    Log::shouldNotHaveReceived('warning');
 });
 
 it('ignores failed transactions', function (): void {
-    Log::spy();
-
-    $order   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+    $order   = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
     $payment = Payment::factory()->create([
         'order_id' => $order->id,
         'status'   => PaymentStatusEnum::FAILED,
@@ -243,14 +258,10 @@ it('ignores failed transactions', function (): void {
     artisan('payments:expire-pending --threshold=30')
         ->expectsOutput('No pending payment attempts to expire.')
         ->assertExitCode(0);
-
-    Log::shouldNotHaveReceived('warning');
 });
 
 it('accepts custom threshold parameter', function (): void {
-    Log::spy();
-
-    $order   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+    $order   = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
     $payment = Payment::factory()->create([
         'order_id' => $order->id,
         'status'   => PaymentStatusEnum::PENDING,
@@ -270,13 +281,11 @@ it('accepts custom threshold parameter', function (): void {
         ->expectsOutput('Checking for pending payment attempts older than 60 minutes...')
         ->assertExitCode(0);
 
-    Log::shouldHaveReceived('warning')->once();
+    expect($payment->fresh()->status)->toBe(PaymentStatusEnum::FAILED);
 });
 
 it('handles multiple pending payment attempts', function (): void {
-    Log::spy();
-
-    $order1   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+    $order1   = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
     $payment1 = Payment::factory()->create([
         'order_id' => $order1->id,
         'status'   => PaymentStatusEnum::PENDING,
@@ -289,7 +298,7 @@ it('handles multiple pending payment attempts', function (): void {
         'completed_at'          => null,
     ]);
 
-    $order2   = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+    $order2   = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
     $payment2 = Payment::factory()->create([
         'order_id' => $order2->id,
         'status'   => PaymentStatusEnum::PENDING,
@@ -306,5 +315,42 @@ it('handles multiple pending payment attempts', function (): void {
         ->expectsOutput('Found 2 pending payment attempt(s):')
         ->assertExitCode(0);
 
-    Log::shouldHaveReceived('warning')->twice();
+    expect($payment1->fresh()->status)->toBe(PaymentStatusEnum::FAILED)
+        ->and($payment2->fresh()->status)->toBe(PaymentStatusEnum::FAILED);
+});
+
+it('falls back to the configured abandonment window for the threshold', function (): void {
+    config(['order.abandonment_minutes' => 60]);
+
+    // 45 minutes old: past the 30-minute default, inside the configured window.
+    $recent = Payment::factory()->topup()->create([
+        'status' => PaymentStatusEnum::PENDING,
+    ]);
+    PaymentTransaction::factory()->create([
+        'payment_id'            => $recent->id,
+        'status'                => PaymentTransactionStatusEnum::INITIATED,
+        'transaction_reference' => '200000021',
+        'initiated_at'          => now()->subMinutes(45),
+        'completed_at'          => null,
+    ]);
+
+    // 65 minutes old: past the configured window.
+    $stale = Payment::factory()->topup()->create([
+        'status' => PaymentStatusEnum::PENDING,
+    ]);
+    PaymentTransaction::factory()->create([
+        'payment_id'            => $stale->id,
+        'status'                => PaymentTransactionStatusEnum::INITIATED,
+        'transaction_reference' => '200000022',
+        'initiated_at'          => now()->subMinutes(65),
+        'completed_at'          => null,
+    ]);
+
+    artisan('payments:expire-pending')
+        ->expectsOutput('Checking for pending payment attempts older than 60 minutes...')
+        ->expectsOutput('Found 1 pending payment attempt(s):')
+        ->assertExitCode(0);
+
+    expect($recent->fresh()->status)->toBe(PaymentStatusEnum::PENDING)
+        ->and($stale->fresh()->status)->toBe(PaymentStatusEnum::FAILED);
 });

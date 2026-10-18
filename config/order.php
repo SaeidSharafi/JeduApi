@@ -44,8 +44,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | Minutes without activity before a pending order is cancelled and before
-    | an unresolved payment attempt is expired. Shared by
-    | orders:cancel-abandoned and payments:expire-pending.
+    | an unresolved payment attempt is expired. Both orders:cancel-abandoned
+    | and payments:expire-pending read it when their window option is omitted.
     |
     */
 

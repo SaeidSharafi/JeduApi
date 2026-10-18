@@ -33,6 +33,7 @@ use App\Models\ProductDeliveryOption;
 use App\Services\OrderStatusService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 
 mutates(UpdateOrderAction::class);
 
@@ -188,7 +189,7 @@ describe('OrderStatusService', function (): void {
     });
 
     it('sets order status to CANCELLED when items are CANCELLED', function (): void {
-        $order = Order::factory()->create();
+        $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
         OrderItem::factory()->count(2)->for($order)->create([
             'status' => OrderItemStatusEnum::CANCELLED,
         ]);
@@ -523,20 +524,37 @@ describe('UpdateOrderAction', function (): void {
             ->and($transaction->fresh()->status)->toBe(PaymentTransactionStatusEnum::INITIATED);
     });
 
-    it('clears cancellation metadata when a cancelled order is reopened', function (): void {
+    it('does not release reservations twice when a cancelled order is cancelled again', function (): void {
+        $order  = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+        $option = ProductDeliveryOption::factory()->create(['reserved_count' => 2]);
+        OrderItem::factory()->for($order)->create([
+            'product_delivery_option_id' => $option->id,
+            'qty_ordered'                => 1,
+            'status'                     => OrderItemStatusEnum::PENDING,
+        ]);
+
+        app(UpdateOrderAction::class)->handle(new OrderUpdateData(OrderStatusEnum::CANCELLED->value), $order);
+        expect($option->fresh()->reserved_count)->toBe(1);
+
+        app(UpdateOrderAction::class)->handle(new OrderUpdateData(OrderStatusEnum::CANCELLED->value), $order->fresh());
+        expect($option->fresh()->reserved_count)->toBe(1);
+    });
+
+    it('refuses to reopen a cancelled order', function (): void {
         $order = Order::factory()->create([
             'status'           => OrderStatusEnum::CANCELLED,
             'cancelled_at'     => now()->subHour(),
             'cancelled_reason' => OrderCancellationReasonEnum::ADMIN,
         ]);
 
-        $result = app(UpdateOrderAction::class)->handle(
+        expect(fn () => app(UpdateOrderAction::class)->handle(
             new OrderUpdateData(OrderStatusEnum::PENDING->value),
             $order,
-        );
+        ))->toThrow(ValidationException::class);
 
-        expect($result->status)->toBe(OrderStatusEnum::PENDING)
-            ->and($result->cancelled_at)->toBeNull()
-            ->and($result->cancelled_reason)->toBeNull();
+        $order->refresh();
+        expect($order->status)->toBe(OrderStatusEnum::CANCELLED)
+            ->and($order->cancelled_at)->not->toBeNull()
+            ->and($order->cancelled_reason)->toBe(OrderCancellationReasonEnum::ADMIN);
     });
 });

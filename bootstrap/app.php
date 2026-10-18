@@ -35,8 +35,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
-        $abandonmentMinutes = (int) config('order.abandonment_minutes', 30);
-
         $schedule->command('discounts:reindex-all')
             ->hourly()
             ->withoutOverlapping();
@@ -67,15 +65,17 @@ return Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->withoutOverlapping();
 
-        // Payment attempts past the window: wallet top-ups (their only timeout
-        // owner) and a safety net for order payments the synchronous cancellation
-        // cascade missed. The order canceller closes inactive pending orders and
-        // cascades their open attempts; a recent payment restarts the window.
-        $schedule->command("payments:expire-pending --threshold={$abandonmentMinutes}")
-            ->everyFifteenMinutes()
-            ->withoutOverlapping();
-        $schedule->command("orders:cancel-abandoned --timeout={$abandonmentMinutes}")
+        // One window, two owners. orders:cancel-abandoned owns attempts on
+        // PENDING orders: it cancels the inactive order and cascades its open
+        // attempts as ORDER_CLOSED. payments:expire-pending owns everything else
+        // (wallet top-ups with no order, PROCESSING orders, and terminal orders
+        // whose cascade was missed), so the two never race for the same row.
+        // Both read config('order.abandonment_minutes') when no option is given.
+        $schedule->command('orders:cancel-abandoned')
             ->everyTenMinutes()
+            ->withoutOverlapping();
+        $schedule->command('payments:expire-pending')
+            ->everyFifteenMinutes()
             ->withoutOverlapping();
 
         // Reclaim expired unspent gift balance daily

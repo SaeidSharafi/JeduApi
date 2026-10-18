@@ -175,6 +175,7 @@ return [
         'bundle_provisioning_identity'                => 'بسته: :name (کد: :sku)',
         'cannot_cancel_order_with_completed_payments' => 'امکان لغو سفارش :order_id به دلیل وجود پرداخت‌های موفق وجود ندارد. برای لغو خرید و بازگشت وجه لطفا با پشتیبانی تماس بگیرید.',
         'only_pending_orders_can_be_cancelled'        => 'تنها سفارش‌های «در انتظار» امکان لغو دارند. وضعیت فعلی این سفارش: :status.',
+        'cancelled_orders_cannot_be_reopened'         => 'سفارش لغوشده قابل بازگشایی نیست. از مشتری بخواهید سفارش جدیدی ثبت کند.',
         'order_cancelled_successfully'                => 'سفارش با موفقیت لغو شد.',
         'payment'                                     => [
             'delete_completed_payment_error'        => 'امکان حذف پرداخت‌های موفق و تکمیل‌شده وجود ندارد.',

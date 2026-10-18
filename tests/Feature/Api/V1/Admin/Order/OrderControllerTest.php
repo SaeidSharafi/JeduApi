@@ -372,6 +372,27 @@ describe('OrderController', function (): void {
 
         });
 
+        it('refuses to reopen a cancelled order', function (): void {
+            $this->authorized_user([
+                PermissionEnum::ORDER_UPDATE->value,
+            ]);
+            $order = Order::factory()->create([
+                'status'           => OrderStatusEnum::CANCELLED,
+                'cancelled_at'     => now()->subHour(),
+                'cancelled_reason' => App\Enums\Order\OrderCancellationReasonEnum::ADMIN,
+            ]);
+
+            $this->putJson(route('api.v1.admin.orders.update', ['order' => $order->id]), [
+                'status' => OrderStatusEnum::PENDING->value,
+            ])->assertStatus(422)
+                ->assertJsonPath('message', __('messages.order.cancelled_orders_cannot_be_reopened'));
+
+            $order->refresh();
+            expect($order->status)->toBe(OrderStatusEnum::CANCELLED)
+                ->and($order->cancelled_at)->not->toBeNull()
+                ->and($order->cancelled_reason)->toBe(App\Enums\Order\OrderCancellationReasonEnum::ADMIN);
+        });
+
         it('can delete an order with permissions', function (): void {
             $this->authorized_user([
                 PermissionEnum::ORDER_DELETE->value,

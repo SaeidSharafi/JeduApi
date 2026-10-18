@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Console\Commands\CancelAbandonedOrdersCommand;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderCancellationReasonEnum;
@@ -29,7 +30,7 @@ use function Pest\Laravel\artisan;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\travelTo;
 
-mutates(App\Console\Commands\CancelAbandonedOrdersCommand::class);
+mutates(CancelAbandonedOrdersCommand::class);
 
 it('cancels abandoned orders older than timeout threshold', function (): void {
     // Create an abandoned order (35 minutes old, pending, no payment)
@@ -398,7 +399,7 @@ it('respects custom timeout parameter', function (): void {
     ]);
 });
 
-it('releases reservations and cancels enrollments only for unpaid items', function (): void {
+it('releases reservations for unpaid items and revokes every enrollment', function (): void {
     $user   = User::factory()->create();
     $vendor = Vendor::factory()->create();
     $term   = Term::factory()->create();
@@ -444,7 +445,7 @@ it('releases reservations and cancels enrollments only for unpaid items', functi
         'status'                     => OrderItemStatusEnum::COMPLETED,
     ]);
 
-    // One enrollment is awaiting payment (should be cancelled)
+    // One enrollment is awaiting payment (the reachable state for an unpaid order)
     $enrollment1 = Enrollment::factory()->create([
         'order_id'                   => $order->id,
         'order_item_id'              => $item1->id,
@@ -453,7 +454,8 @@ it('releases reservations and cancels enrollments only for unpaid items', functi
         'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT,
     ]);
 
-    // Another enrollment is already active (should NOT be cancelled)
+    // An unpaid order cannot legitimately carry an active enrollment; the
+    // cancellation must still revoke it rather than leak access.
     $enrollment2 = Enrollment::factory()->create([
         'order_id'                   => $order->id,
         'order_item_id'              => $item2->id,
@@ -474,10 +476,46 @@ it('releases reservations and cancels enrollments only for unpaid items', functi
 
     assertDatabaseHas('enrollments', [
         'id'                => $enrollment2->id,
-        'enrollment_status' => EnrollmentStatusEnum::ACTIVE->value, // Unchanged
+        'enrollment_status' => EnrollmentStatusEnum::CANCELLED->value,
     ]);
 
     // The pending line still held a seat; the completed line already consumed it.
     expect($deliveryOption1->fresh()->reserved_count)->toBe(0)
         ->and($deliveryOption2->fresh()->reserved_count)->toBe(1);
+});
+
+it('falls back to the configured abandonment window when no timeout is given', function (): void {
+    config(['order.abandonment_minutes' => 45]);
+
+    $user = User::factory()->create();
+
+    // 40 minutes old: inside the configured 45-minute window, but past the
+    // 30-minute default the option used to carry.
+    travelTo(now()->subMinutes(40));
+    $recent = Order::factory()->create([
+        'customer_id' => $user->id,
+        'status'      => OrderStatusEnum::PENDING,
+    ]);
+
+    // 50 minutes old: past the configured window.
+    travelTo(now()->subMinutes(50));
+    $stale = Order::factory()->create([
+        'customer_id' => $user->id,
+        'status'      => OrderStatusEnum::PENDING,
+    ]);
+
+    Carbon::setTestNow();
+
+    artisan('orders:cancel-abandoned')
+        ->expectsOutput('Found 1 abandoned order(s).')
+        ->assertExitCode(0);
+
+    assertDatabaseHas('orders', [
+        'id'     => $recent->id,
+        'status' => OrderStatusEnum::PENDING->value,
+    ]);
+    assertDatabaseHas('orders', [
+        'id'     => $stale->id,
+        'status' => OrderStatusEnum::CANCELLED->value,
+    ]);
 });

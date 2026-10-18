@@ -119,7 +119,7 @@ Legend — Expected: `S` = sell at full price / skip the promo, `D` = apply disc
 | B8 | limit `null` | D every time | D (early `continue` at `:46-48`) | ✅ |
 | B9 | 2 usage rows but limit 2 | D once more | D | ✅ |
 | B10 | limit pooled across two codes of one promotion | second code blocked | blocked (`RecordPromotionUsageAction` stores promotion, not code) | ✅ by design |
-| B11 | pending order with only failed payment attempts, abandoned | slot released eventually | **never** — `CancelAbandonedOrdersCommand.php:61-63` skips orders that have any payment row | ❌ (I8) |
+| B11 | pending order with only failed payment attempts, abandoned | slot released eventually | released at the window — the canceller cancels the inactive order and releases the slot | ✅ (I8) |
 | B12 | pending order, abandoned-cancel command not scheduled | slot released at timeout | held indefinitely | ⚠️ (I8) |
 
 ### C. Cart content combinations
@@ -219,9 +219,9 @@ intent is "refund returns quota", both the release trigger and the count filter 
 Severity: medium (product decision).
 
 **I8 — Abandoned pending orders hold the slot, in one case forever.**
-`CancelAbandonedOrdersCommand` only cancels pending orders with **no payment rows at all**
-(`:61-63`), so a pending order with a failed attempt holds the coupon slot indefinitely.
-Severity: medium.
+`CancelAbandonedOrdersCommand` now measures inactivity from order updates and payment attempts,
+so a pending order with an old failed attempt is cancelled and its slot released. A completed
+payment, or an attempt inside the window, still blocks the cancellation. Severity: medium.
 
 **I9 — The error is a *coupon* error even when no coupon is involved.**
 Key `coupon`, message `coupon_usage_limit_reached`, no promotion name → the customer cannot tell
@@ -465,7 +465,7 @@ tests cover all of it, including the two admin counter-settlement paths.
 | Finding | Closed by | Commit |
 | --- | --- | --- |
 | I6 — global caps not enforced against unpaid orders | Caps are decided from one grouped count of `DiscountPromotionUsage::active()` rows in both finders; completion counters became reporting-only. Concurrency stays **bounded overshoot** (spec #150 decision a), stated in `DiscountPromotionCreateData::bodyParameters()` | `b91cc3bd`, `36c0f88e`, `6f655a2f` |
-| I8 — an abandoned pending order holds its slot | Reservation TTL: a hold older than `discounts.reservation_hold_minutes` (default 30) stops counting, evaluated at read time. `CancelAbandonedOrdersCommand` still skips orders that have any payment row, and no test asserts slot release from that command | `36c0f88e` |
+| I8 — an abandoned pending order holds its slot | Reservation TTL: a hold older than `discounts.reservation_hold_minutes` (default 30) stops counting, evaluated at read time. `CancelAbandonedOrdersCommand` now cancels pending orders whose order and payment activity are both older than the window (a completed payment or a fresh attempt still blocks) and releases the slot through `ReleasePromotionUsageSlotsAction`; no test still asserts that slot release directly | `36c0f88e`, `5f2943cc` |
 | I13 — flat-amount coupons under-deliver | `ApplyFixedAmountOffAction` apportions exactly `min(amount, discountable worth)` over the discountable lines with largest-remainder integer shares | `7a8c87f4` |
 | I17 — prepayment lines marked down inconsistently | One central discountable set (`OrderContextData::discountableItems()`) plus an `applyDiscount()` guard that no-ops on deposit and bundle lines; a registry-driven test walks every registered cart action | `f0d8089e`, `9d9004ca`, `9b302ea9` |
 | I18 — reward actions write wallet rows during calculation | Pricing is side-effect free: reward actions append an intent, `orders.reward_intents_json` snapshots it, and `SettleCompletedOrderAction` grants it once at completion with a deterministic idempotency key | `6537bcc6`, `c6ec566d`, `55380b93`, merged `d9e20cb9` |

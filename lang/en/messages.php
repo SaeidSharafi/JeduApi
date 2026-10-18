@@ -142,6 +142,7 @@ return [
         'cannot_delete_order_with_status'             => 'Cannot delete order :order_id with status :status.',
         'cannot_cancel_order_with_completed_payments' => 'Cannot cancel order :order_id because it has completed payments. Please contact support for a refund.',
         'only_pending_orders_can_be_cancelled'        => 'Only orders with a "Pending" status can be cancelled. Current status: :status.',
+        'cancelled_orders_cannot_be_reopened'         => 'A cancelled order cannot be reopened. Ask the customer to place a new order.',
         'order_cancelled_successfully'                => 'Order cancelled successfully.',
         'payment_already_pending'                     => 'Order :order_id already has a pending payment.',
         'payment_method_not_supported'                => 'The selected payment method is not supported.',

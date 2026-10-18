@@ -4,24 +4,20 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\Student;
 
-use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
+use App\Actions\Order\CancelOrderAction;
 use App\Actions\Payment\FailPendingOrderPaymentsAction;
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
-use App\Events\OrderStatusUpdatedEvent;
 use App\Models\Order;
-use App\Services\ProductReservationService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-final class CancelOrderByCustomerAction
+final readonly class CancelOrderByCustomerAction
 {
     public function __construct(
-        private ProductReservationService $productReservationService,
-        private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
+        private CancelOrderAction $cancelOrder,
         private FailPendingOrderPaymentsAction $failPendingOrderPayments,
     ) {}
 
@@ -58,48 +54,15 @@ final class CancelOrderByCustomerAction
             ]);
         }
 
-        $cancelledOrder = DB::transaction(function () use ($order): Order {
-            // Update order status to CANCELLED
-            $order->markCancelled(OrderCancellationReasonEnum::CUSTOMER);
-
-            // A cancelled order no longer holds the coupon/promotion slot.
-            $this->releasePromotionUsageSlots->handle($order);
-
-            // Release any reserved seats back to the pool (order is unpaid at this point)
-            foreach ($order->items as $item) {
-                if ($item->status === \App\Enums\Order\OrderItemStatusEnum::PENDING) {
-                    $this->productReservationService->release($item->product_delivery_option_id, $item->qty_ordered);
-                }
-            }
-
-            // Cancel any enrollments (if they exist, though they shouldn't for unpaid orders)
-            // Use each() instead of update() to fire model events for enrolled_count tracking
-            $order->enrollments()
-                ->where('enrollment_status', '!=', EnrollmentStatusEnum::CANCELLED)
-                ->each(function ($enrollment): void {
-                    $enrollment->enrollment_status = EnrollmentStatusEnum::CANCELLED;
-                    $enrollment->save();
-                });
-
-            $order->load([
-                'items',
-                'standaloneItems.productDeliveryOption',
-                'bundlePurchases.components.enrollment',
-                'payments',
-                'enrollments',
-            ]);
-
-            OrderStatusUpdatedEvent::dispatch($order);
-
-            return $order;
-        });
+        $cancelledOrder = DB::transaction(
+            fn (): Order => $this->cancelOrder->handle($order, OrderCancellationReasonEnum::CUSTOMER)
+        );
 
         // Close the order's open payment attempts in the same request, after the
         // order transaction commits: the order row is no longer locked, so this
         // cannot deadlock with a concurrent gateway verification.
         $this->failPendingOrderPayments->handle($cancelledOrder->id);
-        $cancelledOrder->load('payments');
 
-        return $cancelledOrder;
+        return $cancelledOrder->load('payments');
     }
 }

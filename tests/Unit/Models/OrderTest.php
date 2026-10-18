@@ -16,6 +16,8 @@ test('to array', function (): void {
             'id'                            => $order->id,
             'increment_id'                  => $order->increment_id,
             'status'                        => $order->status->value,
+            'cancelled_at'                  => $order->cancelled_at?->utc()->toJSON(),
+            'cancelled_reason'              => $order->cancelled_reason?->value,
             'customer_id'                   => $order->customer_id,
             'customer_email'                => $order->customer_email,
             'customer_phone'                => $order->customer_phone,
