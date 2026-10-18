@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
@@ -23,6 +24,8 @@ use Carbon\Carbon;
 use function Pest\Laravel\artisan;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\travelTo;
+
+mutates(App\Console\Commands\CancelAbandonedOrdersCommand::class);
 
 it('cancels abandoned orders older than timeout threshold', function (): void {
     // Create an abandoned order (35 minutes old, pending, no payment)
@@ -131,6 +134,100 @@ it('does not cancel orders with completed payment', function (): void {
         ->expectsOutputToContain('Checking for abandoned orders')
         ->expectsOutput('No abandoned orders found.')
         ->assertExitCode(0);
+});
+
+it('cancels abandoned orders whose payment attempts never completed', function (PaymentStatusEnum $status): void {
+    $user = User::factory()->create();
+
+    travelTo(now()->subMinutes(35));
+
+    $order = Order::factory()->create([
+        'customer_id' => $user->id,
+        'status'      => OrderStatusEnum::PENDING,
+    ]);
+
+    Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $user->id,
+        'status'      => $status->value,
+    ]);
+
+    Carbon::setTestNow();
+
+    artisan('orders:cancel-abandoned --timeout=30')
+        ->expectsOutput('Found 1 abandoned order(s).')
+        ->expectsOutput("✓ Cancelled order #{$order->increment_id} (ID: {$order->id})")
+        ->assertExitCode(0);
+
+    assertDatabaseHas('orders', [
+        'id'     => $order->id,
+        'status' => OrderStatusEnum::CANCELLED->value,
+    ]);
+})->with([
+    'failed attempt'  => PaymentStatusEnum::FAILED,
+    'pending attempt' => PaymentStatusEnum::PENDING,
+]);
+
+it('does not cancel an old order with a recent payment attempt', function (): void {
+    $user = User::factory()->create();
+
+    travelTo(now()->subMinutes(45));
+
+    $order = Order::factory()->create([
+        'customer_id' => $user->id,
+        'status'      => OrderStatusEnum::PENDING,
+    ]);
+
+    Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $user->id,
+        'status'      => PaymentStatusEnum::FAILED->value,
+    ]);
+
+    Carbon::setTestNow();
+
+    // The customer retried 10 minutes ago, so the inactivity window restarted.
+    travelTo(now()->subMinutes(10));
+    Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $user->id,
+        'status'      => PaymentStatusEnum::FAILED->value,
+    ]);
+    Carbon::setTestNow();
+
+    artisan('orders:cancel-abandoned --timeout=30')
+        ->expectsOutput('No abandoned orders found.')
+        ->assertExitCode(0);
+
+    assertDatabaseHas('orders', [
+        'id'     => $order->id,
+        'status' => OrderStatusEnum::PENDING->value,
+    ]);
+});
+
+it('does not cancel an old order that was updated recently', function (): void {
+    $user = User::factory()->create();
+
+    travelTo(now()->subMinutes(45));
+
+    $order = Order::factory()->create([
+        'customer_id' => $user->id,
+        'status'      => OrderStatusEnum::PENDING,
+    ]);
+
+    Carbon::setTestNow();
+
+    // Any activity on the order restarts the inactivity window.
+    $order->touch();
+
+    artisan('orders:cancel-abandoned --timeout=30')
+        ->expectsOutput('No abandoned orders found.')
+        ->assertExitCode(0);
+
+    assertDatabaseHas('orders', [
+        'id'     => $order->id,
+        'status' => OrderStatusEnum::PENDING->value,
+    ]);
 });
 
 it('does not cancel orders that are already completed or cancelled', function (): void {
@@ -257,7 +354,7 @@ it('respects custom timeout parameter', function (): void {
     ]);
 });
 
-it('only cancels enrollments in awaiting payment status', function (): void {
+it('releases reservations and cancels enrollments only for unpaid items', function (): void {
     $user   = User::factory()->create();
     $vendor = Vendor::factory()->create();
     $term   = Term::factory()->create();
@@ -272,13 +369,15 @@ it('only cancels enrollments in awaiting payment status', function (): void {
     ]);
 
     $deliveryOption1 = ProductDeliveryOption::factory()->create([
-        'product_id' => $product->id,
-        'status'     => PublicationStatusEnum::PUBLISHED,
+        'product_id'     => $product->id,
+        'status'         => PublicationStatusEnum::PUBLISHED,
+        'reserved_count' => 1,
     ]);
 
     $deliveryOption2 = ProductDeliveryOption::factory()->create([
-        'product_id' => $product->id,
-        'status'     => PublicationStatusEnum::PUBLISHED,
+        'product_id'     => $product->id,
+        'status'         => PublicationStatusEnum::PUBLISHED,
+        'reserved_count' => 1,
     ]);
 
     travelTo(now()->subMinutes(35));
@@ -292,11 +391,13 @@ it('only cancels enrollments in awaiting payment status', function (): void {
     $item1 = OrderItem::factory()->create([
         'order_id'                   => $order->id,
         'product_delivery_option_id' => $deliveryOption1->id,
+        'status'                     => OrderItemStatusEnum::PENDING,
     ]);
 
     $item2 = OrderItem::factory()->create([
         'order_id'                   => $order->id,
         'product_delivery_option_id' => $deliveryOption2->id,
+        'status'                     => OrderItemStatusEnum::COMPLETED,
     ]);
 
     // One enrollment is awaiting payment (should be cancelled)
@@ -331,4 +432,8 @@ it('only cancels enrollments in awaiting payment status', function (): void {
         'id'                => $enrollment2->id,
         'enrollment_status' => EnrollmentStatusEnum::ACTIVE->value, // Unchanged
     ]);
+
+    // The pending line still held a seat; the completed line already consumed it.
+    expect($deliveryOption1->fresh()->reserved_count)->toBe(0)
+        ->and($deliveryOption2->fresh()->reserved_count)->toBe(1);
 });

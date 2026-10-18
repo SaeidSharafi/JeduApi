@@ -6,12 +6,16 @@ namespace App\Console\Commands;
 
 use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Models\Order;
 use App\Services\ProductReservationService;
+use Carbon\CarbonInterface;
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class CancelAbandonedOrdersCommand extends Command
@@ -22,7 +26,7 @@ final class CancelAbandonedOrdersCommand extends Command
      * @var string
      */
     protected $signature = 'orders:cancel-abandoned
-                           {--timeout=30 : Minutes after which a pending order is considered abandoned}
+                           {--timeout=30 : Minutes of inactivity after which a pending order is considered abandoned}
                            {--dry-run : Show what would be cancelled without making changes}';
 
     /**
@@ -48,41 +52,33 @@ final class CancelAbandonedOrdersCommand extends Command
         $dryRun    = $this->option('dry-run');
         $threshold = now()->subMinutes($timeout);
 
-        $this->info("Checking for abandoned orders older than {$timeout} minutes (created before {$threshold})...");
+        $this->info("Checking for abandoned orders inactive for {$timeout} minutes (before {$threshold})...");
 
-        // Find orders that are truly abandoned:
-        // 1. Status is PENDING
-        // 2. Have NO payment attempts at all (not even failed ones)
-        //    This means the user never even tried to pay - they just left after creating the order
-        // 3. Created more than timeout minutes ago
-        //
-        // Note: Orders with failed/pending payment attempts are NOT cancelled - users can retry those
-        $abandonedOrders = Order::query()
-            ->where('status', OrderStatusEnum::PENDING)
-            ->where('created_at', '<', $threshold)
-            ->whereDoesntHave('payments') // No payment records at all
-            ->with(['items.enrollment', 'customer'])
-            ->get();
+        $query = $this->abandonedOrdersQuery($threshold);
+        $count = $query->count();
 
-        if ($abandonedOrders->isEmpty()) {
+        if ($count === 0) {
             $this->info('No abandoned orders found.');
 
             return Command::SUCCESS;
         }
 
-        $this->info("Found {$abandonedOrders->count()} abandoned order(s).");
+        $this->info("Found {$count} abandoned order(s).");
 
         if ($dryRun) {
             $this->warn('DRY RUN MODE - No changes will be made');
             $this->table(
                 ['Order ID', 'Increment ID', 'Customer', 'Created At', 'Grand Total'],
-                $abandonedOrders->map(fn (Order $o): array => [
-                    $o->id,
-                    $o->increment_id,
-                    $o->customer_email,
-                    $o->created_at->toDateTimeString(),
-                    number_format($o->grand_total).' IRR',
-                ])
+                $this->abandonedOrdersQuery($threshold)
+                    ->with('customer')
+                    ->get()
+                    ->map(fn (Order $o): array => [
+                        $o->id,
+                        $o->increment_id,
+                        $o->customer_email,
+                        $o->created_at->toDateTimeString(),
+                        number_format($o->grand_total).' IRR',
+                    ])
             );
 
             return Command::SUCCESS;
@@ -90,45 +86,111 @@ final class CancelAbandonedOrdersCommand extends Command
 
         $cancelledCount = 0;
 
-        foreach ($abandonedOrders as $order) {
-            try {
-                DB::transaction(function () use ($order): void {
-                    // Update order status to CANCELLED
-                    $order->status = OrderStatusEnum::CANCELLED;
-                    $order->save();
-
-                    // A cancelled order no longer holds the coupon/promotion slot.
-                    $this->releasePromotionUsageSlots->handle($order);
-
-                    // Cancel all associated enrollments
-                    foreach ($order->items as $item) {
-                        // Release the reserved seat back to the pool (unpaid order)
-                        $this->productReservationService->release($item->product_delivery_option_id, $item->qty_ordered);
-
-                        if ($item->enrollment && (
-                            $item->enrollment->enrollment_status === EnrollmentStatusEnum::AWAITING_PAYMENT
-                        )) {
-                            $item->enrollment->enrollment_status = EnrollmentStatusEnum::CANCELLED;
-                            $item->enrollment->save();
+        $this->abandonedOrdersQuery($threshold)->chunkById(
+            100,
+            function ($orders) use ($threshold, &$cancelledCount): void {
+                foreach ($orders as $order) {
+                    try {
+                        if (! $this->cancelIfStillAbandoned($order, $threshold)) {
+                            continue;
                         }
+
+                        $this->info("✓ Cancelled order #{$order->increment_id} (ID: {$order->id})");
+                        $cancelledCount++;
                     }
-
-                    // Dispatch event for any listeners
-                    OrderStatusUpdatedEvent::dispatch($order);
-                });
-
-                $this->info("✓ Cancelled order #{$order->increment_id} (ID: {$order->id})");
-                $cancelledCount++;
+                    // @codeCoverageIgnoreStart
+                    catch (Exception $e) {
+                        $this->error("✗ Failed to cancel order #{$order->increment_id}: ".$e->getMessage());
+                    }
+                    // @codeCoverageIgnoreEnd
+                }
             }
-            // @codeCoverageIgnoreStart
-            catch (Exception $e) {
-                $this->error("✗ Failed to cancel order #{$order->increment_id}: ".$e->getMessage());
-            }
-            // @codeCoverageIgnoreEnd
-        }
+        );
 
-        $this->info("Successfully cancelled {$cancelledCount} out of {$abandonedOrders->count()} abandoned order(s).");
+        $this->info("Successfully cancelled {$cancelledCount} out of {$count} abandoned order(s).");
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Pending orders with no activity for the whole window and no completed payment.
+     *
+     * Every checkout attempt creates a payment row before the processor runs, so a
+     * "no payments at all" filter would never match a real abandoned checkout. The
+     * retry window is therefore measured from the most recent activity: order
+     * creation/update, payment creation, or the payment's last attempt. Orders with
+     * a completed payment are never eligible, even if their status is still pending.
+     */
+    private function abandonedOrdersQuery(CarbonInterface $threshold): Builder
+    {
+        return Order::query()
+            ->where('status', OrderStatusEnum::PENDING)
+            ->where('created_at', '<', $threshold)
+            ->where('updated_at', '<', $threshold)
+            ->whereDoesntHave('payments', fn (Builder $query): Builder => $this->blockingPaymentScope($query, $threshold));
+    }
+
+    /**
+     * A payment that blocks cancellation: it settled the order, or it was
+     * touched/attempted inside the inactivity window (the user may still retry).
+     */
+    private function blockingPaymentScope(Builder $query, CarbonInterface $threshold): Builder
+    {
+        return $query
+            ->where('status', PaymentStatusEnum::COMPLETED->value)
+            ->orWhere('created_at', '>=', $threshold)
+            ->orWhere('last_attempted_at', '>=', $threshold);
+    }
+
+    /**
+     * Cancel the order only if it is still abandoned when the row is locked.
+     *
+     * The eligibility query and the cancellation are not atomic: a customer can
+     * start a retry between them. Locking the order and re-checking payments
+     * inside the transaction prevents cancelling an order that just gained a
+     * fresh payment attempt.
+     */
+    private function cancelIfStillAbandoned(Order $order, CarbonInterface $threshold): bool
+    {
+        return DB::transaction(function () use ($order, $threshold): bool {
+            $locked = Order::query()->whereKey($order->id)->lockForUpdate()->first();
+
+            if ($locked === null || $locked->status !== OrderStatusEnum::PENDING) {
+                return false;
+            }
+
+            if ($locked->payments()
+                ->where(fn (Builder $query): Builder => $this->blockingPaymentScope($query, $threshold))
+                ->exists()) {
+                return false;
+            }
+
+            $locked->status = OrderStatusEnum::CANCELLED;
+            $locked->save();
+
+            // A cancelled order no longer holds the coupon/promotion slot.
+            $this->releasePromotionUsageSlots->handle($locked);
+
+            foreach ($locked->items as $item) {
+                // Only unpaid lines still hold a seat. A completed line consumed
+                // its reservation when payment landed; releasing it again would
+                // hand the same seat to another order.
+                if ($item->status === OrderItemStatusEnum::PENDING) {
+                    $this->productReservationService->release($item->product_delivery_option_id, $item->qty_ordered);
+                }
+
+                if ($item->enrollment && (
+                    $item->enrollment->enrollment_status === EnrollmentStatusEnum::AWAITING_PAYMENT
+                )) {
+                    $item->enrollment->enrollment_status = EnrollmentStatusEnum::CANCELLED;
+                    $item->enrollment->save();
+                }
+            }
+
+            // Dispatch event for any listeners
+            OrderStatusUpdatedEvent::dispatch($locked);
+
+            return true;
+        });
     }
 }

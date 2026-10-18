@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Contracts\Payment\PaymentProcessorContract;
+use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Validation\ValidationException;
 use Mockery as m;
 
 it('verifies pending payments via the resolved processor and returns the updated payment', function (): void {
+    $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+
     $payment = Payment::factory()->create([
-        'status' => PaymentStatusEnum::PENDING,
-        'method' => PaymentMethodEnum::MELLAT_GATEWAY,
+        'order_id' => $order->id,
+        'status'   => PaymentStatusEnum::PENDING,
+        'method'   => PaymentMethodEnum::MELLAT_GATEWAY,
     ]);
 
     $callbackPayload = ['SaleReferenceId' => '987654'];
@@ -72,4 +77,24 @@ it('return same payemnt when the payment is no longer pending', function (): voi
 
     expect($returnedPayment->status)->toBe(PaymentStatusEnum::COMPLETED)
         ->and($returnedPayment->id)->toBe($payment->id);
+});
+
+it('rejects a pending payment whose order was cancelled', function (): void {
+    $order = Order::factory()->create(['status' => OrderStatusEnum::CANCELLED]);
+
+    $payment = Payment::factory()->create([
+        'order_id' => $order->id,
+        'status'   => PaymentStatusEnum::PENDING,
+        'method'   => PaymentMethodEnum::MELLAT_GATEWAY,
+    ]);
+
+    $factory = m::mock(PaymentProcessorFactory::class);
+    $factory->shouldNotReceive('make');
+
+    $action = new VerifyPaymentAction($factory);
+
+    expect(fn (): Payment => $action->handle($payment, ['SaleReferenceId' => '987654']))
+        ->toThrow(ValidationException::class);
+
+    expect($payment->fresh()->status)->toBe(PaymentStatusEnum::PENDING);
 });

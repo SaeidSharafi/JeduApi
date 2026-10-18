@@ -65,7 +65,12 @@ return Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->withoutOverlapping();
 
-        // Cancel abandoned pending orders (runs every 10 minutes, cancels orders older than 30 minutes)
+        // Fail gateway payments left initiated for too long, then cancel pending
+        // orders with no payment activity for 30 minutes. The canceler counts a
+        // recent payment row as activity, so a retry restarts the window.
+        $schedule->command('payments:check-stuck --threshold=30')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping();
         $schedule->command('orders:cancel-abandoned --timeout=30')
             ->everyTenMinutes()
             ->withoutOverlapping();

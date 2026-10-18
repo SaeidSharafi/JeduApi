@@ -57,6 +57,11 @@ final readonly class RetryOrderPaymentAction
         }
 
         $payment = DB::transaction(function () use ($order, $paymentMethod, $amountToPay): Payment {
+            // Lock the order so the abandonment sweeper cannot cancel it between
+            // the eligibility check and payment creation. Whichever transaction
+            // wins, the loser re-reads the committed state: a cancelled order
+            // rejects the retry, and a fresh payment attempt blocks cancellation.
+            $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
 
             $this->validateOrderEligibility($order);
 
