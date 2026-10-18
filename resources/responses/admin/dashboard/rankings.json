@@ -1,0 +1,108 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "top_products": [
+      {
+        "name": "دوره جامع برنامه‌نویسی",
+        "orders": 14,
+        "revenue": 126000000,
+        "share_pct": 38.7
+      },
+      {
+        "name": "کارگاه طراحی رابط کاربری",
+        "orders": 9,
+        "revenue": 81000000,
+        "share_pct": 24.9
+      },
+      {
+        "name": "بسته شغلی تحلیل داده",
+        "orders": 6,
+        "revenue": 60000000,
+        "share_pct": 18.5
+      },
+      {
+        "name": "وبینار مدیریت محصول",
+        "orders": 5,
+        "revenue": 35000000,
+        "share_pct": 10.8
+      },
+      {
+        "name": "جزوه دیجیتال اصول مصاحبه",
+        "orders": 4,
+        "revenue": 16000000,
+        "share_pct": 4.9
+      },
+      {
+        "name": "دوره مقدماتی شبکه",
+        "orders": 2,
+        "revenue": 7000000,
+        "share_pct": 2.2
+      }
+    ],
+    "categories": [
+      {
+        "name": "برنامه‌نویسی",
+        "orders": 15,
+        "revenue": 130000000,
+        "share_pct": 40.0
+      },
+      {
+        "name": "طراحی",
+        "orders": 10,
+        "revenue": 95000000,
+        "share_pct": 29.2
+      },
+      {
+        "name": "داده و تحلیل",
+        "orders": 7,
+        "revenue": 60000000,
+        "share_pct": 18.5
+      },
+      {
+        "name": "مدیریت",
+        "orders": 5,
+        "revenue": 35000000,
+        "share_pct": 10.8
+      },
+      {
+        "name": "شبکه",
+        "orders": 2,
+        "revenue": 7000000,
+        "share_pct": 2.2
+      }
+    ],
+    "vendors": [
+      {
+        "name": "آکادمی فناوری",
+        "orders": 21,
+        "revenue": 193000000,
+        "share_pct": 59.4
+      },
+      {
+        "name": "مرکز طراحی",
+        "orders": 10,
+        "revenue": 95000000,
+        "share_pct": 29.2
+      },
+      {
+        "name": "دپارتمان داده",
+        "orders": 6,
+        "revenue": 30000000,
+        "share_pct": 9.2
+      },
+      {
+        "name": "موسسه مدیریت",
+        "orders": 3,
+        "revenue": 7000000,
+        "share_pct": 2.2
+      }
+    ]
+  },
+  "metadata": {
+    "generated_at": "1404-07-28 10:42:11",
+    "cached": false,
+    "cache_ttl": 300,
+    "timezone": "Asia/Tehran",
+    "currency": "IRR"
+  }
+}
