@@ -14,6 +14,10 @@ namespace App\Enums\System;
  *
  * Deliberately not an {@see \App\Traits\AdvanceEnum} adopter: the tag has no
  * user-facing label to translate, only the values the operator commands list.
+ *
+ * The dashboard reports have no write path that invalidates them: their keys
+ * expire by TTL, and a caller forces a recompute with `fresh=1` instead of
+ * bumping this tag. Nothing dispatches this tag's invalidation today.
  */
 enum CacheTag: string
 {
@@ -24,6 +28,7 @@ enum CacheTag: string
     case Discounts = 'discounts';
     case Settings  = 'settings';
     case Auth      = 'auth';
+    case Dashboard = 'dashboard';
 
     /**
      * Every tag value, in declaration order.

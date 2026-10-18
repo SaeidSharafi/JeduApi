@@ -313,6 +313,8 @@ return [
         'VIEW_AUDIT_LOGS'        => 'system.audit.view',
         'MANAGE_SETTINGS'        => 'system.settings.manage',
         */
+        'dashboard_view'       => 'dashboard.view',
+        'dashboard_financials' => 'dashboard.financials',
     ],
 
     /**

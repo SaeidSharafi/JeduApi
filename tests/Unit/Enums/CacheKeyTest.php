@@ -51,5 +51,6 @@ it('exposes the invalidation vocabulary', function (): void {
         'discounts',
         'settings',
         'auth',
+        'dashboard',
     ]);
 });

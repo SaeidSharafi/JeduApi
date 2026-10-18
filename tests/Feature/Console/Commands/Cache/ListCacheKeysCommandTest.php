@@ -30,6 +30,11 @@ it('lists every registry case with its template, durations and group', function 
                 ['OtpValue', 'otp_{identifier}_{guard}_value_{type}', '300', 'none', 'auth'],
                 ['OtpMarker', 'otp_{identifier}_{guard}_created_{type}', '900', 'none', 'auth'],
                 ['OtpAttempts', 'otp_{identifier}_{guard}_verify_attempts_{type}', '300', 'none', 'auth'],
+                ['AdminDashboardSummary', 'admin.dashboard.summary.{period}', '60', 'none', 'dashboard'],
+                ['AdminDashboardMoney', 'admin.dashboard.money.{period}', '60', 'none', 'dashboard'],
+                ['AdminDashboardLive', 'admin.dashboard.live', '30', 'none', 'dashboard'],
+                ['AdminDashboardWallet', 'admin.dashboard.wallet', '300', 'none', 'dashboard'],
+                ['AdminDashboardRankings', 'admin.dashboard.rankings.{period}', '300', 'none', 'dashboard'],
             ],
         )
         ->assertExitCode(0);

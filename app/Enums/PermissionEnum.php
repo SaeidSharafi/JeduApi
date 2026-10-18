@@ -61,6 +61,8 @@ enum PermissionEnum: string
     case COURSE_UPDATE_OWN                        = 'courses.update_own';
     case COURSE_VIEW                              = 'courses.view';
     case COURSE_VIEW_ANY                          = 'courses.view_any';
+    case DASHBOARD_FINANCIALS                     = 'dashboard.financials';
+    case DASHBOARD_VIEW                           = 'dashboard.view';
     case DISCOUNT_CREATE                          = 'discounts.create';
     case DISCOUNT_DELETE                          = 'discounts.delete';
     case DISCOUNT_UPDATE                          = 'discounts.update';

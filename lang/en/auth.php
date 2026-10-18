@@ -29,6 +29,7 @@ return [
             'collaboration_requests'   => 'Collaboration Requests',
             'contact_us_requests'      => 'Contact Us Requests',
             'courses'                  => 'Courses',
+            'dashboard'                => 'Dashboard',
             'discounts'                => 'Discounts',
             'enrollments'              => 'Enrollments',
             'files'                    => 'Files',
@@ -84,6 +85,9 @@ return [
             'blog_posts' => [
                 'publish' => 'Publish',
                 'feature' => 'Feature',
+            ],
+            'dashboard' => [
+                'financials' => 'View Financial Reports',
             ],
             'enrollments' => [
                 'diagnostics_view' => 'View Diagnostics',
