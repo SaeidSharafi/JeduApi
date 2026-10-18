@@ -30,6 +30,7 @@ return [
             'collaboration_requests'   => 'درخواست‌های همکاری',
             'contact_us_requests'      => 'درخواست‌های تماس با ما',
             'courses'                  => 'دوره‌ها',
+            'dashboard'                => 'داشبورد',
             'discounts'                => 'تخفیف‌ها',
             'enrollments'              => 'ثبت‌نام‌ها',
             'files'                    => 'فایل‌ها',
@@ -84,6 +85,9 @@ return [
             'blog_posts' => [
                 'publish' => 'انتشار',
                 'feature' => 'ویژه‌سازی',
+            ],
+            'dashboard' => [
+                'financials' => 'مشاهده گزارش‌های مالی',
             ],
             'enrollments' => [
                 'diagnostics_view' => 'مشاهده گزارش فنی / دیاگنوستیک',

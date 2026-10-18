@@ -22,26 +22,31 @@ use InvalidArgumentException;
  */
 enum CacheKey: string
 {
-    case Slider              = 'shop.homepage.sliders';
-    case PartnersInHome      = 'shop.homepage.partners';
-    case StudentStory        = 'shop.homepage.student-stories:{hash}';
-    case PartnersInCourse    = 'shop.course.partners';
-    case Partners            = 'shop.partners';
-    case OrganizationPage    = 'shop.organization-page:{limit}';
-    case StudentQuizzes      = 'student_quizzes:{userId}';
-    case TeacherQuizzes      = 'teacher_quizzes:{userId}';
-    case GoodForStart        = 'shop.category.{slug}.good-for-start.courses-{limit}';
-    case CataloguePriceBound = 'shop.catalogue.price-bound.{scope}';
-    case Search              = 'search:{hash}';
-    case SearchSuggest       = 'search:suggest:{hash}';
-    case DiscountHandlers    = 'discounts.handler_registry.cache';
-    case Settings            = 'settings.all';
-    case DigipayAccessToken  = 'digipay_access_token';
-    case AccessToken         = 'AccessToken::{hash}';
-    case Tokenable           = 'token_{id}::id_{env}';
-    case OtpValue            = 'otp_{identifier}_{guard}_value_{type}';
-    case OtpMarker           = 'otp_{identifier}_{guard}_created_{type}';
-    case OtpAttempts         = 'otp_{identifier}_{guard}_verify_attempts_{type}';
+    case Slider                 = 'shop.homepage.sliders';
+    case PartnersInHome         = 'shop.homepage.partners';
+    case StudentStory           = 'shop.homepage.student-stories:{hash}';
+    case PartnersInCourse       = 'shop.course.partners';
+    case Partners               = 'shop.partners';
+    case OrganizationPage       = 'shop.organization-page:{limit}';
+    case StudentQuizzes         = 'student_quizzes:{userId}';
+    case TeacherQuizzes         = 'teacher_quizzes:{userId}';
+    case GoodForStart           = 'shop.category.{slug}.good-for-start.courses-{limit}';
+    case CataloguePriceBound    = 'shop.catalogue.price-bound.{scope}';
+    case Search                 = 'search:{hash}';
+    case SearchSuggest          = 'search:suggest:{hash}';
+    case DiscountHandlers       = 'discounts.handler_registry.cache';
+    case Settings               = 'settings.all';
+    case DigipayAccessToken     = 'digipay_access_token';
+    case AccessToken            = 'AccessToken::{hash}';
+    case Tokenable              = 'token_{id}::id_{env}';
+    case OtpValue               = 'otp_{identifier}_{guard}_value_{type}';
+    case OtpMarker              = 'otp_{identifier}_{guard}_created_{type}';
+    case OtpAttempts            = 'otp_{identifier}_{guard}_verify_attempts_{type}';
+    case AdminDashboardSummary  = 'admin.dashboard.summary.{period}';
+    case AdminDashboardMoney    = 'admin.dashboard.money.{period}';
+    case AdminDashboardLive     = 'admin.dashboard.live';
+    case AdminDashboardWallet   = 'admin.dashboard.wallet';
+    case AdminDashboardRankings = 'admin.dashboard.rankings.{period}';
 
     /**
      * Substitute the named parameters into the key template.
@@ -77,15 +82,20 @@ enum CacheKey: string
         return match ($this) {
             self::Slider, self::PartnersInHome, self::PartnersInCourse,
             self::Partners, self::OrganizationPage, self::StudentStory, self::StudentQuizzes,
-            self::TeacherQuizzes, self::Search     => 300,
-            self::OtpValue                         => (int) config('otp.ttl_seconds', 300),
-            self::OtpMarker                        => (int) config('otp.marker_ttl_seconds', 900),
-            self::OtpAttempts                      => (int) config('otp.verify_attempt_window_seconds', 300),
-            self::SearchSuggest                    => 3600,
-            self::GoodForStart                     => 1800,
-            self::CataloguePriceBound              => 1800,
-            self::DigipayAccessToken               => 3300,
-            self::AccessToken, self::Tokenable     => 360,
+            self::TeacherQuizzes, self::Search => 300,
+            self::OtpValue                     => (int) config('otp.ttl_seconds', 300),
+            self::OtpMarker                    => (int) config('otp.marker_ttl_seconds', 900),
+            self::OtpAttempts                  => (int) config('otp.verify_attempt_window_seconds', 300),
+            self::SearchSuggest                => 3600,
+            self::GoodForStart                 => 1800,
+            self::CataloguePriceBound          => 1800,
+            self::DigipayAccessToken           => 3300,
+            self::AccessToken, self::Tokenable => 360,
+            self::AdminDashboardLive           => 30,
+            self::AdminDashboardSummary,
+            self::AdminDashboardMoney => 60,
+            self::AdminDashboardWallet,
+            self::AdminDashboardRankings           => 300,
             self::Settings, self::DiscountHandlers => null,
         };
     }
@@ -123,6 +133,9 @@ enum CacheKey: string
             self::Settings, self::DigipayAccessToken => CacheTag::Settings,
             self::AccessToken, self::Tokenable,
             self::OtpValue, self::OtpMarker, self::OtpAttempts => CacheTag::Auth,
+            self::AdminDashboardSummary, self::AdminDashboardMoney,
+            self::AdminDashboardLive, self::AdminDashboardWallet,
+            self::AdminDashboardRankings => CacheTag::Dashboard,
         };
     }
 }

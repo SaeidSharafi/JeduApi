@@ -39,7 +39,7 @@ it('rejects an unknown group with an explicit error and changes nothing', functi
     $cache->put(CacheKey::Slider, [], 'sliders');
 
     $this->artisan('cache:invalidate bogus')
-        ->expectsOutput('Unknown cache group [bogus]. Available groups: home_page, content, catalog, search, discounts, settings, auth.')
+        ->expectsOutput('Unknown cache group [bogus]. Available groups: home_page, content, catalog, search, discounts, settings, auth, dashboard.')
         ->assertExitCode(1);
 
     expect($cache->get(CacheKey::Slider))->toBe('sliders')

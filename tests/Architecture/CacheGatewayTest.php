@@ -290,6 +290,15 @@ it('reports every tag as uncovered when no writer clears it', function (): void 
     ));
 });
 
-it('has at least one writer clearing every cache tag', function (): void {
-    expect(cacheGatewayUncoveredTags(cacheGatewayClearedTags()))->toBe([]);
+/**
+ * Tags whose keys are TTL-only on purpose: no write path changes them, and a
+ * caller recomputes one entry with `fresh=1` instead of bumping a generation.
+ * Adding a tag here is a decision, not a default.
+ */
+const CACHE_TAGS_WITHOUT_WRITERS = [
+    CacheTag::Dashboard->value,
+];
+
+it('has at least one writer clearing every cache tag that has writers', function (): void {
+    expect(cacheGatewayUncoveredTags(cacheGatewayClearedTags()))->toBe(CACHE_TAGS_WITHOUT_WRITERS);
 });

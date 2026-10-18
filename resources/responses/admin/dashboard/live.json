@@ -1,0 +1,50 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "ops": {
+      "gateway_errors": {
+        "count": 3,
+        "rate_pct": 97.1
+      },
+      "provisioning_failures": {
+        "count": 2
+      },
+      "pending_refunds": {
+        "count": 1,
+        "amount": 5000000,
+        "oldest_created_at": "1404-07-30 10:00:00"
+      },
+      "stuck_processing": {
+        "count": 1,
+        "oldest_updated_at": "1404-07-27 09:00:00"
+      }
+    },
+    "health": {
+      "gateway": {
+        "rate_pct": 97.1,
+        "sample": 35
+      },
+      "provisioning": {
+        "healthy_count": 120,
+        "active_count": 122,
+        "healthy_share_pct": 98.4,
+        "open_failures": 2
+      },
+      "sms": {
+        "rate_pct": null,
+        "sample": 0,
+        "skipped": 4
+      },
+      "imports": {
+        "running": 0
+      }
+    }
+  },
+  "metadata": {
+    "generated_at": "1404-07-28 10:42:11",
+    "cached": false,
+    "cache_ttl": 30,
+    "timezone": "Asia/Tehran",
+    "currency": "IRR"
+  }
+}

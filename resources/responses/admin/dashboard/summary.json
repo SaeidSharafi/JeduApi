@@ -1,0 +1,88 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "period": {
+      "key": "30d",
+      "start": "1404-05-07",
+      "end": "1404-06-05",
+      "previous_start": "1404-04-08",
+      "previous_end": "1404-05-06"
+    },
+    "kpis": {
+      "net_revenue": {
+        "value": 486500000,
+        "previous": 412300000,
+        "change_pct": 18.0
+      },
+      "paid_orders": {
+        "value": 148,
+        "previous": 131,
+        "change_pct": 13.0
+      },
+      "aov": {
+        "value": 3287162,
+        "previous": 3147328,
+        "change_pct": 4.4
+      },
+      "new_learners": {
+        "value": 96,
+        "previous": 0,
+        "change_pct": null
+      },
+      "unfinished_payments": {
+        "value": 7,
+        "previous": 5,
+        "change_pct": 40.0,
+        "amount": 26400000,
+        "previous_amount": 21800000
+      }
+    },
+    "trend": {
+      "start": "1404-05-07",
+      "end": "1404-06-05",
+      "previous_start": "1404-04-08",
+      "previous_end": "1404-05-06",
+      "points": [
+        {
+          "date": "1404-05-07",
+          "revenue": 12400000,
+          "orders": 4
+        },
+        {
+          "date": "1404-05-08",
+          "revenue": 8600000,
+          "orders": 3
+        },
+        {
+          "date": "1404-05-09",
+          "revenue": 0,
+          "orders": 0
+        }
+      ],
+      "previous_points": [
+        {
+          "date": "1404-04-08",
+          "revenue": 10200000,
+          "orders": 3
+        },
+        {
+          "date": "1404-04-09",
+          "revenue": 7400000,
+          "orders": 2
+        },
+        {
+          "date": "1404-04-10",
+          "revenue": 0,
+          "orders": 0
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "generated_at": "1404-06-05 12:00:00",
+    "cached": false,
+    "cache_ttl": 60,
+    "timezone": "Asia/Tehran",
+    "currency": "IRR"
+  }
+}
