@@ -22,16 +22,6 @@ final readonly class DashboardPeriodWindow
         $this->end   = $end->endOfDay();
     }
 
-    public function startJalali(): string
-    {
-        return Verta::instance($this->start)->format('Y-m-d');
-    }
-
-    public function endJalali(): string
-    {
-        return Verta::instance($this->end)->format('Y-m-d');
-    }
-
     /**
      * One Jalali Y-m-d entry per day covered by the window, oldest first.
      *

@@ -6,6 +6,7 @@ use App\Services\Dashboard\DashboardPeriod;
 use App\Services\Dashboard\DashboardPeriodWindow;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
+use Hekmatinasser\Verta\Verta;
 
 mutates(DashboardPeriod::class);
 
@@ -21,9 +22,14 @@ function dashboardWindowBounds(DashboardPeriodWindow $window): array
     return [
         'start'        => $window->start->format('Y-m-d H:i:s'),
         'end'          => $window->end->format('Y-m-d H:i:s'),
-        'start_jalali' => $window->startJalali(),
-        'end_jalali'   => $window->endJalali(),
+        'start_jalali' => dashboardJalali($window->start),
+        'end_jalali'   => dashboardJalali($window->end),
     ];
+}
+
+function dashboardJalali(CarbonImmutable $date): string
+{
+    return Verta::instance($date)->format('Y-m-d');
 }
 
 function dashboardPeriodNow(string $dateTime): CarbonImmutable
@@ -179,6 +185,13 @@ it('uses the period itself as the trend for every other period', function (strin
     'mtd' => ['mtd', 5, '1404-06-01', '1404-06-05'],
 ]);
 
+it('keeps the month-to-date previous trend on the clamped previous-month span', function (): void {
+    $period = DashboardPeriod::resolve('mtd', dashboardPeriodNow('2026-04-19 12:00:00'));
+
+    expect($period->trend()->days())->toHaveCount(30)
+        ->and($period->previousTrend()->days())->toHaveCount(29);
+});
+
 it('rejects unknown period keys instead of falling back to a default', function (string $key): void {
     DashboardPeriod::resolve($key, dashboardPeriodNow('2025-08-27 12:00:00'));
 })->with(['90d', 'week', '', 'TODAY'])->throws(InvalidArgumentException::class);
@@ -202,7 +215,7 @@ it('resolves the current time in Tehran when no now is injected', function (): v
 
     expect($period->current()->start->format('Y-m-d H:i:s'))->toBe('2025-08-27 00:00:00')
         ->and($period->current()->start->timezoneName)->toBe('Asia/Tehran')
-        ->and($period->current()->startJalali())->toBe('1404-06-05');
+        ->and(dashboardJalali($period->current()->start))->toBe('1404-06-05');
 });
 
 it('resolves every advertised period key', function (string $key): void {

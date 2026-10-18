@@ -9,10 +9,9 @@ use App\Data\Admin\Dashboard\DashboardRefreshQueryData;
 use App\Data\Admin\Dashboard\DashboardWalletData;
 use App\Enums\PermissionEnum;
 use App\Enums\System\CacheKey;
-use App\Enums\Wallet\WalletStatusEnum;
 use App\Http\Controllers\Controller;
-use App\Models\Wallet;
 use App\Services\Dashboard\DashboardBlockCache;
+use App\Services\Dashboard\DashboardWalletReport;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -30,43 +29,20 @@ final class WalletController extends Controller
      *
      * @responseFile 200 resources/responses/admin/dashboard/wallet.json
      */
-    public function __invoke(DashboardRefreshQueryData $query, DashboardBlockCache $cache): ApiResponseInterface
-    {
+    public function __invoke(
+        DashboardRefreshQueryData $query,
+        DashboardBlockCache $cache,
+        DashboardWalletReport $report,
+    ): ApiResponseInterface {
         Gate::authorize(PermissionEnum::DASHBOARD_FINANCIALS->value);
 
         $block = $cache->remember(
             CacheKey::AdminDashboardWallet,
             [],
-            fn (): array => $this->walletTotals(),
+            fn (): array => $report->totals(),
             $query->fresh,
         );
 
         return apiResponse()->success(DashboardWalletData::from($block['payload']), metadata: $block['metadata']);
-    }
-
-    /**
-     * Wallet liability in a single aggregate query.
-     *
-     * @return array{normal_balance: int, gift_balance: int, total_liability: int, active_wallets: int}
-     */
-    private function walletTotals(): array
-    {
-        $totals = (array) Wallet::query()
-            ->where('status', WalletStatusEnum::ACTIVE)
-            ->selectRaw('COALESCE(SUM(balance), 0) AS normal_balance')
-            ->selectRaw('COALESCE(SUM(gift_balance), 0) AS gift_balance')
-            ->selectRaw('COUNT(*) AS active_wallets')
-            ->toBase()
-            ->first();
-
-        $normalBalance = (int) ($totals['normal_balance'] ?? 0);
-        $giftBalance   = (int) ($totals['gift_balance'] ?? 0);
-
-        return [
-            'normal_balance'  => $normalBalance,
-            'gift_balance'    => $giftBalance,
-            'total_liability' => $normalBalance + $giftBalance,
-            'active_wallets'  => (int) ($totals['active_wallets'] ?? 0),
-        ];
     }
 }

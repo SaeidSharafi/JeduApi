@@ -21,10 +21,13 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Vendor;
+use App\Services\Dashboard\DashboardRankingsReport;
 
 use function Pest\Laravel\getJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+mutates(DashboardRankingsReport::class);
 
 const RANKINGS_ENDPOINT = '/api/v1/admin/dashboard/rankings';
 

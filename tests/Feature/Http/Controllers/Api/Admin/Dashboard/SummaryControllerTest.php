@@ -13,10 +13,13 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
+use App\Services\Dashboard\DashboardSummaryReport;
 
 use function Pest\Laravel\getJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+mutates(DashboardSummaryReport::class);
 
 const SUMMARY_ENDPOINT = '/api/v1/admin/dashboard/summary';
 
@@ -72,11 +75,14 @@ function summaryRefund(
     ]);
 }
 
-function summaryTopUp(int $amount, string $createdAt): Payment
-{
+function summaryTopUp(
+    int $amount,
+    string $createdAt,
+    PaymentStatusEnum $status = PaymentStatusEnum::COMPLETED,
+): Payment {
     return Payment::factory()->topup()->create([
         'amount'     => $amount,
-        'status'     => PaymentStatusEnum::COMPLETED,
+        'status'     => $status,
         'created_by' => null,
         'created_at' => $createdAt,
         'updated_at' => $createdAt,
@@ -316,6 +322,19 @@ it('counts unfinished payments and their amount for both windows', function (): 
     $response->assertJsonPath('data.kpis.unfinished_payments.previous', 1);
     $response->assertJsonPath('data.kpis.unfinished_payments.previous_amount', 50);
     $response->assertJsonPath('data.kpis.unfinished_payments.change_pct', 100.0);
+});
+
+it('counts a pending wallet top-up as an unfinished payment', function (): void {
+    $this->authorized_user([PermissionEnum::DASHBOARD_FINANCIALS->value]);
+    $this->travelTo('2025-08-27 12:00:00');
+
+    summaryTopUp(5_000, '2025-08-11 10:00:00', PaymentStatusEnum::PENDING);
+
+    $response = getJson(SUMMARY_ENDPOINT);
+
+    $response->assertOk();
+    $response->assertJsonPath('data.kpis.unfinished_payments.value', 1);
+    $response->assertJsonPath('data.kpis.unfinished_payments.amount', 5_000);
 });
 
 it('zero-fills the daily trend and the previous trend for the whole period', function (): void {

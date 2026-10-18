@@ -6,10 +6,13 @@ use App\Enums\PermissionEnum;
 use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Services\Dashboard\DashboardWalletReport;
 
 use function Pest\Laravel\getJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+mutates(DashboardWalletReport::class);
 
 const WALLET_ENDPOINT = '/api/v1/admin/dashboard/wallet';
 

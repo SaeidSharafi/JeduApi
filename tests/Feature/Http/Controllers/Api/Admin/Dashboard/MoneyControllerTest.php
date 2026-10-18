@@ -17,10 +17,13 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
+use App\Services\Dashboard\DashboardMoneyReport;
 
 use function Pest\Laravel\getJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+mutates(DashboardMoneyReport::class);
 
 const MONEY_ENDPOINT = '/api/v1/admin/dashboard/money';
 
@@ -316,6 +319,24 @@ it('groups the paid cohort by product type with bundle purchases at selling pric
     $response->assertJsonPath('data.product_type_mix.unknown.amount', 250_000);
     $response->assertJsonPath('data.product_type_mix.unknown.share_pct', 9.1);
     $response->assertJsonPath('data.free_orders', 1);
+});
+
+it('allocates the discounted order total across product types so both blocks reconcile', function (): void {
+    $this->authorized_user([PermissionEnum::DASHBOARD_FINANCIALS->value]);
+
+    $order = moneyOrder(1_400_000);
+    moneyPayment($order);
+    moneyLine($order, moneyOption(ProductableEnum::COURSE, 1_000_000), 1_000_000, 1_000_000);
+    moneyLine($order, moneyOption(ProductableEnum::SEMINAR, 500_000), 500_000, 500_000);
+
+    $response = getJson(MONEY_ENDPOINT);
+
+    $response->assertOk();
+    $response->assertJsonPath('data.payment_mix.full.amount', 1_400_000);
+    $response->assertJsonPath('data.product_type_mix.course.amount', 933_333);
+    $response->assertJsonPath('data.product_type_mix.course.share_pct', 66.7);
+    $response->assertJsonPath('data.product_type_mix.seminar.amount', 466_667);
+    $response->assertJsonPath('data.product_type_mix.seminar.share_pct', 33.3);
 });
 
 it('only counts orders created inside the selected period with a completed payment', function (): void {

@@ -20,11 +20,14 @@ use App\Models\PaymentTransaction;
 use App\Models\ProvisioningAttempt;
 use App\Models\Refund;
 use App\Models\SmsLog;
+use App\Services\Dashboard\DashboardLiveReport;
 use Illuminate\Support\Carbon;
 
 use function Pest\Laravel\getJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
+
+mutates(DashboardLiveReport::class);
 
 const LIVE_ENDPOINT = '/api/v1/admin/dashboard/live';
 

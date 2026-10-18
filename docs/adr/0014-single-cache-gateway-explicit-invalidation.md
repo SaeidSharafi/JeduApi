@@ -64,3 +64,7 @@ The value was `Permission::where('guard_name', 'staff')->pluck('name')` — 172 
 Both staff login paths (`StaffPasswordLoginController`, `StaffOtpAuthenticationController`) now query the list directly. `CacheKey::StaffPermissions` and the `config('cache.keys.all_permissions')` literal are gone. A list that is never stored cannot be stale, so no write path has to remember to clear it.
 
 Measured locally (`CACHE_STORE=redis`, 172 permissions): cached read 1.06 ms; direct query 3.56 ms, of which 3.06 ms is the PostgreSQL round trip and 0.043 ms is the query itself. The cache's apparent win was an artifact of Docker network asymmetry between the Redis and PostgreSQL containers; with both on the production LAN it is a wash.
+
+## Addendum — the dashboard reports are a TTL-only tag (#190)
+
+`CacheTag::Dashboard` groups the five read-only report keys but has no writer: the endpoints are pure projections, their keys expire by TTL (30–300 s), and a caller forces a recompute of one block with `fresh=1` instead of bumping a generation. The per-tag coverage test therefore allowlists this tag in `CACHE_TAGS_WITHOUT_WRITERS`; adding another tag to that list is a decision, not a default. The invariant still holds for every tag that has a write path.
