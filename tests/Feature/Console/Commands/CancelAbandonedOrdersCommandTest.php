@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Payment\PaymentTransactionErrorCodeEnum;
+use App\Enums\Payment\PaymentTransactionStatusEnum;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\PaymentTransaction;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Term;
@@ -85,6 +89,10 @@ it('cancels abandoned orders older than timeout threshold', function (): void {
         'id'     => $order->id,
         'status' => OrderStatusEnum::CANCELLED->value,
     ]);
+
+    $order->refresh();
+    expect($order->cancelled_at)->not->toBeNull()
+        ->and($order->cancelled_reason)->toBe(OrderCancellationReasonEnum::ABANDONED);
 
     assertDatabaseHas('enrollments', [
         'id'                => $enrollment->id,
@@ -167,6 +175,42 @@ it('cancels abandoned orders whose payment attempts never completed', function (
     'failed attempt'  => PaymentStatusEnum::FAILED,
     'pending attempt' => PaymentStatusEnum::PENDING,
 ]);
+
+it('closes pending payment attempts when cancelling an abandoned order', function (): void {
+    $user = User::factory()->create();
+
+    travelTo(now()->subMinutes(35));
+
+    $order = Order::factory()->create([
+        'customer_id' => $user->id,
+        'status'      => OrderStatusEnum::PENDING,
+    ]);
+
+    $payment = Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $user->id,
+        'status'      => PaymentStatusEnum::PENDING,
+    ]);
+
+    $transaction = PaymentTransaction::factory()->create([
+        'payment_id'            => $payment->id,
+        'status'                => PaymentTransactionStatusEnum::INITIATED,
+        'transaction_reference' => '200000012',
+        'initiated_at'          => now()->subMinutes(35),
+        'completed_at'          => null,
+    ]);
+
+    Carbon::setTestNow();
+
+    artisan('orders:cancel-abandoned --timeout=30')
+        ->expectsOutput('Found 1 abandoned order(s).')
+        ->assertExitCode(0);
+
+    $transaction->refresh();
+    expect($payment->fresh()->status)->toBe(PaymentStatusEnum::FAILED)
+        ->and($transaction->status)->toBe(PaymentTransactionStatusEnum::FAILED)
+        ->and($transaction->error_code)->toBe(PaymentTransactionErrorCodeEnum::ORDER_CLOSED->value);
+});
 
 it('does not cancel an old order with a recent payment attempt', function (): void {
     $user = User::factory()->create();

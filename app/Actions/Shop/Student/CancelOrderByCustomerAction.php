@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Actions\Shop\Student;
 
 use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
+use App\Actions\Payment\FailPendingOrderPaymentsAction;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\OrderStatusUpdatedEvent;
@@ -20,6 +22,7 @@ final class CancelOrderByCustomerAction
     public function __construct(
         private ProductReservationService $productReservationService,
         private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
+        private FailPendingOrderPaymentsAction $failPendingOrderPayments,
     ) {}
 
     /**
@@ -55,10 +58,9 @@ final class CancelOrderByCustomerAction
             ]);
         }
 
-        return DB::transaction(function () use ($order): Order {
+        $cancelledOrder = DB::transaction(function () use ($order): Order {
             // Update order status to CANCELLED
-            $order->status = OrderStatusEnum::CANCELLED;
-            $order->save();
+            $order->markCancelled(OrderCancellationReasonEnum::CUSTOMER);
 
             // A cancelled order no longer holds the coupon/promotion slot.
             $this->releasePromotionUsageSlots->handle($order);
@@ -91,5 +93,13 @@ final class CancelOrderByCustomerAction
 
             return $order;
         });
+
+        // Close the order's open payment attempts in the same request, after the
+        // order transaction commits: the order row is no longer locked, so this
+        // cannot deadlock with a concurrent gateway verification.
+        $this->failPendingOrderPayments->handle($cancelledOrder->id);
+        $cancelledOrder->load('payments');
+
+        return $cancelledOrder;
     }
 }

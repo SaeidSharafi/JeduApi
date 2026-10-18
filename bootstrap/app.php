@@ -35,6 +35,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
+        $abandonmentMinutes = (int) config('order.abandonment_minutes', 30);
+
         $schedule->command('discounts:reindex-all')
             ->hourly()
             ->withoutOverlapping();
@@ -65,13 +67,14 @@ return Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->withoutOverlapping();
 
-        // Fail gateway payments left initiated for too long, then cancel pending
-        // orders with no payment activity for 30 minutes. The canceler counts a
-        // recent payment row as activity, so a retry restarts the window.
-        $schedule->command('payments:check-stuck --threshold=30')
+        // Payment attempts past the window: wallet top-ups (their only timeout
+        // owner) and a safety net for order payments the synchronous cancellation
+        // cascade missed. The order canceller closes inactive pending orders and
+        // cascades their open attempts; a recent payment restarts the window.
+        $schedule->command("payments:expire-pending --threshold={$abandonmentMinutes}")
             ->everyFifteenMinutes()
             ->withoutOverlapping();
-        $schedule->command('orders:cancel-abandoned --timeout=30')
+        $schedule->command("orders:cancel-abandoned --timeout={$abandonmentMinutes}")
             ->everyTenMinutes()
             ->withoutOverlapping();
 

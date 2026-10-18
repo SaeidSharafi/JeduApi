@@ -18,4 +18,17 @@ enum OrderStatusEnum: string
     case FAILED             = 'failed';
     case REFUNDED           = 'refunded';
     case PARTIALLY_REFUNDED = 'partially_refunded';
+
+    /**
+     * A closed order can no longer expect a new payment, so its open payment
+     * attempts are failed when it reaches this status. PROCESSING stays open
+     * because a remainder payment may still be expected.
+     */
+    public function closesPaymentAttempts(): bool
+    {
+        return match ($this) {
+            self::PENDING, self::PROCESSING => false,
+            default                         => true,
+        };
+    }
 }

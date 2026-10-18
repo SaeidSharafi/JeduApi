@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
 use App\Actions\Admin\Discounts\SettleCompletedOrderAction;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderProvisioningTriggerEnum;
 use App\Enums\Order\OrderStatusEnum;
@@ -116,6 +117,12 @@ final class OrderStatusService
 
         if ($order->status !== $newStatus) {
             $order->status = $newStatus;
+
+            if ($newStatus === OrderStatusEnum::CANCELLED) {
+                $order->cancelled_at     = now();
+                $order->cancelled_reason = OrderCancellationReasonEnum::SYSTEM;
+            }
+
             $order->save();
 
             // Coupon/promotion usage counters reflect COMPLETED orders only, and

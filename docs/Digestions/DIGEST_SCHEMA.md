@@ -306,6 +306,8 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - id (BIGINT, PK)
   - increment_id (VARCHAR unique)
   - status (VARCHAR default pending, indexed)
+  - cancelled_at (TIMESTAMP nullable) — when the order was cancelled
+  - cancelled_reason (VARCHAR nullable, indexed) — internal cause enum: customer | admin | abandoned | system
   - customer_id (BIGINT) FK -> users(id)
   - customer_email (VARCHAR)
   - customer_phone (VARCHAR)
@@ -329,6 +331,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
 - Indexes:
   - UNIQUE(increment_id)
   - INDEX(status)
+  - INDEX(cancelled_reason)
   - INDEX(customer_id, status) as idx_orders_customer_status
   - INDEX(customer_id, created_at) as idx_customer_created
 

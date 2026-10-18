@@ -251,6 +251,12 @@ return [
         'refunded'           => 'Refunded',
         'partially_refunded' => 'Partially Refunded',
     ],
+    'OrderCancellationReasonEnum' => [
+        'customer'  => 'Customer',
+        'admin'     => 'Admin',
+        'abandoned' => 'Abandoned (inactivity)',
+        'system'    => 'System',
+    ],
     'BundlePurchaseStatusEnum' => [
         'pending_payment'    => 'Pending Payment',
         'provisioning'       => 'Provisioning',
@@ -281,6 +287,10 @@ return [
         'initiated' => 'Initiated',
         'completed' => 'Completed',
         'failed'    => 'Failed',
+    ],
+    'PaymentTransactionErrorCodeEnum' => [
+        'ORDER_CLOSED'  => 'Order closed before payment resolved',
+        'STUCK_TIMEOUT' => 'Payment attempt timed out',
     ],
     'ProductableEnum' => [
         'course'        => 'Course',

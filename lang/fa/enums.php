@@ -150,7 +150,7 @@ return [
         'online_service'    => 'سرویس آنلاین',
         'offline_service'   => 'سرویس آفلاین',
         'in_person_service' => 'سرویس حضوری',
-        'composite'          => 'بسته آموزشی',
+        'composite'         => 'بسته آموزشی',
     ],
     'GenderEnum' => [
         'male'   => 'مرد',
@@ -251,6 +251,12 @@ return [
         'refunded'           => 'بازپرداخت شده',
         'partially_refunded' => 'بازپرداخت جزئی',
     ],
+    'OrderCancellationReasonEnum' => [
+        'customer'  => 'مشتری',
+        'admin'     => 'مدیر',
+        'abandoned' => 'رهاشده (بی‌فعالیتی)',
+        'system'    => 'سیستم',
+    ],
     'BundlePurchaseStatusEnum' => [
         'pending_payment'    => 'در انتظار پرداخت',
         'provisioning'       => 'در حال فعال‌سازی',
@@ -281,6 +287,10 @@ return [
         'initiated' => 'شروع شده',
         'completed' => 'تکمیل شده',
         'failed'    => 'ناموفق',
+    ],
+    'PaymentTransactionErrorCodeEnum' => [
+        'ORDER_CLOSED'  => 'سفارش پیش از تعیین وضعیت پرداخت لغو شد',
+        'STUCK_TIMEOUT' => 'مهلت تلاش پرداخت پایان یافت',
     ],
     'ProductableEnum' => [
         'course'        => 'دوره',

@@ -12,6 +12,7 @@ use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
@@ -178,8 +179,12 @@ final readonly class CreateOrderAction
             $grandTotal = $context->calculateGrandTotal();
 
             $order = Order::create([
-                'increment_id'           => Order::generateIncrementId(),
-                'status'                 => $data->status,
+                'increment_id'     => Order::generateIncrementId(),
+                'status'           => $data->status,
+                'cancelled_at'     => $data->status === OrderStatusEnum::CANCELLED->value ? now() : null,
+                'cancelled_reason' => $data->status === OrderStatusEnum::CANCELLED->value
+                    ? OrderCancellationReasonEnum::ADMIN
+                    : null,
                 'customer_id'            => $context->customer->id,
                 'customer_email'         => $context->customer->email,
                 'customer_phone'         => $context->customer->phone,

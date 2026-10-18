@@ -3,10 +3,15 @@
 declare(strict_types=1);
 
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Payment\PaymentTransactionErrorCodeEnum;
+use App\Enums\Payment\PaymentTransactionStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PaymentTransaction;
 use App\Models\User;
 
 use function Pest\Laravel\postJson;
@@ -37,7 +42,40 @@ it('allows customer to cancel their own pending order', function (): void {
     ]);
 
     $order->refresh();
-    expect($order->status)->toBe(OrderStatusEnum::CANCELLED);
+    expect($order->status)->toBe(OrderStatusEnum::CANCELLED)
+        ->and($order->cancelled_at)->not->toBeNull()
+        ->and($order->cancelled_reason)->toBe(OrderCancellationReasonEnum::CUSTOMER);
+});
+
+it('closes pending payment attempts when the customer cancels', function (): void {
+    $order = Order::factory()->create([
+        'customer_id' => $this->user->id,
+        'status'      => OrderStatusEnum::PENDING,
+    ]);
+
+    $payment = Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $this->user->id,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
+        'status'      => PaymentStatusEnum::PENDING,
+    ]);
+
+    $transaction = PaymentTransaction::factory()->create([
+        'payment_id'            => $payment->id,
+        'status'                => PaymentTransactionStatusEnum::INITIATED,
+        'transaction_reference' => '200000011',
+        'initiated_at'          => now()->subMinutes(5),
+        'completed_at'          => null,
+    ]);
+
+    postJson(route('api.v1.shop.student.orders.cancel', $order->increment_id))
+        ->assertOk();
+
+    $transaction->refresh();
+    expect($payment->fresh()->status)->toBe(PaymentStatusEnum::FAILED)
+        ->and($transaction->status)->toBe(PaymentTransactionStatusEnum::FAILED)
+        ->and($transaction->error_code)->toBe(PaymentTransactionErrorCodeEnum::ORDER_CLOSED->value)
+        ->and($transaction->completed_at)->not->toBeNull();
 });
 
 it('cancels enrollments when order is cancelled', function (): void {

@@ -23,9 +23,9 @@ return [
     |--------------------------------------------------------------------------
     |
     | Minutes a discount usage reservation keeps counting toward a customer's
-    | allowance before it goes stale. Defaults to the payment-retry window used
-    | by the abandoned-order canceller (orders:cancel-abandoned --timeout=30 in
-    | bootstrap/app.php). Reservations belonging to completed or refunded
+    | allowance before it goes stale. Defaults to config('order.abandonment_minutes')
+    | (30), the same window used by orders:cancel-abandoned and
+    | payments:expire-pending. Reservations belonging to completed or refunded
     | orders are consumed permanently and never expire.
     |
     */

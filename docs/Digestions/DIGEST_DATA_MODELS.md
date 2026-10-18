@@ -42,7 +42,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### Order (`app/Models/Order.php`)
 - **Purpose:** Sales transaction records implementing WalletTransactionSourceableContract
-- **Key Fields:** `increment_id`, `status`, `customer_id`, `total_item_count`, `subtotal`, `discount_amount`, `grand_total`, `full_value_grand_total`, `total_refunded`, `applied_coupon_code`
+- **Key Fields:** `increment_id`, `status`, `cancelled_at` (nullable timestamp), `cancelled_reason` (nullable `OrderCancellationReasonEnum`: `customer | admin | abandoned | system`), `customer_id`, `total_item_count`, `subtotal`, `discount_amount`, `grand_total`, `full_value_grand_total`, `total_refunded`, `applied_coupon_code`
 - **Relationships:**
   - `hasMany(OrderItem::class)` - items
   - `hasMany(OrderItem::class)->whereNull('bundle_purchase_id')` - standaloneItems, the only commercial lines shown in Customer history
@@ -55,7 +55,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
   - `totalCartDiscount()` — alias for `discount_amount`; represents cart-level discount (coupon)
   - `totalDiscount()` — sum of `total_product_discount` + `total_cart_discount`
   - `fullValueGrandTotal()` — internal accessor deriving the sum of item prices at original base values before any discounts; used as reference for `balance_due` calculation
-- **Special Features:** Auto-incrementing order numbers generated via `OrderIncrementIdService` (transaction-safe), payment status calculations, two-layer discount tracking (product-level vs cart-level) with separate exposure via accessors. **Pre-payment model:** PENDING orders settle their remainder offline (in-person at the station), so a PENDING order's `balance_due` equals `full_value_grand_total`; partial online payments are not enabled — the `balance_due` accessor exists for future installment/rest-payment flows. `total_refunded` aggregates refunded amounts and feeds `balance_due` (`total_paid - total_refunded`).
+- **Special Features:** Auto-incrementing order numbers generated via `OrderIncrementIdService` (transaction-safe), payment status calculations, two-layer discount tracking (product-level vs cart-level) with separate exposure via accessors. **Pre-payment model:** PENDING orders settle their remainder offline (in-person at the station), so a PENDING order's `balance_due` equals `full_value_grand_total`; partial online payments are not enabled — the `balance_due` accessor exists for future installment/rest-payment flows. `total_refunded` aggregates refunded amounts and feeds `balance_due` (`total_paid - total_refunded`). **Cancellation metadata:** every transition to CANCELLED goes through `markCancelled(reason)` (or writes the same two fields before save in `OrderStatusService`), recording `cancelled_at` and the internal `cancelled_reason`; reopening an order clears both. Rows that predate these columns have both fields null.
 
 ### Product (`app/Models/Product.php`)
 - **Purpose:** Sellable instances of educational content with polymorphic relationships

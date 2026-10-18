@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\WalletTransactionSourceableContract;
+use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderPaymentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Services\OrderIncrementIdService;
@@ -28,6 +29,8 @@ final class Order extends Model implements WalletTransactionSourceableContract
         = [
             'increment_id',
             'status',
+            'cancelled_at',
+            'cancelled_reason',
             'customer_id',
             'customer_email',
             'customer_phone',
@@ -61,6 +64,17 @@ final class Order extends Model implements WalletTransactionSourceableContract
     public static function generateIncrementId(): string
     {
         return app(OrderIncrementIdService::class)->generate();
+    }
+
+    /**
+     * Cancel the order while recording the internal reason for the funnel.
+     */
+    public function markCancelled(OrderCancellationReasonEnum $reason): void
+    {
+        $this->status           = OrderStatusEnum::CANCELLED;
+        $this->cancelled_at     = now();
+        $this->cancelled_reason = $reason;
+        $this->save();
     }
 
     /**
@@ -215,6 +229,8 @@ final class Order extends Model implements WalletTransactionSourceableContract
             'grand_total'                   => 'integer',
             'full_value_grand_total'        => 'integer',
             'status'                        => OrderStatusEnum::class,
+            'cancelled_at'                  => 'datetime',
+            'cancelled_reason'              => OrderCancellationReasonEnum::class,
             'payment_status'                => OrderPaymentStatusEnum::class,
             'created_at'                    => 'datetime',
             'updated_at'                    => 'datetime',

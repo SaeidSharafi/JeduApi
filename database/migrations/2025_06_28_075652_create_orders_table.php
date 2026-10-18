@@ -17,6 +17,10 @@ return new class extends Migration
             // --- Statuses ---
             $table->string('status')->index()->default(App\Enums\Order\OrderStatusEnum::PENDING->value)
                 ->comment('Tracks fulfillment (e.g., pending, completed).');
+            $table->timestamp('cancelled_at')->nullable()
+                ->comment('When the order was cancelled.');
+            $table->string('cancelled_reason')->nullable()->index()
+                ->comment('Internal cause enum: customer, admin, abandoned, or system.');
 
             // --- Customer Details ---
             $table->foreignId('customer_id')->constrained('users');

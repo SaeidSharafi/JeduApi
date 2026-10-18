@@ -40,6 +40,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Abandonment Window
+    |--------------------------------------------------------------------------
+    |
+    | Minutes without activity before a pending order is cancelled and before
+    | an unresolved payment attempt is expired. Shared by
+    | orders:cancel-abandoned and payments:expire-pending.
+    |
+    */
+
+    'abandonment_minutes' => (int) env('ORDER_ABANDONMENT_MINUTES', 30),
+
+    /*
+    |--------------------------------------------------------------------------
     | Order Provisioning Configuration
     |--------------------------------------------------------------------------
     |

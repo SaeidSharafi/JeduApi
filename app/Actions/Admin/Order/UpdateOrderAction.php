@@ -6,8 +6,10 @@ namespace App\Actions\Admin\Order;
 
 use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
 use App\Actions\Admin\Discounts\SettleCompletedOrderAction;
+use App\Actions\Payment\FailPendingOrderPaymentsAction;
 use App\Data\Admin\Order\OrderUpdateData;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Events\OrderStatusUpdatedEvent;
@@ -21,6 +23,7 @@ final readonly class UpdateOrderAction
         private ProductReservationService $productReservationService,
         private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
         private SettleCompletedOrderAction $settleCompletedOrder,
+        private FailPendingOrderPaymentsAction $failPendingOrderPayments,
     ) {}
 
     /**
@@ -29,9 +32,21 @@ final readonly class UpdateOrderAction
     public function handle(OrderUpdateData $data, Order $order): Order
     {
 
-        return DB::transaction(function () use ($data, $order): Order {
+        $updatedOrder = DB::transaction(function () use ($data, $order): Order {
+            $wasCancelled = $order->status === OrderStatusEnum::CANCELLED;
+
             $order->update($data->toArray());
             $order->refresh();
+
+            if (! $wasCancelled && $order->status === OrderStatusEnum::CANCELLED) {
+                $order->markCancelled(OrderCancellationReasonEnum::ADMIN);
+            } elseif ($wasCancelled && $order->status !== OrderStatusEnum::CANCELLED) {
+                // Reopening an order clears the stale cancellation metadata.
+                $order->cancelled_at     = null;
+                $order->cancelled_reason = null;
+                $order->save();
+            }
+
             $order->load('enrollments');
 
             // Cancelled/failed orders release the coupon/promotion slot.
@@ -67,5 +82,14 @@ final readonly class UpdateOrderAction
 
             return $order;
         });
+
+        // A closed order cannot expect another payment. Close its open attempts
+        // in the same request after the order transaction commits.
+        if ($updatedOrder->status->closesPaymentAttempts()) {
+            $this->failPendingOrderPayments->handle($updatedOrder->id);
+            $updatedOrder->load('payments');
+        }
+
+        return $updatedOrder;
     }
 }

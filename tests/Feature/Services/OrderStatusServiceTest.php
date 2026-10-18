@@ -7,10 +7,13 @@ namespace Tests\Unit\Services;
 use App\Actions\Admin\Order\UpdateOrderAction;
 use App\Data\Admin\Order\OrderUpdateData;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Payment\PaymentTransactionErrorCodeEnum;
+use App\Enums\Payment\PaymentTransactionStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
@@ -24,6 +27,7 @@ use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\PaymentTransaction;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Services\OrderStatusService;
@@ -191,7 +195,10 @@ describe('OrderStatusService', function (): void {
 
         app(OrderStatusService::class)->updateParentOrderStatus($order);
 
-        expect($order->fresh()->status)->toBe(OrderStatusEnum::CANCELLED);
+        $order->refresh();
+        expect($order->status)->toBe(OrderStatusEnum::CANCELLED)
+            ->and($order->cancelled_at)->not->toBeNull()
+            ->and($order->cancelled_reason)->toBe(OrderCancellationReasonEnum::SYSTEM);
     });
 
     it('updates enrollment to ACTIVE when item becomes COMPLETED', function (): void {
@@ -428,6 +435,15 @@ describe('UpdateOrderAction', function (): void {
         $result = app(UpdateOrderAction::class)->handle(new OrderUpdateData($status->value), $order);
 
         expect($result->status)->toBe($status);
+
+        if ($status === OrderStatusEnum::CANCELLED) {
+            expect($result->cancelled_at)->not->toBeNull()
+                ->and($result->cancelled_reason)->toBe(OrderCancellationReasonEnum::ADMIN);
+        } else {
+            expect($result->cancelled_at)->toBeNull()
+                ->and($result->cancelled_reason)->toBeNull();
+        }
+
         expect($pendingOption->fresh()->reserved_count)->toBe(3);
         expect($completedOption->fresh()->reserved_count)->toBe(4);
         expect($enrollment->fresh()->enrollment_status)->toBe(EnrollmentStatusEnum::CANCELLED);
@@ -453,5 +469,74 @@ describe('UpdateOrderAction', function (): void {
             fn (OrderStatusUpdatedEvent $event): bool => $event->order->id === $order->id
                 && $event->order->status                                   === OrderStatusEnum::FAILED,
         );
+    });
+
+    it('fails open payment attempts when an admin closes the order', function (OrderStatusEnum $status): void {
+        $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+
+        $pending = Payment::factory()->create([
+            'order_id' => $order->id,
+            'status'   => PaymentStatusEnum::PENDING,
+        ]);
+        $transaction = PaymentTransaction::factory()->create([
+            'payment_id'            => $pending->id,
+            'status'                => PaymentTransactionStatusEnum::INITIATED,
+            'transaction_reference' => '200000013',
+            'initiated_at'          => now()->subMinutes(5),
+            'completed_at'          => null,
+        ]);
+        $completed = Payment::factory()->create([
+            'order_id' => $order->id,
+            'status'   => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        app(UpdateOrderAction::class)->handle(new OrderUpdateData($status->value), $order);
+
+        $transaction->refresh();
+        expect($pending->fresh()->status)->toBe(PaymentStatusEnum::FAILED)
+            ->and($transaction->status)->toBe(PaymentTransactionStatusEnum::FAILED)
+            ->and($transaction->error_code)->toBe(PaymentTransactionErrorCodeEnum::ORDER_CLOSED->value)
+            ->and($completed->fresh()->status)->toBe(PaymentStatusEnum::COMPLETED);
+    })->with([OrderStatusEnum::CANCELLED, OrderStatusEnum::FAILED]);
+
+    it('leaves open payment attempts when an admin moves the order to processing', function (): void {
+        $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+
+        $payment = Payment::factory()->create([
+            'order_id' => $order->id,
+            'status'   => PaymentStatusEnum::PENDING,
+        ]);
+        $transaction = PaymentTransaction::factory()->create([
+            'payment_id'            => $payment->id,
+            'status'                => PaymentTransactionStatusEnum::INITIATED,
+            'transaction_reference' => '200000014',
+            'initiated_at'          => now()->subMinutes(5),
+            'completed_at'          => null,
+        ]);
+
+        app(UpdateOrderAction::class)->handle(
+            new OrderUpdateData(OrderStatusEnum::PROCESSING->value),
+            $order,
+        );
+
+        expect($payment->fresh()->status)->toBe(PaymentStatusEnum::PENDING)
+            ->and($transaction->fresh()->status)->toBe(PaymentTransactionStatusEnum::INITIATED);
+    });
+
+    it('clears cancellation metadata when a cancelled order is reopened', function (): void {
+        $order = Order::factory()->create([
+            'status'           => OrderStatusEnum::CANCELLED,
+            'cancelled_at'     => now()->subHour(),
+            'cancelled_reason' => OrderCancellationReasonEnum::ADMIN,
+        ]);
+
+        $result = app(UpdateOrderAction::class)->handle(
+            new OrderUpdateData(OrderStatusEnum::PENDING->value),
+            $order,
+        );
+
+        expect($result->status)->toBe(OrderStatusEnum::PENDING)
+            ->and($result->cancelled_at)->toBeNull()
+            ->and($result->cancelled_reason)->toBeNull();
     });
 });

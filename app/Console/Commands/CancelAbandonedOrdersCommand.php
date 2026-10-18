@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Actions\Admin\Discounts\ReleasePromotionUsageSlotsAction;
+use App\Actions\Payment\FailPendingOrderPaymentsAction;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderCancellationReasonEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
@@ -39,6 +41,7 @@ final class CancelAbandonedOrdersCommand extends Command
     public function __construct(
         private ProductReservationService $productReservationService,
         private ReleasePromotionUsageSlotsAction $releasePromotionUsageSlots,
+        private FailPendingOrderPaymentsAction $failPendingOrderPayments,
     ) {
         parent::__construct();
     }
@@ -152,7 +155,7 @@ final class CancelAbandonedOrdersCommand extends Command
      */
     private function cancelIfStillAbandoned(Order $order, CarbonInterface $threshold): bool
     {
-        return DB::transaction(function () use ($order, $threshold): bool {
+        $cancelled = DB::transaction(function () use ($order, $threshold): bool {
             $locked = Order::query()->whereKey($order->id)->lockForUpdate()->first();
 
             if ($locked === null || $locked->status !== OrderStatusEnum::PENDING) {
@@ -165,8 +168,7 @@ final class CancelAbandonedOrdersCommand extends Command
                 return false;
             }
 
-            $locked->status = OrderStatusEnum::CANCELLED;
-            $locked->save();
+            $locked->markCancelled(OrderCancellationReasonEnum::ABANDONED);
 
             // A cancelled order no longer holds the coupon/promotion slot.
             $this->releasePromotionUsageSlots->handle($locked);
@@ -192,5 +194,13 @@ final class CancelAbandonedOrdersCommand extends Command
 
             return true;
         });
+
+        if ($cancelled) {
+            // The order transaction has committed, so closing its payment
+            // attempts here cannot deadlock with a gateway verification.
+            $this->failPendingOrderPayments->handle($order->id);
+        }
+
+        return $cancelled;
     }
 }
