@@ -16,7 +16,6 @@ final class OrganizationTrainingRequestListItemData extends Data
 {
     /**
      * @param  array<int, string>  $requested_course_names
-     * @param  array<string, int|string>|null  $vendor_snapshot
      */
     public function __construct(
         public int $id,
@@ -30,7 +29,6 @@ final class OrganizationTrainingRequestListItemData extends Data
         #[WithTransformer(TranslatableEnumData::class)] public InboundRequestStatusEnum $status,
         public ?StaffData $assignee,
         public bool $has_attachment,
-        public ?array $vendor_snapshot,
         public ?Verta $created_at,
     ) {}
 
@@ -38,7 +36,7 @@ final class OrganizationTrainingRequestListItemData extends Data
     {
         return new self(
             id: $request->id,
-            reference: $request->uuid,
+            reference: $request->tracking_code,
             first_name: $request->first_name,
             last_name: $request->last_name,
             phone: $request->phone,
@@ -48,7 +46,6 @@ final class OrganizationTrainingRequestListItemData extends Data
             status: $request->status,
             assignee: $request->assignee ? StaffData::from($request->assignee) : null,
             has_attachment: $request->hasMedia('attachment'),
-            vendor_snapshot: $request->vendor_snapshot,
             created_at: $request->created_at ? Verta::instance($request->created_at) : null,
         );
     }

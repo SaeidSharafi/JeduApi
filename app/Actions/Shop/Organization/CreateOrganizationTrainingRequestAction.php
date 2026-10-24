@@ -7,7 +7,6 @@ namespace App\Actions\Shop\Organization;
 use App\Actions\Shop\UploadFileAction;
 use App\Data\Shop\Organization\OrganizationTrainingRequestCreateData;
 use App\Enums\PermissionEnum;
-use App\Models\OrganizationPage;
 use App\Models\OrganizationTrainingRequest;
 use App\Models\Staff;
 use App\Notifications\Admin\OrganizationTrainingRequestSubmittedNotification;
@@ -21,12 +20,6 @@ final readonly class CreateOrganizationTrainingRequestAction
     public function handle(OrganizationTrainingRequestCreateData $data): OrganizationTrainingRequest
     {
         $request = DB::transaction(function () use ($data): OrganizationTrainingRequest {
-            $page = OrganizationPage::query()
-                ->singleton()
-                ->lockForUpdate()
-                ->firstOrFail();
-            $vendor = $page->vendor()->first();
-
             $trainingRequest = OrganizationTrainingRequest::query()->create([
                 'first_name'             => mb_trim($data->first_name),
                 'last_name'              => mb_trim($data->last_name),
@@ -35,8 +28,6 @@ final readonly class CreateOrganizationTrainingRequestAction
                 'organization_name'      => mb_trim($data->organization_name),
                 'requested_course_names' => self::normalizeCourseNames($data->requested_course_names ?? []),
                 'notes'                  => $data->notes !== null ? mb_trim($data->notes) : null,
-                'vendor_id'              => $vendor?->id,
-                'vendor_snapshot'        => $vendor ? ['id' => $vendor->id, 'name' => $vendor->name] : null,
             ]);
 
             if ($data->attachment !== null) {

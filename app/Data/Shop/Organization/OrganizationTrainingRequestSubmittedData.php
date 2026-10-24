@@ -13,6 +13,6 @@ final class OrganizationTrainingRequestSubmittedData extends Data
 
     public static function fromModel(OrganizationTrainingRequest $request): self
     {
-        return new self($request->uuid);
+        return new self($request->tracking_code);
     }
 }

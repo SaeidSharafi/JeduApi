@@ -33,7 +33,7 @@ final class OrganizationTrainingRequestListQueryData extends Data
             'filter[status]'            => ['description' => 'Filter by request status.', 'example' => 'pending'],
             'filter[assigned_to_id]'    => ['description' => 'Filter by assigned staff ID.', 'example' => 1],
             'filter[organization_name]' => ['description' => 'Filter by organization name.', 'example' => 'Example'],
-            'filter[search]'            => ['description' => 'Search representative, phone, organization, or position.', 'example' => 'Sara'],
+            'filter[search]'            => ['description' => 'Search tracking code, representative, phone, organization, or position.', 'example' => 'Sara'],
             'sort'                      => ['description' => 'Sort by status, created_at, or assigned_to_id.', 'example' => '-created_at'],
             'per_page'                  => ['description' => 'Number of items per page.', 'example' => 15],
             'page'                      => ['description' => 'Page number.', 'example' => 1],

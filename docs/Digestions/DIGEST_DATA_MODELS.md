@@ -286,7 +286,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 ### Vendor (`app/Models/Vendor.php`)
 - **Purpose:** Internal departments/external entities
 - **Key Fields:** Vendor information and business details
-- **Relationships:** `hasMany(Product::class)` - products; `hasOne(OrganizationPage::class)` - organizationPage; `hasMany(OrganizationTrainingRequest::class)` - organizationTrainingRequests
+- **Relationships:** `hasMany(Product::class)` - products; `hasOne(OrganizationPage::class)` - organizationPage
 
 ### OrganizationPage (`app/Models/OrganizationPage.php`)
 - **Purpose:** Dedicated singleton configuration for the one-off Organization landing-page feature; a Vendor remains the school department that owns the recent Course catalog, not a marketplace seller.
@@ -297,9 +297,9 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### OrganizationTrainingRequest (`app/Models/OrganizationTrainingRequest.php`)
 - **Purpose:** Public, unauthenticated organization training enquiries, separate from CollaborationRequest and course selection.
-- **Key Fields:** UUID reference, representative `first_name`, `last_name`, `phone`, `position`, `organization_name`, normalized `requested_course_names` JSON array, optional `notes`, `status`, nullable `assigned_to_id`, nullable `vendor_id`, and immutable `vendor_snapshot` JSON.
-- **Relationships:** `belongsTo(Staff::class, 'assigned_to_id')` - assignee; `belongsTo(Vendor::class)` - historical Vendor reference; private Mediable `attachment` tag.
-- **Special Features:** New records use `InboundRequestStatusEnum::PENDING`, have no assignee, accept at most one private PDF attachment up to 2 MB, and snapshot the Organization page’s linked Vendor at submission time. The UUID is returned as the stable public request reference. Dedicated `organization_training_requests.view_any`, `.view`, `.update`, and `.update_own` permissions protect staff access.
+- **Key Fields:** `tracking_code` (unique public reference, `TRN-XXXX-XXXX`), representative `first_name`, `last_name`, `phone`, `position`, `organization_name`, normalized `requested_course_names` JSON array, optional `notes`, `status`, nullable `assigned_to_id`.
+- **Relationships:** `belongsTo(Staff::class, 'assigned_to_id')` - assignee; private Mediable `attachment` tag.
+- **Special Features:** New records use `InboundRequestStatusEnum::PENDING`, are unassigned, and accept at most one private PDF attachment up to 2 MB. The model's `creating` hook assigns `tracking_code` via `generateTrackingCode()` — `TRN-` plus two groups of four characters from a confusables-free 30-character alphabet (no 0/O, 1/I/L, U) — and that code, not a UUID, is the stable public request reference. Dedicated `organization_training_requests.view_any`, `.view`, `.update`, and `.update_own` permissions protect staff access. Intake is independent of the OrganizationPage content singleton and keeps no Vendor reference: the form is single-scope, so there is no department to attribute.
 
 ### Term (`app/Models/Term.php`)
 - **Purpose:** Academic terms and scheduling periods

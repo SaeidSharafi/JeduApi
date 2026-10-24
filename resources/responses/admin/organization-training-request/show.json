@@ -2,7 +2,7 @@
   "message": "Operation successful.",
   "data": {
     "id": 1,
-    "reference": "0199abcd-1234-7000-8000-123456789abc",
+    "reference": "TRN-7K4M-QX9P",
     "first_name": "Sara",
     "last_name": "Ahmadi",
     "phone": "09121234567",
@@ -12,7 +12,6 @@
     "notes": null,
     "status": {"value": "pending", "label": "Pending"},
     "assignee": null,
-    "vendor_snapshot": {"id": 1, "name": "Education Department"},
     "attachment": {
       "id": 2,
       "url": "https://example.com/api/v1/admin/organization-training-requests/1/attachment/download",

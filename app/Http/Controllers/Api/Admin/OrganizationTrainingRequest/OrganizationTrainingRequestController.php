@@ -43,7 +43,8 @@ final class OrganizationTrainingRequestController extends Controller
                 AllowedFilter::callback('search', function (Builder $query, mixed $value): void {
                     $query->where(function (Builder $query) use ($value): void {
                         $term = '%'.$value.'%';
-                        $query->whereLike('first_name', $term)
+                        $query->whereLike('tracking_code', $term)
+                            ->orWhereLike('first_name', $term)
                             ->orWhereLike('last_name', $term)
                             ->orWhereLike('phone', $term)
                             ->orWhereLike('position', $term)

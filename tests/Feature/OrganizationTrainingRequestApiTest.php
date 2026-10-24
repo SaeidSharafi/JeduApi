@@ -4,19 +4,12 @@ declare(strict_types=1);
 
 use App\Actions\Shop\Organization\CreateOrganizationTrainingRequestAction;
 use App\Actions\Shop\UploadFileAction;
-use App\Contracts\Cache\CacheStore;
 use App\Data\Shop\Organization\OrganizationTrainingRequestCreateData;
-use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\InboundRequestStatusEnum;
 use App\Enums\PermissionEnum;
-use App\Enums\System\CacheKey;
-use App\Models\Course;
 use App\Models\OrganizationPage;
 use App\Models\OrganizationTrainingRequest;
-use App\Models\Product;
-use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
-use App\Models\Vendor;
 use App\Notifications\Admin\OrganizationTrainingRequestSubmittedNotification;
 use Hekmatinasser\Verta\Verta;
 use Illuminate\Http\UploadedFile;
@@ -27,8 +20,6 @@ use Mockery\MockInterface;
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
 it('creates a public request with normalized course names and notifies staff with access', function (): void {
-    $vendor = Vendor::factory()->create(['name' => 'Original Department']);
-    OrganizationPage::query()->singleton()->firstOrFail()->update(['vendor_id' => $vendor->id]);
     $authorized = Staff::factory()->create();
     $authorized->givePermissionTo(PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW_ANY->value);
     $bannedAuthorized = Staff::factory()->create(['is_banned' => true]);
@@ -48,13 +39,12 @@ it('creates a public request with normalized course names and notifies staff wit
 
     $response->assertCreated()
         ->assertJsonStructure(['message', 'data' => ['reference'], 'metadata'])
-        ->assertJsonPath('data.reference', fn (mixed $reference): bool => is_string($reference) && $reference !== '');
+        ->assertJsonPath('data.reference', fn (mixed $reference): bool => is_string($reference)
+            && preg_match('/^TRN-[2-9A-HJKMNP-TV-Z]{4}-[2-9A-HJKMNP-TV-Z]{4}$/', $reference) === 1);
 
     $request = OrganizationTrainingRequest::query()->firstOrFail();
     expect($request->status)->toBe(InboundRequestStatusEnum::PENDING)
         ->and($request->requested_course_names)->toBe(['Project management', 'Leadership'])
-        ->and($request->vendor_id)->toBe($vendor->id)
-        ->and($request->vendor_snapshot)->toBe(['id' => $vendor->id, 'name' => 'Original Department'])
         ->and($request->assigned_to_id)->toBeNull();
 
     Notification::assertSentTo($authorized, OrganizationTrainingRequestSubmittedNotification::class, function (OrganizationTrainingRequestSubmittedNotification $notification) use ($request, $authorized): bool {
@@ -125,7 +115,6 @@ it('returns the staff list and detail contract', function (): void {
         'notes'                  => 'Call before noon.',
         'status'                 => InboundRequestStatusEnum::CONTACTED,
         'assigned_to_id'         => $assignee->id,
-        'vendor_snapshot'        => ['id' => 7, 'name' => 'Education Department'],
     ]);
     $this->authorized_user([
         PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW_ANY,
@@ -134,19 +123,31 @@ it('returns the staff list and detail contract', function (): void {
 
     $this->getJson(route('api.v1.admin.organization-training-requests.index'))
         ->assertOk()
-        ->assertJsonPath('data.data.0.reference', $request->uuid)
-        ->assertJsonPath('data.data.0.assignee.id', $assignee->id)
-        ->assertJsonPath('data.data.0.vendor_snapshot.name', 'Education Department');
+        ->assertJsonPath('data.data.0.reference', $request->tracking_code)
+        ->assertJsonPath('data.data.0.assignee.id', $assignee->id);
 
     $this->getJson(route('api.v1.admin.organization-training-requests.show', $request))
         ->assertOk()
+        ->assertJsonPath('data.reference', $request->tracking_code)
         ->assertJsonPath('data.phone', '09121234567')
         ->assertJsonPath('data.notes', 'Call before noon.')
         ->assertJsonPath('data.status.value', InboundRequestStatusEnum::CONTACTED->value)
         ->assertJsonPath('data.assignee.id', $assignee->id)
-        ->assertJsonPath('data.vendor_snapshot.id', 7)
         ->assertJsonPath('data.created_at', Verta::instance($request->created_at)->format('Y-m-d H:i:s'))
         ->assertJsonPath('data.updated_at', Verta::instance($request->updated_at)->format('Y-m-d H:i:s'));
+});
+
+it('finds a request by its tracking code', function (): void {
+    $request = OrganizationTrainingRequest::factory()->create();
+    OrganizationTrainingRequest::factory()->create();
+    $this->authorized_user([PermissionEnum::ORGANIZATION_TRAINING_REQUEST_VIEW_ANY]);
+
+    $this->getJson(route('api.v1.admin.organization-training-requests.index', [
+        'filter' => ['search' => $request->tracking_code],
+    ]))
+        ->assertOk()
+        ->assertJsonCount(1, 'data.data')
+        ->assertJsonPath('data.data.0.reference', $request->tracking_code);
 });
 
 it('returns not found when a request has no attachment', function (): void {
@@ -383,36 +384,9 @@ it('allows update-own staff to claim only their request', function (): void {
     ])->assertForbidden();
 });
 
-it('retains the vendor snapshot and blocks vendor deletion', function (): void {
-    $vendor = Vendor::factory()->create(['name' => 'Historical Department']);
-    OrganizationPage::query()->singleton()->firstOrFail()->update(['vendor_id' => $vendor->id]);
-    $this->postJson(route('api.v1.shop.organization.training-requests.store'), [
-        'first_name'             => 'Sara',
-        'last_name'              => 'Ahmadi',
-        'phone'                  => '09121234567',
-        'position'               => 'HR manager',
-        'organization_name'      => 'Example Organization',
-        'requested_course_names' => ['Leadership'],
-    ])->assertCreated();
-    OrganizationPage::query()->singleton()->firstOrFail()->update(['vendor_id' => null]);
-    $this->authorized_user([PermissionEnum::VENDOR_DELETE]);
-
-    $response = $this->deleteJson(route('api.v1.admin.vendors.destroy', $vendor));
-
-    $response->assertUnprocessable()->assertJsonFragment([
-        'message' => __('messages.errors.model_has_relationship_data', [
-            'related_model' => getModelLabel(OrganizationTrainingRequest::class),
-        ]),
-    ]);
-    expect(OrganizationTrainingRequest::query()->firstOrFail()->vendor_snapshot)
-        ->toBe(['id' => $vendor->id, 'name' => 'Historical Department']);
-});
-
-it('keeps the request vendor snapshot while future page courses follow a new vendor', function (): void {
-    $originalVendor = Vendor::factory()->create(['name' => 'Original Department']);
-    $newVendor      = Vendor::factory()->create(['name' => 'New Department']);
-    $page           = OrganizationPage::query()->singleton()->firstOrFail();
-    $page->update(['vendor_id' => $originalVendor->id]);
+it('accepts a request when no organization page is configured', function (): void {
+    Notification::fake();
+    OrganizationPage::query()->delete();
 
     $this->postJson(route('api.v1.shop.organization.training-requests.store'), [
         'first_name'             => 'Sara',
@@ -423,22 +397,6 @@ it('keeps the request vendor snapshot while future page courses follow a new ven
         'requested_course_names' => ['Leadership'],
     ])->assertCreated();
 
-    $newCourse = Course::factory()->create([
-        'full_name' => 'New department course',
-        'status'    => PublicationStatusEnum::PUBLISHED,
-    ]);
-    $newProduct = Product::factory()->withCourse($newCourse)->create([
-        'vendor_id' => $newVendor->id,
-    ]);
-    ProductDeliveryOption::factory()->create(['product_id' => $newProduct->id]);
-    $page->update(['vendor_id' => $newVendor->id]);
-    app(CacheStore::class)->forget(CacheKey::OrganizationPage, ['limit' => 6]);
-
-    $pageResponse = $this->getJson(route('api.v1.shop.organization.show'));
-
-    $pageResponse->assertOk()
-        ->assertJsonPath('data.vendor.name', 'New Department')
-        ->assertJsonPath('data.recent_courses.0.name', 'New department course');
-    expect(OrganizationTrainingRequest::query()->firstOrFail()->vendor_snapshot)
-        ->toBe(['id' => $originalVendor->id, 'name' => 'Original Department']);
+    expect(OrganizationTrainingRequest::query()->firstOrFail()->organization_name)
+        ->toBe('Example Organization');
 });

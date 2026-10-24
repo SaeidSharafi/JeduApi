@@ -277,3 +277,26 @@ it('invalidates the cached page when its linked vendor is updated', function ():
         ->assertOk()
         ->assertJsonPath('data.vendor.name', 'Updated department');
 });
+
+it('follows the newly linked vendor and its recent courses', function (): void {
+    $originalVendor = Vendor::factory()->create(['name' => 'Original Department']);
+    $newVendor      = Vendor::factory()->create(['name' => 'New Department']);
+    $page           = OrganizationPage::query()->singleton()->firstOrFail();
+    $page->update(['vendor_id' => $originalVendor->id]);
+
+    $newCourse = Course::factory()->create([
+        'full_name' => 'New department course',
+        'status'    => PublicationStatusEnum::PUBLISHED,
+    ]);
+    $newProduct = Product::factory()->withCourse($newCourse)->create([
+        'vendor_id' => $newVendor->id,
+    ]);
+    ProductDeliveryOption::factory()->create(['product_id' => $newProduct->id]);
+    $page->update(['vendor_id' => $newVendor->id]);
+    app(CacheStore::class)->forget(CacheKey::OrganizationPage, ['limit' => 6]);
+
+    $this->getJson(route('api.v1.shop.organization.show'))
+        ->assertOk()
+        ->assertJsonPath('data.vendor.name', 'New Department')
+        ->assertJsonPath('data.recent_courses.0.name', 'New department course');
+});
