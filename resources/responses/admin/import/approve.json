@@ -1,0 +1,15 @@
+{
+  "message": "واردسازی با موفقیت تأیید شد.",
+  "data": {
+    "run_id": "01932f7c-6f2a-7c31-9d5a-6f1c2b8e4a10",
+    "resource": "users",
+    "status": "processing",
+    "identity_key": "phone",
+    "summary": {
+      "created_count": 1,
+      "updated_count": 1,
+      "provider_queued_count": 2
+    }
+  },
+  "metadata": []
+}

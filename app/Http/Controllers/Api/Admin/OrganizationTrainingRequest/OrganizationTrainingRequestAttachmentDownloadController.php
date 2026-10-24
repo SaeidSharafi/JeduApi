@@ -11,8 +11,23 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * @group Admin - Organization Training Requests
+ *
+ * @authenticated
+ */
 final class OrganizationTrainingRequestAttachmentDownloadController extends Controller
 {
+    /**
+     * Download the attachment of an Organization Training Request.
+     *
+     * The request must have an attachment and its stored media must still exist on its disk.
+     *
+     * @response 200 <<binary>> file
+     *
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     */
     public function __invoke(
         OrganizationTrainingRequest $organizationTrainingRequest,
     ): ApiResponseInterface|StreamedResponse {

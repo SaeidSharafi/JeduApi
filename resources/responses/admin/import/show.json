@@ -1,0 +1,80 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "run_id": "01932f7c-6f2a-7c31-9d5a-6f1c2b8e4a10",
+    "resource": "users",
+    "status": "completed_with_provider_failures",
+    "identity_key": "phone",
+    "summary": {
+      "total_rows": 3,
+      "valid_rows": 2,
+      "invalid_rows": 1,
+      "created_count": 1,
+      "updated_count": 1,
+      "local_failure_count": 0,
+      "provider_success_count": 2,
+      "provider_failure_count": 1,
+      "retryable_provider_failure_count": 1
+    },
+    "rows": [
+      {
+        "row_number": 2,
+        "status": "completed",
+        "operation": "created",
+        "data": {
+          "id": 123,
+          "phone": "09123456789"
+        },
+        "providers": {
+          "moodle": {
+            "status": "succeeded",
+            "message": null
+          },
+          "ims": {
+            "status": "succeeded",
+            "message": null
+          }
+        },
+        "errors": []
+      },
+      {
+        "row_number": 3,
+        "status": "completed",
+        "operation": "updated",
+        "data": {
+          "id": 124,
+          "phone": "09120000000"
+        },
+        "providers": {
+          "moodle": {
+            "status": "retryable_failed",
+            "message": "سامانه در دسترس نیست؛ تلاش دوباره در صف است."
+          }
+        },
+        "errors": []
+      },
+      {
+        "row_number": 4,
+        "status": "invalid",
+        "operation": null,
+        "data": {
+          "phone": "09120000001",
+          "email": "not-an-email"
+        },
+        "providers": [],
+        "errors": [
+          {
+            "field": "email",
+            "code": "invalid",
+            "message": "این مقدار نامعتبر است."
+          }
+        ]
+      }
+    ],
+    "error_report": {
+      "available": true,
+      "download_url": "/api/v1/admin/users/import/01932f7c-6f2a-7c31-9d5a-6f1c2b8e4a10/errors"
+    }
+  },
+  "metadata": []
+}
