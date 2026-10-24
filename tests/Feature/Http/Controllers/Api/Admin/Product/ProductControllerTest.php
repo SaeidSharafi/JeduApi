@@ -117,6 +117,34 @@ describe('list filters', function (): void {
                 ],
             ]);
     });
+
+    it('should filter by productable_type', function (): void {
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
+        Product::factory()->count(10)->create([
+            'status'           => App\Enums\Content\PublicationStatusEnum::DRAFT,
+            'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
+        ]);
+        Product::factory()->create([
+            'name'             => 'Bundle Product',
+            'short_name'       => 'Bundle Short Name',
+            'is_visible'       => true,
+            'is_featured'      => false,
+            'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+        ]);
+        $response = $this->getJson(route('api.v1.admin.products.index', [
+            'filter'  => ['productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value],
+            'perPage' => 10,
+        ]));
+        $response->assertOk()
+            ->assertJsonCount(1, 'data.data')
+            ->assertJsonFragment([
+                'productable_type' => [
+                    'value' => App\Enums\System\MorphTypeEnum::BUNDLE->value,
+                    'label' => App\Enums\System\MorphTypeEnum::BUNDLE->translate(),
+                ],
+            ]);
+    });
 });
 
 describe('Controller Tests', function (): void {

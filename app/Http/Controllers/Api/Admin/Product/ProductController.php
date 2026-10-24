@@ -37,6 +37,7 @@ final class ProductController extends Controller
      * @queryParam filter[is_visible] boolean Filter by visibility. Example: 1
      * @queryParam filter[is_featured] boolean Filter by featured status. Example: 0
      * @queryParam filter[status] string Filter by publication status. Example: published
+     * @queryParam filter[productable_type] string Filter by productable type. Allowed values:`course`, `seminar`, `digital_asset`, `bundle`.
      * @queryParam sort string Sort by a field. Allowed values: created_at, updated_at, name, short_name, status, is_visible, is_featured. Prefix with '-' for descending order. Example: -created_at
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam perPage integer Number of results per page. Example: 15
@@ -53,6 +54,7 @@ final class ProductController extends Controller
                 AllowedFilter::exact('is_visible'),
                 AllowedFilter::exact('is_featured'),
                 AllowedFilter::exact('status'),
+                AllowedFilter::exact('productable_type'),
             ])
             ->allowedSorts(['created_at', 'updated_at', 'name', 'short_name', 'status', 'is_visible', 'is_featured'])
             ->defaultSort('-created_at')
