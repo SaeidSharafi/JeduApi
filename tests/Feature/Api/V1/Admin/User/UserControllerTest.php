@@ -223,6 +223,8 @@ describe('CRUD Autherized', function (): void {
                     ->where('last_name', $expectedUser->last_name)
                     ->where('email', $expectedUser->email)
                     ->where('phone2', $expectedUser->phone2)
+                    ->where('is_banned', $expectedUser->is_banned)
+                    ->where('avatar_url', $expectedUser->avatar_url)
                     ->where('civil_id', $expectedUser->civil_id)
                     ->where('civil_id_type', [
                         'label' => $expectedUser->civil_id_type->translate(),

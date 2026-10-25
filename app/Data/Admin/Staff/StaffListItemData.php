@@ -21,6 +21,7 @@ final class StaffListItemData extends Data implements WalletTransactionSourceabl
         public ?Verta $created_at,
         public ?Verta $updated_at,
         public ?bool $is_admin,
+        public bool $is_banned = false,
         #[DataCollectionOf(RoleListItemData::class)]
         public ?DataCollection $roles,
     ) {}

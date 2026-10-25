@@ -123,6 +123,7 @@ describe('admin list', function (): void {
                             'name',
                             'email',
                             'phone',
+                            'is_banned',
                             'created_at',
                             'updated_at',
                             'roles' => [

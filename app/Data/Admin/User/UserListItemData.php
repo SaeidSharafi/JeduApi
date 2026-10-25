@@ -40,6 +40,8 @@ final class UserListItemData extends Data
         public ?string $field_of_study,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?EducationStatusEnum $education_status,
+        public bool $is_banned = false,
         public ?WalletData $wallet,
+
     ) {}
 }
