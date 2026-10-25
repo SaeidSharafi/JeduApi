@@ -1,79 +1,165 @@
 # Jedu production deployment
 
-One host, one compose project, three application images from Nexus:
+One compose project, three application images from Nexus, and three independent
+decisions:
 
-```
-                        ┌──────────────────────────────────────────┐
-   :80 / :443  ────────▶│ caddy   (TLS + hostname routing)         │
-                        └───┬───────────┬───────────┬──────────────┘
-                            │           │           │
-                    api:8000│    shop:80│   admin:80│
-                  ┌─────────▼──┐  ┌─────▼─────┐  ┌──▼────────┐
-                  │ api        │  │ shop      │  │ admin     │
-                  │ (FrankenPHP)│  │ (Next.js) │  │ (nginx)   │
-                  └─┬────────┬─┘  └───────────┘  └───────────┘
-                    │        │
-        ┌───────────▼┐  ┌────▼─────┐  ┌──────────────┐
-        │ worker     │  │ postgres │  │ redis        │
-        │ Horizon +  │  │ pgroonga │  │ typesense    │
-        │ scheduler  │  └──────────┘  └──────────────┘
-        └────────────┘
+1. **Where TLS terminates** — a Caddy container here, this host's nginx, or an
+   upstream edge (NPMplus, a load balancer, another server).
+2. **Who routes hostnames to the containers** — bundled Caddy or host nginx.
+3. **Where PostgreSQL, Redis and Typesense live** — bundled, another server, or
+   another compose project's container, independently per service.
+
+`install.sh` asks these, writes `.env`, and selects the compose files and
+profiles. Afterwards every plain command in this directory works without flags:
+
+```bash
+docker compose ps
+docker compose logs -f api
 ```
 
-`api` and `worker` are the same image with a different `DEPLOYMENT_TYPE` (the
-image's entrypoint branches on it). Only Caddy publishes ports; everything else
-is reached over the compose network by service name.
+## Topologies
+
+| Shape | TLS owner | Router | Caddy container | Public ports |
+|---|---|---|---|---|
+| **A. self-contained** | Caddy (ACME) | Caddy | yes | `:80`, `:443` |
+| **B. host nginx** | nginx (certbot/DNS-01) | nginx | no | none (nginx owns them) |
+| **C1. external edge + Caddy** | NPMplus / LB | Caddy, HTTP only | yes | `:80` on the chosen bind |
+| **C2. external edge + nginx** | NPMplus / LB | nginx, HTTP only | no | none (nginx listens privately) |
+
+`api`, `shop` and `admin` are always published on `127.0.0.1:8000`, `:8081`,
+`:8082` only. Host nginx proxies to those; Caddy reaches them by service name
+over the compose network.
+
+TLS terminates exactly once. The edge owns the certificate, the redirect and
+HSTS; everything behind it speaks plain HTTP.
+
+### Headers that matter
+
+The API container is always behind a proxy, so `TRUSTED_PROXIES=*` is written
+into `.env`. In Laravel `*` is **not** "trust everything": it becomes
+`setTrustedProxies([REMOTE_ADDR])`, i.e. trust the immediate peer only
+(`Illuminate\Http\Middleware\TrustProxies`). The API publishes no public port, so
+that peer is always the router.
+
+Each router then has to produce the right headers:
+
+- **Caddy as edge** sets `X-Forwarded-Proto`/`-Host`/`-For` itself, and the
+  Caddyfile adds `X-Forwarded-Port`. Without that last header Laravel would
+  build absolute URLs ending in `:8000`, because the container listens there.
+- **Caddy behind an edge** runs with `servers { trusted_proxies static <edge>
+  trusted_proxies_strict }`. Strict parsing is what stops a client-supplied
+  left-most `X-Forwarded-For` from being believed when the edge appends to the
+  header. It forwards a single, already-resolved `{client_ip}`.
+- **Host nginx as edge** forwards `$remote_addr` as `X-Forwarded-For`, sets
+  `X-Forwarded-Proto https` and the public port.
+- **Host nginx behind an edge** uses `real_ip` scoped to the edge
+  (`set_real_ip_from <edge>` + `real_ip_recursive on`), then forwards the
+  resolved `$remote_addr` as a single value.
+
+## Datastore modes
+
+Per service:
+
+| Mode | Meaning |
+|---|---|
+| `bundled` | runs in this compose project; data in a named volume |
+| `external` | another server or managed service, reached by `host:port` |
+| `container` | a container of another compose project, reached by name on an existing Docker network |
+
+Mixed configurations are supported (e.g. bundled PostgreSQL, external Redis,
+Typesense in another compose project).
+
+Notes:
+
+- **External PostgreSQL must provide pgroonga.** The first migration runs
+  `CREATE EXTENSION pgroonga`, and the role needs rights to it. Without it the
+  API fails at migrate. The installer warns again when
+  `pgroonga:engine typesense` fails.
+- **External Redis** can use an ACL username and may have no password. The API
+  uses databases `0` (default) and `1` (cache) with the `APP_NAME`-derived
+  prefix, so a shared Redis does not collide with other applications unless the
+  prefix is overridden.
+- **External Typesense** needs `TYPESENSE_PROTOCOL=https` and a key allowed to
+  create collections; the embedding model is downloaded by that server.
+- **Container mode** requires an existing Docker network. `install.sh` verifies
+  it and never creates it. Only `api` and `worker` join it.
+- Credentials are only generated for bundled services. External ones are asked
+  for and kept in `.env` on later runs.
 
 ## Quick start
 
 On the production host, as a user that can run `docker`:
 
 ```bash
-# 1. Get this directory onto the server (any path; /opt/jedu is a good home).
 sudo mkdir -p /opt/jedu && sudo chown "$USER" /opt/jedu
 git clone ssh://git@ssh.git.jedu.ir:222/kuro/Jedu-api.git /tmp/jedu-api
 cp -r /tmp/jedu-api/deploy/production/. /opt/jedu/
 cd /opt/jedu
+```
 
-# 2. DNS first: api/shop/admin.<your-domain> must point at this host.
+Then pick the shape that matches the host:
 
-# 3. Install. Prompts for the domains, the ACME email and the three image tags,
-#    generates every secret, pulls, starts, waits for health.
-./install.sh --domain jedu.ir --email ops@jedu.ir
+```bash
+# A. Everything here, Caddy obtains certificates.
+./install.sh --edge caddy --domain jedu.ir --email ops@jedu.ir
 
-# 4. Check.
-docker compose ps
-curl -fsS https://api.jedu.ir/up && echo
+# B. nginx already terminates TLS on this host.
+./install.sh --edge nginx --domain jedu.ir --skip-admin
+
+# C2. NPMplus terminates TLS, this host runs nginx as a private router.
+./install.sh --edge external --router nginx --edge-proxies 10.0.0.5/32 \
+    --http-bind 10.0.0.15
+
+# C1. NPMplus terminates TLS, no nginx on this host: bundled Caddy as router.
+./install.sh --edge external --router caddy --edge-proxies 10.0.0.5/32 \
+    --caddy-bind 10.0.0.15
+```
+
+Datastores are chosen per service:
+
+```bash
+./install.sh --edge external --router nginx --edge-proxies 10.0.0.5/32 \
+    --db external --db-host 10.0.0.10 --db-port 5433 \
+    --redis external --redis-host 10.0.0.10 \
+    --typesense container --typesense-host jedu-typesense \
+    --datastore-network shared-data
 ```
 
 Re-running `install.sh` is safe and is the supported way to change
 configuration: values already in `.env` win, so secrets are never rotated behind
-a live database. The installer is non-interactive when stdin is not a terminal;
-`-y` forces that and fails on a missing required value.
+a live database. Changing a topology reruns the derivation and rewrites
+`COMPOSE_FILE`/`COMPOSE_PROFILES`; `docker compose up -d --remove-orphans`
+removes containers the new topology does not include.
 
-The admin image is not published to Nexus yet, so the very first install needs
-`--skip-admin` (the admin hostname then answers nothing at all). See
-[Known gaps](#known-gaps).
+The admin image is not published to Nexus yet, so the first install needs
+`--skip-admin` (the admin hostname then answers 502). See [Known gaps](#known-gaps).
 
 ## What `install.sh` does
 
-1. **Preflight** — docker + compose v2 + openssl present, daemon reachable,
-   warns if port 80/443 is already taken.
-2. **Reads `.env.example` as the default template**, then overlays the existing
-   `.env` and any flags, then prompts for the rest. Nothing is asked twice.
-3. **Generates** `APP_KEY` (`base64:` + 32 random bytes, byte-identical to
-   `artisan key:generate --show`), the PostgreSQL password, the Redis password,
-   the Typesense API key, the storefront revalidation secret and the Horizon
-   password — each only if it is not already set.
-4. **Writes `.env`** (mode 600) with the derived values: `APP_URL`,
-   `FRONTEND_SHOP_DOMAIN`, the Caddy security/TLS settings, and the admin vhost.
-5. **Validates** the compose file with `docker compose config --quiet`.
-6. **Logs in** to `nexus.jedu.ir` if you give it credentials, then pulls each
-   image individually so one failure names the image that is missing.
-7. **Starts** the stack, waits up to 10 minutes for the API's healthcheck
-   (`/up`), then sets the stored search engine to Typesense with
-   `php artisan pgroonga:engine typesense` (the same call `deploy.php` makes).
-8. Prints the URLs and the operational commands.
+1. **Preflight** — docker + compose v2 + openssl, daemon reachable, nginx
+   detected, ports checked (a re-run may keep its own ports; a foreign listener
+   is fatal), Docker network exists for container-mode datastores.
+2. **Reads `.env.example` as the default template**, overlays the existing
+   `.env` and flags, then asks only what is still unanswered.
+3. **Asks the topology** — edge, router (only when the edge is external), and a
+   mode for each datastore.
+4. **Derives** `PUBLIC_SCHEME`, `TRUSTED_PROXIES`, `CORS_ALLOWED_ORIGINS`,
+   `COMPOSE_FILE`, `COMPOSE_PROFILES`, the Caddy settings and the nginx values.
+5. **Generates** `APP_KEY`, the storefront revalidation secret, the Horizon
+   password and — for bundled datastores only — the PostgreSQL, Redis and
+   Typesense secrets. Each only if absent.
+6. **Writes `.env`** (mode 600) atomically.
+7. **Renders and installs the nginx site** when the router is nginx: writes
+   `nginx/jedu-docker.conf`, refuses to overwrite a vhost it does not own,
+   installs with `nginx -t` + reload, and rolls back on failure. See
+   [Host nginx](#host-nginx).
+8. **Validates** the compose selection with `docker compose config --quiet`.
+9. **Logs in** to `nexus.jedu.ir` if you give it credentials, then pulls only
+   the images this topology uses, one at a time.
+10. **Starts the stack**, waits for bundled datastores and the API healthcheck
+    (`/up`), then sets the stored search engine to Typesense with
+    `php artisan pgroonga:engine typesense`.
+11. Prints the mode, ports, datastore targets and operational commands.
 
 ## Day-to-day
 
@@ -82,8 +168,8 @@ cd /opt/jedu
 
 docker compose ps                      # what is running and healthy
 docker compose logs -f api             # API logs (LOG_CHANNEL=stderr by default)
-docker compose logs -f worker          # Horizon + scheduler
-docker compose exec api bash           # a shell in the API container
+docker compose logs -f caddy           # routing layer, when there is one
+docker compose exec api bash
 docker compose exec api php artisan about
 
 # Ship a new API build (migrations run automatically on api start):
@@ -103,149 +189,183 @@ docker compose down
 docker compose down -v
 ```
 
+`COMPOSE_FILE` in `.env` uses relative paths, so run `docker compose` from this
+directory. Switching a datastore between bundled and external is a re-run of
+`./install.sh`; switching it away from bundled leaves the old volume in place
+(nothing deletes it automatically).
+
 Horizon is served at `https://<api-domain>/horizon`, behind HTTP basic auth from
 `HORIZON_USERNAME` / `HORIZON_PASSWORD`; with either value empty it answers 401
 to everyone.
 
-## Good to know
+## Host nginx
 
-- **`STOREFRONT_URL` is `http://shop:80`, not the public shop domain.** The
-  revalidation webhook is a server-to-server call from the API container;
-  using the browser-facing host resolves back to the API container and fails
-  with `cURL error 7` (see `config/storefront.php` and ADR 0019).
-- **`STOREFRONT_REVALIDATE_SECRET` is one value** used for both the API's
-  `STOREFRONT_REVALIDATE_SECRET` and the shop's `REVALIDATE_SECRET`; compose
-  passes the same variable to both, so they cannot drift. While it is empty the
-  webhook is a logged no-op and the storefront only refreshes on TTL.
-- **`SANCTUM_STATEFUL_DOMAINS`** is derived from the three hostnames. The admin
-  panel authenticates with a cookie (`withCredentials: true`), so all three must
-  stay correct or its requests come back 401.
-- **`.env` is the single source of truth.** `DB_*`, `REDIS_*`, `TYPESENSE_*`,
-  `APP_URL`, `FRONTEND_SHOP_DOMAIN`, `SANCTUM_STATEFUL_DOMAINS` and the shop's
-  `NEXT_PUBLIC_*` are computed in `docker-compose.yml` from the domain and
-  secret keys, so changing a domain is a one-line edit plus a re-run.
-- **Storage is a named volume**, not a bind mount: the image's `appuser`
-  (uid 1000) owns `/app/storage`, and Docker copies that ownership into a fresh
-  named volume. A bind mount would need `chown -R 1000:1000` on the host first.
-- **`APP_NAME` drives `HORIZON_PREFIX`**, which is the Redis key prefix for every
-  queue. Keep it stable across a migration from an existing deployment, or set
-  `HORIZON_PREFIX` explicitly in `.env`.
+Only used when the router is nginx. The installer renders
+`nginx/jedu-docker.conf` from `nginx/jedu-tls.conf.template` (edge=nginx) or
+`nginx/jedu-http.conf.template` (external edge), with a
+`# Managed by deploy/production/install.sh` header. Every run regenerates it:
+do not hand-edit that file.
+
+Destination: `/etc/nginx/sites-available/jedu-docker.conf` plus a
+`sites-enabled` symlink on Debian/Ubuntu; `/etc/nginx/conf.d/jedu-docker.conf`
+elsewhere.
+
+Behaviour:
+
+- `nginx -t` runs before reload; a failure removes the new file, restores any
+  moved vhost and stops the install before anything is pulled or started.
+- Before writing, the installed configuration is scanned (`nginx -T`) for a
+  `server_name` matching one of the three hostnames. A foreign match is treated
+  as a live deployment and the install stops, naming the file. This is what
+  protects a Deployer-managed vhost.
+- `--replace-nginx-site` moves such a file to
+  `<file>.jedu-backup-<timestamp>` and continues. That takes the hostname over
+  from the other site, deliberately.
+- `--emit-nginx-conf` only writes and prints the file; useful for reviewing
+  before touching a production nginx, or when sudo is unavailable.
+- Requires a certificate that covers all three hostnames (one SAN
+  certificate) for edge=nginx. Defaults point at
+  `/etc/letsencrypt/live/<api-domain>/`; override with `--tls-cert`/`--tls-key`.
+  No HSTS header is added: HSTS cannot be un-done for its max-age, so it is left
+  to the operator.
+- `http2 on;` is used when the installed nginx is 1.25.1+, and
+  `listen ... ssl http2` otherwise.
+
+## Real client IPs and CORS
+
+`TRUSTED_PROXIES` is written as `*` (immediate peer). For the client IP to be
+right, the edge must be the only thing that can talk to the router, and the
+router must resolve `X-Forwarded-For` right-to-left:
+
+- Caddy: `trusted_proxies static <edge>` + `trusted_proxies_strict`.
+- nginx: `set_real_ip_from <edge>` + `real_ip_recursive on`.
+- Do not set `set_real_ip_from 0.0.0.0/0` or a trusted range that includes
+  anything a client can reach; that makes the IP header spoofable and with it
+  the registration caps and rate limits.
+- Firewall the router's HTTP port so only the edge can reach it.
+
+CORS is derived from the three hostnames (`CORS_ALLOWED_ORIGINS`) and read by
+`config/cors.php`. Unset falls back to the hosted application's own origins;
+an empty value denies every cross-origin browser request. CORS is browser
+policy, not authorization.
 
 ## Go-live checklist
 
-- [ ] **DNS** — `api`, `shop` and `admin` resolve to this host *before* the
-      first start; Caddy retries certificates, but Let's Encrypt rate-limits
-      repeated failures.
-- [ ] **Firewall** — 80 and 443 open, 5432/6379/8108/8000 not exposed. Only
-      Caddy publishes ports, so this is a host-firewall check.
+- [ ] **DNS** — api/shop/admin resolve to the edge or this host before the
+      first start. Caddy retries, but Let's Encrypt rate-limits repeated
+      failures.
+- [ ] **Firewall** — only the routing layer's port(s) are reachable; 5432,
+      6379, 8108 and the loopback ports are not. In edge=external, restrict the
+      router's port to the edge.
+- [ ] **Client IPs** — request the app through the edge and confirm the audit
+      log records the visitor, not the edge:
+      `docker compose exec api php artisan tinker --execute 'dump(request()->ip());'`
+      cannot prove it (CLI), so check a real request's `admin_action_logs` row
+      or the API log.
 - [ ] **Mail** — `MAIL_MAILER` defaults to `log`, which delivers nothing. Set
-      `MAIL_MAILER=smtp` and the `MAIL_*` credentials, then
-      `docker compose up -d --force-recreate api worker`. OTP login and order
-      notifications depend on it.
-- [ ] **Real client IPs (recommended, see below)** — without it, per-IP rate
-      limits apply to the Caddy container, not to the visitor.
-- [ ] **Backups** — `jedu-postgres-data` is the whole system of record. Also
-      back up `jedu-storage-app` (uploads and export artifacts) and `.env`.
+      SMTP, then `docker compose up -d --force-recreate api worker`.
+- [ ] **pgroonga** — `docker compose exec api php artisan pgroonga:engine status`.
+      For an external PostgreSQL, confirm the extension exists.
+- [ ] **Backups** — bundled: `jedu-postgres-data` is the system of record, plus
+      `jedu-storage-app`, `jedu-caddy-data` and `.env`.
+      External: the database owner is responsible for backups; back up
+      `jedu-storage-app` and `.env` here.
       ```
       docker compose exec -T postgres pg_dump -U jedu jedushop | gzip > /backup/jedushop-$(date +%F).sql.gz
       ```
-- [ ] **Typesense models** — the first index build downloads the
-      `multilingual-e5-small` embedding model. If this host cannot reach the
-      model host, pre-seed `jedu-typesense-data` from a machine that can.
+- [ ] **Typesense models** — the first index build downloads
+      `multilingual-e5-small`; pre-seed it if the host cannot reach the model
+      host.
 - [ ] **Verify** — `curl -fsS https://<api-domain>/up`, load the storefront,
-      log into the admin panel, then check
-      `docker compose exec api php artisan pgroonga:engine status`.
+      log into the admin panel, then check `pgroonga:engine status`.
 
 ### Known gaps
 
-These are not installer bugs; each is a decision that lives in another
-repository.
+1. **Admin panel image.** `nexus.jedu.ir/docker-hub/jedu-admin` is not published
+   yet. Two issues in `JeduFront/admin-panel` should be fixed in the same pass:
+   `VITE_API_URL` is baked in at build time with no runtime fallback, and the
+   image has no `.dockerignore`, so the developer's `.env` is copied in. The
+   fix is the one the shop already uses: exclude `.env*`, and have the nginx
+   entrypoint write `window.__ENV__` from the container environment on start.
+   The `VITE_API_URL` passed by `docker-compose.yml` is what that entrypoint
+   must read — do not use `ARG VITE_API_URL`.
+2. **Typesense through Nexus.** `nexus.jedu.ir/docker-hub-proxy/typesense/...`
+   answers 502, so `TYPESENSE_IMAGE` points at Docker Hub. Push a copy to Nexus
+   if the host has no Docker Hub access.
+3. **Caddy behind an edge** requires Caddy ≥ 2.8 (`trusted_proxies`,
+   `{client_ip}`). The pinned `caddy:2-alpine` is newer.
+4. **External PostgreSQL versions.** The bundled image is PostgreSQL 17 with
+   pgroonga. An external server on another major version is supported by the
+   application, but the installer cannot verify the extension or the version.
 
-1. **Admin panel image.** `nexus.jedu.ir/docker-hub/jedu-admin` does not exist
-   yet, so install with `--skip-admin` and add it later. The `admin` service
-   already passes `VITE_API_URL` to the container, so nothing here needs to
-   change once the image is published. Two things about the current
-   `JeduFront/admin-panel` Dockerfile are worth fixing in the same pass:
-   - `VITE_API_URL` is read through `import.meta.env` at **build** time with no
-     runtime fallback, so the image carries whichever API URL was present when
-     it was built.
-   - it has no `.dockerignore`, so `COPY . .` copies the developer's `.env`
-     (currently `http://jedu.test/api/v1/admin`) into the image.
+## Relationship to Deployer and the older compose file
 
-   Fix both by moving the lookup to run time, which is how the shop solved the
-   same problem: exclude `.env*` with a `.dockerignore`, and have the image's
-   nginx entrypoint write `window.__ENV__` from the container environment on
-   every start, via a hook in `/docker-entrypoint.d/`. Do **not** reach for
-   `ARG VITE_API_URL`: a build arg still forces a separate build per environment,
-   which is the problem being fixed. The `VITE_API_URL` on the `admin` service in
-   `docker-compose.yml` is what the entrypoint reads.
-2. **Real client IPs.** Laravel's `TrustProxies` middleware is in the default
-   global stack but trusts nothing until it is configured, and this repo has no
-   `config/trustedproxy.php`. Behind Caddy every request therefore appears to
-   come from the Caddy container, which collapses the per-IP buckets used by
-   `throttle:5,1` / `throttle:10,1` and by `throttle.password-login:*`
-   (see `config/password_throttle.php`) into one shared bucket. The fix is two
-   lines in the API repo plus a rebuild:
-   ```php
-   // config/trustedproxy.php
-   return ['proxies' => env('TRUSTED_PROXIES')];
-   ```
-   and `TRUSTED_PROXIES=*` in `.env` here. `*` means "trust the immediate
-   peer", which is safe only because the `api` container publishes no ports —
-   keep it that way, or list Caddy's network instead.
-3. **Typesense through Nexus.** `nexus.jedu.ir/docker-hub-proxy/typesense/typesense:29.0`
-   answers `502`, so `.env.example` pulls Typesense from Docker Hub. Push a copy
-   to `nexus.jedu.ir/docker-hub/typesense` and point `TYPESENSE_IMAGE` at it if
-   the production host has no Docker Hub access.
+This directory is a **separate deployment path** from `deploy.php`:
+
+- `deploy.php` still deploys releases to `/var/www/api.jedu.ir` on the Deployer
+  host: shared `.env` and `storage`, `current` symlink, php8.4-fpm reload.
+  Nothing in this directory writes there, and `install.sh` refers to it only in
+  the nginx collision check (it refuses to take a `server_name` away from a
+  Deployer vhost unless told to).
+- The Docker image is built by the same pipeline after `dep deploy`, from the
+  same commit, so both paths run the same code.
+- Do not point both paths at the same database. One is a release of the
+  application on the host; the other is the container stack that replaces it.
+- `docker-compose-production.yaml` at the repository root is the older, narrower
+  file (`api` + `worker` only, datastores elsewhere, using the
+  `nexus.jedu.ir/repository/docker-hub/…` path). This directory supersedes it.
 
 ## Troubleshooting
 
 | Symptom | Where to look |
 | --- | --- |
-| `install.sh` stops on "cannot pull" | `docker pull <image>` by hand; a private repo needs `--registry-user`/`--registry-password`, and the admin image needs `--skip-admin` until it is published |
-| `jedu-api` never becomes healthy | `docker compose logs api` — the entrypoint waits for PostgreSQL/Redis, then runs migrations; a wrong `POSTGRES_PASSWORD` shows up here |
-| `admin.<domain>` returns 502 | the admin service is missing (installed with `--skip-admin`) or still starting |
-| Certificate errors in `docker compose logs caddy` | the hostname does not resolve to this host yet, or port 80 is closed for the ACME HTTP challenge |
-| Storefront shows stale content after an edit | `docker compose logs worker` for the revalidation job, and confirm the API's `STOREFRONT_URL`/secret match the shop's `REVALIDATE_SECRET` |
-| Storefront 500s | `docker compose logs shop`; verify `NEXT_PUBLIC_API_URL` resolved with `docker compose config` |
-| Search returns nothing | the engine setting and the index are per-database: `docker compose exec api php artisan pgroonga:engine status`, then `--rebuild-search` |
+| `install.sh` stops on "Port … is already in use" | Something not in project `jedu-production` holds it — usually a host nginx for :80/:443. Choose `--edge nginx`/`--edge external`, or free the port |
+| `install.sh` stops naming a vhost | That server block already answers one of the hostnames. Move it, choose other hostnames, or `--replace-nginx-site` |
+| `nginx -t` fails after rendering | Usually a missing certificate/key path (`--tls-cert`, `--tls-key`), or an nginx older than the `http2`/`real_ip` syntax in use |
+| `cannot pull` | `docker pull <image>` by hand; a private repo needs `--registry-user`/`--registry-password`; the admin image needs `--skip-admin` until published |
+| `jedu-api` never becomes healthy | `docker compose logs api` — the entrypoint waits for PostgreSQL/Redis over TCP, then migrates. For external datastores this is where a wrong host, password, unreachable network or missing pgroonga shows up |
+| `pgroonga:engine typesense` fails | External PostgreSQL without the extension, or the role cannot create it |
+| `admin.<domain>` returns 502 | installed with `--skip-admin`, or the admin image is not published |
+| Storefront shows stale content | `docker compose logs worker`; confirm `STOREFRONT_URL` is `http://shop:80` and the revalidation secret matches |
+| CORS errors in the admin panel | `grep CORS_ALLOWED_ORIGINS .env`; it must contain the panel's origin exactly. `https://*.jedu.ir` does not match `https://jedu.ir` |
+| Client IPs look like the edge/router | `EDGE_PROXIES` missing or wrong; Caddy needs `trusted_proxies`/`trusted_proxies_strict`, nginx needs `set_real_ip_from` |
+| Certificates fail in `docker compose logs caddy` | hostname does not resolve to this host, or port 80/443 is closed for ACME |
+| Absolute URLs come out as `https://host:8000` | `X-Forwarded-Port` is not reaching the app; check the router config and that `TRUSTED_PROXIES` is set |
 
 ## Verifying this bundle without a production host
 
 ```bash
-bash -n install.sh                       # syntax
-docker compose config --quiet            # YAML + every ${...} resolves
-docker compose config | less             # the resolved configuration
+bash -n install.sh
+shellcheck -S warning install.sh            # or the koalaman/shellcheck image
+docker compose config --quiet
+docker compose config | less                # the resolved configuration
 docker compose run --rm --no-deps caddy \
   caddy validate --config /etc/caddy/Caddyfile
 ```
 
-Everything in this directory was checked this way (Caddy 2.11.7, Compose
-v2.40.2), plus:
+The nginx templates are rendered by `install.sh`; a rendered file can be checked
+with:
 
-- `install.sh` was driven through five scenarios against a stub `docker`: a
-  fresh `--no-tls --skip-admin` install, an identical re-run (secrets
-  unchanged), a TLS re-run without `--email` (fails loudly instead of writing a
-  Caddyfile with an empty `email` directive), a TLS re-run with `--api-tag`, and
-  `--reset-env`.
-- `caddy validate` accepts the Caddyfile in TLS and `--no-tls` modes, and with
-  the `--skip-admin` placeholder site.
-- `postgres`, `redis` and `typesense` were started from this exact compose file
-  and all three reached `healthy`. Redis answered `PONG` with the generated
-  password and `NOAUTH` without it, Typesense answered `{"ok":true}` on :8108,
-  and the pgroonga image offers the `pgroonga` extension (4.1.0) that
-  `0000_00_000000_setup_pgroonga_extension.php` creates.
+```bash
+docker run --rm -v "$PWD/nginx/jedu-docker.conf:/etc/nginx/conf.d/jedu.conf:ro" \
+  nginx:alpine nginx -t
+```
 
-What was *not* run here is a full end-to-end start: it publishes 80/443, which
-this development machine already uses, and it needs the admin image, which is
-not published yet.
+What was checked for this version, against Caddy 2.11.7, Compose v2.40.2,
+nginx:alpine and a stub `docker`:
 
-## Relationship to the other compose files
+- `bash -n` and `shellcheck -S warning`.
+- `docker compose config --quiet` for all four shapes (A, B, C1, C2) and for a
+  mixed datastore install with an external Docker network.
+- `caddy validate` for both Caddyfiles.
+- `nginx -t` for a rendered TLS site (self-signed SAN certificate) and a
+  rendered plain-HTTP site, including the `--skip-admin` variant.
+- `install.sh` driven end to end with a stub `docker` for: self-contained Caddy,
+  nginx edge, external edge with nginx, external edge with Caddy, and external/
+  container datastores. Re-running kept every secret, and switching datastores
+  back to bundled rewrote `COMPOSE_FILE`/`COMPOSE_PROFILES` and reset the hosts.
 
-`docker-compose-production.yaml` at the repository root is the older, narrower
-file: it runs only `api` + `worker` from `nexus.jedu.ir/repository/docker-hub/…`
-and expects PostgreSQL, Redis and Typesense to exist elsewhere. This directory
-supersedes it for a single-host install — it runs all three applications and the
-datastores, and uses the `nexus.jedu.ir/docker-hub/…` path that
-`deploy/production/.env.example` and the shop's image tag agree on. Keep the root
-file only if something still deploys with it.
+Not covered here: a full end-to-end start of the stack (it publishes 80/443,
+which this development machine already uses) and the install of the admin image,
+which is not published yet. The sudo path that writes `/etc/nginx` was reviewed
+but not executed; `--emit-nginx-conf` is the safe way to inspect it first.

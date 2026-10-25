@@ -9,15 +9,26 @@
 #   redis            cache, sessions, queues (Horizon)
 #   typesense        SCOUT_DRIVER=typesense
 #
-# Only caddy publishes ports. Every other service is reached over the compose
-# network by service name, which is why STOREFRONT_URL below is http://shop:80:
-# that is the address the API *container* can reach the storefront on, and it is
-# deliberately not the browser-facing shop domain (see config/storefront.php and
-# .ai/rules/storefront-cache.md — reusing the public host produced cURL error 7).
+# This file is the shared core. install.sh selects what actually runs by writing
+# COMPOSE_PROFILES and COMPOSE_FILE into .env, so every plain `docker compose`
+# command afterwards resolves the same topology:
+#
+#   profiles      caddy | admin | db-bundled | redis-bundled | typesense-bundled
+#   mode files    docker-compose.caddy.yml               Caddy terminates TLS itself
+#                 docker-compose.caddy-behind-edge.yml   Caddy is an HTTP router
+#                 docker-compose.external-net.yml        datastore is another container
+#
+# Only the routing layer publishes a public port. api, shop and admin are
+# published on 127.0.0.1 only, because the host nginx of the `nginx` router mode
+# proxies to them; Caddy modes reach them over the compose network by service
+# name. STOREFRONT_URL is deliberately http://shop:80: that is the address the
+# API *container* can reach the storefront on, not the browser-facing domain
+# (see config/storefront.php and .ai/rules/storefront-cache.md — reusing the
+# public host produced cURL error 7).
 #
 # Configuration lives in ./.env, written by ./install.sh. The Laravel variables
-# that are derivable from the three domains are computed here instead of being
-# stored twice, so a domain change is a one-line edit.
+# that are derivable from the domains are computed here instead of being stored
+# twice, so a domain change is a one-line edit.
 #
 #   ./install.sh          writes .env and starts everything
 #   docker compose config  prints the fully resolved configuration
@@ -32,25 +43,27 @@ x-api-environment: &api-environment
   FRONTEND_SHOP_DOMAIN: ${PUBLIC_SCHEME}://${SHOP_DOMAIN:?SHOP_DOMAIN is missing - run install.sh}
   # Origins allowed to make cookie-authenticated requests to the API.
   SANCTUM_STATEFUL_DOMAINS: ${ADMIN_DOMAIN:?},${SHOP_DOMAIN:?},${API_DOMAIN:?}
-  # Topology facts, not operator choices.
+  # Topology facts, not operator choices. Each host/port is written by
+  # install.sh for the mode chosen for that datastore.
   DB_CONNECTION: pgsql
-  DB_HOST: postgres
-  DB_PORT: "5432"
+  DB_HOST: ${DB_HOST:?DB_HOST is missing - run install.sh}
+  DB_PORT: ${DB_PORT:-5432}
   DB_DATABASE: ${POSTGRES_DB:?}
   DB_USERNAME: ${POSTGRES_USER:?}
-  DB_PASSWORD: ${POSTGRES_PASSWORD:?}
-  REDIS_HOST: redis
-  REDIS_PORT: "6379"
+  DB_PASSWORD: ${POSTGRES_PASSWORD:-}
+  REDIS_HOST: ${REDIS_HOST:?REDIS_HOST is missing - run install.sh}
+  REDIS_PORT: ${REDIS_PORT:-6379}
+  REDIS_USERNAME: ${REDIS_USERNAME:-}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-}
   REDIS_CLIENT: phpredis
-  REDIS_PASSWORD: ${REDIS_PASSWORD:?}
   CACHE_STORE: redis
   QUEUE_CONNECTION: redis
   SESSION_DRIVER: redis
-  SCOUT_DRIVER: typesense
-  TYPESENSE_HOST: typesense
-  TYPESENSE_PORT: "8108"
-  TYPESENSE_PROTOCOL: http
-  TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:?}
+  SCOUT_DRIVER: ${SCOUT_DRIVER:-typesense}
+  TYPESENSE_HOST: ${TYPESENSE_HOST:?TYPESENSE_HOST is missing - run install.sh}
+  TYPESENSE_PORT: ${TYPESENSE_PORT:-8108}
+  TYPESENSE_PROTOCOL: ${TYPESENSE_PROTOCOL:-http}
+  TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-}
   # Must equal the shop container's REVALIDATE_SECRET; a mismatch is a silent
   # no-op that leaves the storefront serving stale content until its TTL.
   STOREFRONT_URL: http://shop:80
@@ -69,11 +82,12 @@ x-api-service: &api-service
     # A bind mount would need the host directory chowned to 1000:1000 first.
     - storage-app:/app/storage/app
     - storage-logs:/app/storage/logs
-  depends_on:
-    postgres:
-      condition: service_healthy
-    redis:
-      condition: service_healthy
+  # No depends_on on the datastores on purpose: they may be external, and a
+  # compose dependency on a profile that is not enabled is a hard error ("api
+  # depends on undefined service postgres"). The image entrypoint waits for
+  # DB_HOST and REDIS_HOST over TCP before starting anything else.
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
   networks:
     - jedu
 
@@ -82,24 +96,31 @@ services:
     image: ${CADDY_IMAGE:?CADDY_IMAGE is missing - run install.sh}
     container_name: jedu-caddy
     restart: unless-stopped
-    ports:
-      - "${HTTP_PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
-      - "${HTTPS_PORT:-443}:443/udp" # HTTP/3
+    # Enabled only when install.sh makes Caddy the routing layer (edge=caddy, or
+    # edge=external with router=caddy). Plain nginx-router installs leave it off.
+    profiles: ["caddy"]
     environment:
       API_DOMAIN: ${API_DOMAIN:?}
       SHOP_DOMAIN: ${SHOP_DOMAIN:?}
       ADMIN_DOMAIN: ${ADMIN_DOMAIN:?}
-      # "email ops@jedu.ir" when TLS is on, empty when --no-tls (see install.sh).
+      # "email ops@jedu.ir" when Caddy runs ACME, empty otherwise.
       CADDY_GLOBAL_OPTIONS: ${CADDY_GLOBAL_OPTIONS:-}
-      # "http://" when TLS is off, empty when Caddy terminates TLS itself.
+      # "http://" when TLS is terminated upstream, empty when Caddy terminates it.
       CADDY_SITE_ADDRESS_PREFIX: ${CADDY_SITE_ADDRESS_PREFIX:-}
-      # The admin hostname, or a placeholder while install.sh --skip-admin keeps
-      # the panel out of the stack.
+      # The admin hostname, or a placeholder while --skip-admin keeps the panel
+      # out of the stack.
       CADDY_ADMIN_SITE: ${CADDY_ADMIN_SITE:?}
       CADDY_ADMIN_UPSTREAM: ${CADDY_ADMIN_UPSTREAM:-admin:80}
+      # Comma-free, space-separated CIDRs of the upstream edge (behind-edge mode);
+      # Caddy trusts their X-Forwarded-* headers, otherwise the app sees the edge.
+      CADDY_TRUSTED_PROXIES: ${CADDY_TRUSTED_PROXIES:-}
+      # Public port the browser used; forwarded as X-Forwarded-Port so absolute
+      # URLs do not come out as https://host:8000.
+      CADDY_XFP_PORT: ${CADDY_XFP_PORT:-443}
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # install.sh selects this file; the two variants are Caddyfile (Caddy is
+      # the edge) and Caddyfile.behind-edge (plain HTTP router).
+      - ${CADDYFILE:-./Caddyfile}:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
     # depends_on intentionally omits admin: install.sh --skip-admin starts the
@@ -119,6 +140,10 @@ services:
     environment:
       <<: *api-environment
       DEPLOYMENT_TYPE: web
+    # Loopback only: the host nginx of router=nginx proxies here; in Caddy modes
+    # it is a debugging convenience. It is never reachable from the network.
+    ports:
+      - "127.0.0.1:${API_LOOPBACK_PORT:-8000}:8000"
     # Inherits the image's HEALTHCHECK (curl -f http://localhost:8000/up).
 
   worker:
@@ -142,6 +167,8 @@ services:
       NEXT_PUBLIC_AUTH_API_URL: ${PUBLIC_SCHEME}://${API_DOMAIN}/api/v1/auth
       NEXT_PUBLIC_SITE_URL: ${PUBLIC_SCHEME}://${SHOP_DOMAIN}
       REVALIDATE_SECRET: ${STOREFRONT_REVALIDATE_SECRET:?}
+    ports:
+      - "127.0.0.1:${SHOP_LOOPBACK_PORT:-8081}:80"
     networks:
       - jedu
 
@@ -149,11 +176,16 @@ services:
     image: ${JEDU_ADMIN_IMAGE:?JEDU_ADMIN_IMAGE is missing - run install.sh}
     container_name: jedu-admin
     restart: unless-stopped
+    # --skip-admin leaves this profile off; the image is still referenced by the
+    # compose file, so its tag must exist (install.sh keeps the last one).
+    profiles: ["admin"]
     environment:
       # The image's nginx entrypoint turns this into /env-config.js at container
       # start, which is what lets one image serve every environment. It must not
       # be baked in at build time — see the admin panel's .env.example.
       VITE_API_URL: ${PUBLIC_SCHEME}://${API_DOMAIN}/api/v1/admin
+    ports:
+      - "127.0.0.1:${ADMIN_LOOPBACK_PORT:-8082}:80"
     networks:
       - jedu
 
@@ -161,12 +193,14 @@ services:
     image: ${POSTGRES_IMAGE:?POSTGRES_IMAGE is missing - run install.sh}
     container_name: jedu-postgres
     restart: unless-stopped
+    # db-bundled only; an external or containerised PostgreSQL leaves this off.
+    profiles: ["db-bundled"]
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?}
       POSTGRES_USER: ${POSTGRES_USER:?}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
       # Only used by the healthcheck below.
-      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-}
     # The dev stack sets the same lock ceiling; the app's transactions need it.
     command: postgres -c max_locks_per_transaction=${POSTGRES_MAX_LOCKS:-256}
     volumes:
@@ -184,14 +218,15 @@ services:
     image: ${REDIS_IMAGE:?REDIS_IMAGE is missing - run install.sh}
     container_name: jedu-redis
     restart: unless-stopped
+    profiles: ["redis-bundled"]
     environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD:?}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     command:
       - redis-server
       - --appendonly
       - "yes"
       - --requirepass
-      - ${REDIS_PASSWORD:?}
+      - ${REDIS_PASSWORD:-}
     volumes:
       - redis-data:/data
     healthcheck:
@@ -207,9 +242,10 @@ services:
     image: ${TYPESENSE_IMAGE:?TYPESENSE_IMAGE is missing - run install.sh}
     container_name: jedu-typesense
     restart: unless-stopped
+    profiles: ["typesense-bundled"]
     environment:
       TYPESENSE_DATA_DIR: /typesense-data
-      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:?}
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-}
       TYPESENSE_ENABLE_CORS: "false"
     volumes:
       - typesense-data:/typesense-data

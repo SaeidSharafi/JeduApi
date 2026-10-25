@@ -835,10 +835,13 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 
 ## CORS Configuration (`config/cors.php`)
 - **Paths:** `api/*` + `sanctum/csrf-cookie`
-- **Credentials:** `supports_credentials` set to `true` (allows cookies/auth headers)
-- **Allowed origins (explicit list):** `https://dev-jedu.encel.ir`, `https://dev-admin-jedu.encel.ir`, `https://test-jedu.encel.ir`, `https://test-admin-jedu.encel.ir`, `https://api.jedu.ir`, `https://shop.jedu.ir`, `http://localhost:3000`, `http://185.141.133.114:8080`
-- **Allows all:** headers, methods (`*`); no origin patterns
-- **Usage:** Enables cross-origin API access from configured frontend domains (admin panel, shopfront, dev environments) with credential support
+- **Credentials:** `CORS_SUPPORTS_CREDENTIALS` (default `true`; the admin panel authenticates with cookies)
+- **Allowed origins:** `CORS_ALLOWED_ORIGINS`, comma-separated. `*` wildcards are converted to patterns, and `https://*.jedu.ir` does not match `https://jedu.ir`. Unset falls back to the default hosted origins: `http://localhost:3000`, `https://*.jedu.ir`, `https://jedu.ir` and the `dev-`/`test-` `.encel.ir` hosts. An explicitly empty value denies every cross-origin browser request.
+- **Patterns:** `CORS_ALLOWED_ORIGINS_PATTERNS` (default empty)
+- **Max age:** `CORS_MAX_AGE` (default `0`)
+- **Allows all:** headers, methods (`*`)
+- **Usage:** browser-side credential support for the admin panel and storefront. `deploy/production` derives the list from the three public hostnames. CORS is browser policy, not authorization.
+- **Related:** trusted proxies are configured through `config/trustedproxy.php` (`TRUSTED_PROXIES`); `Illuminate\Http\Middleware\TrustProxies` reads it per request when `bootstrap/app.php` sets no value, and `*` means the immediate peer only. It affects `$request->ip()` and scheme-aware URL generation, not CORS.
 
 ### Shop Form Submission Endpoints (`/api/v1/shop/*`)
 **Rate Limiting:** `throttle:10,1` (10 requests per minute)

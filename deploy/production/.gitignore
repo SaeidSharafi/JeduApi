@@ -4,3 +4,7 @@
 !.env.example
 # Rotated copies from --reset-env.
 *.bak
+# Rendered nginx site; install.sh regenerates it on every run.
+nginx/jedu-docker.conf
+# vhost files moved aside by --replace-nginx-site.
+*.jedu-backup-*

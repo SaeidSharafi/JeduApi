@@ -114,6 +114,11 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trusted proxies are configured in config/trustedproxy.php. They are
+        // deliberately not passed to trustProxies() here: this callback runs as
+        // soon as the HTTP kernel is resolved, before LoadConfiguration
+        // bootstraps, so config() is not bound yet. The middleware itself reads
+        // config('trustedproxy.proxies') when it handles a request.
         $middleware->api(prepend: [
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,

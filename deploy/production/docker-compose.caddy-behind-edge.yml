@@ -1,0 +1,10 @@
+# Mode file: Caddy is an HTTP router behind an upstream edge (edge=external,
+# router=caddy).
+#
+# Selected by install.sh through COMPOSE_FILE. Only the plain-HTTP port is
+# published; certificates belong to the edge (NPMplus, a load balancer, another
+# server), and Caddy never talks to ACME in this mode.
+services:
+  caddy:
+    ports:
+      - "${CADDY_BIND:-0.0.0.0}:${HTTP_PORT:-80}:80"

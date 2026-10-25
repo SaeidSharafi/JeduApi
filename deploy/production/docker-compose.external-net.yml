@@ -1,0 +1,20 @@
+# Mode file: one or more datastores run as containers of another compose
+# project (db/redis/typesense mode = container).
+#
+# Selected by install.sh through COMPOSE_FILE. api and worker join that project's
+# existing Docker network so they can resolve the datastore containers by name.
+# The network must already exist; install.sh verifies it and never creates it.
+services:
+  api:
+    networks:
+      - jedu
+      - datastores
+  worker:
+    networks:
+      - jedu
+      - datastores
+
+networks:
+  datastores:
+    external: true
+    name: ${DATASTORE_NETWORK:?DATASTORE_NETWORK is missing - run install.sh}

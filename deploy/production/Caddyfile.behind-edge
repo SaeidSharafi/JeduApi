@@ -1,0 +1,55 @@
+# Reverse proxy for the Jedu production stack — Caddy is NOT the edge.
+#
+# Used when install.sh chooses edge=external with router=caddy: an upstream edge
+# (NPMplus, a load balancer, another server) terminates TLS and forwards plain
+# HTTP here. Caddy only routes by Host and never talks to ACME — every site
+# address is explicitly http://.
+#
+# trusted_proxies + trusted_proxies_strict are required for the app to see the
+# real client and the original scheme:
+#
+#   - `static` lists the edge's addresses/CIDRs (CADDY_TRUSTED_PROXIES).
+#   - `strict` parses X-Forwarded-For right-to-left. Without it Caddy takes the
+#     left-most entry, which a client can spoof (nginx's $proxy_add_x_forwarded_for
+#     appends to the client's own header).
+#   - {client_ip} is the address Caddy resolved that way; forwarding it makes the
+#     header single-valued and unspoofable.
+#
+# Requires Caddy >= 2.8 (trusted_proxies, {client_ip}).
+#
+# Validate after editing:
+#   docker compose run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile
+{
+	{$CADDY_GLOBAL_OPTIONS}
+	servers {
+		trusted_proxies static {$CADDY_TRUSTED_PROXIES}
+		trusted_proxies_strict
+	}
+}
+
+http://{$API_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy api:8000 {
+		header_up X-Forwarded-For {client_ip}
+		header_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}
+		header_up X-Forwarded-Port {$CADDY_XFP_PORT}
+	}
+}
+
+http://{$SHOP_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy shop:80 {
+		header_up X-Forwarded-For {client_ip}
+		header_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}
+		header_up X-Forwarded-Port {$CADDY_XFP_PORT}
+	}
+}
+
+{$CADDY_ADMIN_SITE} {
+	encode zstd gzip
+	reverse_proxy {$CADDY_ADMIN_UPSTREAM} {
+		header_up X-Forwarded-For {client_ip}
+		header_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}
+		header_up X-Forwarded-Port {$CADDY_XFP_PORT}
+	}
+}
