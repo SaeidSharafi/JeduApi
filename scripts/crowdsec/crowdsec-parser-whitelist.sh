@@ -86,6 +86,7 @@ filter: "evt.Meta.service == 'http' && evt.Meta.log_type in ['http_access-log', 
 whitelist:
   reason: "Legitimate payment callbacks, websockets, form posts and autocomplete traffic"
   expression:
+    - "evt.Meta.http_path startsWith '/storage/'"
     # 1. Payment gateway callbacks. The bank redirects or POSTs the customer
     #    back with RefId/ResCode/SaleReferenceId/... in the query string.
     #    The precise Jedu route comes first; the generic ones cover the other
@@ -96,7 +97,7 @@ whitelist:
 
     # 2. Soketi/Pusher WebSocket handshakes: /app/{key} and /apps/{id}/events.
     #    The Upgrade header is not visible to the log pipeline, so match paths.
-    - "evt.Meta.http_path startsWith '/app/'"
+    - "evt.Meta.http_path startsWith '/app/'"curl -Iv https://api.jedu.ir --resolve api.jedu.ir:443:
     - "evt.Meta.http_path startsWith '/apps/'"
 
     # 3. Public rate-limited form posts (Persian free text, CRS/libinjection

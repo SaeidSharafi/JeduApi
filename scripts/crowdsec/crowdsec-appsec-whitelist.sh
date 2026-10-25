@@ -179,6 +179,7 @@ name: jedu/appsec-exclusions
 inband:
   on_match:
     - filter: |
+        req.URL.Path startsWith "/storage/" or
         req.URL.Path startsWith "/api/v1/shop/payment/gateway/callback" or
         req.URL.Path startsWith "/payment/" or
         req.URL.Path startsWith "/api/payment/" or
