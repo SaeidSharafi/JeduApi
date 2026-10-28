@@ -233,7 +233,7 @@ return [
                                     'productable_description',
                                 ],
                                 'model_config' => [
-                                    'model_name' => 'multilingual-e5-small',
+                                    'model_name' => 'ts/multilingual-e5-small',
                                 ],
                             ],
                         ],
@@ -268,7 +268,7 @@ return [
                                     'excerpt',
                                 ],
                                 'model_config' => [
-                                    'model_name' => 'multilingual-e5-small',
+                                    'model_name' => 'ts/multilingual-e5-small',
                                 ],
                             ],
                         ],
