@@ -79,6 +79,24 @@ if (! function_exists('apiResponse')) {
     }
 }
 
+if (! function_exists('isGeneratingScribeDocs')) {
+    /**
+     * Determine whether the running console command is generating API docs.
+     *
+     * During Scribe extraction there is no bound route or request payload, so
+     * Data classes must fall back to documenting every possible variant.
+     */
+    function isGeneratingScribeDocs(): bool
+    {
+        return app()->runningInConsole()
+            && isset($_SERVER['argv'])
+            && (
+                in_array('scribe:generate', $_SERVER['argv'], true)
+                || in_array('scribe:setup', $_SERVER['argv'], true)
+            );
+    }
+}
+
 if (! function_exists('formatFileSize')) {
     /**
      * Format bytes to human readable decimal size (1 MB = 1_000_000 bytes).

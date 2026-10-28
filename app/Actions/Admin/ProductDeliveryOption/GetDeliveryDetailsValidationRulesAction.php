@@ -23,13 +23,7 @@ final readonly class GetDeliveryDetailsValidationRulesAction
     ): array {
 
         // @codeCoverageIgnoreStart
-        $isGeneratingScribeDocs = app()->runningInConsole()
-            && isset($_SERVER['argv'])
-            && (
-                in_array('scribe:generate', $_SERVER['argv'])
-                || in_array('scribe:setup', $_SERVER['argv'])
-            );
-        if ($isGeneratingScribeDocs) {
+        if (isGeneratingScribeDocs()) {
             $allDetailsRules    = [];
             $detailsRulesAction = app(self::class);
 

@@ -44,7 +44,7 @@ final class ProductDeliveryOptionController extends Controller
     /**
      * Create a new delivery option for a product.
      *
-     * @responseFile 201 resources/responses/201.json
+     * @responseFile 201 resources/responses/admin/product-delivery-option/show.json
      */
     public function store(
         ProductDeliveryOptionCreateData $data,

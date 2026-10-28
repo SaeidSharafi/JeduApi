@@ -2,80 +2,151 @@
   "message": "عملیات با موفقیت انجام شد.",
   "data": {
     "id": 1,
-    "name": "Selena O'Reilly MD",
-    "sku": "est",
+    "name": "دسترسی آنلاین به محتوای دوره پایتون",
+    "sku": "offline_service_1001",
     "fulfillment_type": {
-      "value": "in_person_service",
-      "label": "سرویس حضوری"
+      "value": "offline_service",
+      "label": "سرویس آفلاین"
     },
     "delivery_method": {
-      "value": "in_person",
-      "label": "حضوری"
+      "value": "video_platform_spotplayer",
+      "label": "پلتفرم ویدیویی SpotPlayer"
     },
-    "price": 341728641,
-    "capacity": 5,
+    "price": 1200000,
+    "capacity": 100,
     "status": {
       "value": "published",
       "label": "منتشر شده"
     },
-    "is_prepayment_available": false,
-    "prepayment_amount": 117,
-    "details": [],
-    "is_featured": true,
-    "featured_price": 629,
-    "featured_price_start_date": "1404-03-26 11:11:54",
-    "featured_price_end_date": "1404-03-27 11:11:54",
-    "registration_start_date": "1404-03-27 11:11:54",
-    "registration_end_date": "1404-03-27 11:11:54",
-    "available_from": "1404-03-27 11:11:54",
-    "available_to": "1404-03-27 11:11:54",
-    "access_days": 14,
+    "is_prepayment_available": true,
+    "prepayment_amount": 240000,
+    "details": {
+      "ims_course_code": "COURSE-001",
+      "start_date": "1404-06-15",
+      "schedule_days": [
+        "sat",
+        "sun"
+      ],
+      "duration": 24,
+      "max_downloads": 5,
+      "moodle_course_id": 120,
+      "activity_id": 5,
+      "enrollment_start_date": "1404-06-15",
+      "enrollment_end_date": "1404-12-31",
+      "nili_room_id": "01J8ZQ4W6M9K3T7YB2C5NDRHXF",
+      "admin_notes": "اتاق پشتیبان: room-id 43",
+      "room_id": 42,
+      "planned_duration_minutes": 90,
+      "spot_id": "SP-COURSE-001",
+      "updated_at": "1405-01-01 10:00:00",
+      "address": "سالن اصلی، خیابان ولیعصر",
+      "map_url": "https://maps.google.com/?q=35.6892,51.3890",
+      "additional_info": "لطفاً لپ‌تاپ همراه داشته باشید",
+      "moodle_quiz_course_id": 145
+    },
+    "is_featured": false,
+    "featured_price": 0,
+    "featured_price_start_date": null,
+    "featured_price_end_date": null,
+    "registration_start_date": "1405-06-10 00:00:00",
+    "registration_end_date": "1405-11-12 00:00:00",
+    "available_from": null,
+    "available_to": null,
+    "access_days": 90,
     "teachers": [
       {
-        "id": 6,
-        "first_name": "Clare",
-        "last_name": "Sipes",
-        "rate": 0.2,
-        "email": "beahan.ophelia@example.org",
-        "phone": "09337036570",
-        "gender": {
-          "value": "female",
-          "label": "زن"
-        },
-        "birth_date": "1354-07-26",
-        "social_links": {
-          "facebook": "https://www.ankunding.org/molestias-delectus-nam-quia-aliquid",
-          "twitter": "http://ledner.com/",
-          "linkedin": "http://www.langosh.net/dicta-voluptatem-sed-consequatur-reiciendis-totam"
-        },
-        "user": null
-      },
-      {
-        "id": 21,
-        "first_name": "Nico",
-        "last_name": "Waters",
-        "rate": 1.89,
-        "email": "rebeca.schuppe@example.com",
-        "phone": "09175254687",
+        "id": 1,
+        "first_name": "محمدرضا",
+        "last_name": "شجریان",
+        "rate": 4.9,
+        "email": "m.shajarian@jedushop.com",
+        "phone": "9100000001",
         "gender": {
           "value": "male",
           "label": "مرد"
         },
-        "birth_date": "1384-06-10",
-        "social_links": {
-          "facebook": "http://www.ritchie.com/dolor-ea-id-id",
-          "twitter": "http://ruecker.net/",
-          "linkedin": "http://www.considine.com/excepturi-libero-sed-eligendi-culpa-sed"
-        },
-        "user": null
+        "birth_date": "1319-07-01",
+        "social_links": [
+          {
+            "platform": "linkedin",
+            "url": "https://ir.linkedin.com/in/mohammad-reza-shajarian"
+          },
+          {
+            "platform": "website",
+            "url": "https://shajarian.com"
+          }
+        ],
+        "user": null,
+        "avatar_url": "http://jedu.test/storage/fake-media/avatar-male.svg"
       }
     ],
-    "product": null,
-    "created_at": "1404-03-26 11:11:54",
-    "updated_at": "1404-03-26 11:11:54",
+    "product": {
+      "category_ids": [],
+      "id": 1,
+      "vendor_id": 1,
+      "product_type": {
+        "value": "course",
+        "label": "دوره"
+      },
+      "product_data": {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 1,
+        "slug": "python-beginners",
+        "full_name": "دوره جامع پایتون از مقدماتی تا پیشرفته",
+        "short_name": "پایتون مقدماتی",
+        "thumbnail_url": "http://jedu.test/storage/fake-media/course-01-python.webp",
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": null,
+        "created_by": 3,
+        "created_at": "1405-08-02 13:20:00",
+        "updated_at": "1405-08-02 13:20:01"
+      },
+      "term": {
+        "id": 1,
+        "name": "ترم پاییز ۱۴۰۳",
+        "status": {
+          "value": "active",
+          "label": "فعال"
+        },
+        "academic_year": "1403-1404",
+        "start_date": "1403-07-01 00:00:00",
+        "end_date": "1403-11-01 00:00:00",
+        "created_at": "1405-08-02 13:19:58",
+        "updated_at": null
+      },
+      "status": {
+        "value": "published",
+        "label": "منتشر شده"
+      },
+      "is_visible": true,
+      "short_description": "ثبت‌نام در دوره جامع پایتون برای ترم پاییز ۱۴۰۳. این دوره شما را از صفر با مفاهیم برنامه‌نویسی آشنا کرده و برای ورود به بازار کار آماده می‌کند.",
+      "short_name": "پایتون مقدماتی",
+      "name": "دوره پایتون مقدماتی - پاییز ۱۴۰۳",
+      "is_featured": true,
+      "details_json": [],
+      "event_start_at": null,
+      "event_ended_at": null,
+      "review_required_count": 0,
+      "review_required": false
+    },
+    "created_at": "1403-07-30 10:00:00",
+    "updated_at": "1403-07-30 10:00:00",
     "composition_version": 1,
     "bundle_review_required_at": null,
-    "bundle_review_reasons": null
+    "bundle_review_reasons": []
   },
   "metadata": []
 }

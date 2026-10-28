@@ -82,15 +82,16 @@ final class ProductDeliveryOptionUpdateData extends Data
         }
 
         $nonBundleRules = [
-            'is_prepayment_available' => ['required', 'boolean'],
-            'prepayment_amount'       => ['nullable', 'integer', 'min:0'],
-            'teachers'                => ['required', 'array'],
-            'teachers.*'              => ['required', 'integer', 'exists:teachers,id'],
-            'components'              => ['prohibited'],
-            'details'                 => ['present', 'array'],
-            'details.ims_course_code' => ['nullable', 'string'],
-            'details.schedule_days'   => ['nullable', 'array'],
-            'details.duration'        => ['sometimes', 'integer', 'min:1'],
+            'is_prepayment_available'       => ['required', 'boolean'],
+            'prepayment_amount'             => ['nullable', 'integer', 'min:0'],
+            'teachers'                      => ['required', 'array'],
+            'teachers.*'                    => ['required', 'integer', 'exists:teachers,id'],
+            'components'                    => ['prohibited'],
+            'details'                       => ['present', 'array'],
+            'details.ims_course_code'       => ['nullable', 'string'],
+            'details.schedule_days'         => ['nullable', 'array'],
+            'details.duration'              => ['sometimes', 'integer', 'min:1'],
+            'details.moodle_quiz_course_id' => ['nullable', 'integer'],
         ];
 
         $deliveryOption  = request()->route()?->parameter('delivery_option');
@@ -104,7 +105,16 @@ final class ProductDeliveryOptionUpdateData extends Data
             'details'
         );
 
-        return array_merge($baseRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
+        $rules = array_merge($baseRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
+
+        if (isGeneratingScribeDocs()) {
+            // Scribe extracts the docs without a bound route, so the Bundle
+            // branch above is never reached and its composition fields must be
+            // documented explicitly.
+            $rules = array_merge($rules, ProductDeliveryOptionCreateData::bundleCompositionRules());
+        }
+
+        return $rules;
     }
 
     public static function attributes(...$args): array
@@ -238,36 +248,69 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'example'     => 1,
             ],
 
-            // ── details object ────────────────────────────────────────────────
-            'details' => [
-                'description' => 'Delivery-method-specific configuration object. Must always be sent (use an empty object `{}` when no sub-fields are needed). The required sub-fields depend on the delivery_method set at creation time.',
+            // ── bundle composition (Bundle products only) ─────────────────────
+            'components' => [
+                'description' => 'Bundle products only. Fixed set of component Product Delivery Options sold by this Bundle option. Prohibited for non-bundle products.',
+                'required'    => false,
+                'example'     => [
+                    ['product_delivery_option_id' => 12, 'allocation' => 900000, 'quantity' => 1],
+                ],
+            ],
+            'components.*.product_delivery_option_id' => [
+                'description' => 'Bundle products only. ID of the component Product Delivery Option. Each component may appear only once, and components cannot themselves be Bundles.',
                 'required'    => true,
-                'example'     => ['moodle_course_id' => 120, 'activity_id' => 1],
+                'example'     => 12,
+            ],
+            'components.*.allocation' => [
+                'description' => 'Bundle products only. Amount of the component base price allocated to it, in Rials. May be 0 but never above the component base price.',
+                'required'    => true,
+                'example'     => 900000,
+            ],
+            'components.*.quantity' => [
+                'description' => 'Bundle products only. Component quantity. Must be 1.',
+                'required'    => false,
+                'example'     => 1,
             ],
 
-            // ── common details fields (all delivery methods) ──────────────────
+            // ── details object ────────────────────────────────────────────────
+            'details' => [
+                'description' => 'Delivery-method-specific configuration object. Must always be sent. `ims_course_code`, `start_date`, `schedule_days` and `duration` are accepted for every delivery method; the remaining fields depend on the `delivery_method` set at creation time.',
+                'required'    => true,
+                'example'     => [
+                    'ims_course_code'          => 'COURSE-001',
+                    'start_date'               => '1404-06-15',
+                    'schedule_days'            => ['sat', 'sun'],
+                    'duration'                 => 24,
+                    'room_id'                  => 42,
+                    'planned_duration_minutes' => 90,
+                    'admin_notes'              => 'اتاق پشتیبان: room-id 43',
+                    'moodle_quiz_course_id'    => 145,
+                ],
+            ],
+
+            // ── shared details fields (every delivery method) ─────────────────
             'details.ims_course_code' => [
-                'description' => 'All delivery methods. IMS LTI course code used for external integrations. Optional.',
+                'description' => 'Accepted for every delivery method. IMS LTI course code used for external integrations. Optional.',
                 'required'    => false,
                 'example'     => 'COURSE-001',
             ],
             'details.start_date' => [
-                'description' => 'All delivery methods. Informational session start date in Jalali format (Y-m-d). Does not control access — use `available_from` for access control. Note: field key is `start_date` (legacy spelling).',
+                'description' => 'Accepted for every delivery method. Informational session start date in Jalali format (Y-m-d). Does not control access — use `available_from` for access control.',
                 'required'    => false,
                 'example'     => '1404-06-15',
             ],
             'details.schedule_days' => [
-                'description' => 'All delivery methods. Days of the week when sessions are held. Informational only.',
+                'description' => 'Accepted for every delivery method. Days of the week when sessions are held. Informational only.',
                 'required'    => false,
                 'example'     => ['sat', 'sun'],
             ],
             'details.duration' => [
-                'description' => 'All delivery methods. Total course duration in hours. Informational only.',
+                'description' => 'Accepted for every delivery method. Total course duration in hours. Informational only.',
                 'required'    => false,
                 'example'     => 24,
             ],
             'details.moodle_quiz_course_id' => [
-                'description' => 'For `live_session_niliroom`, `live_session_skyroom`, `video_platform_spotplayer`, `in_person`. Moodle course ID used exclusively for the quiz section shown in the student\'s course page. When set, the system provisions a separate Moodle enrollment just for quizzes, independent of the primary delivery method.',
+                'description' => 'For `live_session_niliroom`, `live_session_skyroom`, `video_platform_spotplayer` and `in_person`; not available for `lms_moodle` or `direct_download`. Moodle course ID used exclusively for the quiz section shown in the student\'s course page. When set, the system provisions a separate Moodle enrollment just for quizzes, independent of the primary delivery method.',
                 'required'    => false,
                 'example'     => 145,
             ],
@@ -284,14 +327,14 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'example'     => 5,
             ],
             'details.enrollment_start_date' => [
-                'description' => 'For `lms_moodle`. Jalali datetime (Y-m-d H:i:s) when the Moodle enrollment becomes active.',
+                'description' => 'For `lms_moodle`. Jalali date (Y-m-d) when the Moodle enrollment becomes active.',
                 'required'    => false,
-                'example'     => '1404-06-15 09:00:00',
+                'example'     => '1404-06-15',
             ],
             'details.enrollment_end_date' => [
-                'description' => 'For `lms_moodle`. Jalali datetime (Y-m-d H:i:s) when the Moodle enrollment expires.',
+                'description' => 'For `lms_moodle`. Jalali date (Y-m-d) when the Moodle enrollment expires.',
                 'required'    => false,
-                'example'     => '1404-12-31 23:59:59',
+                'example'     => '1404-12-31',
             ],
 
             // ── direct_download ───────────────────────────────────────────────
@@ -299,11 +342,6 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'description' => 'For `direct_download` (**required**). How many times a student can download the file.',
                 'required'    => false,
                 'example'     => 5,
-            ],
-            'details.expiration_date' => [
-                'description' => 'For `direct_download`. Jalali datetime (Y-m-d H:i:s) after which the download link expires.',
-                'required'    => false,
-                'example'     => '1404-12-31 23:59:59',
             ],
 
             // ── in_person ─────────────────────────────────────────────────────
@@ -316,11 +354,6 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'description' => 'For `in_person`. Google Maps or similar URL to the venue location.',
                 'required'    => false,
                 'example'     => 'https://maps.google.com/?q=35.6892,51.3890',
-            ],
-            'details.schedule' => [
-                'description' => 'For `in_person` (**required**). Human-readable session schedule.',
-                'required'    => false,
-                'example'     => 'شنبه‌ها ۹ تا ۱۱',
             ],
             'details.additional_info' => [
                 'description' => 'For `in_person`. Extra instructions or notes shown to enrolled students.',
@@ -352,16 +385,6 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'description' => 'For `live_session_skyroom` (**required**). Numeric ID of the Skyroom room, as shown on the Skyroom admin panel. Rooms must be pre-created on the panel — this ID is used to provision student access and generate join URLs.',
                 'required'    => false,
                 'example'     => 42,
-            ],
-            'details.meeting_name_identifier' => [
-                'description' => 'For `live_session_skyroom`. Optional human-readable label for this session (e.g. the room\'s name or course slug). Informational only — actual room access is determined by `room_id`.',
-                'required'    => false,
-                'example'     => 'php-advanced-spring-1404',
-            ],
-            'details.moderator_password_override' => [
-                'description' => 'For `live_session_skyroom`. Optionally overrides the global Skyroom moderator password for this specific room.',
-                'required'    => false,
-                'example'     => 'skyMod@1404',
             ],
             'details.planned_duration_minutes' => [
                 'description' => 'For `live_session_skyroom`. Expected session length in minutes. Informational; sent to Skyroom as metadata.',

@@ -72,6 +72,27 @@ final class ProductDeliveryOptionCreateData extends Data
     }
 
     /**
+     * Bundle composition rules as exposed to the generated API docs.
+     *
+     * During docs generation there is no route-bound product, so the Bundle
+     * branch of rules() is unreachable and the composition fields would
+     * otherwise be documented as a bare "prohibited" string field.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    public static function bundleCompositionRules(): array
+    {
+        $rules = self::bundleRules();
+
+        return [
+            'components'                              => ['array', 'max:'.config('products.bundles.max_components', 30)],
+            'components.*.product_delivery_option_id' => $rules['components.*.product_delivery_option_id'],
+            'components.*.allocation'                 => $rules['components.*.allocation'],
+            'components.*.quantity'                   => $rules['components.*.quantity'],
+        ];
+    }
+
+    /**
      * Define the validation rules for the data.
      *
      * @return array<string, array<int,mixed>>
@@ -121,15 +142,16 @@ final class ProductDeliveryOptionCreateData extends Data
                 'required', 'bail', 'string', Rule::enum(DeliveryMethodEnum::class),
                 new ProductDeliveryOptionCheckRule(),
             ],
-            'is_prepayment_available' => ['required', 'boolean'],
-            'prepayment_amount'       => ['required_if:is_prepayment_available,true', 'nullable', 'integer', 'min:0'],
-            'teachers'                => ['required', 'array'],
-            'teachers.*'              => ['required', 'integer', 'exists:teachers,id'],
-            'components'              => ['prohibited'],
-            'details'                 => ['present', 'array'],
-            'details.ims_course_code' => ['nullable', 'string'],
-            'details.schedule_days'   => ['nullable', 'array'],
-            'details.duration'        => ['sometimes', 'integer', 'min:1'],
+            'is_prepayment_available'       => ['required', 'boolean'],
+            'prepayment_amount'             => ['required_if:is_prepayment_available,true', 'nullable', 'integer', 'min:0'],
+            'teachers'                      => ['required', 'array'],
+            'teachers.*'                    => ['required', 'integer', 'exists:teachers,id'],
+            'components'                    => ['prohibited'],
+            'details'                       => ['present', 'array'],
+            'details.ims_course_code'       => ['nullable', 'string'],
+            'details.schedule_days'         => ['nullable', 'array'],
+            'details.duration'              => ['sometimes', 'integer', 'min:1'],
+            'details.moodle_quiz_course_id' => ['nullable', 'integer'],
         ];
 
         $detailsRules = app(GetDeliveryDetailsValidationRulesAction::class)->handle(
@@ -138,7 +160,16 @@ final class ProductDeliveryOptionCreateData extends Data
             $context?->payload['details']          ?? null
         );
 
-        return array_merge($baseRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
+        $rules = array_merge($baseRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
+
+        if (isGeneratingScribeDocs()) {
+            // Scribe extracts the docs without a bound route, so the Bundle
+            // branch above is never reached and its composition fields must be
+            // documented explicitly.
+            $rules = array_merge($rules, self::bundleCompositionRules());
+        }
+
+        return $rules;
     }
 
     public static function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void
@@ -302,36 +333,69 @@ Each value determines which `details.*` fields are required.',
                 'example'     => 1,
             ],
 
-            // ── details object ────────────────────────────────────────────────
-            'details' => [
-                'description' => 'Delivery-method-specific configuration object. Must always be sent (use an empty object `{}` when no sub-fields are needed). The required sub-fields depend on `delivery_method`.',
+            // ── bundle composition (Bundle products only) ─────────────────────
+            'components' => [
+                'description' => 'Bundle products only. Fixed set of component Product Delivery Options sold by this Bundle option. Prohibited for non-bundle products.',
+                'required'    => false,
+                'example'     => [
+                    ['product_delivery_option_id' => 12, 'allocation' => 900000, 'quantity' => 1],
+                ],
+            ],
+            'components.*.product_delivery_option_id' => [
+                'description' => 'Bundle products only. ID of the component Product Delivery Option. Each component may appear only once, and components cannot themselves be Bundles.',
                 'required'    => true,
-                'example'     => ['moodle_course_id' => 120, 'activity_id' => 1],
+                'example'     => 12,
+            ],
+            'components.*.allocation' => [
+                'description' => 'Bundle products only. Amount of the component base price allocated to it, in Rials. May be 0 but never above the component base price.',
+                'required'    => true,
+                'example'     => 900000,
+            ],
+            'components.*.quantity' => [
+                'description' => 'Bundle products only. Component quantity. Must be 1.',
+                'required'    => false,
+                'example'     => 1,
             ],
 
-            // ── common details fields (all delivery methods) ──────────────────
+            // ── details object ────────────────────────────────────────────────
+            'details' => [
+                'description' => 'Delivery-method-specific configuration object. Must always be sent. `ims_course_code`, `start_date`, `schedule_days` and `duration` are accepted for every delivery method; the remaining fields depend on the `delivery_method`.',
+                'required'    => true,
+                'example'     => [
+                    'ims_course_code'          => 'COURSE-001',
+                    'start_date'               => '1404-06-15',
+                    'schedule_days'            => ['sat', 'sun'],
+                    'duration'                 => 24,
+                    'room_id'                  => 42,
+                    'planned_duration_minutes' => 90,
+                    'admin_notes'              => 'اتاق پشتیبان: room-id 43',
+                    'moodle_quiz_course_id'    => 145,
+                ],
+            ],
+
+            // ── shared details fields (every delivery method) ─────────────────
             'details.ims_course_code' => [
-                'description' => 'All delivery methods. IMS LTI course code used for external integrations. Optional.',
+                'description' => 'Accepted for every delivery method. IMS LTI course code used for external integrations. Optional.',
                 'required'    => false,
                 'example'     => 'COURSE-001',
             ],
             'details.start_date' => [
-                'description' => 'All delivery methods. Informational session start date in Jalali format (Y-m-d). Does not control access — use `available_from` for access control. Note: field key is `start_date` (legacy spelling).',
+                'description' => 'Accepted for every delivery method. Informational session start date in Jalali format (Y-m-d). Does not control access — use `available_from` for access control.',
                 'required'    => false,
                 'example'     => '1404-06-15',
             ],
             'details.schedule_days' => [
-                'description' => 'All delivery methods. Days of the week when sessions are held. Informational only.',
+                'description' => 'Accepted for every delivery method. Days of the week when sessions are held. Informational only.',
                 'required'    => false,
                 'example'     => ['sat', 'sun'],
             ],
             'details.duration' => [
-                'description' => 'All delivery methods. Total course duration in hours. Informational only.',
+                'description' => 'Accepted for every delivery method. Total course duration in hours. Informational only.',
                 'required'    => false,
                 'example'     => 24,
             ],
             'details.moodle_quiz_course_id' => [
-                'description' => 'For `live_session_niliroom`, `live_session_skyroom`, `video_platform_spotplayer`, `in_person`. Moodle course ID used exclusively for the quiz section shown in the student\'s course page. When set, the system provisions a separate Moodle enrollment just for quizzes, independent of the primary delivery method.',
+                'description' => 'For `live_session_niliroom`, `live_session_skyroom`, `video_platform_spotplayer` and `in_person`; not available for `lms_moodle` or `direct_download`. Moodle course ID used exclusively for the quiz section shown in the student\'s course page. When set, the system provisions a separate Moodle enrollment just for quizzes, independent of the primary delivery method.',
                 'required'    => false,
                 'example'     => 145,
             ],
@@ -348,14 +412,14 @@ Each value determines which `details.*` fields are required.',
                 'example'     => 5,
             ],
             'details.enrollment_start_date' => [
-                'description' => 'For `lms_moodle`. Jalali datetime (Y-m-d H:i:s) when the Moodle enrollment becomes active.',
+                'description' => 'For `lms_moodle`. Jalali date (Y-m-d) when the Moodle enrollment becomes active.',
                 'required'    => false,
-                'example'     => '1404-06-15 09:00:00',
+                'example'     => '1404-06-15',
             ],
             'details.enrollment_end_date' => [
-                'description' => 'For `lms_moodle`. Jalali datetime (Y-m-d H:i:s) when the Moodle enrollment expires.',
+                'description' => 'For `lms_moodle`. Jalali date (Y-m-d) when the Moodle enrollment expires.',
                 'required'    => false,
-                'example'     => '1404-12-31 23:59:59',
+                'example'     => '1404-12-31',
             ],
 
             // ── direct_download ───────────────────────────────────────────────
@@ -363,11 +427,6 @@ Each value determines which `details.*` fields are required.',
                 'description' => 'For `direct_download` (**required**). How many times a student can download the file.',
                 'required'    => false,
                 'example'     => 5,
-            ],
-            'details.expiration_date' => [
-                'description' => 'For `direct_download`. Jalali datetime (Y-m-d H:i:s) after which the download link expires.',
-                'required'    => false,
-                'example'     => '1404-12-31 23:59:59',
             ],
 
             // ── in_person ─────────────────────────────────────────────────────
@@ -380,11 +439,6 @@ Each value determines which `details.*` fields are required.',
                 'description' => 'For `in_person`. Google Maps or similar URL to the venue location.',
                 'required'    => false,
                 'example'     => 'https://maps.google.com/?q=35.6892,51.3890',
-            ],
-            'details.schedule' => [
-                'description' => 'For `in_person` (**required**). Human-readable session schedule.',
-                'required'    => false,
-                'example'     => 'شنبه‌ها ۹ تا ۱۱',
             ],
             'details.additional_info' => [
                 'description' => 'For `in_person`. Extra instructions or notes shown to enrolled students.',

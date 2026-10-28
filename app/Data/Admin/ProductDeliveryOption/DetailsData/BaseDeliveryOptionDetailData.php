@@ -14,7 +14,7 @@ use Spatie\LaravelData\Data;
 
 abstract class BaseDeliveryOptionDetailData extends Data implements DeliveryOptionDetailDataContract
 {
-    public ?string $lms_course_code = null;
+    public ?string $ims_course_code = null;
 
     #[WithCast(AdvancedDateTimeInterfaceCast::class), WithTransformer(AdvancedDateTimeInterfaceTransformer::class, 'Y-m-d')]
     public ?Verta $start_date = null;

@@ -221,7 +221,7 @@
             "is_prepayment_available": false,
             "prepayment_amount": 0,
             "details": {
-                "lms_course_code": null,
+                "ims_course_code": null,
                 "start_date": null,
                 "schedule_days": null,
                 "duration": null
