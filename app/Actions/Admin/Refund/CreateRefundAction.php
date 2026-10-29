@@ -67,6 +67,7 @@ final class CreateRefundAction
                     'transaction_details' => $data->transaction_details->toArray(),
                     'refunded_at'         => null, // Not refunded yet
                     'admin_notes'         => $data->admin_notes,
+                    'note'                => $data->note,
                 ]);
             });
 

@@ -120,6 +120,7 @@ final class RefundBundlePurchaseAction
                     ],
                     'refunded_at' => null,
                     'admin_notes' => $data->admin_notes,
+                    'note'        => $data->note,
                 ]));
             }
 

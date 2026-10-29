@@ -38,6 +38,7 @@ final class UpdateRefundAction
             'deduction_amount'    => $deductionAmount,
             'transaction_details' => $data->transaction_details->toArray(),
             'admin_notes'         => $data->admin_notes,
+            'note'                => $data->note,
             // We do NOT update the status here. That's a separate action.
         ]);
 

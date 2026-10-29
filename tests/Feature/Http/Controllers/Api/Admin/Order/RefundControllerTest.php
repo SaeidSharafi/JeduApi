@@ -74,6 +74,7 @@ describe('RefundController', function (): void {
                             ],
                             'status',
                             'admin_notes',
+                            'note',
                             'created_at',
                             'updated_at',
                         ],
@@ -90,7 +91,7 @@ describe('RefundController', function (): void {
         $response->assertJsonCount(3, 'data.data');
     });
 
-    it('should create a refund', function (): void {
+    it('should create a refund', function (?string $note): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -119,6 +120,8 @@ describe('RefundController', function (): void {
             ]);
         $data = [
             'order_item_id'       => $orderItem->id,
+            'note'                => $note,
+            'admin_notes'         => 'Internal refund review',
             'deduction_percent'   => 20,
             'status'              => RefundStatusEnum::COMPLETED->value,
             'transaction_details' => [
@@ -131,6 +134,8 @@ describe('RefundController', function (): void {
 
         $response = $this->postJson(route('api.v1.admin.refunds.store'), $data);
         $response->assertCreated()
+            ->assertJsonPath('data.note', $note)
+            ->assertJsonPath('data.admin_notes', 'Internal refund review')
             ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json): void {
                 $json
                     ->where('data.deduction_amount', 10000) // 20% of 50000
@@ -150,6 +155,8 @@ describe('RefundController', function (): void {
         assertDatabaseHas('refunds', [
             'order_item_id'                      => $orderItem->id,
             'deduction_amount'                   => 10000,
+            'note'                               => $note,
+            'admin_notes'                        => 'Internal refund review',
             'status'                             => RefundStatusEnum::COMPLETED->value,
             'transaction_details->receiver_name' => 'John Doe',
             'transaction_details->card_number'   => '1234567890123456',
@@ -169,7 +176,7 @@ describe('RefundController', function (): void {
             'order_item_id'     => $orderItem->id,
             'enrollment_status' => App\Enums\EnrollmentStatusEnum::CANCELLED->value,
         ]);
-    });
+    })->with(['with note' => ['Customer requested cancellation'], 'null note' => [null]]);
 
     it('should not create a refund with invalid data',
         function (?int $deductionAmount, ?int $deductionPercent, string $field): void {
@@ -283,7 +290,7 @@ describe('RefundController', function (): void {
         $response->assertJsonValidationErrors('order_item_id');
     });
 
-    it('should update only the data of a pending refund', function (): void {
+    it('should update only the data of a pending refund', function (?string $note): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -305,6 +312,7 @@ describe('RefundController', function (): void {
         $refund    = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
+            'note'          => 'Original note',
         ]);
 
         $data = [
@@ -318,11 +326,13 @@ describe('RefundController', function (): void {
                 'tracking_code' => 'TRK0987654321',
             ],
             'admin_notes' => 'Updated refund details',
+            'note'        => $note,
         ];
 
         $response = $this->putJson(route('api.v1.admin.refunds.update',
             ['refund' => $refund->id]), $data);
         $response->assertOk()
+            ->assertJsonPath('data.note', $note)
             ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json): void {
                 $json
                     ->where('data.deduction_amount', 5000)
@@ -340,11 +350,12 @@ describe('RefundController', function (): void {
             'transaction_details->card_number'   => '6543210987654321',
             'transaction_details->iban_number'   => 'IR098765432109876543210987',
             'admin_notes'                        => 'Updated refund details',
+            'note'                               => $note,
         ]);
         $refund->refresh();
         expect($refund->status)->toBe(RefundStatusEnum::PENDING);
 
-    });
+    })->with(['replace note' => ['Updated customer note'], 'clear note' => [null]]);
 
     it('should not update a refund that is not pending', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE]);
@@ -575,3 +586,29 @@ describe('RefundController', function (): void {
     });
 
 });
+
+it('returns 422 for a non-string refund note without saving changes', function (string $operation): void {
+    $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE, App\Enums\PermissionEnum::REFUND_UPDATE]);
+    $refund = Refund::factory()->create([
+        'status' => RefundStatusEnum::PENDING,
+        'note'   => 'Original note',
+    ]);
+    $payload = [
+        'order_item_id'       => $refund->order_item_id,
+        'deduction_amount'    => 0,
+        'status'              => RefundStatusEnum::PENDING->value,
+        'transaction_details' => [
+            'receiver_name' => 'John Doe',
+            'card_number'   => '1234567890123456',
+            'iban_number'   => 'IR123456789012345678901234',
+        ],
+        'note' => ['invalid'],
+    ];
+
+    $this->json($operation === 'store' ? 'POST' : 'PUT', route('api.v1.admin.refunds.'.$operation, $operation === 'store' ? [] : ['refund' => $refund->id]), $payload)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['note' => __('validation.string', ['attribute' => 'note'])]);
+
+    $this->assertDatabaseCount('refunds', 1);
+    assertDatabaseHas('refunds', ['id' => $refund->id, 'note' => 'Original note']);
+})->with(['store', 'update']);

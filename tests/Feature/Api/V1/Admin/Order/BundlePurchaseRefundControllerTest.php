@@ -121,6 +121,8 @@ it('refunds a Bundle Purchase and returns the financial and revocation breakdown
 
     postJson(route('api.v1.admin.bundle-purchases.refund', ['bundlePurchase' => $scenario['purchase']->id]), [
         'deduction_percent' => 10,
+        'note'              => 'Customer cancelled the bundle',
+        'admin_notes'       => 'Bundle refund approved',
     ])
         ->assertCreated()
         ->assertJsonPath('data.bundle_purchase_id', $scenario['purchase']->id)
@@ -135,6 +137,13 @@ it('refunds a Bundle Purchase and returns the financial and revocation breakdown
         ->assertJsonPath('data.components.0.revocation_status.value', EnrollmentRevocationStatusEnum::PENDING->value)
         ->assertJsonPath('data.components.1.refund_amount', 0);
 
+    foreach ($scenario['items'] as $item) {
+        $this->assertDatabaseHas('refunds', [
+            'order_item_id' => $item->id,
+            'note'          => 'Customer cancelled the bundle',
+            'admin_notes'   => 'Bundle refund approved',
+        ]);
+    }
     Queue::assertPushed(RevokeEnrollmentProviderJob::class, 2);
 });
 

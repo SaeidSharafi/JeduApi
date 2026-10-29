@@ -46,6 +46,7 @@ it('refunds entire order successfully with bank transfer', function (): void {
         'deduction_amount'  => 0,
         'deduction_percent' => null,
         'admin_notes'       => 'Full order refund',
+        'note'              => 'Customer cancelled the order',
         'receiver_name'     => 'John Doe',
         'card_number'       => '1234567812345678',
         'iban'              => 'DE89370400440532013000',
@@ -57,6 +58,15 @@ it('refunds entire order successfully with bank transfer', function (): void {
     $response->assertJsonPath('data.0.status.value', 'completed');
     $response->assertJsonPath('data.1.status.value', 'completed');
 
+    foreach ($order->items as $index => $item) {
+        $response->assertJsonPath("data.{$index}.note", 'Customer cancelled the order')
+            ->assertJsonPath("data.{$index}.admin_notes", 'Full order refund');
+        $this->assertDatabaseHas('refunds', [
+            'order_item_id' => $item->id,
+            'note'          => 'Customer cancelled the order',
+            'admin_notes'   => 'Full order refund',
+        ]);
+    }
     $this->assertDatabaseCount('refunds', 2);
 });
 

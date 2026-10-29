@@ -98,6 +98,7 @@ final class RefundOrderAction
                         'transaction_details' => $this->transactionDetails($order, $unit, $unitCalculation, $line, $data),
                         'refunded_at'         => null,
                         'admin_notes'         => $data->admin_notes,
+                        'note'                => $data->note,
                     ]);
 
                     $unitRefunds->push($refund);

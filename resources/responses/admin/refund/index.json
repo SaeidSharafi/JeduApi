@@ -16,6 +16,7 @@
           "value": "completed",
           "label": "enums.RefundStatusEnum.completed"
         },
+        "note": null,
         "admin_notes": "بازگشت وجه به کیف پول کاربر به دلیل انصراف",
         "created_at": "1403-08-30 11:00:00",
         "updated_at": "1403-08-30 11:00:00",

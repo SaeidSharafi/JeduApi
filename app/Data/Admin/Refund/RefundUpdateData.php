@@ -17,6 +17,7 @@ final class RefundUpdateData extends Data
         public readonly ?int $deduction_percent,
         public readonly ?RefundTransactionData $transaction_details,
         public readonly ?string $admin_notes = null,
+        public readonly ?string $note = null,
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
@@ -32,6 +33,7 @@ final class RefundUpdateData extends Data
             ],
 
             'admin_notes' => ['nullable', 'string'],
+            'note'        => ['nullable', 'string'],
 
             'transaction_details'               => ['sometimes', 'nullable', 'array'],
             'transaction_details.receiver_name' => ['required_with:transaction_details', 'string', 'max:255'],
@@ -81,6 +83,10 @@ final class RefundUpdateData extends Data
             'transaction_details.tracking_code' => [
                 'description' => 'Optional tracking code for the transaction.',
                 'example'     => 'TRK987654',
+            ],
+            'note' => [
+                'description' => 'Optional note for the refund.',
+                'example'     => 'Refund requested by customer.',
             ],
             'admin_notes' => [
                 'description' => 'Optional admin notes for the refund.',

@@ -232,7 +232,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### Refund (`app/Models/Refund.php`)
 - **Purpose:** Refund transaction records implementing `WalletTransactionSourceableContract` for wallet credit reversals
-- **Key Fields:** `order_id`, `order_item_id`, `payment_id` (nullable — tracks which payment was refunded), `customer_id`, `created_by` (staff ID), `amount`, `deduction_amount`, `status` (`RefundStatusEnum: PENDING/COMPLETED/FAILED`), `transaction_details` (JSON — gateway-specific refund metadata), `admin_notes`, `refunded_at`
+- **Key Fields:** `order_id`, `order_item_id`, `payment_id` (nullable — tracks which payment was refunded), `customer_id`, `created_by` (staff ID), `amount`, `deduction_amount`, `status` (`RefundStatusEnum: PENDING/COMPLETED/FAILED`), `transaction_details` (JSON — gateway-specific refund metadata), `note` (nullable text), `admin_notes`, `refunded_at`
 - **Relationships:** 
   - `belongsTo(Order::class)` - order
   - `belongsTo(OrderItem::class)` - orderItem

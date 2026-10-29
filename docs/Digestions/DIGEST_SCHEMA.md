@@ -395,6 +395,7 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - status (VARCHAR default pending, indexed)
   - transaction_details (JSON)
   - refunded_at (TIMESTAMP nullable)
+  - note (TEXT nullable)
   - admin_notes (TEXT nullable)
   - created_at/updated_at (TIMESTAMPS)
 

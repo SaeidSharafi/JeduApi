@@ -16,6 +16,7 @@ final class RefundOrderData extends Data
         public readonly ?string $receiver_name = null,
         public readonly ?string $card_number = null,
         public readonly ?string $iban = null,
+        public readonly ?string $note = null,
     ) {}
 
     public static function rules(): array
@@ -25,6 +26,7 @@ final class RefundOrderData extends Data
             'deduction_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
             'skip_gateway'      => ['boolean'],
             'admin_notes'       => ['nullable', 'string'],
+            'note'              => ['nullable', 'string'],
             'receiver_name'     => ['nullable', 'string', 'max:255'],
             'card_number'       => ['nullable', 'string', 'digits:16'],
             'iban'              => ['nullable', 'string'],
@@ -50,6 +52,10 @@ final class RefundOrderData extends Data
             'skip_gateway' => [
                 'description' => 'Skip the payment gateway call and mark refund as completed with a note.',
                 'example'     => false,
+            ],
+            'note' => [
+                'description' => 'Optional note for the refund.',
+                'example'     => 'Refund requested by customer.',
             ],
             'admin_notes' => [
                 'description' => 'Optional admin notes.',

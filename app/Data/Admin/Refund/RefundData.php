@@ -26,6 +26,7 @@ final class RefundData extends Data implements WalletTransactionSourceableDataCo
         public ?Verta $created_at,
         public ?Verta $updated_at,
         public OrderListItemData $order,
+        public readonly ?string $note = null,
     ) {}
 
 }

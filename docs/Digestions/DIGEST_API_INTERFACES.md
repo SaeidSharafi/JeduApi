@@ -394,6 +394,7 @@ Five read-only blocks for the admin home, each its own endpoint, cache entry, pe
 Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/preview`, `/api/v1/admin/orders/{order}/approve`, `/api/v1/admin/orders/{order}/order-items`, `/api/v1/admin/orders/{order}/payment`, `/api/v1/admin/orders/{order}/next-payment-details`.`
 
 ### Refund & Order Refund Endpoints
+- **Notes contract:** `RefundCreateData`, `RefundUpdateData`, `RefundOrderData`, and `RefundBundlePurchaseData` accept optional nullable string `note` independently of `admin_notes`. Whole-order and Bundle Purchase refunds copy both values to every generated component refund. `RefundData` includes both fields in create/update/show/list and status responses; existing refunds return `note: null`. Pending-refund edits replace `note` (omitted or explicit null clears it). Status transitions preserve `note`; gateway audit and failure messages remain in `admin_notes`. All endpoints below require the staff guard; notes use the existing refund permissions.
 - **RefundController** (`app/Http/Controllers/Api/Admin/Order/RefundController.php`):
   - `index()`: **Route:** `GET /api/v1/admin/refunds` - **Response DTO:** RefundData collection
   - `store(RefundCreateData $request)`: **Route:** `POST /api/v1/admin/refunds` - **Request DTO:** RefundCreateData - **Response DTO:** RefundData

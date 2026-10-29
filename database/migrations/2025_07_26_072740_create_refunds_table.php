@@ -29,6 +29,7 @@ return new class extends Migration
             $table->json('transaction_details');
 
             $table->timestamp('refunded_at')->nullable();
+            $table->text('note')->nullable();
             $table->text('admin_notes')->nullable();
             $table->timestamps();
         });
