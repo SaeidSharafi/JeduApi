@@ -28,9 +28,9 @@ final class DiscountPromotionCreateData extends Data
         public bool $is_active,
         #[WithCast(SanitizeRichText::class, RichTextLevelEnum::COMPACT)]
         public ?string $description = null,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $starts_at = null,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $ends_at = null,
         public int $priority = 0,
         public bool $stop_processing_subsequent_rules = false,
@@ -43,8 +43,8 @@ final class DiscountPromotionCreateData extends Data
     public static function prepareForPipeline(array $properties): array
     {
         return JalaliDateHelper::toGregorian($properties, [
-            'starts_at',
-            'ends_at',
+            'starts_at' => 'Y-m-d H:i:s',
+            'ends_at' => 'Y-m-d H:i:s',
         ]);
     }
 
@@ -57,8 +57,8 @@ final class DiscountPromotionCreateData extends Data
             'type'                             => ['required', 'string', Rule::enum(DiscountTypeEnum::class)],
             'description'                      => ['nullable', 'string', 'max:1000'],
             'is_active'                        => ['required', 'boolean'],
-            'starts_at'                        => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after_or_equal:'.$now],
-            'ends_at'                          => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d', 'after:starts_at'],
+            'starts_at'                        => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s', 'after_or_equal:'.$now],
+            'ends_at'                          => ['bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d H:i:s', 'after:starts_at'],
             'priority'                         => ['integer', 'min:0', 'max:1000'],
             'stop_processing_subsequent_rules' => ['boolean'],
             'usage_limit_total'                => ['nullable', 'integer', 'min:1'],
