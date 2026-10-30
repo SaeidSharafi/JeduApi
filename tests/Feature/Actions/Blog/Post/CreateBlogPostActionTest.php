@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\Admin\Blog\Post\CreateBlogPostAction;
 use App\Data\Admin\Blog\Post\BlogPostCreateData;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
 use App\Models\Course;
@@ -71,7 +72,7 @@ describe('CreateBlogPostAction', function (): void {
             ->and($post->body)->toBe('<p>This is the body of the blog post. It has some content to read.</p>')
             ->and($post->excerpt)->toBe('This is a short excerpt.')
             ->and($post->author_id)->toBe($this->staff->id)
-            ->and($post->status)->toBe(App\Enums\Content\PublicationStatusEnum::PUBLISHED)
+            ->and($post->status)->toBe(PublicationStatusEnum::PUBLISHED)
             ->and($post->is_featured)->toBeTrue()
             ->and($post->read_time_minutes)->toBe(1) // Assuming ~200 words per minute
             ->and($post->firstMedia('cover')->getUrl())->toBe($this->media->getUrl())
@@ -112,7 +113,7 @@ describe('CreateBlogPostAction', function (): void {
             ->and($post->body)->toBe('<p>Short body.</p>')
             ->and($post->excerpt)->toBe('Excerpt')
             ->and($post->author_id)->toBe($this->staff->id)
-            ->and($post->status)->toBe(App\Enums\Content\PublicationStatusEnum::DRAFT)
+            ->and($post->status)->toBe(PublicationStatusEnum::DRAFT)
             ->and($post->is_featured)->toBeFalse()
             ->and($post->read_time_minutes)->toBe(1) // Minimum read time
             ->and($post->firstMedia('main'))->toBeNull()
@@ -247,5 +248,52 @@ describe('CreateBlogPostAction', function (): void {
         $post = app(CreateBlogPostAction::class)->handle($data);
 
         expect($post->read_time_minutes)->toBe(1);
+    });
+
+    it('derives published_at from the status when none is provided', function (string $status, bool $isPublished): void {
+        $this->travelTo('2025-06-01 12:00:00');
+
+        $data = new BlogPostCreateData(
+            title: 'Status Driven Post',
+            slug: null,
+            body: '<p>Body content.</p>',
+            excerpt: 'Excerpt',
+            status: $status,
+            author_id: $this->staff->id,
+            published_at: null,
+        );
+
+        $post = app(CreateBlogPostAction::class)->handle($data);
+
+        if ($isPublished) {
+            expect($post->published_at)->not->toBeNull()
+                ->and($post->published_at->equalTo(now()))->toBeTrue();
+        } else {
+            expect($post->published_at)->toBeNull();
+        }
+    })->with([
+        'published' => [PublicationStatusEnum::PUBLISHED->value, true],
+        'draft'     => [PublicationStatusEnum::DRAFT->value, false],
+        'archived'  => [PublicationStatusEnum::ARCHIVED->value, false],
+        'scheduled' => [PublicationStatusEnum::SCHEDULED->value, false],
+    ]);
+
+    it('keeps an explicitly provided published_at', function (): void {
+        $this->travelTo('2025-06-01 12:00:00');
+        $publishedAt = Illuminate\Support\Carbon::parse('2025-05-30 12:00:00');
+
+        $data = new BlogPostCreateData(
+            title: 'Backdated Post',
+            slug: null,
+            body: '<p>Body content.</p>',
+            excerpt: 'Excerpt',
+            status: PublicationStatusEnum::PUBLISHED->value,
+            author_id: $this->staff->id,
+            published_at: $publishedAt,
+        );
+
+        $post = app(CreateBlogPostAction::class)->handle($data);
+
+        expect($post->published_at->equalTo($publishedAt))->toBeTrue();
     });
 });

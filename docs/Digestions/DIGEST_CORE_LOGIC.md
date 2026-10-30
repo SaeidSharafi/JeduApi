@@ -361,9 +361,9 @@ The public Organization page controller (`app/Http/Controllers/Api/Shop/Organiza
 
 #### Blog Post Actions (`app/Actions/Admin/Blog/Post/`)
 - **CreateBlogPostAction** (`app/Actions/Admin/Blog/Post/CreateBlogPostAction.php`)
-  - `handle(BlogPostCreateData $data, ?Staff $staff = null): BlogPost`: Creates new blog posts with publication workflow, read time calculation, and content relationships, then bumps `CacheTag::Search` since posts are a search collection
+  - `handle(BlogPostCreateData $data, ?Staff $staff = null): BlogPost`: Creates new blog posts with publication workflow, read time calculation, and content relationships, then bumps `CacheTag::Search` since posts are a search collection. `published_at` is derived from `status`: an explicit value wins, `PUBLISHED` without one stamps `now()`, and any other status leaves it null.
 - **UpdateBlogPostAction** (`app/Actions/Admin/Blog/Post/UpdateBlogPostAction.php`)
-  - `handle(BlogPost $post, BlogPostUpdateData $data): BlogPost`: Updates blog post content, status, and relationships, then bumps `CacheTag::Search`
+  - `handle(BlogPost $post, BlogPostUpdateData $data): BlogPost`: Updates blog post content, status, and relationships, then bumps `CacheTag::Search`. `published_at` follows the same rule except that an already-published post keeps its original date unless the request supplies a new one; leaving `PUBLISHED` clears it.
 - **DeleteBlogPostAction** (`app/Actions/Admin/Blog/Post/DeleteBlogPostAction.php`)
   - `handle(BlogPost $post): void`: Removes blog posts and cleans up media attachments, then bumps `CacheTag::Search`
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Actions\Admin\Blog\Post\UpdateBlogPostAction;
 use App\Data\Admin\Blog\Post\BlogPostUpdateData;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Course;
+use Illuminate\Support\Carbon;
 
 mutates(UpdateBlogPostAction::class);
 
@@ -34,6 +36,16 @@ describe('UpdateBlogPostAction', function (): void {
         ]);
         $this->post->attachMedia($this->media, 'main');
         $this->post->categories()->attach($this->category1->id);
+
+        $this->updateData = fn (string $status, ?Carbon $publishedAt = null): BlogPostUpdateData => new BlogPostUpdateData(
+            title: 'Updated Title',
+            slug: null,
+            body: '<p>Updated body.</p>',
+            excerpt: 'Updated excerpt.',
+            status: $status,
+            author_id: $this->staff->id,
+            published_at: $publishedAt,
+        );
     });
 
     it('updates a blog post', function (): void {
@@ -66,7 +78,7 @@ describe('UpdateBlogPostAction', function (): void {
             ->and($updatedPost->body)->toBe(str_repeat('This is the updated body content. ', 50))
             ->and($updatedPost->excerpt)->toBe('Updated excerpt.')
             ->and($updatedPost->author_id)->toBe($this->staff->id)
-            ->and($updatedPost->status)->toBe(App\Enums\Content\PublicationStatusEnum::PUBLISHED)
+            ->and($updatedPost->status)->toBe(PublicationStatusEnum::PUBLISHED)
             ->and($updatedPost->is_featured)->toBeTrue()
             ->and($updatedPost->firstMedia('cover')->getUrl())->toBe($this->media2->getUrl())
             ->and($updatedPost->categories->pluck('id')->toArray())->toBe([$this->category2->id])
@@ -105,7 +117,7 @@ describe('UpdateBlogPostAction', function (): void {
             ->and($updatedPost->body)->toBe('Updated body content without slug change.')
             ->and($updatedPost->excerpt)->toBe('Updated excerpt without slug change.')
             ->and($updatedPost->author_id)->toBe($this->staff->id)
-            ->and($updatedPost->status)->toBe(App\Enums\Content\PublicationStatusEnum::PUBLISHED)
+            ->and($updatedPost->status)->toBe(PublicationStatusEnum::PUBLISHED)
             ->and($updatedPost->is_featured)->toBeTrue()
             ->and($updatedPost->firstMedia('cover')->getUrl())->toBe($this->media->getUrl())
             ->and($updatedPost->firstMedia('video'))->toBeNull()
@@ -205,5 +217,71 @@ describe('UpdateBlogPostAction', function (): void {
         $updatedPost = app(UpdateBlogPostAction::class)->handle($this->post, $data);
 
         expect($updatedPost->read_time_minutes)->toBe(1);
+    });
+
+    it('sets published_at when a non-published post becomes published', function (): void {
+        $this->travelTo('2025-06-01 12:00:00');
+        $this->post->update([
+            'status'       => PublicationStatusEnum::DRAFT,
+            'published_at' => now()->subMonth(),
+        ]);
+
+        $updatedPost = app(UpdateBlogPostAction::class)->handle(
+            $this->post,
+            ($this->updateData)(PublicationStatusEnum::PUBLISHED->value),
+        );
+
+        expect($updatedPost->published_at)->not->toBeNull()
+            ->and($updatedPost->published_at->equalTo(now()))->toBeTrue();
+    });
+
+    it('keeps the original published_at when an already published post is edited', function (): void {
+        $this->travelTo('2025-06-01 12:00:00');
+        $originalPublishedAt = Carbon::parse('2025-05-25 12:00:00');
+        $this->post->update([
+            'status'       => PublicationStatusEnum::PUBLISHED,
+            'published_at' => $originalPublishedAt,
+        ]);
+
+        $updatedPost = app(UpdateBlogPostAction::class)->handle(
+            $this->post,
+            ($this->updateData)(PublicationStatusEnum::PUBLISHED->value),
+        );
+
+        expect($updatedPost->published_at->equalTo($originalPublishedAt))->toBeTrue();
+    });
+
+    it('clears published_at when the post leaves the published status', function (string $status): void {
+        $this->post->update([
+            'status'       => PublicationStatusEnum::PUBLISHED,
+            'published_at' => now()->subWeek(),
+        ]);
+
+        $updatedPost = app(UpdateBlogPostAction::class)->handle(
+            $this->post,
+            ($this->updateData)($status),
+        );
+
+        expect($updatedPost->published_at)->toBeNull();
+    })->with([
+        'draft'     => PublicationStatusEnum::DRAFT->value,
+        'archived'  => PublicationStatusEnum::ARCHIVED->value,
+        'scheduled' => PublicationStatusEnum::SCHEDULED->value,
+    ]);
+
+    it('keeps an explicitly provided published_at on update', function (): void {
+        $this->travelTo('2025-06-01 12:00:00');
+        $explicitPublishedAt = Carbon::parse('2025-05-30 12:00:00');
+        $this->post->update([
+            'status'       => PublicationStatusEnum::DRAFT,
+            'published_at' => now()->subMonth(),
+        ]);
+
+        $updatedPost = app(UpdateBlogPostAction::class)->handle(
+            $this->post,
+            ($this->updateData)(PublicationStatusEnum::PUBLISHED->value, $explicitPublishedAt),
+        );
+
+        expect($updatedPost->published_at->equalTo($explicitPublishedAt))->toBeTrue();
     });
 });

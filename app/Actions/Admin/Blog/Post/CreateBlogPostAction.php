@@ -6,6 +6,7 @@ namespace App\Actions\Admin\Blog\Post;
 
 use App\Contracts\Cache\CacheStore;
 use App\Data\Admin\Blog\Post\BlogPostCreateData;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\MediaTagEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\System\CacheTag;
@@ -35,14 +36,15 @@ final readonly class CreateBlogPostAction
             if ($cover = data_get($media, MediaTagEnum::COVER->value.'.0')) {
                 $coverImageUrl = Media::find($cover)?->getUrl();
             }
-            $postData = [
+            $isPublished = PublicationStatusEnum::PUBLISHED->value === $data->status;
+            $postData    = [
                 'title'             => $data->title,
                 'slug'              => $slug,
                 'body'              => $data->body,
                 'excerpt'           => $data->excerpt,
                 'author_id'         => $data->author_id ?? $staff?->id,
                 'status'            => $data->status,
-                'published_at'      => $data->published_at,
+                'published_at'      => $data->published_at ?? ($isPublished ? now() : null),
                 'read_time_minutes' => $readTime,
                 'is_featured'       => $data->is_featured,
                 'thumbnail_url'     => $coverImageUrl,
