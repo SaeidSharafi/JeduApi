@@ -17,10 +17,10 @@ final class UserSelectOptionData extends Data
 
     public function __construct(
         public int $id,
-        public string $first_name,
-        public string $last_name,
-        public ?string $email,
         public string $phone,
+        public ?string $first_name,
+        public ?string $last_name,
+        public ?string $email,
         public ?string $avatar_url = null,
     ) {
         $this->title    = $this->first_name.' '.$this->last_name;
