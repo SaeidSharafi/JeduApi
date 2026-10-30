@@ -4,18 +4,25 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\WalletCampaign;
 
-use App\Data\Admin\WalletCampaign\WalletCampaignCreateData;
+use App\Data\Admin\WalletCampaign\WalletCampaignUpdateData;
+use App\Exceptions\CustomValidationException;
 use App\Models\WalletCampaign;
 use Illuminate\Support\Facades\DB;
 
 final readonly class UpdateWalletCampaignAction
 {
     /**
-     * Update an existing wallet campaign
+     * Update an existing wallet campaign.
+     *
+     * @throws CustomValidationException
      */
-    public function execute(WalletCampaign $campaign, WalletCampaignCreateData $data): WalletCampaign
+    public function execute(WalletCampaign $campaign, WalletCampaignUpdateData $data): WalletCampaign
     {
         return DB::transaction(function () use ($campaign, $data): WalletCampaign {
+            if ($campaign->total_usage_count > 0 && $campaign->type->value !== $data->type) {
+                throw new CustomValidationException(__('validation.custom.campaign_type_locked'));
+            }
+
             $campaign->update([
                 'name'                 => $data->name,
                 'description'          => $data->description,

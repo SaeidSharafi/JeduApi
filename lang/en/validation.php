@@ -35,14 +35,19 @@ return [
         'insufficient_balance'  => 'Insufficient wallet balance for this transaction.',
 
         // Wallet Campaign validation messages
-        'campaign_not_found'   => 'Wallet campaign not found.',
-        'campaign_not_active'  => 'Campaign is not currently active.',
-        'user_not_eligible'    => 'User is not eligible for this campaign.',
-        'duplicate_allocation' => 'Gift credit already allocated for this campaign and user.',
-        'campaign_expired'     => 'This campaign has expired.',
-        'usage_limit_reached'  => 'Campaign usage limit has been reached.',
-        'already_claimed'      => 'You have already claimed this campaign bonus.',
-        'wallet_not_active'    => 'User wallet is not active.',
+        'campaign_not_found'                      => 'Wallet campaign not found.',
+        'campaign_not_active'                     => 'Campaign is not currently active.',
+        'user_not_eligible'                       => 'User is not eligible for this campaign.',
+        'duplicate_allocation'                    => 'Gift credit already allocated for this campaign and user.',
+        'campaign_expired'                        => 'This campaign has expired.',
+        'usage_limit_reached'                     => 'Campaign usage limit has been reached.',
+        'already_claimed'                         => 'You have already claimed this campaign bonus.',
+        'wallet_not_active'                       => 'User wallet is not active.',
+        'campaign_type_unavailable'               => 'This campaign type is reserved and cannot be created yet.',
+        'campaign_type_locked'                    => 'The campaign type cannot change after allocations exist.',
+        'campaign_not_manual_allocation'          => 'Only manual_allocation campaigns can receive a manual allocation.',
+        'campaign_threshold_amount_required'      => 'A loyalty_reward campaign requires metadata.threshold_amount.',
+        'campaign_threshold_order_count_required' => 'A milestone_reward campaign requires metadata.threshold_order_count.',
 
         // ── Order Create ─────────────────────────────────────────────────
         'order' => [

@@ -13,6 +13,7 @@ final class WalletCampaignTypeSelectOptionData extends Data
         public string $value,
         public string $label,
         public string $description,
+        public bool $creatable,
     ) {}
 
     public static function fromCampaignType(CampaignTypeEnum $campaignType): self
@@ -21,6 +22,7 @@ final class WalletCampaignTypeSelectOptionData extends Data
             value: $campaignType->value,
             label: $campaignType->translate(),
             description: $campaignType->getDescription(),
+            creatable: $campaignType->isCreatable(),
         );
     }
 }

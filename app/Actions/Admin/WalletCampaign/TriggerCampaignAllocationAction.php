@@ -9,6 +9,7 @@ use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Data\Admin\WalletCampaign\TriggerCampaignAllocationData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
+use App\Enums\WalletCampaign\CampaignTriggerTypeEnum;
 use App\Events\Wallet\WalletCampaignAllocationTriggeredEvent;
 use App\Exceptions\CustomValidationException;
 use App\Exceptions\Wallet\WalletInsufficientBalanceException;
@@ -18,6 +19,7 @@ use App\Models\User;
 use App\Models\WalletCampaign;
 use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 final readonly class TriggerCampaignAllocationAction
 {
@@ -40,23 +42,10 @@ final readonly class TriggerCampaignAllocationAction
                 throw new CustomValidationException(__('validation.custom.wallet_not_found'));
             }
 
-            // Check campaign allocation eligibility
-            $status = $campaign->allocationStatus($user);
-            if ($status->isError()) {
-                throw new CustomValidationException($status->message());
-            }
-
-            // Check for duplicate allocations based on trigger type
-            $existingTransaction = $this->checkForDuplicateAllocation($user, $campaign, $data);
-            if ($existingTransaction) {
-                return $existingTransaction;
-            }
-
-            // Create transaction description
-            $description = $this->buildTransactionDescription($campaign, $data);
-
-            // Record the transaction
-            $idempotencyKey = $this->generateIdempotencyKey($campaign, $user, $data);
+            // Replays return the original allocation before any eligibility
+            // check: a retried request must not fail because the campaign has
+            // since expired or its limits were reached by the original grant.
+            $idempotencyKey = $this->resolveIdempotencyKey($campaign, $user, $data);
 
             $existingByIdempotencyKey = WalletTransaction::query()
                 ->where('idempotency_key', $idempotencyKey)
@@ -65,6 +54,22 @@ final readonly class TriggerCampaignAllocationAction
             if ($existingByIdempotencyKey) {
                 return $existingByIdempotencyKey;
             }
+
+            // Event triggers are replayed by their business identity; manual
+            // grants repeat and rely on a request-scoped idempotency key.
+            $existingTransaction = $this->checkForDuplicateEventAllocation($user, $campaign, $data);
+            if ($existingTransaction) {
+                return $existingTransaction;
+            }
+
+            // Check campaign allocation eligibility
+            $status = $campaign->allocationStatus($user, $data->trigger_occurrence);
+            if ($status->isError()) {
+                throw new CustomValidationException($status->message());
+            }
+
+            // Create transaction description
+            $description = $this->buildTransactionDescription($campaign, $data);
 
             $transactionData = new RecordTransactionData(
                 user_id: $user->id,
@@ -84,32 +89,31 @@ final readonly class TriggerCampaignAllocationAction
             $campaign->incrementUsageCount();
 
             // Dispatch unified event
-            WalletCampaignAllocationTriggeredEvent::dispatch($transaction, $campaign, $user, $data->trigger_type);
+            WalletCampaignAllocationTriggeredEvent::dispatch($transaction, $campaign, $user, $data->trigger_type->value);
 
             return $transaction;
         });
     }
 
     /**
-     * Check for existing allocation based on trigger type
+     * An event occurrence is allocated at most once per user and campaign.
+     * Manual grants are repeatable and never dedupe here.
      */
-    private function checkForDuplicateAllocation(User $user, WalletCampaign $campaign, TriggerCampaignAllocationData $data): ?WalletTransaction
+    private function checkForDuplicateEventAllocation(User $user, WalletCampaign $campaign, TriggerCampaignAllocationData $data): ?WalletTransaction
     {
+        if ($data->trigger_type !== CampaignTriggerTypeEnum::EVENT || $data->trigger_event === null) {
+            return null;
+        }
+
         $query = WalletTransaction::where([
             'user_id'     => $user->id,
             'source_type' => TransactionSourceEnum::CAMPAIGN,
             'source_id'   => $campaign->id,
             'type'        => TransactionTypeEnum::GIFT,
-        ]);
+        ])->whereJsonContains('metadata->trigger_event', $data->trigger_event->value);
 
-        // For event-based triggers, check for specific trigger event
-        if ($data->trigger_type === 'event' && $data->trigger_event) {
-            $query->whereJsonContains('metadata->trigger_event', $data->trigger_event);
-        }
-
-        // For manual triggers, check if any manual allocation exists
-        if ($data->trigger_type === 'manual') {
-            $query->whereJsonContains('metadata->trigger_type', 'manual');
+        if ($data->trigger_occurrence !== null) {
+            $query->whereJsonContains('metadata->occurrence', $data->trigger_occurrence);
         }
 
         return $query->first();
@@ -120,7 +124,7 @@ final readonly class TriggerCampaignAllocationAction
      */
     private function buildTransactionDescription(WalletCampaign $campaign, TriggerCampaignAllocationData $data): string
     {
-        if ($data->trigger_type === 'manual') {
+        if ($data->trigger_type === CampaignTriggerTypeEnum::MANUAL) {
             return $data->reason ?? __('wallet.campaign.gift_allocated', [
                 'campaign' => $campaign->name,
             ]);
@@ -128,7 +132,7 @@ final readonly class TriggerCampaignAllocationAction
 
         return __('wallet.campaign.bonus_processed', [
             'campaign' => $campaign->name,
-            'event'    => $data->trigger_event ?? 'system event',
+            'event'    => $data->trigger_event?->value ?? 'system event',
         ]);
     }
 
@@ -141,21 +145,41 @@ final readonly class TriggerCampaignAllocationAction
     {
         return array_merge($data->metadata ?? [], [
             'campaign_name'     => $campaign->name,
-            'campaign_type'     => $campaign->type,
-            'trigger_type'      => $data->trigger_type,
-            'trigger_event'     => $data->trigger_event,
+            'campaign_type'     => $campaign->type->value,
+            'trigger_type'      => $data->trigger_type->value,
+            'trigger_event'     => $data->trigger_event?->value,
+            'occurrence'        => $data->trigger_occurrence,
             'allocation_reason' => $data->reason,
         ]);
     }
 
-    private function generateIdempotencyKey(WalletCampaign $campaign, User $user, TriggerCampaignAllocationData $data): string
+    /**
+     * A supplied key wins (manual grants); event triggers fall back to their
+     * deterministic business identity; a keyless manual grant gets a random
+     * key so it is never mistaken for an earlier grant.
+     */
+    private function resolveIdempotencyKey(WalletCampaign $campaign, User $user, TriggerCampaignAllocationData $data): string
+    {
+        if ($data->idempotency_key !== null) {
+            return $data->idempotency_key;
+        }
+
+        if ($data->trigger_type === CampaignTriggerTypeEnum::EVENT) {
+            return $this->generateBusinessKey($campaign, $user, $data);
+        }
+
+        return (string) Str::uuid();
+    }
+
+    private function generateBusinessKey(WalletCampaign $campaign, User $user, TriggerCampaignAllocationData $data): string
     {
         return sprintf(
-            'wallet-campaign:%d:user:%d:trigger:%s:event:%s',
+            'wallet-campaign:%d:user:%d:trigger:%s:event:%s:occurrence:%s',
             $campaign->id,
             $user->id,
-            $data->trigger_type,
-            $data->trigger_event ?? 'manual'
+            $data->trigger_type->value,
+            $data->trigger_event?->value ?? 'none',
+            $data->trigger_occurrence    ?? 'none',
         );
     }
 

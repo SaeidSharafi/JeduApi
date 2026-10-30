@@ -90,13 +90,13 @@ describe('EvaluateThresholdRewardAction', function (): void {
         expect(thresholdGiftRows($this->user, $campaign))->toBe(1);
         expect($this->user->wallet->fresh()->gift_balance)->toBe($campaign->amount);
 
-        // Further paid orders must not refire the reward — the per-user limit
-        // (reached after the first allocation) rejects a second allocation.
+        // Further paid orders must not refire the reward — the replayed
+        // payment_completed event returns the existing allocation.
         paidOrder($this->user, 50000);
-        expect(fn () => $this->action->handle($this->user, $campaign))
-            ->toThrow(App\Exceptions\CustomValidationException::class);
+        $replay = $this->action->handle($this->user, $campaign);
 
-        expect(thresholdGiftRows($this->user, $campaign))->toBe(1);
+        expect($replay)->not->toBeNull()
+            ->and(thresholdGiftRows($this->user, $campaign))->toBe(1);
     });
 
     it('does not allocate a milestone reward when the order-count threshold is not crossed', function (): void {
@@ -132,10 +132,10 @@ describe('EvaluateThresholdRewardAction', function (): void {
         expect($this->user->wallet->fresh()->gift_balance)->toBe($campaign->amount);
 
         paidOrder($this->user, 10000); // 4th order must not refire
-        expect(fn () => $this->action->handle($this->user, $campaign))
-            ->toThrow(App\Exceptions\CustomValidationException::class);
+        $replay = $this->action->handle($this->user, $campaign);
 
-        expect(thresholdGiftRows($this->user, $campaign))->toBe(1);
+        expect($replay)->not->toBeNull()
+            ->and(thresholdGiftRows($this->user, $campaign))->toBe(1);
     });
 
     it('measures lifetime scope across all history', function (): void {

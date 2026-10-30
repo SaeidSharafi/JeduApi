@@ -6,21 +6,15 @@ use App\Http\Controllers\Api\Admin\Audit\AdminAuditLogController;
 use App\Http\Controllers\Api\Admin\Audit\ComplianceReportController;
 use App\Http\Controllers\Api\Admin\Audit\SuspiciousActivityController;
 use App\Http\Controllers\Api\Admin\WalletCampaign\AdminWalletCampaignController;
-use App\Http\Controllers\Api\Admin\WalletCampaign\BulkCampaignAllocationController;
-use App\Http\Controllers\Api\Admin\WalletCampaign\TriggerCampaignAllocationController;
+use App\Http\Controllers\Api\Admin\WalletCampaign\ManualCampaignAllocationController;
 
 // Wallet Campaign routes
 Route::apiResource('wallet-campaigns', AdminWalletCampaignController::class);
 
-// User-centric campaign allocation (primary route)
-Route::post('users/{user}/wallet-campaigns/{wallet_campaign}/trigger-allocation',
-    TriggerCampaignAllocationController::class)
-    ->name('users.wallet-campaigns.trigger-allocation');
-
-// Campaign-centric bulk allocation (secondary route)
-Route::post('wallet-campaigns/{wallet_campaign}/bulk-trigger-allocation',
-    BulkCampaignAllocationController::class)
-    ->name('wallet-campaigns.bulk-trigger-allocation');
+// Manual allocation from a manual_allocation campaign (1..100 users)
+Route::post('wallet-campaigns/{wallet_campaign}/allocations',
+    ManualCampaignAllocationController::class)
+    ->name('wallet-campaigns.allocations');
 
 // Audit and Compliance routes
 Route::prefix('audit')->name('audit.')->group(function (): void {

@@ -70,9 +70,13 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
     }
 
     /**
-     * Check if a user can receive allocation from this campaign
+     * Check if a user can receive allocation from this campaign.
+     *
+     * A recurring trigger passes its occurrence so the per-user limit counts
+     * only that occurrence (a birthday campaign with a limit of 1 pays once a
+     * year); single-occurrence triggers pass null and count all history.
      */
-    public function allocationStatus(User $user): AllocationStatusEnum
+    public function allocationStatus(User $user, ?string $triggerOccurrence = null): AllocationStatusEnum
     {
         if (! $this->isActive()) {
             return AllocationStatusEnum::ERROR_INACTIVE;
@@ -87,7 +91,7 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
         }
 
         // The query only happens once here.
-        if ($this->hasReachedUserLimit($user)) {
+        if ($this->hasReachedUserLimit($user, $triggerOccurrence)) {
             return AllocationStatusEnum::ERROR_USER_LIMIT_REACHED;
         }
 
@@ -109,17 +113,19 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
     /**
      * Check if user has reached their usage limit for this campaign
      */
-    public function hasReachedUserLimit(User $user): bool
+    public function hasReachedUserLimit(User $user, ?string $triggerOccurrence = null): bool
     {
         if ($this->usage_limit_per_user === null) {
             return false;
         }
 
-        $userUsageCount = $this->transactions()
-            ->where('user_id', $user->id)
-            ->count();
+        $query = $this->transactions()->where('user_id', $user->id);
 
-        return $userUsageCount >= $this->usage_limit_per_user;
+        if ($triggerOccurrence !== null) {
+            $query->whereJsonContains('metadata->occurrence', $triggerOccurrence);
+        }
+
+        return $query->count() >= $this->usage_limit_per_user;
     }
 
     /**

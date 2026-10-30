@@ -12,7 +12,7 @@
     "starts_at": null,
     "ends_at": null,
     "metadata": {
-      "trigger_event": "user_registration",
+      "trigger_event": "profile_completed",
       "auto_apply": true
     },
     "created_by": 1,
@@ -33,7 +33,7 @@
     "starts_at": null,
     "ends_at": null,
     "metadata": {
-      "trigger_event": "user_birthday",
+      "trigger_event": "birthday_sweep",
       "auto_apply": true,
       "days_before_birthday": 3
     },

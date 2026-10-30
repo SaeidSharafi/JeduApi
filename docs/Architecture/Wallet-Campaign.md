@@ -46,8 +46,8 @@ flowchart LR
 | `registration_bonus` | `ProfileCompletedEvent` | first `false → true` transition of `User::profileCompleted()` |
 | `loyalty_reward` | `PaymentCompletedEvent` | cumulative paid order total crosses `metadata.threshold_amount` |
 | `milestone_reward` | `PaymentCompletedEvent` | paid order count crosses `metadata.threshold_order_count` |
-| `birthday_gift` | daily sweep | `date_of_birth` month/day equals today |
-| `manual_allocation` | admin | none |
+| `birthday_gift` | daily sweep | `date_of_birth` month/day equals today; occurrence is the Jalali year, so an ongoing campaign pays once a year and re-runs within the year are deduped |
+| `manual_allocation` | admin manual grant | repeatable, bounded by the campaign's usage limits; only this type accepts the allocations endpoint |
 | `referral_bonus` | (reserved) | blocked on the referral feature; only the mapping point is reserved |
 | `seasonal_bonus` | (deferred) | recipient selection undefined |
 
@@ -77,7 +77,8 @@ sequenceDiagram
             Sub->>Alloc: allocate(trigger_event)
         end
         Alloc->>Alloc: lock campaign, check eligibility
-        Alloc->>Alloc: dedupe trigger_event + idempotency key
+        Alloc->>Alloc: replay key check
+        Alloc->>Alloc: dedupe trigger_event + occurrence
         Alloc->>Ledger: record GIFT credit with expiry deadline
         Ledger-->>Sub: ledger entry
     end
@@ -105,7 +106,9 @@ Order payments consume gift balance before normal balance, oldest gift first. A 
 
 - Every campaign credit flows through `TriggerCampaignAllocationAction`. No trigger constructs a `GIFT` transaction itself.
 - The event → type mapping lives in `CampaignEventSubscriber::subscribe()`. Adding a campaign type means adding a map entry, not a new listener.
-- Allocation is idempotent under retries and replayed events: a deterministic key (`wallet-campaign:{id}:user:{uid}:trigger:{type}:event:{event}`) plus a duplicate trigger-event check return the prior entry with no second credit.
+- Allocation is idempotent under retries and replayed events, with two key models: event/sweep triggers use the business key `wallet-campaign:{id}:user:{uid}:trigger:{type}:event:{event}:occurrence:{occurrence}` plus a trigger-event/occurrence check; admin grants use a request-scoped key (`{Idempotency-Key}:c:{campaign}:u:{user}`). Both return the prior entry with no second credit.
+- Manual grants are repeatable (no per-user-per-campaign dedupe); the campaign's total and per-user limits are the only caps. A grant without an `Idempotency-Key` gets a random key and is not retry-safe.
+- Recurring triggers pass an occurrence (the birthday Jalali year); the per-user limit counts allocations for that occurrence only, so a limit of 1 means once a year.
 - Threshold measurement is read-only; it never writes balances. Allocation is the only side effect of a crossed threshold.
 - Threshold scope is honored at measurement: `lifetime` counts all history, `windowed` bounds the measure to `starts_at`..`ends_at`.
 - Order payments spend gift before normal balance, oldest first (FIFO), decrementing each gift's `remaining_amount` and recording the split in metadata. Untracked gift balance (beyond any tracked `remaining_amount`) is consumed as untracked gift before normal balance.
@@ -117,7 +120,7 @@ Order payments consume gift balance before normal balance, oldest gift first. A 
 | Failure | Required result |
 |---|---|
 | Inactive/expired/limit-reached campaign at dispatch | Allocation skipped with a warning log; event flow and sweep continue. |
-| Repeated event, callback, or sweep run | Deterministic key + trigger-event dedupe return the prior entry; no double credit. |
+| Repeated event, callback, or sweep run | Business key + trigger-event/occurrence dedupe return the prior entry; no double credit. A replayed manual request returns the prior entry via its request key. |
 | Concurrent expiry reclaim vs order payment | Wallet row lock and `remaining_amount` clamp serialize; reclaim counted skipped, no over-reclaim. |
 | Reclaim of a fully-spent gift | `GiftAlreadyFullyReclaimedException`; counted skipped. |
 | Expiry references a missing gift | `GiftTransactionNotFoundException`. |

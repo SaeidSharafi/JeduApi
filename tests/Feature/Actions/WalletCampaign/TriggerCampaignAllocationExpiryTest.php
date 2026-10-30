@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Actions\Admin\WalletCampaign\TriggerCampaignAllocationAction;
 use App\Data\Admin\WalletCampaign\TriggerCampaignAllocationData;
 use App\Enums\Wallet\TransactionSourceEnum;
+use App\Enums\WalletCampaign\CampaignTriggerEventEnum;
+use App\Enums\WalletCampaign\CampaignTriggerTypeEnum;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Models\Staff;
 use App\Models\User;
@@ -34,8 +36,8 @@ beforeEach(function (): void {
     ]);
 
     $this->data = new TriggerCampaignAllocationData(
-        trigger_type: 'event',
-        trigger_event: 'profile_completed',
+        trigger_type: CampaignTriggerTypeEnum::EVENT,
+        trigger_event: CampaignTriggerEventEnum::PROFILE_COMPLETED,
         metadata: [],
     );
 });

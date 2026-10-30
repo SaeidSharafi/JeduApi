@@ -183,14 +183,19 @@ return [
         'insufficient_balance_with_info' => 'موجودی کیف پول شما (:available تومان) برای انجام این تراکنش کافی نیست. مبلغ مورد نیاز: :required تومان.',
 
         // Wallet Campaign validation messages
-        'campaign_not_found'   => 'کمپین کیف پول یافت نشد.',
-        'campaign_not_active'  => 'کمپین در حال حاضر فعال نیست.',
-        'user_not_eligible'    => 'کاربر واجد شرایط شرکت در این کمپین نیست.',
-        'duplicate_allocation' => 'اعتبار هدیه این کمپین قبلاً به این کاربر تخصیص یافته است.',
-        'campaign_expired'     => 'مهلت این کمپین به پایان رسیده است.',
-        'usage_limit_reached'  => 'ظرفیت استفاده از این کمپین به پایان رسیده است.',
-        'already_claimed'      => 'شما قبلاً پاداش این کمپین را دریافت کرده‌اید.',
-        'attribute-name'       => [
+        'campaign_not_found'                      => 'کمپین کیف پول یافت نشد.',
+        'campaign_not_active'                     => 'کمپین در حال حاضر فعال نیست.',
+        'user_not_eligible'                       => 'کاربر واجد شرایط شرکت در این کمپین نیست.',
+        'duplicate_allocation'                    => 'اعتبار هدیه این کمپین قبلاً به این کاربر تخصیص یافته است.',
+        'campaign_expired'                        => 'مهلت این کمپین به پایان رسیده است.',
+        'usage_limit_reached'                     => 'ظرفیت استفاده از این کمپین به پایان رسیده است.',
+        'already_claimed'                         => 'شما قبلاً پاداش این کمپین را دریافت کرده‌اید.',
+        'campaign_type_unavailable'               => 'این نوع کمپین هنوز قابل ایجاد نیست.',
+        'campaign_type_locked'                    => 'نوع کمپین پس از ثبت تخصیص قابل تغییر نیست.',
+        'campaign_not_manual_allocation'          => 'فقط کمپین‌های تخصیص دستی قابل استفاده برای تخصیص دستی هستند.',
+        'campaign_threshold_amount_required'      => 'برای کمپین پاداش وفاداری، آستانه مبلغ (metadata.threshold_amount) الزامی است.',
+        'campaign_threshold_order_count_required' => 'برای کمپین پاداش دستاورد، آستانه تعداد سفارش (metadata.threshold_order_count) الزامی است.',
+        'attribute-name'                          => [
             'rule-name' => 'custom-message',
         ],
         'product' => [

@@ -41,6 +41,41 @@ final class JalaliDateHelper
     }
 
     /**
+     * Convert Jalali date fields that may arrive as date-only or date-time to
+     * Gregorian 'Y-m-d H:i:s', applying the field's default time to date-only
+     * values (a campaign window starts at 00:00:00 and ends at 23:59:59).
+     *
+     * @param  array<string, mixed>  $properties
+     * @param  array<string, string>  $defaultTimes  field => default time ('00:00:00' or '23:59:59')
+     * @return array<string, mixed>
+     */
+    public static function toGregorianDateTime(array $properties, array $defaultTimes): array
+    {
+        foreach ($defaultTimes as $field => $defaultTime) {
+            $value = data_get($properties, $field);
+
+            if (! is_string($value) || mb_trim($value) === '') {
+                continue;
+            }
+
+            $dateString = str_replace('/', '-', mb_trim($value));
+            $hasTime    = preg_match('/\d{1,2}:\d{2}(?::\d{2})?$/', $dateString) === 1;
+
+            $converted = self::parseSingleDate($dateString, $hasTime ? 'Y-m-d H:i:s' : 'Y-m-d');
+
+            if ($converted === self::INVALID_DATE || $converted === self::INVALID_FORMAT) {
+                data_set($properties, $field, $converted);
+
+                continue;
+            }
+
+            data_set($properties, $field, $hasTime ? $converted : $converted.' '.$defaultTime);
+        }
+
+        return $properties;
+    }
+
+    /**
      * Convert date fields in an IMS response to Jalali while preserving its shape.
      *
      * @param  array<string, mixed>  $properties

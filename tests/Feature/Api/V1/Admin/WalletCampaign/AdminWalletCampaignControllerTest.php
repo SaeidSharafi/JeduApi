@@ -152,7 +152,7 @@ describe('store', function (): void {
             'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
             'is_active'       => true,
             'amount'          => 25000,
-            'metadata'        => null,
+            'metadata'        => ['threshold_amount' => 5000000],
         ];
 
         $response = $this->postJson('/api/v1/admin/wallet-campaigns', $createData);
@@ -175,7 +175,7 @@ describe('store', function (): void {
 
         $createData = [
             'name'            => 'Windowed Without Dates',
-            'type'            => CampaignTypeEnum::SEASONAL_BONUS->value,
+            'type'            => CampaignTypeEnum::REGISTRATION_BONUS->value,
             'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
             'is_active'       => true,
             'amount'          => 30000,
@@ -230,7 +230,7 @@ describe('store', function (): void {
 
         $createData = [
             'name'            => 'Inverted Window',
-            'type'            => CampaignTypeEnum::SEASONAL_BONUS->value,
+            'type'            => CampaignTypeEnum::REGISTRATION_BONUS->value,
             'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
             'is_active'       => true,
             'amount'          => 30000,
@@ -251,6 +251,111 @@ describe('store', function (): void {
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name', 'type', 'threshold_scope', 'amount']);
+    });
+
+    it('accepts a Jalali datetime and keeps the time', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $startsAt = now()->startOfDay()->addHours(10)->addMinutes(30);
+        $endsAt   = now()->addDay()->startOfDay()->addHours(18);
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', [
+            'name'            => 'Datetime Window',
+            'description'     => null,
+            'type'            => CampaignTypeEnum::REGISTRATION_BONUS->value,
+            'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
+            'is_active'       => true,
+            'amount'          => 10000,
+            'starts_at'       => $this->toJalalitString($startsAt, 'Y-m-d H:i:s'),
+            'ends_at'         => $this->toJalalitString($endsAt, 'Y-m-d H:i:s'),
+            'metadata'        => null,
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('wallet_campaigns', [
+            'name'      => 'Datetime Window',
+            'starts_at' => $startsAt->format('Y-m-d H:i:s'),
+            'ends_at'   => $endsAt->format('Y-m-d H:i:s'),
+        ]);
+    });
+
+    it('normalizes a date-only end to the end of the day', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $endDate = now()->addMonth()->format('Y-m-d');
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', [
+            'name'            => 'Date-Only Window',
+            'description'     => null,
+            'type'            => CampaignTypeEnum::REGISTRATION_BONUS->value,
+            'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
+            'is_active'       => true,
+            'amount'          => 10000,
+            'starts_at'       => $this->toJalalitString(now(), 'Y-m-d'),
+            'ends_at'         => $this->toJalalitString(now()->addMonth(), 'Y-m-d'),
+            'metadata'        => null,
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('wallet_campaigns', [
+            'name'    => 'Date-Only Window',
+            'ends_at' => $endDate.' 23:59:59',
+        ]);
+    });
+
+    it('rejects a windowed campaign that starts in the past', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', [
+            'name'            => 'Backdated Window',
+            'description'     => null,
+            'type'            => CampaignTypeEnum::REGISTRATION_BONUS->value,
+            'threshold_scope' => ThresholdScopeEnum::WINDOWED->value,
+            'is_active'       => true,
+            'amount'          => 10000,
+            'starts_at'       => $this->toJalalitString(now()->subDay(), 'Y-m-d'),
+            'ends_at'         => $this->toJalalitString(now()->addMonth(), 'Y-m-d'),
+            'metadata'        => null,
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['starts_at']);
+    });
+
+    it('requires threshold metadata for threshold campaign types', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', [
+            'name'            => 'Loyalty Without Threshold',
+            'description'     => null,
+            'type'            => CampaignTypeEnum::LOYALTY_REWARD->value,
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'is_active'       => true,
+            'amount'          => 10000,
+            'metadata'        => null,
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['metadata.threshold_amount']);
+    });
+
+    it('rejects reserved campaign types', function (): void {
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
+
+        $response = $this->postJson('/api/v1/admin/wallet-campaigns', [
+            'name'            => 'Referral Campaign',
+            'description'     => null,
+            'type'            => CampaignTypeEnum::REFERRAL_BONUS->value,
+            'threshold_scope' => ThresholdScopeEnum::LIFETIME->value,
+            'is_active'       => true,
+            'amount'          => 10000,
+            'metadata'        => null,
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['type']);
     });
 
     it('denies access without permission', function (): void {
@@ -337,6 +442,8 @@ describe('update', function (): void {
     beforeEach(function (): void {
         $this->campaign = WalletCampaign::factory()->create([
             'name'       => 'Original Campaign',
+            'type'       => CampaignTypeEnum::REGISTRATION_BONUS,
+            'metadata'   => null,
             'created_by' => $this->user->id,
         ]);
     });
@@ -468,6 +575,55 @@ describe('update', function (): void {
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name', 'amount']);
+    });
+
+    it('updates a campaign whose start date is in the past', function (): void {
+        $this->campaign->update([
+            'starts_at' => now()->subMonth(),
+            'ends_at'   => now()->addMonth(),
+        ]);
+
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_UPDATE]);
+
+        $response = $this->putJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}", [
+            'name'                 => 'Kept Historical Start',
+            'description'          => null,
+            'type'                 => $this->campaign->type->value,
+            'threshold_scope'      => ThresholdScopeEnum::WINDOWED->value,
+            'is_active'            => true,
+            'amount'               => $this->campaign->amount,
+            'usage_limit_total'    => null,
+            'usage_limit_per_user' => null,
+            'starts_at'            => $this->toJalalitString($this->campaign->starts_at, 'Y-m-d H:i:s'),
+            'ends_at'              => $this->toJalalitString($this->campaign->ends_at, 'Y-m-d H:i:s'),
+            'metadata'             => null,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.name', 'Kept Historical Start');
+    });
+
+    it('locks the campaign type once allocations exist', function (): void {
+        $this->campaign->update(['total_usage_count' => 1]);
+
+        $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_UPDATE]);
+
+        $response = $this->putJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}", [
+            'name'                 => 'Changed Type',
+            'description'          => null,
+            'type'                 => CampaignTypeEnum::MANUAL_ALLOCATION->value,
+            'threshold_scope'      => ThresholdScopeEnum::LIFETIME->value,
+            'is_active'            => true,
+            'amount'               => $this->campaign->amount,
+            'usage_limit_total'    => null,
+            'usage_limit_per_user' => null,
+            'starts_at'            => null,
+            'ends_at'              => null,
+            'metadata'             => null,
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonPath('message', __('validation.custom.campaign_type_locked'));
     });
 
     it('denies access without permission', function (): void {

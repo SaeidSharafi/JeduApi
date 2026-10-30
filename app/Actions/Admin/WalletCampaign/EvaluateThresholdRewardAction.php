@@ -7,6 +7,8 @@ namespace App\Actions\Admin\WalletCampaign;
 use App\Data\Admin\WalletCampaign\TriggerCampaignAllocationData;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\WalletCampaign\CampaignTriggerEventEnum;
+use App\Enums\WalletCampaign\CampaignTriggerTypeEnum;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use App\Models\Payment;
@@ -54,8 +56,8 @@ final readonly class EvaluateThresholdRewardAction
 
         return $this->allocationAction->handle(
             data: new TriggerCampaignAllocationData(
-                trigger_type: 'event',
-                trigger_event: 'payment_completed',
+                trigger_type: CampaignTriggerTypeEnum::EVENT,
+                trigger_event: CampaignTriggerEventEnum::PAYMENT_COMPLETED,
                 metadata: ['payment_completed_at' => now()->toISOString()],
             ),
             user: $user,

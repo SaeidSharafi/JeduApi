@@ -8,6 +8,8 @@ use App\Actions\Admin\WalletCampaign\EvaluateThresholdRewardAction;
 use App\Actions\Admin\WalletCampaign\TriggerCampaignAllocationAction;
 use App\Data\Admin\WalletCampaign\TriggerCampaignAllocationData;
 use App\Enums\Payment\PaymentPurposeEnum;
+use App\Enums\WalletCampaign\CampaignTriggerEventEnum;
+use App\Enums\WalletCampaign\CampaignTriggerTypeEnum;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Events\ProfileCompletedEvent;
@@ -49,7 +51,7 @@ final readonly class CampaignEventSubscriber
         $campaigns = WalletCampaign::query()->activeOfType(CampaignTypeEnum::REGISTRATION_BONUS)->get();
 
         foreach ($campaigns as $campaign) {
-            $this->allocate($event->user, $campaign, 'profile_completed', [
+            $this->allocate($event->user, $campaign, CampaignTriggerEventEnum::PROFILE_COMPLETED, [
                 'profile_completed_at' => now()->toISOString(),
             ]);
         }
@@ -98,12 +100,12 @@ final readonly class CampaignEventSubscriber
     /**
      * @param  array<string, mixed>  $metadata
      */
-    private function allocate(User $user, WalletCampaign $campaign, string $triggerEvent, array $metadata): void
+    private function allocate(User $user, WalletCampaign $campaign, CampaignTriggerEventEnum $triggerEvent, array $metadata): void
     {
         try {
             $this->allocationAction->handle(
                 data: new TriggerCampaignAllocationData(
-                    trigger_type: 'event',
+                    trigger_type: CampaignTriggerTypeEnum::EVENT,
                     trigger_event: $triggerEvent,
                     metadata: $metadata,
                 ),
@@ -113,7 +115,7 @@ final readonly class CampaignEventSubscriber
         } catch (CustomValidationException|WalletUserNotFoundException|WalletNotFoundException|WalletInsufficientBalanceException) {
             // Campaign no longer eligible (inactive, expired, limits reached)
             // or the user has no wallet — log and skip, never break the event flow.
-            Log::warning("Skipped campaign allocation for {$triggerEvent} event", [
+            Log::warning("Skipped campaign allocation for {$triggerEvent->value} event", [
                 'user_id'     => $user->id,
                 'campaign_id' => $campaign->id,
                 'campaign'    => $campaign->name,

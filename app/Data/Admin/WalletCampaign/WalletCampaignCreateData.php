@@ -29,32 +29,37 @@ final class WalletCampaignCreateData extends Data
         public int $amount,
         public ?int $usage_limit_total,
         public ?int $usage_limit_per_user,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $starts_at,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $ends_at,
         public ?array $metadata
     ) {}
 
     public static function prepareForPipeline(array $properties): array
     {
-        return JalaliDateHelper::toGregorian($properties, [
-            'starts_at',
-            'ends_at',
+        return JalaliDateHelper::toGregorianDateTime($properties, [
+            'starts_at' => '00:00:00',
+            'ends_at'   => '23:59:59',
         ]);
     }
 
     public static function rules(?ValidationContext $context = null): array
     {
-        $now            = now()->format('Y-m-d');
         $thresholdScope = $context?->payload['threshold_scope'] ?? null;
         $isWindowed     = $thresholdScope === ThresholdScopeEnum::WINDOWED->value;
         $isLifetime     = $thresholdScope === ThresholdScopeEnum::LIFETIME->value;
+        $type           = $context?->payload['type'] ?? null;
 
         return [
-            'name'                 => ['required', 'string', 'max:255'],
-            'description'          => ['nullable', 'string', 'max:1000'],
-            'type'                 => ['required', 'string', Rule::enum(CampaignTypeEnum::class)],
+            'name'        => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'type'        => [
+                'required',
+                'string',
+                Rule::enum(CampaignTypeEnum::class),
+                Rule::in(CampaignTypeEnum::creatableValues()),
+            ],
             'threshold_scope'      => ['required', 'string', Rule::enum(ThresholdScopeEnum::class)],
             'is_active'            => ['required', 'boolean'],
             'amount'               => ['required', 'integer', 'min:1'],
@@ -66,8 +71,8 @@ final class WalletCampaignCreateData extends Data
                 Rule::requiredIf($isWindowed),
                 Rule::prohibitedIf($isLifetime),
                 new ValidNormalizedJalaliDateRule,
-                'date_format:Y-m-d',
-                'after_or_equal:'.$now,
+                'date_format:Y-m-d H:i:s',
+                'after_or_equal:today',
             ],
             'ends_at' => [
                 'bail',
@@ -75,13 +80,38 @@ final class WalletCampaignCreateData extends Data
                 Rule::requiredIf($isWindowed),
                 Rule::prohibitedIf($isLifetime),
                 new ValidNormalizedJalaliDateRule,
-                'date_format:Y-m-d',
+                'date_format:Y-m-d H:i:s',
                 'after:starts_at',
+                'after:now',
             ],
-            'metadata'                       => ['nullable', 'array'],
-            'metadata.threshold_amount'      => ['nullable', 'integer', 'min:1'],
-            'metadata.threshold_order_count' => ['nullable', 'integer', 'min:1'],
-            'metadata.expiry_days'           => ['nullable', 'integer', 'min:1'],
+            'metadata'                  => ['nullable', 'array'],
+            'metadata.threshold_amount' => [
+                Rule::requiredIf($type === CampaignTypeEnum::LOYALTY_REWARD->value),
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'metadata.threshold_order_count' => [
+                Rule::requiredIf($type === CampaignTypeEnum::MILESTONE_REWARD->value),
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'metadata.expiry_days' => ['nullable', 'integer', 'min:1'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     *
+     * @codeCoverageIgnore
+     */
+    public static function messages(): array
+    {
+        return [
+            'type.in'                                 => __('validation.custom.campaign_type_unavailable'),
+            'metadata.threshold_amount.required'      => __('validation.custom.campaign_threshold_amount_required'),
+            'metadata.threshold_order_count.required' => __('validation.custom.campaign_threshold_order_count_required'),
         ];
     }
 
@@ -95,14 +125,14 @@ final class WalletCampaignCreateData extends Data
         return [
             'name'                 => 'Campaign name for admin reference.',
             'description'          => 'Detailed description of the campaign purpose and terms.',
-            'type'                 => 'Type of campaign. One of: registration_bonus, birthday_gift, referral_bonus, loyalty_reward, seasonal_bonus, milestone_reward, manual_allocation. Only loyalty_reward and milestone_reward use threshold_scope and the threshold metadata keys.',
+            'type'                 => 'Type of campaign. One of: registration_bonus, birthday_gift, loyalty_reward, milestone_reward, manual_allocation. referral_bonus and seasonal_bonus are reserved and rejected. Only loyalty_reward and milestone_reward use threshold_scope and the threshold metadata keys.',
             'threshold_scope'      => 'Threshold measurement scope. Only affects loyalty_reward and milestone_reward (ignored for other types). lifetime measures all order history and requires no dates; windowed measures orders within starts_at..ends_at and requires both dates.',
             'is_active'            => 'Whether the campaign is currently active.',
             'amount'               => 'Gift amount in rials to be awarded.',
             'usage_limit_total'    => 'Total number of times this campaign can be used (null for unlimited).',
             'usage_limit_per_user' => 'Number of times each user can use this campaign (null for unlimited).',
-            'starts_at'            => 'Campaign start date (Jalali Y-m-d). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime.',
-            'ends_at'              => 'Campaign end date (Jalali Y-m-d). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime. Must be after starts_at.',
+            'starts_at'            => 'Campaign start (Jalali Y-m-d or Y-m-d H:i:s). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime. A date-only value starts at 00:00:00. On create it must be today or later.',
+            'ends_at'              => 'Campaign end (Jalali Y-m-d or Y-m-d H:i:s). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime. A date-only value ends at 23:59:59. On create it must be in the future and after starts_at.',
             'metadata'             => 'Campaign-specific configuration. loyalty_reward requires threshold_amount (rials); milestone_reward requires threshold_order_count (paid order count); any gift may set expiry_days (relative expiry, days from receipt, overrides absolute ends_at).',
         ];
     }
@@ -124,7 +154,7 @@ final class WalletCampaignCreateData extends Data
                 'example'     => 'Special bonus for spring season.',
             ],
             'type' => [
-                'description' => 'Type of campaign. One of: registration_bonus, birthday_gift, referral_bonus, loyalty_reward, seasonal_bonus, milestone_reward, manual_allocation. Only loyalty_reward and milestone_reward use threshold_scope and the threshold metadata keys.',
+                'description' => 'Type of campaign. One of: registration_bonus, birthday_gift, loyalty_reward, milestone_reward, manual_allocation. referral_bonus and seasonal_bonus are reserved and rejected. Only loyalty_reward and milestone_reward use threshold_scope and the threshold metadata keys.',
                 'example'     => 'loyalty_reward',
             ],
             'threshold_scope' => [
@@ -148,11 +178,11 @@ final class WalletCampaignCreateData extends Data
                 'example'     => 1,
             ],
             'starts_at' => [
-                'description' => 'Campaign start date (Jalali Y-m-d). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime.',
+                'description' => 'Campaign start (Jalali Y-m-d or Y-m-d H:i:s). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime. A date-only value starts at 00:00:00. On create it must be today or later.',
                 'example'     => '1402-01-01',
             ],
             'ends_at' => [
-                'description' => 'Campaign end date (Jalali Y-m-d). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime. Must be after starts_at.',
+                'description' => 'Campaign end (Jalali Y-m-d or Y-m-d H:i:s). Required when threshold_scope is windowed; must be omitted when threshold_scope is lifetime. A date-only value ends at 23:59:59. On create it must be in the future and after starts_at.',
                 'example'     => '1402-01-30',
             ],
             'metadata' => [
@@ -164,11 +194,11 @@ final class WalletCampaignCreateData extends Data
                 'example'     => 30,
             ],
             'metadata.threshold_amount' => [
-                'description' => 'For loyalty_reward only: the cumulative paid order total (in rials) a user must reach before the reward is granted.',
+                'description' => 'For loyalty_reward only: the cumulative paid order total (in rials) a user must reach before the reward is granted. Required for loyalty_reward.',
                 'example'     => 5000000,
             ],
             'metadata.threshold_order_count' => [
-                'description' => 'For milestone_reward only: the number of paid orders a user must reach before the reward is granted.',
+                'description' => 'For milestone_reward only: the number of paid orders a user must reach before the reward is granted. Required for milestone_reward.',
                 'example'     => 5,
             ],
         ];

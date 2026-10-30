@@ -20,6 +20,26 @@ enum CampaignTypeEnum: string
     case MANUAL_ALLOCATION  = 'manual_allocation';
 
     /**
+     * @return array<int, string>
+     */
+    public static function creatableValues(): array
+    {
+        return array_values(array_map(
+            static fn (self $type): string => $type->value,
+            array_filter(self::cases(), static fn (self $type): bool => $type->isCreatable()),
+        ));
+    }
+
+    /**
+     * Whether the admin API may create campaigns of this type. Reserved types
+     * stay in the enum so historical rows still resolve and label correctly.
+     */
+    public function isCreatable(): bool
+    {
+        return ! in_array($this, [self::REFERRAL_BONUS, self::SEASONAL_BONUS], true);
+    }
+
+    /**
      * @codeCoverageIgnore
      */
     public function getDescription(): string

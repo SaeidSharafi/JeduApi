@@ -53,6 +53,7 @@ describe('AllocateBirthdayGiftsAction', function (): void {
         expect($gift)->not->toBeNull()
             ->and($gift->amount)->toBe($this->campaign->amount)
             ->and($gift->metadata['trigger_event'])->toBe('birthday_sweep')
+            ->and($gift->metadata['occurrence'])->toBe(Hekmatinasser\Verta\Verta::instance(now())->format('Y'))
             ->and($this->user->wallet->fresh()->gift_balance)->toBe($this->campaign->amount);
     });
 
@@ -95,6 +96,20 @@ describe('AllocateBirthdayGiftsAction', function (): void {
 
         $this->user->wallet->refresh();
         expect($this->user->wallet->gift_balance)->toBe($this->campaign->amount);
+    });
+
+    it('allocates again on the birthday of a later year', function (): void {
+        $this->campaign->update([
+            'starts_at' => now()->subYear(),
+            'ends_at'   => now()->addYears(2),
+        ]);
+
+        expect(birthdaySweep())->toBe(['allocated' => 1, 'skipped' => 0]);
+
+        $this->travel(1)->years();
+
+        expect(birthdaySweep())->toBe(['allocated' => 1, 'skipped' => 0]);
+        expect(birthdayGiftRows($this->user, $this->campaign))->toBe(2);
     });
 
     it('does not allocate from an inactive campaign', function (): void {

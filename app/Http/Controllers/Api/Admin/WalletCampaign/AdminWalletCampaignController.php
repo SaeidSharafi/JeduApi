@@ -10,6 +10,7 @@ use App\Actions\Admin\WalletCampaign\UpdateWalletCampaignAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\WalletCampaign\WalletCampaignCreateData;
 use App\Data\Admin\WalletCampaign\WalletCampaignData;
+use App\Data\Admin\WalletCampaign\WalletCampaignUpdateData;
 use App\Http\Controllers\Controller;
 use App\Models\WalletCampaign;
 use Illuminate\Http\JsonResponse;
@@ -57,7 +58,7 @@ final class AdminWalletCampaignController extends Controller
                 'starts_at',
                 'ends_at',
             ])
-            ->allowedIncludes(['creator', 'transactions'])
+            ->allowedIncludes(['transactions'])
             ->defaultSort('-created_at')
             ->with(['auditor'])
             ->withCount('transactions')
@@ -114,7 +115,7 @@ final class AdminWalletCampaignController extends Controller
      */
     public function update(
         WalletCampaign $walletCampaign,
-        WalletCampaignCreateData $data,
+        WalletCampaignUpdateData $data,
         UpdateWalletCampaignAction $action
     ): ApiResponseInterface {
         Gate::authorize('update', $walletCampaign);

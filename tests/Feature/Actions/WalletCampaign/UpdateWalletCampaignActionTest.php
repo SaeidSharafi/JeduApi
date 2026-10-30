@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\WalletCampaign\UpdateWalletCampaignAction;
-use App\Data\Admin\WalletCampaign\WalletCampaignCreateData;
+use App\Data\Admin\WalletCampaign\WalletCampaignUpdateData;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Enums\WalletCampaign\ThresholdScopeEnum;
 use App\Models\Staff;
@@ -36,7 +36,7 @@ it('successfully updates all campaign fields', function (): void {
     $newStartDate = Carbon::now()->addDay();
     $newEndDate   = Carbon::now()->addMonth();
 
-    $updateData = new WalletCampaignCreateData(
+    $updateData = new WalletCampaignUpdateData(
         name: 'Updated Campaign Name',
         description: 'Updated campaign description',
         type: CampaignTypeEnum::SEASONAL_BONUS->value,
@@ -75,7 +75,7 @@ it('successfully updates all campaign fields', function (): void {
 });
 
 it('updates campaign with null dates', function (): void {
-    $updateData = new WalletCampaignCreateData(
+    $updateData = new WalletCampaignUpdateData(
         name: 'No Date Limits Campaign',
         description: 'Campaign without date restrictions',
         type: CampaignTypeEnum::MANUAL_ALLOCATION->value,
@@ -101,7 +101,7 @@ it('updates campaign with null dates', function (): void {
 it('updates only specific fields while preserving others', function (): void {
     $originalUsageCount = $this->campaign->total_usage_count;
 
-    $updateData = WalletCampaignCreateData::from(
+    $updateData = WalletCampaignUpdateData::from(
         [
             'name'                 => 'Partially Updated Campaign',
             'description'          => $this->campaign->description, // Keep original
@@ -132,7 +132,7 @@ it('updates only specific fields while preserving others', function (): void {
 
 it('handles different campaign types correctly', function (): void {
     foreach (CampaignTypeEnum::cases() as $campaignType) {
-        $updateData = new WalletCampaignCreateData(
+        $updateData = new WalletCampaignUpdateData(
             name: "Campaign Type: {$campaignType->value}",
             description: "Testing {$campaignType->value} campaign type",
             type: $campaignType->value,
@@ -171,7 +171,7 @@ it('handles complex metadata updates', function (): void {
         ],
     ];
 
-    $updateData = WalletCampaignCreateData::from(
+    $updateData = WalletCampaignUpdateData::from(
         [
             'name'                 => $this->campaign->name,
             'description'          => $this->campaign->description,
@@ -198,7 +198,7 @@ it('updates timestamps correctly', function (): void {
     $futureStart = Carbon::now()->addDays(5);
     $futureEnd   = Carbon::now()->addDays(30);
 
-    $updateData = new WalletCampaignCreateData(
+    $updateData = new WalletCampaignUpdateData(
         name: 'Future Campaign',
         description: 'Campaign with future dates',
         type: CampaignTypeEnum::SEASONAL_BONUS->value,
@@ -219,7 +219,7 @@ it('updates timestamps correctly', function (): void {
 });
 
 it('returns the same campaign instance', function (): void {
-    $updateData = WalletCampaignCreateData::from([
+    $updateData = WalletCampaignUpdateData::from([
         'name'                 => 'Same Instance Test',
         'description'          => 'Testing instance consistency',
         'type'                 => $this->campaign->type->value,

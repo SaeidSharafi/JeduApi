@@ -11,7 +11,7 @@ A configured promotion that credits users' gift balance. Has a type, amount, usa
 _Avoid_: Offer
 
 **Campaign Allocation**:
-The act of crediting a user's gift balance from a wallet campaign. Recorded as an append-only ledger entry with a deterministic idempotency key and an `expires_at`.
+The act of crediting a user's gift balance from a wallet campaign. Recorded as an append-only ledger entry with an idempotency key and an `expires_at`.
 _Avoid_: Grant, award
 
 **Normal Balance**:
@@ -23,7 +23,11 @@ The wallet sub-balance credited only by campaigns and promotions. Spent *before*
 _Avoid_: Bonus balance (bonus is a transaction type, not a balance)
 
 **Campaign Trigger**:
-What fires a campaign: a domain event (`profile-completed`, `payment-completed`, `referral-completed`), a scheduled sweep (`birthday`, `seasonal`), or manual admin action.
+What fires a campaign: a domain event (`profile_completed`, `payment_completed`, `referral_completed`), a scheduled sweep (`birthday`, `seasonal`), or manual admin action.
+
+**Campaign Reconciliation**:
+Re-evaluating one customer's eligibility for active campaigns from source data (profile completion, paid orders, date of birth) and allocating through the same idempotency key the original trigger would have used. A replay of a missed trigger, not a new grant.
+_Avoid_: Trigger, manual allocation
 
 **Profile Completion**:
 When a customer has filled `first_name`, `last_name`, `email`, `civil_id`, `date_of_birth`, and `father_name`. The moment that triggers `registration_bonus` campaigns.

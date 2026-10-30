@@ -299,17 +299,14 @@ Reference for uploaded-doc chat: routes, auth, documented request/response contr
 - `__invoke(WalletAdjustmentData $data, User $user, AdjustWalletAction $action)`: **Route:** `POST /api/v1/admin/users/{user}/wallet/adjustment` - **Request DTO:** WalletAdjustmentData - **Response DTO:** WalletTransactionData
 
 ### AdminWalletCampaignController (`app/Http/Controllers/Api/Admin/WalletCampaign/AdminWalletCampaignController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/wallet-campaigns` - **Response DTO:** WalletCampaignData collection
-- `store(WalletCampaignCreateData $request)`: **Route:** `POST /api/v1/admin/wallet-campaigns` - **Request DTO:** WalletCampaignCreateData (includes required `threshold_scope`: lifetime|windowed; windowed requires both dates, lifetime forbids dates) - **Response DTO:** WalletCampaignData
+- `index()`: **Route:** `GET /api/v1/admin/wallet-campaigns` - **Response DTO:** WalletCampaignData collection (allowed include: `transactions`)
+- `store(WalletCampaignCreateData $request)`: **Route:** `POST /api/v1/admin/wallet-campaigns` - **Request DTO:** WalletCampaignCreateData (required `threshold_scope`: lifetime|windowed; windowed requires both dates, lifetime forbids dates; `starts_at`/`ends_at` accept Jalali `Y-m-d` or `Y-m-d H:i:s`, a date-only end normalizes to `23:59:59`; create requires `starts_at >= today` and `ends_at > now`; `type` limited to registration_bonus, birthday_gift, loyalty_reward, milestone_reward, manual_allocation; loyalty_reward requires `metadata.threshold_amount`, milestone_reward requires `metadata.threshold_order_count`) - **Response DTO:** WalletCampaignData
 - `show(WalletCampaign $walletCampaign)`: **Route:** `GET /api/v1/admin/wallet-campaigns/{wallet_campaign}` - **Response DTO:** WalletCampaignData
-- `update(WalletCampaignUpdateData $request, WalletCampaign $walletCampaign)`: **Route:** `PUT /api/v1/admin/wallet-campaigns/{wallet_campaign}` - **Request DTO:** WalletCampaignCreateData (same threshold_scope validation) - **Response DTO:** WalletCampaignData
+- `update(WalletCampaignUpdateData $request, WalletCampaign $walletCampaign)`: **Route:** `PUT /api/v1/admin/wallet-campaigns/{wallet_campaign}` - **Request DTO:** WalletCampaignUpdateData (same rules minus the create-only date constraints: a historical `starts_at` is allowed and `ends_at` only has to be after `starts_at`; `type` cannot change once `total_usage_count > 0`) - **Response DTO:** WalletCampaignData
 - `destroy(WalletCampaign $walletCampaign)`: **Route:** `DELETE /api/v1/admin/wallet-campaigns/{wallet_campaign}` - **Delegates to:** Campaign deletion
 
-### TriggerCampaignAllocationController (`app/Http/Controllers/Api/Admin/WalletCampaign/TriggerCampaignAllocationController.php`)
-- `__invoke(User $user, WalletCampaign $walletCampaign)`: **Route:** `POST /api/v1/admin/users/{user}/wallet-campaigns/{wallet_campaign}/trigger-allocation` - **Response DTO:** WalletCampaignAllocationData
-
-### BulkCampaignAllocationController (`app/Http/Controllers/Api/Admin/WalletCampaign/BulkCampaignAllocationController.php`)
-- `__invoke(BulkAllocationData $request, WalletCampaign $walletCampaign)`: **Route:** `POST /api/v1/admin/wallet-campaigns/{wallet_campaign}/bulk-trigger-allocation` - **Request DTO:** BulkAllocationData - **Response DTO:** BulkAllocationResultData
+### ManualCampaignAllocationController (`app/Http/Controllers/Api/Admin/WalletCampaign/ManualCampaignAllocationController.php`)
+- `__invoke(ManualCampaignAllocationData $data, WalletCampaign $walletCampaign)`: **Route:** `POST /api/v1/admin/wallet-campaigns/{wallet_campaign}/allocations` - **Request DTO:** ManualCampaignAllocationData (`user_ids` 1..100, required `reason` max 255, optional `metadata`; optional `Idempotency-Key` header ≤200, derived per user as `{key}:c:{campaign}:u:{user}`) - **Response:** `{success_count, failure_count, results[]}` (200 all-success, 207 partial) - **Guard:** `wallet_campaigns.allocate`, and the campaign must be `manual_allocation` (422 otherwise). Manual grants are repeatable and bounded by the campaign's usage limits.
 
 ### Dashboard report controllers (`app/Http/Controllers/Api/Admin/Dashboard/`)
 
@@ -551,7 +548,7 @@ Every DB-backed select-option endpoint is paginated with Laravel's `paginate()`:
 - `__invoke(?ProductableEnum $productableType = null)`: **Route:** `GET /api/v1/admin/select-option/products/{productableType?}` - **Path Param:** `productableType` (optional: course, seminar, digital_asset) - **Query Params:** `q` (search term for name/SKU matching), `page`, `per_page` - **Response DTO:** Paginated ProductSelectOptionData collection (id, title=short_name, subtitle=slug, type=productable_type) - **Delegates to:** ProductQueryService for filtering and search with `whereLike()` matching - **Special Features:** Supports type filtering, search across product names, and pagination; sorted by short_name ascending
 
 #### WalletCampaignTypeSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/WalletCampaignTypeSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/wallet-campaign-types` - **Response DTO:** WalletCampaignTypeSelectOptionData collection (flat, unpaginated — built from `CampaignTypeEnum` cases)
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/wallet-campaign-types` - **Response DTO:** WalletCampaignTypeSelectOptionData collection (flat, unpaginated — built from `CampaignTypeEnum` cases; each option carries `creatable`, false for `referral_bonus` and `seasonal_bonus`)
 
 #### FulfillmentDeliveryOptionsSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/FulfillmentDeliveryOptionsSelectOptionController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/admin/select-option/delivery-options` - **Response DTO:** FulfillmentDeliveryOptionsSelectOptionData collection (flat, unpaginated — built from `FulfillmentTypeEnum` cases)

@@ -7,6 +7,8 @@ namespace App\Actions\Admin\WalletCampaign;
 use App\Data\Admin\WalletCampaign\TriggerCampaignAllocationData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
+use App\Enums\WalletCampaign\CampaignTriggerEventEnum;
+use App\Enums\WalletCampaign\CampaignTriggerTypeEnum;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Exceptions\CustomValidationException;
 use App\Exceptions\Wallet\WalletInsufficientBalanceException;
@@ -15,14 +17,15 @@ use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
 use App\Models\WalletCampaign;
 use App\Models\WalletTransaction;
+use Hekmatinasser\Verta\Verta;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Daily sweep that allocates every active birthday_gift campaign to customers
  * whose birthday is today. Allocation goes through the shared
  * TriggerCampaignAllocationAction, so campaign activity, date window, and
- * per-user/total limits are honored, and the deterministic idempotency key
- * plus the birthday_sweep trigger-event dedupe make re-runs safe.
+ * per-user/total limits are honored. The annual occurrence is the Jalali year,
+ * so re-runs are safe and an ongoing campaign pays again next year.
  */
 final readonly class AllocateBirthdayGiftsAction
 {
@@ -43,6 +46,8 @@ final readonly class AllocateBirthdayGiftsAction
             return ['allocated' => 0, 'skipped' => 0];
         }
 
+        $occurrence = Verta::instance(now())->format('Y');
+
         $users = User::query()
             ->with('wallet')
             ->whereNotNull('date_of_birth')
@@ -55,14 +60,14 @@ final readonly class AllocateBirthdayGiftsAction
 
         foreach ($users as $user) {
             foreach ($campaigns as $campaign) {
-                // Already allocated by an earlier sweep (or an overlapping run) —
-                // never credit the same customer twice from the same campaign.
-                if ($this->alreadyAllocated($user, $campaign)) {
+                // Already allocated by an earlier sweep this year (or an
+                // overlapping run) — never credit the same birthday twice.
+                if ($this->alreadyAllocated($user, $campaign, $occurrence)) {
                     continue;
                 }
 
                 if ($dryRun) {
-                    if ($campaign->allocationStatus($user)->isError()) {
+                    if ($campaign->allocationStatus($user, $occurrence)->isError()) {
                         $skipped++;
 
                         continue;
@@ -76,8 +81,9 @@ final readonly class AllocateBirthdayGiftsAction
                 try {
                     $this->allocationAction->handle(
                         data: new TriggerCampaignAllocationData(
-                            trigger_type: 'event',
-                            trigger_event: 'birthday_sweep',
+                            trigger_type: CampaignTriggerTypeEnum::EVENT,
+                            trigger_event: CampaignTriggerEventEnum::BIRTHDAY_SWEEP,
+                            trigger_occurrence: $occurrence,
                             metadata: ['birthday_sweep_at' => now()->toISOString()],
                         ),
                         user: $user,
@@ -103,18 +109,19 @@ final readonly class AllocateBirthdayGiftsAction
     }
 
     /**
-     * Has this customer already received this campaign's birthday gift?
-     * Mirrors the allocation action's duplicate-trigger-event check so the
-     * sweep can count a re-run without reaching the ledger.
+     * Has this customer already received this campaign's birthday gift this
+     * year? Mirrors the allocation action's duplicate-event check so the sweep
+     * can count a re-run without reaching the ledger.
      */
-    private function alreadyAllocated(User $user, WalletCampaign $campaign): bool
+    private function alreadyAllocated(User $user, WalletCampaign $campaign, string $occurrence): bool
     {
         return WalletTransaction::query()
             ->where('user_id', $user->id)
             ->where('source_type', TransactionSourceEnum::CAMPAIGN)
             ->where('source_id', $campaign->id)
             ->where('type', TransactionTypeEnum::GIFT)
-            ->whereJsonContains('metadata->trigger_event', 'birthday_sweep')
+            ->whereJsonContains('metadata->trigger_event', CampaignTriggerEventEnum::BIRTHDAY_SWEEP->value)
+            ->whereJsonContains('metadata->occurrence', $occurrence)
             ->exists();
     }
 }
