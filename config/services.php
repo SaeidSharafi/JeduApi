@@ -39,6 +39,7 @@ return [
 
     'email' => [
         'use_fake_email' => env('EMAIL_USE_FAKE_EMAIL', false),
+        'fake_email_domain' => env('EMAIL_FAKE_EMAIL_DOMAIN', 'example.com'),
     ],
 
 ];

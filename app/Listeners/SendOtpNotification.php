@@ -43,7 +43,7 @@ final class SendOtpNotification
             ! $user->email
             && (config('services.email.use_fake_email'))
         ) {
-            $user->email = $user->phone.'@example.com';
+            $user->email = $user->phone.'@'.config('services.email.fake_email_domain');
             $user->save();
         }
         $user->notify(new OtpSmsNotification($event));
