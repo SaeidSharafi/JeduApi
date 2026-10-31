@@ -1,8 +1,10 @@
-# VCS & CI
+# VCS, CI & editor metadata
 .git
-.github
-.gitlab-ci.yml
+.gitattributes
 .gitignore
+.github
+.forgejo
+.gitlab-ci.yml
 .editorconfig
 
 # Secrets — never bake into image
@@ -18,6 +20,22 @@ node_modules
 bootstrap/cache/*
 !bootstrap/cache/.gitignore
 
+# Runtime state (created by the Dockerfile)
+storage
+public/storage
+public/hot
+public/build
+
+# Local dev data & state
+docker/typesense-data
+.tmp
+.scratch
+.worktrees
+.tinker
+.scribe
+.idea
+.vscode
+
 # Tests & tooling (not needed at runtime)
 tests
 pest.xml
@@ -25,11 +43,9 @@ phpstan.neon
 rector.php
 pint.json
 peck.json
-
-# Dev logs & local junk
-storage/logs/*
-!storage/logs/.gitignore
+.phpunit.result.cache
 laradumps.xml
+laradumps.yaml
 .DS_Store
 
 # Local tooling & docs

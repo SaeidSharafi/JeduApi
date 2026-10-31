@@ -79,8 +79,16 @@ ENV SERVER_NAME=:8000
 RUN groupadd -g ${GID} ${USER} && \
     useradd -u ${UID} -g ${USER} -m -s /bin/bash ${USER} && \
     setcap -r /usr/local/bin/frankenphp 2>/dev/null || true && \
-    mkdir -p /data/caddy /config/caddy /var/log/supervisor /app/storage/logs /app/bootstrap/cache /app/public && \
-    chown -R ${USER}:${USER} /data /config /var/log/supervisor
+    mkdir -p /data/caddy /config/caddy /var/log/supervisor \
+        /app/public \
+        /app/bootstrap/cache \
+        /app/storage/app/private \
+        /app/storage/app/public \
+        /app/storage/framework/cache/data \
+        /app/storage/framework/sessions \
+        /app/storage/framework/views \
+        /app/storage/logs && \
+    chown -R ${USER}:${USER} /data /config /var/log/supervisor /app
 
 WORKDIR /app
 
@@ -92,8 +100,8 @@ COPY docker/Caddyfile /etc/caddy/Caddyfile
 COPY docker/php.ini /usr/local/etc/php/conf.d/custom-php.ini
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
-RUN chmod +x /docker-entrypoint.sh /app/artisan && \
-    chown -R ${USER}:${USER} /app/storage /app/bootstrap/cache /app/public
+RUN chown -R ${USER}:${USER} /app/storage /app/bootstrap/cache /app/public \
+    && chmod +x /docker-entrypoint.sh /app/artisan
 
 USER ${USER}
 EXPOSE 8000
