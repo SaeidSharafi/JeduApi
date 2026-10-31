@@ -2,6 +2,9 @@
 .env
 .env.*
 !.env.example
+# Laravel's environment (APP_KEY, provider credentials). app.env.example is the
+# committed template; app.env is generated and stays on the host.
+app.env
 # Persistent database, cache, search, application and Caddy files.
 data/
 # Rotated copies from --reset-env.

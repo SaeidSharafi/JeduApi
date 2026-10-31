@@ -2,9 +2,20 @@
 #
 # Jedu production installer.
 #
-# Brings up the stack from images published to Nexus and writes ./.env, which
-# afterwards is the single source of truth for every plain `docker compose`
-# command in this directory.
+# Brings up the stack from images published to Nexus and writes two files:
+#
+#   .env       the deployment: images, topology, hostnames, ports, datastore
+#              modes together with their credentials, and the one secret the
+#              API and the storefront share.
+#   app.env    Laravel's environment, consumed by the api and worker containers
+#              through compose `env_file`: APP_KEY, mail, Horizon, CORS, the
+#              storefront revalidation webhook and the payment/SMS/provisioning
+#              provider defaults.
+#
+# Afterwards both files are the single source of truth for every plain
+# `docker compose` command in this directory. The split is deliberate: Compose
+# substitutes .env into docker-compose*.yml but never passes it into a
+# container, and app.env is never read by Compose itself.
 #
 # Three questions decide the shape, and each is answered per deployment:
 #
@@ -31,9 +42,9 @@
 #   docker compose ps
 #   docker compose logs -f api
 #
-# Re-running is safe: values already in ./.env are kept, so secrets are never
-# rotated behind the database's back. Use --reset-env to re-answer everything,
-# and only against a fresh database.
+# Re-running is safe: values already in ./.env or ./app.env are kept, so secrets
+# are never rotated behind the database's back. Use --reset-env to re-answer
+# everything, and only against a fresh database.
 #
 #   ./install.sh --help
 #
@@ -45,14 +56,17 @@ cd "$SCRIPT_DIR"
 
 readonly ENV_FILE="$SCRIPT_DIR/.env"
 readonly ENV_TEMPLATE="$SCRIPT_DIR/.env.example"
+readonly APP_ENV_FILE="$SCRIPT_DIR/app.env"
+readonly APP_ENV_TEMPLATE="$SCRIPT_DIR/app.env.example"
 readonly COMPOSE_PROJECT="jedu-production"
 readonly HEALTH_TIMEOUT=600
 NGINX_RENDERED=""
 
 # Where set_env applies its edits. The writing step points this at a scratch copy
 # and moves it over .env in one rename, so a `docker compose` running at the same
-# time can never read a half-updated file.
+# time can never read a half-updated file. The app env gets the same treatment.
 ENV_WORK="$ENV_FILE"
+APP_ENV_WORK="$APP_ENV_FILE"
 
 # ── Output ───────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -72,8 +86,9 @@ usage() {
     cat <<'EOF'
 Usage: ./install.sh [OPTIONS]
 
-Runs in the directory it lives in and writes ./.env (mode 600). Re-running keeps
-every value already present in .env, secrets included.
+Runs in the directory it lives in and writes ./.env (deployment) and ./app.env
+(Laravel), both mode 600. Re-running keeps every value already present in either
+file, secrets included.
 
 Topology:
   --edge <mode>            caddy    Caddy on this host terminates TLS (default)
@@ -288,26 +303,48 @@ compose() { docker compose --env-file "$ENV_FILE" "$@"; }
 
 # ── .env handling ────────────────────────────────────────────────────────────
 # Template defaults are the single source of truth for values the operator does
-# not override, so this file and .env.example cannot drift apart.
-template_get() {
-    [[ -f "$ENV_TEMPLATE" ]] || return 0
+# not override, so a template and its generated file cannot drift apart. The
+# stack template and the Laravel template are read independently.
+template_get() { # template key
+    [[ -f "$1" ]] || return 0
     local line
-    line="$(grep -m1 -E "^$1=" "$ENV_TEMPLATE" || true)"
+    line="$(grep -m1 -E "^$2=" "$1" || true)"
     printf '%s' "${line#*=}"
 }
 
-apply_template_defaults() {
-    local key
+apply_template_defaults() { # template KEY...
+    local template="$1" key
+    shift
     for key in "$@"; do
         if [[ -z "${!key:-}" ]]; then
-            printf -v "$key" '%s' "$(template_get "$key")"
+            printf -v "$key" '%s' "$(template_get "$template" "$key")"
         fi
     done
 }
 
-load_existing_env() {
-    [[ -f "$ENV_FILE" ]] || return 0
-    local line key value loaded=0
+# Every non-commented key in a template. Used to keep app.env complete when the
+# template gains a key after a host was already installed.
+env_template_keys() { # template
+    [[ -f "$1" ]] || return 0
+    grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$1" | cut -d= -f1 | sort -u
+}
+
+# Append keys the file does not have yet, with the template's default. Existing
+# values are never touched.
+ensure_env_keys() { # file template
+    local file="$1" template="$2" key line
+    [[ -f "$template" ]] || return 0
+    while IFS= read -r key; do
+        [[ -n "$key" ]] || continue
+        grep -q "^${key}=" "$file" && continue
+        line="$(grep -m1 -E "^${key}=" "$template" || true)"
+        [[ -n "$line" ]] && printf '%s\n' "$line" >> "$file"
+    done < <(env_template_keys "$template")
+}
+
+load_existing_env() { # file
+    local file="$1" line key value loaded=0
+    [[ -f "$file" ]] || return 0
     while IFS= read -r line || [[ -n "$line" ]]; do
         [[ "$line" == *=* ]] || continue
         [[ "$line" =~ ^[[:space:]]*# ]] && continue
@@ -315,7 +352,7 @@ load_existing_env() {
         value="${line#*=}"
         key="${key//[[:space:]]/}"
         [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
-        # One layer of quotes, in case .env was hand-edited.
+        # One layer of quotes, in case the file was hand-edited.
         if [[ "$value" == \"*\" || "$value" == \'*\' ]] && [[ "${#value}" -ge 2 ]]; then
             value="${value:1:${#value}-2}"
         fi
@@ -327,15 +364,16 @@ load_existing_env() {
             FROM_ENV["$key"]=1
             loaded=$((loaded + 1))
         fi
-    done < "$ENV_FILE"
-    log_info "Loaded ${loaded} non-empty values from the existing $(basename "$ENV_FILE")."
+    done < "$file"
+    log_info "Loaded ${loaded} non-empty values from the existing $(basename "$file")."
 }
 
 # Replace an existing key in place, or append it. awk keeps the file's comment
 # structure and avoids sed's delimiter problems with base64 secrets. Edits go to
-# $ENV_WORK, which is moved over .env once every key has been applied.
-set_env() {
-    local key="$1" value="$2" tmp
+# the given work file, which is moved over its target once every key has been
+# applied.
+set_env_in() { # work-file key value
+    local file="$1" key="$2" value="$3" tmp
     value="${value//\\/\\\\}"
     tmp="$(mktemp "$SCRIPT_DIR/.env.XXXXXX")"
     awk -v k="$key" -v v="$value" '
@@ -343,7 +381,21 @@ set_env() {
         $1 == k { print k "=" v; found = 1; next }
         { print }
         END { if (!found) print k "=" v }
-    ' "$ENV_WORK" > "$tmp"
+    ' "$file" > "$tmp"
+    mv "$tmp" "$file"
+}
+
+set_env() { set_env_in "$ENV_WORK" "$1" "$2"; }
+set_app_env() { set_env_in "$APP_ENV_WORK" "$1" "$2"; }
+
+# Remove a key from the stack env work file. Only used for keys that moved to
+# app.env when the two files were split, so a re-run of an older install leaves
+# a .env that contains deployment settings only.
+remove_stack_env() { # key
+    grep -q "^$1=" "$ENV_WORK" || return 0
+    local tmp
+    tmp="$(mktemp "$SCRIPT_DIR/.env.XXXXXX")"
+    awk -v k="$1" 'index($0, k "=") != 1 { print }' "$ENV_WORK" > "$tmp"
     mv "$tmp" "$ENV_WORK"
 }
 
@@ -480,23 +532,44 @@ have_root() { [[ "${EUID}" -eq 0 ]] || sudo -n true 2>/dev/null; }
 as_root() { if [[ "${EUID}" -eq 0 ]]; then "$@"; else sudo -- "$@"; fi; }
 
 prepare_data_directories() {
-    local data_root="$JEDU_DATA_DIR"
+    local data_root="$JEDU_DATA_DIR" failed_owner owner_path
     if [[ "$data_root" != /* ]]; then
         data_root="$SCRIPT_DIR/$data_root"
     fi
 
-    mkdir -p \
+    # The installer deliberately runs as the deploying user, not as root: only
+    # the storage ownership below uses sudo. A data directory left behind by an
+    # earlier `sudo ./install.sh` is therefore not writable, and the raw mkdir
+    # error says nothing about how to recover.
+    if ! mkdir -p \
         "$data_root/postgres" \
         "$data_root/redis" \
         "$data_root/typesense" \
         "$data_root/storage/app" \
         "$data_root/storage/logs" \
         "$data_root/caddy/data" \
-        "$data_root/caddy/config"
+        "$data_root/caddy/config"; then
+        owner_path="$data_root"
+        [[ -e "$owner_path" ]] || owner_path="$(dirname "$data_root")"
+        failed_owner="$(stat -c '%U (%u)' "$owner_path" 2>/dev/null || echo 'another user')"
+        local data_mode
+        data_mode="$(stat -c '%a' "$owner_path" 2>/dev/null || echo '?')"
+        log_error "Cannot create the persistent data directories under ${data_root}."
+        log_error "This installer is running as $(id -un) (uid $(id -u)); ${owner_path} is owned by ${failed_owner}, mode ${data_mode}."
+        log_error "A directory left behind by an earlier sudo run, or a read-only one, is not writable by this user."
+        log_error "Make the deployment directory and the data root writable, then rerun:"
+        log_error "  sudo chown $(id -u):$(id -g) ${SCRIPT_DIR} ${owner_path}"
+        log_error "  sudo chmod u+rwx ${SCRIPT_DIR} ${owner_path}"
+        log_error "If .env or app.env is root-owned too, add those two files to the chown."
+        log_error "Do not recursive-chown ${data_root}: the service subdirectories are owned by the container users."
+        log_error "Do not run ./install.sh with sudo; it calls sudo itself for the storage chown and nginx install."
+        exit 1
+    fi
 
     if ! as_root chown 1000:1000 "$data_root/storage/app" "$data_root/storage/logs"; then
         log_error "Could not set Laravel storage ownership to uid/gid 1000."
-        log_error "Grant sudo access or set ownership on ${data_root}/storage/app and storage/logs manually."
+        log_error "Grant sudo access, or set it manually:"
+        log_error "  sudo chown -R 1000:1000 ${data_root}/storage/app ${data_root}/storage/logs"
         exit 1
     fi
 }
@@ -570,6 +643,10 @@ preflight_tools() {
     }
     [[ -f "$ENV_TEMPLATE" ]] || {
         log_error "Missing ${ENV_TEMPLATE}."
+        exit 1
+    }
+    [[ -f "$APP_ENV_TEMPLATE" ]] || {
+        log_error "Missing ${APP_ENV_TEMPLATE}."
         exit 1
     }
     detect_nginx
@@ -781,30 +858,43 @@ apply_nginx() {
 # ── Main ─────────────────────────────────────────────────────────────────────
 preflight_tools
 
-if [[ "$RESET_ENV" == true && -f "$ENV_FILE" ]]; then
-    backup="${ENV_FILE}.$(date +%Y%m%d%H%M%S).bak"
-    cp "$ENV_FILE" "$backup"
-    log_warn "Ignoring the existing .env (backed up to $(basename "$backup"))."
-fi
+STACK_ENV_EXISTED=false
+APP_ENV_EXISTED=false
+[[ -f "$ENV_FILE" ]] && STACK_ENV_EXISTED=true
+[[ -f "$APP_ENV_FILE" ]] && APP_ENV_EXISTED=true
 
-if [[ "$RESET_ENV" != true ]]; then
-    load_existing_env
+if [[ "$RESET_ENV" == true ]]; then
+    for file in "$ENV_FILE" "$APP_ENV_FILE"; do
+        [[ -f "$file" ]] || continue
+        backup="${file}.$(date +%Y%m%d%H%M%S).bak"
+        cp "$file" "$backup"
+        log_warn "Ignoring the existing $(basename "$file") (backed up to $(basename "$backup"))."
+    done
+else
+    load_existing_env "$ENV_FILE"
+    load_existing_env "$APP_ENV_FILE"
 fi
 
 # Template defaults for everything the operator may leave out. Derived values
 # (COMPOSE_FILE, COMPOSE_PROFILES, URLs, Caddy settings) are not here: they are
 # recomputed from the choices below on every run.
-apply_template_defaults JEDU_API_IMAGE JEDU_SHOP_IMAGE JEDU_ADMIN_IMAGE \
+apply_template_defaults "$ENV_TEMPLATE" \
+    JEDU_API_IMAGE JEDU_SHOP_IMAGE JEDU_ADMIN_IMAGE \
     CADDY_IMAGE POSTGRES_IMAGE REDIS_IMAGE TYPESENSE_IMAGE POSTGRES_MAX_LOCKS \
     EDGE_MODE DB_MODE REDIS_MODE TYPESENSE_MODE DB_PORT REDIS_PORT \
     TYPESENSE_PORT TYPESENSE_PROTOCOL DATASTORE_NETWORK \
     API_DOMAIN SHOP_DOMAIN ADMIN_DOMAIN ACME_EMAIL JEDU_DATA_DIR \
     HTTP_PORT HTTPS_PORT PUBLIC_PORT HTTP_BIND CADDY_BIND NGINX_CONFIG_NAME \
     API_LOOPBACK_PORT SHOP_LOOPBACK_PORT ADMIN_LOOPBACK_PORT \
-    POSTGRES_DB POSTGRES_USER APP_NAME LOG_CHANNEL LOG_LEVEL SESSION_DOMAIN \
+    POSTGRES_DB POSTGRES_USER
+
+apply_template_defaults "$APP_ENV_TEMPLATE" \
+    APP_NAME APP_LOCALE APP_FALLBACK_LOCALE TIMEZONE \
+    LOG_CHANNEL LOG_LEVEL SESSION_DOMAIN SESSION_LIFETIME SESSION_ENCRYPT \
+    SESSION_SECURE_COOKIE SESSION_SAME_SITE SANCTUM_EXPIRATION \
     MAIL_MAILER MAIL_HOST MAIL_PORT MAIL_USERNAME MAIL_PASSWORD MAIL_SCHEME \
     MAIL_FROM_ADDRESS MAIL_FROM_NAME HORIZON_USERNAME SENTRY_LARAVEL_DSN \
-    SENTRY_ENVIRONMENT CORS_MAX_AGE
+    SENTRY_ENVIRONMENT CORS_MAX_AGE STOREFRONT_URL STOREFRONT_REVALIDATE_TIMEOUT
 
 # --domain derives the three hostnames, without overriding ones given directly.
 if [[ -n "$DOMAIN_SUFFIX" ]]; then
@@ -1211,18 +1301,38 @@ if [[ "$INTERACTIVE" == true ]] && ! confirm "Write .env and start the stack?"; 
     exit 0
 fi
 
-# ── Write .env ───────────────────────────────────────────────────────────────
-log_step "Writing .env"
+# ── Write .env and app.env ───────────────────────────────────────────────────
+log_step "Writing .env and app.env"
 if [[ ! -f "$ENV_FILE" ]]; then
     cp "$ENV_TEMPLATE" "$ENV_FILE"
 fi
+if [[ ! -f "$APP_ENV_FILE" ]]; then
+    cp "$APP_ENV_TEMPLATE" "$APP_ENV_FILE"
+fi
 
-# Edit a scratch copy and rename it over .env in one step: a `docker compose`
-# running concurrently would otherwise be able to read a file whose secrets are
-# still empty.
+# Edit scratch copies and rename them over the real files in one step: a
+# `docker compose` running concurrently would otherwise be able to read a file
+# whose secrets are still empty.
 ENV_WORK="$(mktemp "$SCRIPT_DIR/.env.XXXXXX")"
-trap 'rm -f "${ENV_WORK:-}"' EXIT
+APP_ENV_WORK="$(mktemp "$SCRIPT_DIR/.env.app.XXXXXX")"
+trap 'rm -f "${ENV_WORK:-}" "${APP_ENV_WORK:-}"' EXIT
 cp "$ENV_FILE" "$ENV_WORK"
+cp "$APP_ENV_FILE" "$APP_ENV_WORK"
+
+# A template can gain a key after a host is installed; append missing keys with
+# their template default so neither file falls behind it.
+ensure_env_keys "$ENV_WORK" "$ENV_TEMPLATE"
+ensure_env_keys "$APP_ENV_WORK" "$APP_ENV_TEMPLATE"
+
+# First run against an older single-file .env: the app values loaded from it
+# above are copied into app.env before the stack file drops them.
+if [[ "$RESET_ENV" != true && "$APP_ENV_EXISTED" != true && "$STACK_ENV_EXISTED" == true ]]; then
+    log_info "Moving Laravel settings from the existing .env into app.env."
+    while IFS= read -r key; do
+        [[ -n "${!key:-}" ]] || continue
+        set_app_env "$key" "${!key}"
+    done < <(env_template_keys "$APP_ENV_TEMPLATE")
+fi
 
 set_env API_DOMAIN "$API_DOMAIN"
 set_env SHOP_DOMAIN "$SHOP_DOMAIN"
@@ -1234,10 +1344,6 @@ set_env ROUTER "$ROUTER"
 set_env EDGE_PROXIES "${EDGE_PROXIES:-}"
 set_env COMPOSE_FILE "$COMPOSE_FILES"
 set_env COMPOSE_PROFILES "$COMPOSE_PROFILES"
-set_env TRUSTED_PROXIES "$TRUSTED_PROXIES"
-set_env CORS_ALLOWED_ORIGINS "$CORS_ALLOWED_ORIGINS"
-set_env CORS_SUPPORTS_CREDENTIALS true
-set_env CORS_MAX_AGE "${CORS_MAX_AGE:-0}"
 set_env JEDU_DATA_DIR "$JEDU_DATA_DIR"
 set_env CADDYFILE "$CADDYFILE"
 set_env CADDY_GLOBAL_OPTIONS "$CADDY_GLOBAL_OPTIONS"
@@ -1283,27 +1389,54 @@ set_env REDIS_IMAGE "$REDIS_IMAGE"
 set_env POSTGRES_IMAGE "$POSTGRES_IMAGE"
 set_env TYPESENSE_IMAGE "$TYPESENSE_IMAGE"
 set_env STOREFRONT_REVALIDATE_SECRET "$STOREFRONT_REVALIDATE_SECRET"
-set_env APP_KEY "$APP_KEY"
-set_env HORIZON_USERNAME "$HORIZON_USERNAME"
-set_env HORIZON_PASSWORD "$HORIZON_PASSWORD"
-set_env SESSION_SECURE_COOKIE "$SESSION_SECURE_COOKIE"
-set_env APP_NAME "$APP_NAME"
-set_env LOG_CHANNEL "$LOG_CHANNEL"
-set_env LOG_LEVEL "$LOG_LEVEL"
-set_env SESSION_DOMAIN "$SESSION_DOMAIN"
-set_env MAIL_MAILER "$MAIL_MAILER"
-set_env MAIL_HOST "$MAIL_HOST"
-set_env MAIL_PORT "$MAIL_PORT"
-set_env MAIL_USERNAME "$MAIL_USERNAME"
-set_env MAIL_PASSWORD "$MAIL_PASSWORD"
-set_env MAIL_SCHEME "$MAIL_SCHEME"
-set_env MAIL_FROM_ADDRESS "$MAIL_FROM_ADDRESS"
-set_env MAIL_FROM_NAME "$MAIL_FROM_NAME"
-set_env SENTRY_LARAVEL_DSN "${SENTRY_LARAVEL_DSN:-}"
-set_env SENTRY_ENVIRONMENT "${SENTRY_ENVIRONMENT:-production}"
-chmod 600 "$ENV_WORK"
+
+# Laravel's environment.
+set_app_env APP_KEY "$APP_KEY"
+set_app_env HORIZON_USERNAME "$HORIZON_USERNAME"
+set_app_env HORIZON_PASSWORD "$HORIZON_PASSWORD"
+set_app_env SESSION_SECURE_COOKIE "$SESSION_SECURE_COOKIE"
+set_app_env APP_NAME "$APP_NAME"
+set_app_env LOG_CHANNEL "$LOG_CHANNEL"
+set_app_env LOG_LEVEL "$LOG_LEVEL"
+set_app_env SESSION_DOMAIN "$SESSION_DOMAIN"
+set_app_env TRUSTED_PROXIES "$TRUSTED_PROXIES"
+set_app_env CORS_ALLOWED_ORIGINS "$CORS_ALLOWED_ORIGINS"
+set_app_env CORS_SUPPORTS_CREDENTIALS true
+set_app_env CORS_MAX_AGE "${CORS_MAX_AGE:-0}"
+set_app_env STOREFRONT_URL "${STOREFRONT_URL:-http://shop:80}"
+set_app_env STOREFRONT_REVALIDATE_TIMEOUT "${STOREFRONT_REVALIDATE_TIMEOUT:-3}"
+set_app_env MAIL_MAILER "$MAIL_MAILER"
+set_app_env MAIL_HOST "$MAIL_HOST"
+set_app_env MAIL_PORT "$MAIL_PORT"
+set_app_env MAIL_USERNAME "$MAIL_USERNAME"
+set_app_env MAIL_PASSWORD "$MAIL_PASSWORD"
+set_app_env MAIL_SCHEME "$MAIL_SCHEME"
+set_app_env MAIL_FROM_ADDRESS "$MAIL_FROM_ADDRESS"
+set_app_env MAIL_FROM_NAME "$MAIL_FROM_NAME"
+set_app_env SENTRY_LARAVEL_DSN "${SENTRY_LARAVEL_DSN:-}"
+set_app_env SENTRY_ENVIRONMENT "${SENTRY_ENVIRONMENT:-production}"
+
+# Keys that moved to app.env when the files were split. Removing them keeps an
+# upgraded .env deployment-only; the values were copied to app.env above.
+for moved in APP_KEY APP_NAME APP_LOCALE APP_FALLBACK_LOCALE APP_FAKER_LOCALE \
+    TIMEZONE APP_PAGE_SIZE LOG_CHANNEL LOG_LEVEL LOG_STACK \
+    LOG_DEPRECATIONS_CHANNEL SESSION_LIFETIME SESSION_ENCRYPT SESSION_DOMAIN \
+    SESSION_SECURE_COOKIE SESSION_SAME_SITE SANCTUM_EXPIRATION \
+    MAIL_MAILER MAIL_HOST MAIL_PORT MAIL_USERNAME MAIL_PASSWORD MAIL_SCHEME \
+    MAIL_FROM_ADDRESS MAIL_FROM_NAME HORIZON_USERNAME HORIZON_PASSWORD \
+    SENTRY_LARAVEL_DSN SENTRY_ENVIRONMENT TRUSTED_PROXIES \
+    CORS_ALLOWED_ORIGINS CORS_SUPPORTS_CREDENTIALS CORS_MAX_AGE \
+    STOREFRONT_URL STOREFRONT_REVALIDATE_TIMEOUT \
+    FRONTEND_ORDER_PAYMENT_URL FRONTEND_TOPUP_PAYMENT_URL \
+    ORDER_ABANDONMENT_MINUTES DISCOUNT_RESERVATION_HOLD_MINUTES \
+    FILESYSTEM_DISK MEDIABLE_DEFAULT_DISK; do
+    remove_stack_env "$moved"
+done
+
+chmod 600 "$ENV_WORK" "$APP_ENV_WORK"
 mv "$ENV_WORK" "$ENV_FILE"
-log_success "Wrote $(basename "$ENV_FILE") (mode 600)."
+mv "$APP_ENV_WORK" "$APP_ENV_FILE"
+log_success "Wrote $(basename "$ENV_FILE") and $(basename "$APP_ENV_FILE") (mode 600)."
 
 log_step "Preparing persistent data directory"
 prepare_data_directories

@@ -21,16 +21,24 @@
 # Only the routing layer publishes a public port. api, shop and admin are
 # published on 127.0.0.1 only, because the host nginx of the `nginx` router mode
 # proxies to them; Caddy modes reach them over the compose network by service
-# name. STOREFRONT_URL is deliberately http://shop:80: that is the address the
-# API *container* can reach the storefront on, not the browser-facing domain
-# (see config/storefront.php and .ai/rules/storefront-cache.md — reusing the
-# public host produced cURL error 7).
+# name. STOREFRONT_URL in app.env is deliberately http://shop:80: that is the
+# address the API *container* can reach the storefront on, not the browser-facing
+# domain (see config/storefront.php and .ai/rules/storefront-cache.md — reusing
+# the public host produced cURL error 7).
 #
-# Configuration lives in ./.env, written by ./install.sh. The Laravel variables
-# that are derivable from the domains are computed here instead of being stored
-# twice, so a domain change is a one-line edit.
+# Configuration is split in two files, both written by ./install.sh:
 #
-#   ./install.sh          writes .env and starts everything
+#   .env       deployment topology (images, hostnames, ports, datastores,
+#              datastore credentials). Docker Compose substitutes it into this
+#              file; it is not loaded into the containers as an env file.
+#   app.env    Laravel's environment, read by api and worker through `env_file`.
+#              Everything config/*.php reads lives there.
+#
+# The Laravel variables that are derivable from the domains or the datastore
+# coordinates are computed here instead of being stored twice, so a domain change
+# is a one-line edit in .env.
+#
+#   ./install.sh          writes both files and starts everything
 #   docker compose config  prints the fully resolved configuration
 
 name: jedu-production
@@ -64,17 +72,20 @@ x-api-environment: &api-environment
   TYPESENSE_PORT: ${TYPESENSE_PORT:-8108}
   TYPESENSE_PROTOCOL: ${TYPESENSE_PROTOCOL:-http}
   TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-}
-  # Must equal the shop container's REVALIDATE_SECRET; a mismatch is a silent
-  # no-op that leaves the storefront serving stale content until its TTL.
-  STOREFRONT_URL: http://shop:80
+  # Must equal the shop container's REVALIDATE_SECRET. The matching
+  # STOREFRONT_REVALIDATE_SECRET is injected into Laravel from .env, so the two
+  # containers can never drift; a mismatch is a silent no-op that leaves the
+  # storefront serving stale content until its TTL.
   STOREFRONT_REVALIDATE_SECRET: ${STOREFRONT_REVALIDATE_SECRET:?}
 
 x-api-service: &api-service
   image: ${JEDU_API_IMAGE:?JEDU_API_IMAGE is missing - run install.sh}
   restart: unless-stopped
   stop_grace_period: 60s
+  # Laravel's environment only. Deployment variables stay in .env, which Compose
+  # uses for substitution and never passes into the container.
   env_file:
-    - .env
+    - app.env
   environment: *api-environment
   volumes:
     # Keep persistent application files beside this deployment for direct
