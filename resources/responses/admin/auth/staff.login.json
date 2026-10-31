@@ -9,6 +9,7 @@
       "name": "Admin",
       "phone": "9000000000",
       "email": "user@example.com",
+      "is_admin": true,
       "roles": [
         "admin"
       ],

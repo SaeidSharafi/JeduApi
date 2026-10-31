@@ -6,6 +6,40 @@ use App\Contracts\Cache\CacheStore;
 use App\Enums\System\CacheKey;
 use App\Models\PersonalAccessToken;
 use App\Models\Staff;
+use Spatie\Permission\Models\Role;
+
+it('returns the access fields the admin panel checks', function (): void {
+    $staff = Staff::factory()->isSuperAdmin()->create();
+    $token = $staff->createToken('staff_token')->plainTextToken;
+
+    $response = $this->withCredentials()
+        ->withCookie('staff_token', $token)
+        ->getJson(route('api.v1.admin.profile.show'))
+        ->assertOk()
+        ->assertJsonPath('data.is_admin', true)
+        ->assertJsonPath('data.roles', []);
+
+    expect($response->json('data.permissions'))
+        ->toContain('staff.view')
+        ->toContain('roles.view_any');
+});
+
+it('returns the roles and permissions of a regular staff member', function (): void {
+    $staff = Staff::factory()->create();
+    $role  = Role::create(['name' => 'editor', 'label' => 'Editor', 'guard_name' => 'staff']);
+    $role->syncPermissions(['staff.view']);
+    $staff->assignRole($role);
+
+    $token = $staff->createToken('staff_token')->plainTextToken;
+
+    $this->withCredentials()
+        ->withCookie('staff_token', $token)
+        ->getJson(route('api.v1.admin.profile.show'))
+        ->assertOk()
+        ->assertJsonPath('data.is_admin', false)
+        ->assertJsonPath('data.roles', ['editor'])
+        ->assertJsonPath('data.permissions', ['staff.view']);
+});
 
 it('shows staff profile using the http only authentication cookie', function (): void {
     $staff = Staff::factory()->create();

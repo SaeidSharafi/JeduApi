@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\Auth;
 
+use App\Actions\Admin\Staff\GetStaffAccessAction;
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VerifyOtpAction;
 use App\Contracts\ApiResponseInterface;
@@ -14,6 +15,7 @@ use App\Exceptions\UserBannedException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
+use App\Models\Staff;
 use Spatie\Permission\Models\Permission;
 
 /**
@@ -27,7 +29,8 @@ final class StaffOtpAuthenticationController extends Controller
 {
     public function __construct(
         protected VerifyOtpAction $verifyOtpAction,
-        protected AuthenticateUserAction $authenticateUser
+        protected AuthenticateUserAction $authenticateUser,
+        protected GetStaffAccessAction $access
     ) {}
 
     /**
@@ -50,6 +53,7 @@ final class StaffOtpAuthenticationController extends Controller
     public function __invoke(VerifyOtpRequest $request): ApiResponseInterface
     {
         try {
+            /** @var Staff $user */
             $user = $this->verifyOtpAction->execute(
                 $request->identifier,
                 $request->tracking_code,
@@ -88,10 +92,11 @@ final class StaffOtpAuthenticationController extends Controller
 
         return apiResponse()->success(
             [
-                'token'       => $token->plainTextToken,
-                'expires_at'  => $token->accessToken->expires_at,
-                'type'        => 'Bearer',
-                'user'        => StaffData::from($user),
+                'token'      => $token->plainTextToken,
+                'expires_at' => $token->accessToken->expires_at,
+                'type'       => 'Bearer',
+                'user'       => StaffData::from($user)
+                    ->additional($this->access->handle($user)),
                 'permissions' => $permissions,
             ], __('messages.auth.login.success'));
     }

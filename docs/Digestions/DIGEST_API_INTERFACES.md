@@ -867,10 +867,10 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - `__invoke(StaffAuthInitiateData $request)`: **Route:** `POST /api/v1/admin/auth/initiate` - **Request DTO:** StaffAuthInitiateData - **Response DTO:** AuthResponseData
 
 #### StaffPasswordLoginController (`app/Http/Controllers/Api/Admin/Auth/StaffPasswordLoginController.php`)
-- `__invoke(StaffPasswordLoginData $request)`: **Route:** `POST /api/v1/admin/auth/login/password` - **Request DTO:** StaffPasswordLoginData - **Response DTO:** StaffAuthTokenData
+- `__invoke(StaffPasswordLoginData $request)`: **Route:** `POST /api/v1/admin/auth/login/password` - **Request DTO:** StaffPasswordLoginData - **Delegates to:** PasswordLoginAction + GetStaffAccessAction - **Response DTO:** StaffAuthTokenData. `data.user` carries the identity plus `is_admin`, `roles`, and the effective `permissions` list used by the admin panel's access checks; `data.permissions` remains the complete staff-guard permission list.
 
 #### StaffOtpAuthenticationController (`app/Http/Controllers/Api/Admin/Auth/StaffOtpAuthenticationController.php`)
-- `__invoke(StaffOtpVerifyData $request)`: **Route:** `POST /api/v1/admin/auth/otp/verify` - **Request DTO:** StaffOtpVerifyData - **Response DTO:** StaffAuthTokenData
+- `__invoke(StaffOtpVerifyData $request)`: **Route:** `POST /api/v1/admin/auth/otp/verify` - **Request DTO:** StaffOtpVerifyData - **Delegates to:** VerifyOtpAction + AuthenticateUserAction + GetStaffAccessAction - **Response DTO:** StaffAuthTokenData. Returns the same `data.user` access payload (`is_admin`, `roles`, effective `permissions`) and top-level permission list as the password path.
 
 #### StaffResendOtpController (`app/Http/Controllers/Api/Admin/Auth/StaffResendOtpController.php`)
 - `__invoke(StaffResendOtpData $request)`: **Route:** `POST /api/v1/admin/auth/otp/resend` - **Request DTO:** StaffResendOtpData - **Response DTO:** StaffOtpResendData
@@ -887,8 +887,8 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 ### Staff Profile Endpoints (`/api/v1/admin/*`)
 
 #### StaffProfileController (`app/Http/Controllers/Api/Admin/Profile/StaffProfileController.php`)
-- `show()`: **Route:** `GET /api/v1/admin/profile` (singleton) - Returns the authenticated staff member's own profile. **Response DTO:** StaffProfileData
-- `update(UpdateStaffProfileData $data)`: **Route:** `PUT /api/v1/admin/profile` (singleton) - **Request DTO:** UpdateStaffProfileData (name, email, avatar) - **Delegates to:** UpdateStaffProfileAction
+- `show()`: **Route:** `GET /api/v1/admin/profile` (singleton) - Returns the authenticated staff member's own profile. **Delegates to:** GetStaffAccessAction - **Response DTO:** StaffProfileData. The response includes `is_admin`, `roles`, and the effective `permissions` list so the admin panel can rebuild access checks from a stored or refreshed session.
+- `update(UpdateStaffProfileData $data)`: **Route:** `PUT /api/v1/admin/profile` (singleton) - **Request DTO:** UpdateStaffProfileData (name, email, avatar) - **Delegates to:** UpdateStaffProfileAction - Returns the same access fields as `show()`.
 
 #### StaffChangePasswordController (`app/Http/Controllers/Api/Admin/Profile/StaffChangePasswordController.php`)
 - `__invoke(ChangePasswordRequest $request)`: **Route:** `PUT /api/v1/admin/change-password` - **Request DTO:** ChangePasswordRequest (current_password, new_password) - **Delegates to:** ChangePasswordAction - Validates current password when the account has one set; mismatches surface `validation.password.current_password_does_not_match`

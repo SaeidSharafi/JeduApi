@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\Auth;
 
+use App\Actions\Admin\Staff\GetStaffAccessAction;
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Auth\StaffData;
@@ -25,7 +26,8 @@ use Spatie\Permission\Models\Permission;
 final class StaffPasswordLoginController extends Controller
 {
     public function __construct(
-        protected PasswordLoginAction $action
+        protected PasswordLoginAction $action,
+        protected GetStaffAccessAction $access
     ) {}
 
     /**
@@ -97,10 +99,7 @@ final class StaffPasswordLoginController extends Controller
             'expires_at' => $token->accessToken->expires_at,
             'type'       => 'Bearer',
             'user'       => StaffData::from($user)
-                ->additional([
-                    'roles'       => $user->getRoleNames(),
-                    'permissions' => $user->getAllPermissions()->pluck('name'),
-                ]),
+                ->additional($this->access->handle($user)),
             'permissions' => $permissions,
         ], __('messages.auth.login.success'));
     }

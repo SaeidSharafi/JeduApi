@@ -162,7 +162,7 @@ Reference for uploaded-doc chat: workflows, side effects, events/jobs, invariant
 #### CreateFirstAdminStaffCommand (`app/Console/Commands/CreateFirstAdminStaffCommand.php`)
 - **Purpose:** Bootstrap the first production super-admin staff account without placing its password in shell history.
 - **Signature:** `staff:create-first-admin`
-- **Functionality:** If a super-admin already exists, reports that and exits successfully without creating another account. Otherwise it prompts for name, email, Iranian phone number, and a masked, confirmed password; validates the fields and creates the staff row with `is_admin = true` in a transaction.
+- **Functionality:** If a super-admin already exists, reports that and exits successfully without creating another account. Otherwise it prompts for name, email, Iranian phone number, and a masked, confirmed password; validates the fields and creates the staff row with `is_admin = true` in a transaction. No role is assigned: the admin panel receives every staff permission through the `is_admin` branch of `GetStaffAccessAction`, matching the `Gate::before()` bypass.
 - **Usage:** `install.sh` invokes it after the API becomes healthy during interactive installs; noninteractive installs run `docker compose exec api php artisan staff:create-first-admin` manually after startup.
 
 #### Order Actions (`app/Actions/Admin/Order/`)
@@ -948,6 +948,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 ### PermissionEnum
 - `PermissionEnum` is generated from resource/action definitions in `config/permission-generator.php`; manual enum additions are overwritten on regeneration. Run `vendor/bin/sail artisan permissions:generate-enum --force` after updating the config, then `vendor/bin/sail artisan permissions:sync --guard=staff` to synchronize staff permissions. The `import` resource declares `approve`, `results`, `preview` and `template`; the `user` resource declares `export`, preserving the five import/export permissions through generation and deployment synchronization.
 - `ENROLLMENT_RETRY_PROVISION` permission gates retry provisioning authorization.
+- `GetStaffAccessAction` (`app/Actions/Admin/Staff/GetStaffAccessAction.php`) builds the client access payload for both staff login responses and `/api/v1/admin/profile`: `is_admin`, `roles`, and effective `permissions`. A staff member with `is_admin = true` bypasses every `Gate::before()` check in `AuthServiceProvider`, so its effective list is every `staff`-guard permission (sorted); a regular staff gets the sorted union of direct and role permissions via `getAllPermissions()`. The admin panel uses this payload for navigation and button visibility instead of calling the Gate, which is why a super admin created by `staff:create-first-admin` (no roles) must still receive the full list. The all-permissions lookup is intentionally uncached: it runs on login/profile reads, not per request, and commit 3ebb2899 measured the ~172-row scan at ~43 µs, cheaper than a Redis round trip and without a cache-invalidation surface.
 
 ## Behavior Clarifications
 

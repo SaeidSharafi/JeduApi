@@ -4,7 +4,17 @@
     "id": 1,
     "name": "مدیر کل سیستم",
     "phone": "9300000000",
-    "email": "staff@example.com"
+    "email": "staff@example.com",
+    "is_admin": true,
+    "roles": [
+      "admin"
+    ],
+    "permissions": [
+      "categories.view",
+      "categories.view_any",
+      "courses.view",
+      "courses.view_any"
+    ]
   },
   "metadata": []
 }

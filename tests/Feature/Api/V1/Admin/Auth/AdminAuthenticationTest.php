@@ -8,6 +8,8 @@ use App\Notifications\Auth\OtpEmailNotification;
 use App\Notifications\Auth\OtpSmsNotification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
     Notification::fake();
@@ -310,4 +312,45 @@ test('staff token cookie cannot authenticate as a customer', function (): void {
         ->assertUnauthorized();
 
     $this->assertDatabaseCount('personal_access_tokens', 1);
+});
+
+test('password login returns the super admin access payload', function (): void {
+    Staff::factory()->isSuperAdmin()->create([
+        'email'    => 'admin@example.com',
+        'password' => Hash::make('password123'),
+    ]);
+
+    $response = $this->postJson('/api/v1/admin/auth/login/password', [
+        'identifier' => 'admin@example.com',
+        'type'       => 'email',
+        'password'   => 'password123',
+    ])->assertOk()
+        ->assertJsonPath('data.user.is_admin', true)
+        ->assertJsonPath('data.user.roles', []);
+
+    expect($response->json('data.user.permissions'))
+        ->toHaveCount(Permission::query()->where('guard_name', 'staff')->count())
+        ->toContain('staff.view');
+});
+
+test('otp login returns the staff access payload', function (): void {
+    $staff = Staff::factory()->create(['email' => 'staff@example.com']);
+    $role  = Role::create(['name' => 'editor', 'label' => 'Editor', 'guard_name' => 'staff']);
+    $role->syncPermissions(['staff.view']);
+    $staff->assignRole($role);
+
+    $this->postJson('/api/v1/admin/auth/initiate', [
+        'identifier' => 'staff@example.com',
+        'type'       => 'email',
+    ])->assertOk();
+
+    $this->postJson('/api/v1/admin/auth/otp/verify', [
+        'identifier'    => 'staff@example.com',
+        'otp_code'      => $this->otpCode,
+        'tracking_code' => $this->trackingCode,
+        'otp_type'      => OtpType::SIGNIN->value,
+    ])->assertOk()
+        ->assertJsonPath('data.user.is_admin', false)
+        ->assertJsonPath('data.user.roles', ['editor'])
+        ->assertJsonPath('data.user.permissions', ['staff.view']);
 });
