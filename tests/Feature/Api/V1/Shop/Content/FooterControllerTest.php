@@ -129,8 +129,9 @@ describe('FooterController', function (): void {
         $response = $this->getJson(route('api.v1.shop.footer.index'));
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.certifications.0.image', $badge->getUrl())
-            ->assertJsonPath('data.certifications.1.image', 'saman.webp')
-            ->assertJsonPath('data.certifications.1.html', '<b>ساماندهی</b>');
+            ->assertJsonPath('data.certifications.0.image_url', $badge->getUrl())
+            ->assertJsonPath('data.certifications.1.image_url', 'saman.webp')
+            ->assertJsonPath('data.certifications.1.html', '<b>ساماندهی</b>')
+            ->assertJsonMissingPath('data.certifications.0.image');
     });
 });
