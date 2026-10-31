@@ -14,7 +14,7 @@ return [
     | to prevent abuse.
     |
     */
-    'waiting_time' => 10,
+    'waiting_time' => 180,
 
     /*
     |--------------------------------------------------------------------------
@@ -48,8 +48,8 @@ return [
     | OTP codes. Adjust these values as per your security requirements.
     |
     */
-    'code_min' => 1111,
-    'code_max' => 9999,
+    'code_min' => 11111,
+    'code_max' => 99999,
 
     /*
     |--------------------------------------------------------------------------
