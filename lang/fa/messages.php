@@ -110,6 +110,10 @@ return [
                 'organization_training_request' => 'یک درخواست آموزش سازمانی به شما واگذار شد.',
             ],
         ],
+        'wallet_gift_allocated' => [
+            'title'   => 'واریز هدیه به کیف پول',
+            'message' => 'هدیه‌ای به مبلغ :amount ریال از کمپین :campaign به کیف پول شما اضافه شد.',
+        ],
     ],
     'product' => [
         'acrhived'                            => 'محصول با موفقیت بایگانی شد.',

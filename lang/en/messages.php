@@ -110,6 +110,10 @@ return [
                 'organization_training_request' => 'An organization training request was assigned to you.',
             ],
         ],
+        'wallet_gift_allocated' => [
+            'title'   => 'Wallet gift credited',
+            'message' => 'A gift of :amount IRR from the :campaign campaign was added to your wallet.',
+        ],
     ],
     'product' => [
         'acrhived' => 'Product archived successfully.',

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Shop\AvatarController;
+use App\Http\Controllers\Api\Shop\Notification\CustomerNotificationController;
 use App\Http\Controllers\Api\Shop\Profile\CustomerChangePasswordController;
 use App\Http\Controllers\Api\Shop\Profile\ProfileController;
 use App\Http\Controllers\Api\Shop\Student\CancelOrderController;
@@ -150,5 +151,19 @@ Route::middleware(['auth.cookie:user', 'auth:user'])
             Route::post('topup', [WalletTopupController::class, 'topup'])
                 ->middleware('throttle:5,1')
                 ->name('topup');
+        });
+
+        // ==========================================
+        // 4. NOTIFICATIONS
+        // ==========================================
+        Route::prefix('notifications')->name('notifications.')->group(function (): void {
+            Route::get('/', [CustomerNotificationController::class, 'index'])
+                ->name('index');
+            Route::get('unread-count', [CustomerNotificationController::class, 'unreadCount'])
+                ->name('unread-count');
+            Route::patch('read-all', [CustomerNotificationController::class, 'readAll'])
+                ->name('read-all');
+            Route::patch('{notification}/read', [CustomerNotificationController::class, 'read'])
+                ->name('read');
         });
     });
