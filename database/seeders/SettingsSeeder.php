@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Data\Admin\Settings\ContactInfoData;
 use App\Data\Admin\Settings\FooterData;
 use App\Data\Admin\Settings\HeaderData;
+use App\Data\Admin\Settings\SiteIdentityData;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
@@ -22,6 +23,8 @@ final class SettingsSeeder extends Seeder
         Setting::setValue(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults(), 'json', 'contact');
 
         Setting::setValue(SettingKeyEnum::HEADER, HeaderData::getDefaults(), 'json', 'header');
+
+        Setting::setValue(SettingKeyEnum::SITE_IDENTITY, SiteIdentityData::getDefaults(), 'json', 'site');
 
         // Footer Settings (placeholder)
         Setting::setValue(SettingKeyEnum::FOOTER, FooterData::getDefaults(), 'json', 'footer');

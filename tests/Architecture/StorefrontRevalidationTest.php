@@ -19,6 +19,7 @@ function storefrontAllowlist(): array
         'settings:header',
         'settings:footer',
         'settings:categories',
+        'settings:site',
         'home:sliders',
         'home:partners',
         'home:student-stories',
@@ -206,7 +207,7 @@ function storefrontCollectionCases(): array
 
 function storefrontSettingsMapTags(): array
 {
-    return ['SettingsHeader', 'SettingsFooter', 'CmsAboutUs', 'CmsContactUs', 'CmsCollaboration'];
+    return ['SettingsHeader', 'SettingsFooter', 'SettingsSite', 'CmsAboutUs', 'CmsContactUs', 'CmsCollaboration'];
 }
 
 it('dispatches from every write path that changes public content', function (): void {

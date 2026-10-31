@@ -39,6 +39,7 @@ Before wiring a new write path, answer both of these in the task; do not leave t
    - a category change also renders in the header menu and the footer → `catalog:categories` +
      `settings:categories` + `settings:footer`
    - anything that can appear in a home block (products, categories, blog posts, sliders) → `home:blocks`
+   - site title or favicon (page metadata: tab title, `og:site_name`, icon) → `settings:site`
    - ratings, teachers, terms → `catalog()`; blog ratings also `blog:posts`
    - price and availability → dispatch from inside `UpdateProductPricingJob` /
      `UpdateProductAvailabilityJob`, after their own `invalidate()`. They are the last writers of the price

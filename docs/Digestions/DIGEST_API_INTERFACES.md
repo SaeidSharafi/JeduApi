@@ -356,6 +356,10 @@ Five read-only blocks for the admin home, each its own endpoint, cache entry, pe
 - `show()`: **Route:** `GET /api/v1/admin/settings/header` - **Response DTO:** HeaderData with logo, contact_phone, contact_email
 - `update(HeaderUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/header` - **Request DTO:** HeaderUpdateData - **Response DTO:** HeaderData
 
+#### SiteIdentityController (`app/Http/Controllers/Api/Admin/Settings/SiteIdentityController.php`)
+- `show()`: **Route:** `GET /api/v1/admin/settings/site-identity` - **Guard:** `settings.view_any` - **Response DTO:** `SiteIdentityData` `{site_title, favicon (MediaData|null), favicon_url}`; defaults when the `site_identity` setting row is absent.
+- `update(SiteIdentityUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/site-identity` - **Guard:** `settings.update` - **Request DTO:** `SiteIdentityUpdateData` (`site_title` required ≤100; `favicon` nullable media id) - **Response DTO:** `SiteIdentityData`; **Delegates to:** `UpdateSiteIdentityAction` — trims the title, rejects non-image media with a `422` on `favicon`, resolves `favicon_url`, persists group `site` and syncs the media under the `favicon` tag. Writing it clears the storefront's `settings:site` tag.
+
 #### SliderController (`app/Http/Controllers/Api/Admin/Content/Slider/SliderController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/settings/slider` - **Response DTO:** SliderData collection
 - `store(SliderCreateData $request)`: **Route:** `POST /api/v1/admin/settings/slider` - **Request DTO:** SliderCreateData - **Response DTO:** SliderData
@@ -817,6 +821,9 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 
 #### HeaderController (`app/Http/Controllers/Api/Shop/Settings/HeaderController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/header` - **Response DTO:** HeaderData derived from SettingsService payload
+
+#### SiteIdentityController (`app/Http/Controllers/Api/Shop/Settings/SiteIdentityController.php`)
+- `__invoke(SettingsService $service)`: **Routes:** `GET /api/v1/shop/site-identity` and the unauthenticated `GET /api/v1/admin/site-identity` (the admin panel's shell needs the title/favicon before login; registered in `routes/Api/V1/api.php`, outside the staff group) - **Response DTO:** shop `SiteIdentityData` `{site_title, favicon_url}` only — the media object is never exposed publicly.
 
 #### FooterController (`app/Http/Controllers/Api/Shop/Settings/FooterController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/footer` - **Response DTO:** FooterData including addresses, social media entries, certifications. Categories are resolved from stored IDs to `{name, slug}` pairs via `Category` model query. Footer payload excludes `support_link` and `main_links`; `navigation_links` excluded from header payload.

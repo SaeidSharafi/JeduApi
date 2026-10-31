@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\Shop\Sale\CheckoutController;
 use App\Http\Controllers\Api\Shop\SearchController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
 use App\Http\Controllers\Api\Shop\Settings\HeaderController;
+use App\Http\Controllers\Api\Shop\Settings\SiteIdentityController;
 use App\Http\Controllers\Api\Shop\SuggestSearchController;
 use App\Http\Controllers\Api\Shop\TeacherController;
 
@@ -42,6 +43,7 @@ Route::get('home-page-blocks/{homePageBlock}', [HomePageContentController::class
 Route::get('sliders', SliderController::class)->name('sliders.index');
 Route::get('header', HeaderController::class)->name('header.index');
 Route::get('footer', FooterController::class)->name('footer.index');
+Route::get('site-identity', SiteIdentityController::class)->name('site-identity.index');
 Route::get('aboutus', AboutUsController::class)->name('aboutus.show');
 Route::get('contact-page', ContactPageController::class)->name('contactpage.show');
 Route::get('collaboration', CollaborationPageController::class)->name('collaboration.show');

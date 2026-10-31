@@ -70,7 +70,7 @@ final class Setting extends Model
     public static function witImages(array $settingData): array
     {
         // 1. Exact key names for a single media ID.
-        $singularMediaKeys = ['image', 'icon', 'logo', 'file', 'media'];
+        $singularMediaKeys = ['image', 'icon', 'logo', 'file', 'media', 'favicon'];
 
         // 2. Suffixes for a single media ID. Matches 'image_id', 'background_id', etc.
         $singularMediaSuffixes = ['_image_id', '_icon', '_image'];

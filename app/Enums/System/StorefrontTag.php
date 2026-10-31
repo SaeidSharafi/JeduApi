@@ -22,6 +22,7 @@ enum StorefrontTag: string
     case SettingsHeader     = 'settings:header';
     case SettingsFooter     = 'settings:footer';
     case SettingsCategories = 'settings:categories';
+    case SettingsSite       = 'settings:site';
 
     case HomeSliders        = 'home:sliders';
     case HomePartners       = 'home:partners';

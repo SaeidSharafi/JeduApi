@@ -162,6 +162,7 @@ describe('storefront revalidation from settings writes', function (): void {
     })->with([
         'header'   => [SettingKeyEnum::HEADER, StorefrontTag::SettingsHeader],
         'footer'   => [SettingKeyEnum::FOOTER, StorefrontTag::SettingsFooter],
+        'identity' => [SettingKeyEnum::SITE_IDENTITY, StorefrontTag::SettingsSite],
         'about us' => [SettingKeyEnum::ABOUT_US, StorefrontTag::CmsAboutUs],
         'contact'  => [SettingKeyEnum::CONTACT_INFO, StorefrontTag::CmsContactUs],
         'collab'   => [SettingKeyEnum::COLLABORATION, StorefrontTag::CmsCollaboration],

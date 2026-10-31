@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Admin\Content\StudentStoryController;
 use App\Http\Controllers\Api\Admin\Settings\PaymentGatewaySettingsController;
 use App\Http\Controllers\Api\Admin\Settings\ProvisioningProviderSettingsController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
+use App\Http\Controllers\Api\Admin\Settings\SiteIdentityController;
 use App\Http\Controllers\Api\Admin\Settings\SmsGatewaySettingsController;
 use App\Http\Controllers\Api\Admin\Settings\SmsNotificationSettingsController;
 
@@ -42,6 +43,10 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
         ->name('header.show');
     Route::put('header', [HeaderController::class, 'update'])
         ->name('header.update');
+    Route::get('site-identity', [SiteIdentityController::class, 'show'])
+        ->name('site-identity.show');
+    Route::put('site-identity', [SiteIdentityController::class, 'update'])
+        ->name('site-identity.update');
     Route::apiResource('slider', SliderController::class);
     Route::patch('slider/{slider}/status', UpdateSliderStatusController::class)
         ->name('slider.status');

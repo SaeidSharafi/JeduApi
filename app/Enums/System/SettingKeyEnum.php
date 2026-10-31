@@ -11,6 +11,7 @@ enum SettingKeyEnum: string
     case COLLABORATION     = 'collaboration';
     case HEADER            = 'header';
     case FOOTER            = 'footer';
+    case SITE_IDENTITY     = 'site_identity';
     case RULES             = 'rules';
     case SLIDERS           = 'sliders';
     case HOME_PAGE_BLOCKS  = 'home_page_blocks';
@@ -69,6 +70,7 @@ enum SettingKeyEnum: string
         return match ($this) {
             self::HEADER        => [StorefrontTag::SettingsHeader],
             self::FOOTER        => [StorefrontTag::SettingsFooter],
+            self::SITE_IDENTITY => [StorefrontTag::SettingsSite],
             self::ABOUT_US      => [StorefrontTag::CmsAboutUs],
             self::CONTACT_INFO  => [StorefrontTag::CmsContactUs],
             self::COLLABORATION => [StorefrontTag::CmsCollaboration],
