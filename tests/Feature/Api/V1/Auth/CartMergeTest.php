@@ -342,7 +342,7 @@ it('merges guest cart on OTP login', function (): void {
     $response = postJson(route('api.v1.auth.otp-verify'), [
         'identifier'    => $user->phone,
         'tracking_code' => 'test-tracking-code',
-        'otp_code'      => 1234,
+        'otp_code'      => 12345,
         'otp_type'      => 'SIGNIN',
     ], [
         'X-Guest-Token' => $guestToken,

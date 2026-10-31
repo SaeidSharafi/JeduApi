@@ -268,7 +268,7 @@ describe('BlogPostController CRUD', function (): void {
             'excerpt'          => 'This is a new blog post.',
             'body'             => 'Full content of the new blog post.',
             'status'           => PublicationStatusEnum::DRAFT->value,
-            'published_at'     => now()->toDateTimeString(),
+            'published_at'     => verta()->formatDatetime(),
             'meta_title'       => Str::random(70),
             'meta_description' => Str::random(100),
             'meta_keywords'    => Str::random(10).','.Str::random(10),
