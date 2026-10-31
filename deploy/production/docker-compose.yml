@@ -77,11 +77,10 @@ x-api-service: &api-service
     - .env
   environment: *api-environment
   volumes:
-    # Named volumes, not bind mounts: the image's appuser (uid 1000) owns
-    # /app/storage, and Docker copies that ownership into a fresh named volume.
-    # A bind mount would need the host directory chowned to 1000:1000 first.
-    - storage-app:/app/storage/app
-    - storage-logs:/app/storage/logs
+    # Keep persistent application files beside this deployment for direct
+    # backup and cleanup. install.sh prepares appuser ownership on these paths.
+    - "${JEDU_DATA_DIR:-./data}/storage/app:/app/storage/app"
+    - "${JEDU_DATA_DIR:-./data}/storage/logs:/app/storage/logs"
   # No depends_on on the datastores on purpose: they may be external, and a
   # compose dependency on a profile that is not enabled is a hard error ("api
   # depends on undefined service postgres"). The image entrypoint waits for
@@ -121,8 +120,8 @@ services:
       # install.sh selects this file; the two variants are Caddyfile (Caddy is
       # the edge) and Caddyfile.behind-edge (plain HTTP router).
       - ${CADDYFILE:-./Caddyfile}:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-      - caddy-config:/config
+      - "${JEDU_DATA_DIR:-./data}/caddy/data:/data"
+      - "${JEDU_DATA_DIR:-./data}/caddy/config:/config"
     # depends_on intentionally omits admin: install.sh --skip-admin starts the
     # stack without it, and Caddy then answers 502 for the admin host until the
     # image is published and the stack is restarted without the flag.
@@ -149,6 +148,11 @@ services:
   worker:
     <<: *api-service
     container_name: jedu-worker
+    # The image healthcheck probes the web server at :8000, but this container
+    # runs Horizon and the scheduler instead. Its process supervisor restarts
+    # failed workers; an HTTP check would always mark this service unhealthy.
+    healthcheck:
+      disable: true
     # Horizon finishes in-flight jobs on SIGTERM, so give Docker more than the
     # 10s default before it SIGKILLs the container.
     stop_grace_period: 120s
@@ -204,7 +208,7 @@ services:
     # The dev stack sets the same lock ceiling; the app's transactions need it.
     command: postgres -c max_locks_per_transaction=${POSTGRES_MAX_LOCKS:-256}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - "${JEDU_DATA_DIR:-./data}/postgres:/var/lib/postgresql/data"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -q -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 10s
@@ -228,7 +232,7 @@ services:
       - --requirepass
       - ${REDIS_PASSWORD:-}
     volumes:
-      - redis-data:/data
+      - "${JEDU_DATA_DIR:-./data}/redis:/data"
     healthcheck:
       test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
       interval: 10s
@@ -248,7 +252,7 @@ services:
       TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-}
       TYPESENSE_ENABLE_CORS: "false"
     volumes:
-      - typesense-data:/typesense-data
+      - "${JEDU_DATA_DIR:-./data}/typesense:/typesense-data"
     healthcheck:
       # The dev compose's healthcheck used wget, which is not in this image.
       test: ["CMD-SHELL", "timeout 1 bash -c '</dev/tcp/127.0.0.1/8108'"]
@@ -258,22 +262,6 @@ services:
       start_period: 30s
     networks:
       - jedu
-
-volumes:
-  postgres-data:
-    name: jedu-postgres-data
-  redis-data:
-    name: jedu-redis-data
-  typesense-data:
-    name: jedu-typesense-data
-  storage-app:
-    name: jedu-storage-app
-  storage-logs:
-    name: jedu-storage-logs
-  caddy-data:
-    name: jedu-caddy-data
-  caddy-config:
-    name: jedu-caddy-config
 
 networks:
   jedu:

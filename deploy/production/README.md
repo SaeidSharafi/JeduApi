@@ -62,12 +62,23 @@ Per service:
 
 | Mode | Meaning |
 |---|---|
-| `bundled` | runs in this compose project; data in a named volume |
+| `bundled` | runs in this compose project; data in `./data` |
 | `external` | another server or managed service, reached by `host:port` |
 | `container` | a container of another compose project, reached by name on an existing Docker network |
 
 Mixed configurations are supported (e.g. bundled PostgreSQL, external Redis,
 Typesense in another compose project).
+
+## Persistent files
+
+All persistent files live under `JEDU_DATA_DIR` beside this deployment; the
+default is `./data`. This includes PostgreSQL, Redis, Typesense, Laravel uploads
+and logs, and Caddy state. Back up this directory together with `.env`. The
+installer prepares Laravel storage ownership for uid/gid `1000`.
+
+The previous test deployment used Docker named volumes. This layout does not
+migrate them; the new `./data` directories start empty. The old named volumes
+are left untouched and can be removed manually once the new stack is confirmed.
 
 Notes:
 
@@ -131,8 +142,26 @@ a live database. Changing a topology reruns the derivation and rewrites
 `COMPOSE_FILE`/`COMPOSE_PROFILES`; `docker compose up -d --remove-orphans`
 removes containers the new topology does not include.
 
-The admin image is not published to Nexus yet, so the first install needs
-`--skip-admin` (the admin hostname then answers 502). See [Known gaps](#known-gaps).
+The installer defaults to the published `jedu-admin:1.0.0` image. Use
+`--skip-admin` only when you intentionally want the admin hostname to answer 502.
+
+### Create the first admin staff account
+
+During an interactive install, the installer prompts for the initial
+super-admin after the API becomes healthy. For noninteractive installs (`-y`)
+or to retry after a prompt failure, run:
+
+```bash
+docker compose exec api php artisan staff:create-first-admin
+```
+
+The command prompts for the staff name, email, Iranian phone number, and a
+password entered without echoing it. If a super-admin already exists, it reports
+that and exits without creating another account. Keep the password private; do
+not use the demo seeder for production credentials. The API image must include
+the `staff:create-first-admin` command; publish a CI image from a revision that
+contains it before expecting the installer prompt. The installer checks for
+the command first and reports when the deployed image is too old.
 
 ## What `install.sh` does
 
@@ -150,7 +179,7 @@ The admin image is not published to Nexus yet, so the first install needs
    Typesense secrets. Each only if absent.
 6. **Writes `.env`** (mode 600) atomically.
 7. **Renders and installs the nginx site** when the router is nginx: writes
-   `nginx/jedu-docker.conf`, refuses to overwrite a vhost it does not own,
+   the configured `nginx/<filename>`, refuses to overwrite a vhost it does not own,
    installs with `nginx -t` + reload, and rolls back on failure. See
    [Host nginx](#host-nginx).
 8. **Validates** the compose selection with `docker compose config --quiet`.
@@ -184,15 +213,17 @@ docker compose up -d --force-recreate worker
 docker compose exec api php artisan scout:import 'App\Models\Product'
 docker compose exec api php artisan products:index-availability --sync
 
-# Stop, and stop while deleting every volume (irreversible).
+# Stop the containers while keeping the deployment data.
 docker compose down
-docker compose down -v
+
+# Delete all persistent app data (irreversible).
+rm -rf ./data
 ```
 
-`COMPOSE_FILE` in `.env` uses relative paths, so run `docker compose` from this
-directory. Switching a datastore between bundled and external is a re-run of
-`./install.sh`; switching it away from bundled leaves the old volume in place
-(nothing deletes it automatically).
+`COMPOSE_FILE` and the default `JEDU_DATA_DIR` use paths relative to this
+directory, so run `docker compose` from here. Switching a datastore between
+bundled and external is a re-run of `./install.sh`; data remains under `./data`
+until you remove it yourself.
 
 Horizon is served at `https://<api-domain>/horizon`, behind HTTP basic auth from
 `HORIZON_USERNAME` / `HORIZON_PASSWORD`; with either value empty it answers 401
@@ -201,17 +232,24 @@ to everyone.
 ## Host nginx
 
 Only used when the router is nginx. The installer renders
-`nginx/jedu-docker.conf` from `nginx/jedu-tls.conf.template` (edge=nginx) or
+`nginx/<NGINX_CONFIG_NAME>` from `nginx/jedu-tls.conf.template` (edge=nginx) or
 `nginx/jedu-http.conf.template` (external edge), with a
 `# Managed by deploy/production/install.sh` header. Every run regenerates it:
 do not hand-edit that file.
 
-Destination: `/etc/nginx/sites-available/jedu-docker.conf` plus a
-`sites-enabled` symlink on Debian/Ubuntu; `/etc/nginx/conf.d/jedu-docker.conf`
-elsewhere.
+The installer asks for a `.conf` filename (default `jedu-docker.conf`) and
+stores it in `.env` as `NGINX_CONFIG_NAME`. It installs to
+`/etc/nginx/sites-available/<name>` plus a `sites-enabled` symlink on
+Debian/Ubuntu, or `/etc/nginx/conf.d/<name>` elsewhere. Change the name with
+`--nginx-config-name`; when changing a name for an existing hostname, use
+`--replace-nginx-site` so the old enabled file is backed up first.
 
 Behaviour:
 
+- A dangling legacy `/etc/nginx/sites-enabled/jedu-docker.conf` symlink is
+  archived outside the enabled directory before nginx validation.
+- The existing nginx configuration must pass `nginx -t` before the installer
+  changes any site files.
 - `nginx -t` runs before reload; a failure removes the new file, restores any
   moved vhost and stops the install before anything is pulled or started.
 - Before writing, the installed configuration is scanned (`nginx -T`) for a
@@ -223,6 +261,11 @@ Behaviour:
   from the other site, deliberately.
 - `--emit-nginx-conf` only writes and prints the file; useful for reviewing
   before touching a production nginx, or when sudo is unavailable.
+- With an external edge and host nginx, `HTTP_BIND` must be the private IPv4
+  assigned to this application server and reachable from the edge. It is not
+  the edge proxy address. The installer rejects wildcard, loopback, and
+  addresses not assigned to this server, preventing a shared nginx listener
+  from binding to another app's interface.
 - Requires a certificate that covers all three hostnames (one SAN
   certificate) for edge=nginx. Defaults point at
   `/etc/letsencrypt/live/<api-domain>/`; override with `--tls-cert`/`--tls-key`.
@@ -238,7 +281,9 @@ right, the edge must be the only thing that can talk to the router, and the
 router must resolve `X-Forwarded-For` right-to-left:
 
 - Caddy: `trusted_proxies static <edge>` + `trusted_proxies_strict`.
-- nginx: `set_real_ip_from <edge>` + `real_ip_recursive on`.
+- nginx: `set_real_ip_from <edge>` + `real_ip_recursive on`, scoped to the
+  Jedu virtual hosts so other applications sharing nginx keep their own proxy
+  address and forwarded-protocol handling.
 - Do not set `set_real_ip_from 0.0.0.0/0` or a trusted range that includes
   anything a client can reach; that makes the IP header spoofable and with it
   the registration caps and rate limits.
@@ -266,10 +311,12 @@ policy, not authorization.
       SMTP, then `docker compose up -d --force-recreate api worker`.
 - [ ] **pgroonga** — `docker compose exec api php artisan pgroonga:engine status`.
       For an external PostgreSQL, confirm the extension exists.
-- [ ] **Backups** — bundled: `jedu-postgres-data` is the system of record, plus
-      `jedu-storage-app`, `jedu-caddy-data` and `.env`.
-      External: the database owner is responsible for backups; back up
-      `jedu-storage-app` and `.env` here.
+- [ ] **Admin staff** — after the first install, run
+      `docker compose exec api php artisan staff:create-first-admin` if the
+      installer was run noninteractively, then verify the account can sign in.
+- [ ] **Backups** — back up `./data` and `.env`. For bundled PostgreSQL, also
+      keep a database dump for consistent, portable recovery. For external
+      PostgreSQL, the database owner is responsible for its backups.
       ```
       docker compose exec -T postgres pg_dump -U jedu jedushop | gzip > /backup/jedushop-$(date +%F).sql.gz
       ```
@@ -281,8 +328,9 @@ policy, not authorization.
 
 ### Known gaps
 
-1. **Admin panel image.** `nexus.jedu.ir/docker-hub/jedu-admin` is not published
-   yet. Two issues in `JeduFront/admin-panel` should be fixed in the same pass:
+1. **Admin panel image.** The installer uses
+   `nexus.jedu.ir/docker-hub/jedu-admin:1.0.0` by default. Two issues in
+   `JeduFront/admin-panel` should be fixed in the same pass:
    `VITE_API_URL` is baked in at build time with no runtime fallback, and the
    image has no `.dockerignore`, so the developer's `.env` is copied in. The
    fix is the one the shop already uses: exclude `.env*`, and have the nginx
@@ -322,10 +370,10 @@ This directory is a **separate deployment path** from `deploy.php`:
 | `install.sh` stops on "Port … is already in use" | Something not in project `jedu-production` holds it — usually a host nginx for :80/:443. Choose `--edge nginx`/`--edge external`, or free the port |
 | `install.sh` stops naming a vhost | That server block already answers one of the hostnames. Move it, choose other hostnames, or `--replace-nginx-site` |
 | `nginx -t` fails after rendering | Usually a missing certificate/key path (`--tls-cert`, `--tls-key`), or an nginx older than the `http2`/`real_ip` syntax in use |
-| `cannot pull` | `docker pull <image>` by hand; a private repo needs `--registry-user`/`--registry-password`; the admin image needs `--skip-admin` until published |
+| `cannot pull` | `docker pull <image>` by hand; a private repo needs `--registry-user`/`--registry-password`; verify the configured image tag exists in Nexus |
 | `jedu-api` never becomes healthy | `docker compose logs api` — the entrypoint waits for PostgreSQL/Redis over TCP, then migrates. For external datastores this is where a wrong host, password, unreachable network or missing pgroonga shows up |
 | `pgroonga:engine typesense` fails | External PostgreSQL without the extension, or the role cannot create it |
-| `admin.<domain>` returns 502 | installed with `--skip-admin`, or the admin image is not published |
+| `admin.<domain>` returns 502 | installed with `--skip-admin`, or check the admin container logs and image tag |
 | Storefront shows stale content | `docker compose logs worker`; confirm `STOREFRONT_URL` is `http://shop:80` and the revalidation secret matches |
 | CORS errors in the admin panel | `grep CORS_ALLOWED_ORIGINS .env`; it must contain the panel's origin exactly. `https://*.jedu.ir` does not match `https://jedu.ir` |
 | Client IPs look like the edge/router | `EDGE_PROXIES` missing or wrong; Caddy needs `trusted_proxies`/`trusted_proxies_strict`, nginx needs `set_real_ip_from` |
@@ -347,7 +395,8 @@ The nginx templates are rendered by `install.sh`; a rendered file can be checked
 with:
 
 ```bash
-docker run --rm -v "$PWD/nginx/jedu-docker.conf:/etc/nginx/conf.d/jedu.conf:ro" \
+config_name="$(awk -F= '$1 == "NGINX_CONFIG_NAME" { print $2 }' .env)"
+docker run --rm -v "$PWD/nginx/$config_name:/etc/nginx/conf.d/jedu.conf:ro" \
   nginx:alpine nginx -t
 ```
 
@@ -366,6 +415,6 @@ nginx:alpine and a stub `docker`:
   back to bundled rewrote `COMPOSE_FILE`/`COMPOSE_PROFILES` and reset the hosts.
 
 Not covered here: a full end-to-end start of the stack (it publishes 80/443,
-which this development machine already uses) and the install of the admin image,
-which is not published yet. The sudo path that writes `/etc/nginx` was reviewed
+which this development machine already uses) and the install of the admin image.
+The sudo path that writes `/etc/nginx` was reviewed
 but not executed; `--emit-nginx-conf` is the safe way to inspect it first.

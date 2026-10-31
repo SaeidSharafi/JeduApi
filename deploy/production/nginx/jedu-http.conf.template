@@ -16,11 +16,11 @@ map $http_upgrade $jedu_connection_upgrade {
     ''      close;
 }
 
-__REAL_IP_LINES__
-
 server {
     listen __HTTP_LISTEN__;
     server_name __API_DOMAIN__;
+
+    __REAL_IP_LINES__
 
     client_max_body_size 50M;
 
@@ -46,6 +46,8 @@ server {
     listen __HTTP_LISTEN__;
     server_name __SHOP_DOMAIN__;
 
+    __REAL_IP_LINES__
+
     client_max_body_size 50M;
 
     location / {
@@ -70,6 +72,8 @@ server {
 server {
     listen __HTTP_LISTEN__;
     server_name __ADMIN_DOMAIN__;
+
+    __REAL_IP_LINES__
 
     client_max_body_size 50M;
 

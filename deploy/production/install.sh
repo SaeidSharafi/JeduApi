@@ -45,9 +45,9 @@ cd "$SCRIPT_DIR"
 
 readonly ENV_FILE="$SCRIPT_DIR/.env"
 readonly ENV_TEMPLATE="$SCRIPT_DIR/.env.example"
-readonly NGINX_RENDERED="$SCRIPT_DIR/nginx/jedu-docker.conf"
 readonly COMPOSE_PROJECT="jedu-production"
 readonly HEALTH_TIMEOUT=600
+NGINX_RENDERED=""
 
 # Where set_env applies its edits. The writing step points this at a scratch copy
 # and moves it over .env in one rename, so a `docker compose` running at the same
@@ -114,7 +114,8 @@ Domains:
 Published ports and binds:
   --http-port <port>       Plain HTTP port (default: 80)
   --https-port <port>      TLS port (default: 443)
-  --http-bind <address>    Address nginx or Caddy binds for HTTP
+  --http-bind <address>    Address nginx or Caddy binds for HTTP; for nginx,
+                           use this server's private IPv4, not the edge address
                            (default: 0.0.0.0; use the private IP behind an edge)
   --caddy-bind <address>   Address Caddy publishes (default: 0.0.0.0)
   --public-port <port>     TLS port the browser uses, forwarded as
@@ -124,7 +125,8 @@ Host nginx (router=nginx):
   --tls-cert <path>        Certificate chain for --edge nginx
                            (default: /etc/letsencrypt/live/<api-domain>/fullchain.pem)
   --tls-key <path>         Private key for --edge nginx
-  --emit-nginx-conf        Write nginx/jedu-docker.conf and print the install
+  --nginx-config-name <name> Name for the generated nginx .conf file
+  --emit-nginx-conf        Write the generated nginx config and print install
                            steps instead of touching the running nginx
   --replace-nginx-site     If another server block already names one of these
                            hostnames, back it up and take the hostname over
@@ -132,7 +134,7 @@ Host nginx (router=nginx):
 Images:
   --api-tag <tag>          Tag for the API image (default: latest)
   --shop-tag <tag>         Tag for the storefront image (default: 1.0.0)
-  --admin-tag <tag>        Tag for the admin image (default: latest)
+  --admin-tag <tag>        Tag for the admin image (default: 1.0.0)
   --admin-image <ref>      Full admin image reference, overrides --admin-tag
   --skip-admin             Do not pull or start the admin panel; the admin
                            hostname answers 502 until you install it
@@ -142,7 +144,7 @@ Behaviour:
   --registry-user <user>   Log in to the registry before pulling
   --registry-password <pw> Password for --registry-user (or set REGISTRY_PASSWORD)
   --no-login               Never attempt `docker login`
-  --no-pull                Use the images already on this host
+  --skip-pull, --no-pull   Use the images already on this host
   --rebuild-search         Index products into Typesense after the stack is up
   --reset-env              Ignore the existing .env and re-answer every question
   -h, --help               Show this help
@@ -245,6 +247,8 @@ while [[ "$#" -gt 0 ]]; do
         --tls-cert=*) set_flag NGINX_TLS_CERT "${1#*=}"; shift ;;
         --tls-key) set_flag NGINX_TLS_KEY "$2"; shift 2 ;;
         --tls-key=*) set_flag NGINX_TLS_KEY "${1#*=}"; shift ;;
+        --nginx-config-name) set_flag NGINX_CONFIG_NAME "$2"; shift 2 ;;
+        --nginx-config-name=*) set_flag NGINX_CONFIG_NAME "${1#*=}"; shift ;;
         --api-tag) set_flag API_TAG "$2"; shift 2 ;;
         --api-tag=*) set_flag API_TAG "${1#*=}"; shift ;;
         --shop-tag) set_flag SHOP_TAG "$2"; shift 2 ;;
@@ -260,7 +264,7 @@ while [[ "$#" -gt 0 ]]; do
         -y|--yes) NON_INTERACTIVE=true; shift ;;
         --no-tls) NO_TLS=true; shift ;;
         --no-login) DO_LOGIN=never; shift ;;
-        --no-pull) SKIP_PULL=true; shift ;;
+        --skip-pull|--no-pull) SKIP_PULL=true; shift ;;
         --skip-admin) SKIP_ADMIN=true; shift ;;
         --rebuild-search) REBUILD_SEARCH=true; shift ;;
         --reset-env) RESET_ENV=true; shift ;;
@@ -475,6 +479,28 @@ detect_nginx() {
 have_root() { [[ "${EUID}" -eq 0 ]] || sudo -n true 2>/dev/null; }
 as_root() { if [[ "${EUID}" -eq 0 ]]; then "$@"; else sudo -- "$@"; fi; }
 
+prepare_data_directories() {
+    local data_root="$JEDU_DATA_DIR"
+    if [[ "$data_root" != /* ]]; then
+        data_root="$SCRIPT_DIR/$data_root"
+    fi
+
+    mkdir -p \
+        "$data_root/postgres" \
+        "$data_root/redis" \
+        "$data_root/typesense" \
+        "$data_root/storage/app" \
+        "$data_root/storage/logs" \
+        "$data_root/caddy/data" \
+        "$data_root/caddy/config"
+
+    if ! as_root chown 1000:1000 "$data_root/storage/app" "$data_root/storage/logs"; then
+        log_error "Could not set Laravel storage ownership to uid/gid 1000."
+        log_error "Grant sudo access or set ownership on ${data_root}/storage/app and storage/logs manually."
+        exit 1
+    fi
+}
+
 port_busy() { # port
     command -v ss >/dev/null 2>&1 || return 1
     [[ -n "$(ss -ltnH "sport = :$1" 2>/dev/null || true)" ]]
@@ -493,6 +519,32 @@ require_port() { # port "what"
     if port_busy "$port" && ! port_owned_by_project "$port"; then
         log_error "Port ${port} is already in use (${what})."
         log_error "Stop whatever holds it, or choose another port."
+        exit 1
+    fi
+}
+
+validate_nginx_bind() {
+    local address="$HTTP_BIND"
+
+    if [[ "$address" == 0.0.0.0 || "$address" == 127.* ]]; then
+        log_error "HTTP_BIND must be this server's private IPv4 address, not ${address}."
+        log_error "Use the address the upstream edge connects to on this server (for example, 10.0.0.15)."
+        exit 1
+    fi
+
+    if ! command -v ip >/dev/null 2>&1 || ! ip -o -4 address show | awk -v address="$address" '
+        { split($4, cidr, "/"); if (cidr[1] == address) found = 1 }
+        END { exit !found }
+    '; then
+        log_error "HTTP_BIND (${address}) is not assigned to this server."
+        log_error "Set it to this server's private IPv4 address, not the upstream edge's address."
+        exit 1
+    fi
+}
+
+validate_nginx_config_name() {
+    if [[ ! "$NGINX_CONFIG_NAME" =~ ^[[:alnum:]][[:alnum:]_.-]*\.conf$ ]]; then
+        log_error "NGINX_CONFIG_NAME must be a plain filename ending in .conf (got '${NGINX_CONFIG_NAME}')."
         exit 1
     fi
 }
@@ -636,7 +688,7 @@ nginx_conflicts() {
 }
 
 apply_nginx() {
-    local conflicts file backup restored=0
+    local conflicts file backup target restored=0
     local -a backup_list=()
     NGINX_APPLIED=false
 
@@ -654,6 +706,25 @@ apply_nginx() {
         return 0
     fi
 
+    if [[ -L /etc/nginx/sites-enabled/jedu-docker.conf && ! -e /etc/nginx/sites-enabled/jedu-docker.conf ]]; then
+        local legacy_link=/etc/nginx/sites-enabled/jedu-docker.conf
+        local legacy_target legacy_backup
+        legacy_target="$(as_root readlink "$legacy_link")"
+        if [[ -d /etc/nginx/sites-available ]]; then
+            legacy_backup="/etc/nginx/sites-available/jedu-docker.conf.jedu-backup-$(date +%Y%m%d%H%M%S)"
+            as_root mv "$legacy_link" "$legacy_backup"
+            log_warn "Archived broken legacy nginx symlink ${legacy_link} -> ${legacy_target} as ${legacy_backup}."
+        else
+            as_root rm "$legacy_link"
+            log_warn "Removed broken legacy nginx symlink ${legacy_link} -> ${legacy_target}."
+        fi
+    fi
+
+    if ! as_root nginx -t; then
+        log_error "The existing nginx configuration is invalid. Fix it before installing the Jedu site."
+        return 1
+    fi
+
     conflicts="$(nginx_conflicts || true)"
     for file in $conflicts; do
         [[ -f "$file" ]] || continue
@@ -666,9 +737,16 @@ apply_nginx() {
             log_error "or rerun with --replace-nginx-site to back it up and take over."
             exit 1
         fi
-        backup="${file}.jedu-backup-$(date +%Y%m%d%H%M%S)"
-        as_root mv "$file" "$backup"
-        log_warn "Moved ${file} to ${backup}."
+        if [[ -L "$file" ]]; then
+            target="$(as_root readlink -f "$file")"
+            backup="${target}.jedu-backup-$(date +%Y%m%d%H%M%S)"
+            as_root cp -p "$target" "$backup"
+            as_root rm "$file"
+        else
+            backup="${file}.jedu-backup-$(date +%Y%m%d%H%M%S)"
+            as_root mv "$file" "$backup"
+        fi
+        log_warn "Backed up ${file} as ${backup}."
         backup_list+=("${file}|${backup}")
     done
 
@@ -720,8 +798,8 @@ apply_template_defaults JEDU_API_IMAGE JEDU_SHOP_IMAGE JEDU_ADMIN_IMAGE \
     CADDY_IMAGE POSTGRES_IMAGE REDIS_IMAGE TYPESENSE_IMAGE POSTGRES_MAX_LOCKS \
     EDGE_MODE DB_MODE REDIS_MODE TYPESENSE_MODE DB_PORT REDIS_PORT \
     TYPESENSE_PORT TYPESENSE_PROTOCOL DATASTORE_NETWORK \
-    API_DOMAIN SHOP_DOMAIN ADMIN_DOMAIN ACME_EMAIL \
-    HTTP_PORT HTTPS_PORT PUBLIC_PORT HTTP_BIND CADDY_BIND \
+    API_DOMAIN SHOP_DOMAIN ADMIN_DOMAIN ACME_EMAIL JEDU_DATA_DIR \
+    HTTP_PORT HTTPS_PORT PUBLIC_PORT HTTP_BIND CADDY_BIND NGINX_CONFIG_NAME \
     API_LOOPBACK_PORT SHOP_LOOPBACK_PORT ADMIN_LOOPBACK_PORT \
     POSTGRES_DB POSTGRES_USER APP_NAME LOG_CHANNEL LOG_LEVEL SESSION_DOMAIN \
     MAIL_MAILER MAIL_HOST MAIL_PORT MAIL_USERNAME MAIL_PASSWORD MAIL_SCHEME \
@@ -821,8 +899,15 @@ if [[ "$EDGE_MODE" == external ]]; then
     if [[ "$ROUTER" == caddy ]]; then
         ask CADDY_BIND "Address Caddy publishes on (private IP or 0.0.0.0)"
     else
-        ask HTTP_BIND "Address nginx listens on for the edge (private IP or 0.0.0.0)"
+        ask HTTP_BIND "This server's private IPv4 address nginx listens on (not the edge address)"
+        validate_nginx_bind
     fi
+fi
+
+if [[ "$ROUTER" == nginx ]]; then
+    ask NGINX_CONFIG_NAME "Filename for the generated nginx config (include .conf)"
+    validate_nginx_config_name
+    NGINX_RENDERED="$SCRIPT_DIR/nginx/$NGINX_CONFIG_NAME"
 fi
 
 # ── Datastores ───────────────────────────────────────────────────────────────
@@ -1036,11 +1121,12 @@ if [[ "$ROUTER" == nginx ]]; then
 fi
 
 if [[ "$ROUTER" == nginx ]]; then
+    NGINX_CONFIG_NAME="${NGINX_CONFIG_NAME:-jedu-docker.conf}"
     if [[ -d /etc/nginx/sites-enabled ]]; then
-        NGINX_DEST="/etc/nginx/sites-available/jedu-docker.conf"
-        NGINX_LINK="/etc/nginx/sites-enabled/jedu-docker.conf"
+        NGINX_DEST="/etc/nginx/sites-available/$NGINX_CONFIG_NAME"
+        NGINX_LINK="/etc/nginx/sites-enabled/$NGINX_CONFIG_NAME"
     else
-        NGINX_DEST="/etc/nginx/conf.d/jedu-docker.conf"
+        NGINX_DEST="/etc/nginx/conf.d/$NGINX_CONFIG_NAME"
         NGINX_LINK=""
     fi
 fi
@@ -1113,6 +1199,7 @@ cat <<EOF
   API                ${PUBLIC_SCHEME}://${API_DOMAIN}       ${JEDU_API_IMAGE}
   Storefront         ${PUBLIC_SCHEME}://${SHOP_DOMAIN}       ${JEDU_SHOP_IMAGE}
   Admin              $(if [[ "$SKIP_ADMIN" == true ]]; then echo '(skipped)'; else echo "${PUBLIC_SCHEME}://${ADMIN_DOMAIN}       ${JEDU_ADMIN_IMAGE}"; fi)
+  Persistent files   ${JEDU_DATA_DIR}
   PostgreSQL         $(if [[ "$DB_MODE" == bundled ]]; then echo "bundled (jedu-postgres)"; elif [[ "$DB_MODE" == external ]]; then echo "external ${DB_HOST}:${DB_PORT}"; else echo "container ${DB_HOST}:${DB_PORT} on ${DATASTORE_NETWORK}"; fi)
   Redis              $(if [[ "$REDIS_MODE" == bundled ]]; then echo "bundled (jedu-redis)"; elif [[ "$REDIS_MODE" == external ]]; then echo "external ${REDIS_HOST}:${REDIS_PORT}"; else echo "container ${REDIS_HOST}:${REDIS_PORT} on ${DATASTORE_NETWORK}"; fi)
   Typesense          $(if [[ "$TYPESENSE_MODE" == bundled ]]; then echo "bundled (jedu-typesense)"; elif [[ "$TYPESENSE_MODE" == external ]]; then echo "external ${TYPESENSE_HOST}:${TYPESENSE_PORT}"; else echo "container ${TYPESENSE_HOST}:${TYPESENSE_PORT} on ${DATASTORE_NETWORK}"; fi)
@@ -1151,6 +1238,7 @@ set_env TRUSTED_PROXIES "$TRUSTED_PROXIES"
 set_env CORS_ALLOWED_ORIGINS "$CORS_ALLOWED_ORIGINS"
 set_env CORS_SUPPORTS_CREDENTIALS true
 set_env CORS_MAX_AGE "${CORS_MAX_AGE:-0}"
+set_env JEDU_DATA_DIR "$JEDU_DATA_DIR"
 set_env CADDYFILE "$CADDYFILE"
 set_env CADDY_GLOBAL_OPTIONS "$CADDY_GLOBAL_OPTIONS"
 set_env CADDY_SITE_ADDRESS_PREFIX "$CADDY_SITE_ADDRESS_PREFIX"
@@ -1164,6 +1252,7 @@ set_env HTTP_PORT "$HTTP_PORT"
 set_env HTTPS_PORT "$HTTPS_PORT"
 set_env PUBLIC_PORT "$PUBLIC_PORT"
 set_env HTTP_BIND "$HTTP_BIND"
+set_env NGINX_CONFIG_NAME "$NGINX_CONFIG_NAME"
 set_env API_LOOPBACK_PORT "$API_LOOPBACK_PORT"
 set_env SHOP_LOOPBACK_PORT "$SHOP_LOOPBACK_PORT"
 set_env ADMIN_LOOPBACK_PORT "$ADMIN_LOOPBACK_PORT"
@@ -1216,6 +1305,10 @@ chmod 600 "$ENV_WORK"
 mv "$ENV_WORK" "$ENV_FILE"
 log_success "Wrote $(basename "$ENV_FILE") (mode 600)."
 
+log_step "Preparing persistent data directory"
+prepare_data_directories
+log_success "Persistent files will be stored under ${JEDU_DATA_DIR}."
+
 log_step "Validating the compose file"
 compose config --quiet
 log_success "Compose configuration resolves cleanly."
@@ -1238,7 +1331,7 @@ pull_list=("$JEDU_API_IMAGE" "$JEDU_SHOP_IMAGE")
 [[ "$TYPESENSE_MODE" == bundled ]] && pull_list+=("$TYPESENSE_IMAGE")
 
 if [[ "$SKIP_PULL" == true ]]; then
-    log_warn "Skipping image pull (--no-pull)."
+    log_warn "Skipping image pull (--skip-pull/--no-pull)."
 else
     log_step "Pulling images"
     if [[ "$DO_LOGIN" != never ]]; then
@@ -1276,7 +1369,7 @@ else
             log_error "  ${image}"
         done
         if [[ "$SKIP_ADMIN" != true ]]; then
-            log_error "If the admin image is not published yet, build it from JeduFront/admin-panel or rerun with --skip-admin."
+            log_error "Check that the configured admin image tag exists in Nexus, or rerun with --skip-admin."
         fi
         log_error "Retry the pull by hand to see the registry's error:  docker pull ${failed[0]}"
         exit 1
@@ -1294,6 +1387,23 @@ log_step "Waiting for the datastores"
 
 log_step "Waiting for the API"
 if wait_for_health jedu-api "the API" "$HEALTH_TIMEOUT"; then
+    if [[ "$INTERACTIVE" == true ]]; then
+        log_step "Initial admin staff account"
+        if compose exec -T api php artisan list --raw 2>/dev/null | grep -Fxq 'staff:create-first-admin'; then
+            if ! compose exec api php artisan staff:create-first-admin; then
+                log_warn "Could not create the first admin staff account. Retry after the API is healthy:"
+                log_warn "  docker compose exec api php artisan staff:create-first-admin"
+            fi
+        else
+            log_warn "The API image does not include staff:create-first-admin. Publish and deploy an image containing this command, then run:"
+            log_warn "  docker compose exec api php artisan staff:create-first-admin"
+        fi
+    else
+        log_warn "No interactive terminal detected; skipping the first-admin prompt."
+        log_warn "Run this after deploying an API image with the command:"
+        log_warn "  docker compose exec api php artisan staff:create-first-admin"
+    fi
+
     # The engine setting is stored in the database, so it follows a fresh volume
     # rather than the image; deploy.php makes the same call on every deploy.
     if compose exec -T api php artisan pgroonga:engine typesense >/dev/null 2>&1; then

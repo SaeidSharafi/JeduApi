@@ -14,6 +14,10 @@ Publishing content must also clear the **storefront's** cache, which is a separa
 
 The **admin home dashboard** is five read-only report blocks (`/api/v1/admin/dashboard/{summary,money,live,wallet,rankings}`) split by freshness, query cost, permission and failure domain so the SPA can render and retry them independently. They are a deliberate exception to the write-path Actions convention: each block delegates its calculations to its own `Dashboard*Report` service, a shared `DashboardPeriod` owns all Jalali/Tehran window math, and a shared `DashboardBlockCache` owns per-block caching and response metadata. `dashboard.view` exposes the live block; `dashboard.financials` gates the other four. Entry points: [API interfaces](DIGEST_API_INTERFACES.md#dashboard-report-controllers-apphttpcontrollersapiadmindashboard) for routes/permissions/response shapes and [core logic digest](DIGEST_CORE_LOGIC.md#dashboard-reports-appservicesdashboard-apphttpcontrollersapiadmindashboard) for the metric rules, period semantics and cache behaviour.
 
+### Production deployment
+
+`deploy/production/install.sh` configures the Compose stack and host nginx. All persistent production files use bind mounts under `JEDU_DATA_DIR` (default `./data` beside the compose files): PostgreSQL, Redis, Typesense, Laravel uploads/logs, and Caddy state. Back up that directory with `.env`; the deployment guide documents cleanup and the one-time transition from the old test volumes.
+
 ## Using uploaded digests in chat
 
 These files support questions about codebase without repository access. Use uploaded content as reference; code paths and class names identify implementation locations, not files chatbot can open. No `AGENTS.md`, README, or other repository documents required to follow this guide.

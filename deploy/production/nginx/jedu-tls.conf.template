@@ -2,7 +2,7 @@
 # Regenerated on every run; do not edit in place.
 #
 # Template: edge=nginx — this host's nginx terminates TLS. install.sh renders it
-# into nginx/jedu-docker.conf, installs it into nginx's include directory and
+# into the configured nginx site file, installs it into nginx's include directory and
 # reloads nginx (or prints it with --emit-nginx-conf).
 #
 # The certificate must cover all three server names (one SAN certificate); ACME

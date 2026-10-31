@@ -2,9 +2,11 @@
 .env
 .env.*
 !.env.example
+# Persistent database, cache, search, application and Caddy files.
+data/
 # Rotated copies from --reset-env.
 *.bak
-# Rendered nginx site; install.sh regenerates it on every run.
-nginx/jedu-docker.conf
+# Rendered nginx sites; install.sh regenerates them on every run.
+nginx/*.conf
 # vhost files moved aside by --replace-nginx-site.
 *.jedu-backup-*
