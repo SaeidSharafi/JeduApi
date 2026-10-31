@@ -20,6 +20,7 @@ final class FooterData extends Data
         public array $categories,
         #[DataCollectionOf(SocialMediaLinkData::class)]
         public DataCollection $social_media_links,
-        public array $certifications
+        #[DataCollectionOf(CertificationData::class)]
+        public DataCollection $certifications
     ) {}
 }

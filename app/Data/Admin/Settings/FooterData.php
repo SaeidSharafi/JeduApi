@@ -20,7 +20,7 @@ final class FooterData extends Data
         public array $categories,
         #[DataCollectionOf(SocialMediaLinkData::class)]
         public DataCollection $social_media_links,
-        public array $certifications // array of HTML strings
+        public array $certifications // [{name, image: media id, image_url, html}]
     ) {}
 
     public static function getDefaults(): array
@@ -35,8 +35,8 @@ final class FooterData extends Data
             'categories'            => Category::query()->pluck('id')->all(),
             'social_media_links'    => ContactInfoData::getDefaults()['social_media_links'],
             'certifications'        => [
-                ['name' => 'اینماد', 'image' => 'https://jedu.ir/enamd.png', 'html' => ''],
-                ['name' => 'ساماندهی', 'image' => 'https://jedu.ir/enamd.png', 'html' => ''],
+                ['name' => 'اینماد', 'image' => null, 'image_url' => 'https://jedu.ir/enamd.png', 'html' => ''],
+                ['name' => 'ساماندهی', 'image' => null, 'image_url' => 'https://jedu.ir/enamd.png', 'html' => ''],
             ],
         ];
     }

@@ -32,8 +32,8 @@
       {"platform": "linkedin", "link": "https://linkedin.com/company/jedushop"}
     ],
     "certifications": [
-      {"name": "اینماد", "image": null},
-      {"name": "ساماندهی", "image": null}
+      {"name": "اینماد", "image": "https://api.jedu.ir/storage/enamad.webp", "html": null},
+      {"name": "ساماندهی", "image": "https://api.jedu.ir/storage/saman.webp", "html": null}
     ]
   },
   "metadata": []

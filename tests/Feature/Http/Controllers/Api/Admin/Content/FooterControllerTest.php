@@ -30,6 +30,10 @@ it('can update footer settings', function (): void {
         ->toDisk('public')
         ->upload();
 
+    $badge = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('enamad.png'))
+        ->toDisk('public')
+        ->upload();
+
     // Create valid categories
     $cat1 = App\Models\Category::factory()->create(['name' => 'Cat1']);
     $cat2 = App\Models\Category::factory()->create(['name' => 'Cat2']);
@@ -53,7 +57,7 @@ it('can update footer settings', function (): void {
         'certifications' => [
             [
                 'name'  => 'Enamad',
-                'image' => null,
+                'image' => $badge->id,
                 'html'  => "<img src='enamad.jpg' alt='Enamad' />",
             ],
             [
@@ -77,7 +81,10 @@ it('can update footer settings', function (): void {
         ->and($setting->value['caption'])->toBe('Your partner in modern education.')
         ->and($setting->value['logo'])->toBe($logo->id)
         ->and($setting->value['logo_url'])->toBe($logo->getUrl())
-        ->and($setting->value['logo_alt'])->toBe($logo->alt);
+        ->and($setting->value['logo_alt'])->toBe($logo->alt)
+        ->and($setting->value['certifications'][0]['image'])->toBe($badge->id)
+        ->and($setting->value['certifications'][0]['image_url'])->toBe($badge->getUrl())
+        ->and($setting->value['certifications'][1]['image_url'])->toBeNull();
 });
 
 it('serves an updated footer on the next shop read', function (): void {
@@ -253,14 +260,16 @@ it('sanitizes certification html without touching the certification name or imag
 
     expect($setting->value['certifications'])->toBe([
         [
-            'name'  => 'Enamad',
-            'image' => null,
-            'html'  => '<strong>Certified</strong>',
+            'name'      => 'Enamad',
+            'image'     => null,
+            'html'      => '<strong>Certified</strong>',
+            'image_url' => null,
         ],
         [
-            'name'  => 'Samandehi',
-            'image' => null,
-            'html'  => 'Plain certification',
+            'name'      => 'Samandehi',
+            'image'     => null,
+            'html'      => 'Plain certification',
+            'image_url' => null,
         ],
     ]);
 });

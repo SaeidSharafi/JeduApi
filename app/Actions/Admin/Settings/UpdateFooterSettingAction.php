@@ -26,6 +26,18 @@ final class UpdateFooterSettingAction
         $validated['logo_url'] = $logo?->getUrl() ?? null;
         $validated['logo_alt'] = $logo->alt       ?? null;
 
+        // Badge images are picked as media in the panel, so the storefront-facing
+        // address is resolved here — the same way logo_url is — instead of on read.
+        $badges = Media::find(array_filter(array_column($data->certifications ?? [], 'image')))->keyBy('id');
+
+        $validated['certifications'] = array_map(
+            static fn (array $certification): array => [
+                ...$certification,
+                'image_url' => $badges->get($certification['image'] ?? 0)?->getUrl(),
+            ],
+            $data->certifications ?? [],
+        );
+
         $setting = $this->settingsService->set(SettingKeyEnum::FOOTER, $validated, 'json', 'site');
         $setting->syncMedia($logo, 'logo');
 

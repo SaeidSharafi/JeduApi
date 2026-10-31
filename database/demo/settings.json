@@ -138,12 +138,14 @@
       "certifications": [
         {
           "name": "اینماد",
-          "image": "enamad.webp",
+          "image": null,
+          "image_url": "enamad.webp",
           "html": "<a href=\"https://trustseal.enamad.ir/Verify/123456\" rel=\"noopener noreferrer\" target=\"_blank\">نماد اعتماد الکترونیکی</a>"
         },
         {
           "name": "ساماندهی",
-          "image": "saman.webp",
+          "image": null,
+          "image_url": "saman.webp",
           "html": "<strong>ساماندهی</strong> <a href=\"https://samandehi.ir/Verify/654321\" rel=\"noopener noreferrer\" target=\"_blank\">رسانه‌های دیجیتال</a>"
         }
       ]

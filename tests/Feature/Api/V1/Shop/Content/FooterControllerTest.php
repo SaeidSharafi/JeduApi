@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Category;
 use App\Services\SettingsService;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Plank\Mediable\Facades\MediaUploader;
 
 describe('FooterController', function (): void {
 
@@ -44,14 +47,16 @@ describe('FooterController', function (): void {
                 ],
                 'certifications' => [
                     [
-                        'name'  => 'اینماد',
-                        'image' => 'favicon-tech.svg',
-                        'html'  => '',
+                        'name'      => 'اینماد',
+                        'image'     => null,
+                        'image_url' => 'enamad.webp',
+                        'html'      => '',
                     ],
                     [
-                        'name'  => 'ساماندهی',
-                        'image' => 'favicon-art.svg',
-                        'html'  => '',
+                        'name'      => 'ساماندهی',
+                        'image'     => null,
+                        'image_url' => 'saman.webp',
+                        'html'      => '',
                     ],
                 ],
             ],
@@ -87,5 +92,45 @@ describe('FooterController', function (): void {
                 ['name' => 'Technology', 'slug' => 'technology'],
             ],
         ]);
+    });
+
+    it('serves the stored certification image url instead of the media id', function (): void {
+        Storage::fake('public');
+
+        $badge = MediaUploader::fromSource(UploadedFile::fake()->image('enamad.png'))
+            ->toDisk('public')
+            ->upload();
+
+        app(SettingsService::class)->set(SettingKeyEnum::FOOTER, [
+            'logo'                  => null,
+            'logo_url'              => null,
+            'logo_alt'              => null,
+            'caption'               => 'شریک شما در آموزش مدرن',
+            'support_email_address' => 'support@jedu.ir',
+            'addresses'             => [],
+            'categories'            => [],
+            'social_media_links'    => [],
+            'certifications'        => [
+                [
+                    'name'      => 'اینماد',
+                    'image'     => $badge->id,
+                    'image_url' => $badge->getUrl(),
+                    'html'      => null,
+                ],
+                [
+                    'name'      => 'ساماندهی',
+                    'image'     => null,
+                    'image_url' => 'saman.webp',
+                    'html'      => '<b>ساماندهی</b>',
+                ],
+            ],
+        ]);
+
+        $response = $this->getJson(route('api.v1.shop.footer.index'));
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.certifications.0.image', $badge->getUrl())
+            ->assertJsonPath('data.certifications.1.image', 'saman.webp')
+            ->assertJsonPath('data.certifications.1.html', '<b>ساماندهی</b>');
     });
 });
