@@ -128,9 +128,10 @@ jobs:
 
       - name: Install Deployer
         run: |
-          curl -LO https://nexus.jedu.ir/repository/raw-assets/deployer/deployer.phar
-          chmod +x deployer.phar
-          mv deployer.phar /usr/local/bin/dep
+          set -eux
+          curl -fsSL -o /usr/local/bin/dep https://nexus.jedu.ir/repository/raw-assets/deployer/deployer.phar
+          chmod +x /usr/local/bin/dep
+          dep --version
 
       - name: Setup SSH
         run: |
