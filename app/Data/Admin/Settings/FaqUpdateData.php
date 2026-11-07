@@ -4,34 +4,38 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings;
 
-use App\Data\Casts\SanitizeRichTextArray;
-use App\Enums\Content\RichTextLevelEnum;
+use App\Data\Casts\SanitizeFaqCategories;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
 final class FaqUpdateData extends Data
 {
     public function __construct(
-        #[WithCast(SanitizeRichTextArray::class, 'answer', RichTextLevelEnum::INLINE)]
-        public array $items,
+        #[WithCast(SanitizeFaqCategories::class)]
+        public array $categories,
     ) {}
 
     public static function rules(): array
     {
         return [
-            'items'            => ['present', 'array', 'list'],
-            'items.*'          => ['required', 'array:question,answer'],
-            'items.*.question' => ['required', 'string', 'max:255'],
-            'items.*.answer'   => ['required', 'string'],
+            'categories'                    => ['present', 'array', 'list'],
+            'categories.*'                  => ['required', 'array:title,items'],
+            'categories.*.title'            => ['required', 'string', 'max:255'],
+            'categories.*.items'            => ['present', 'array', 'list'],
+            'categories.*.items.*'          => ['required', 'array:question,answer'],
+            'categories.*.items.*.question' => ['required', 'string', 'max:255'],
+            'categories.*.items.*.answer'   => ['required', 'string'],
         ];
     }
 
     public function bodyParameters(): array
     {
         return [
-            'items'            => ['description' => 'Ordered FAQ items. An empty list clears the page.', 'example' => [['question' => 'چگونه ثبت‌نام کنم؟', 'answer' => 'دوره را به <strong>سبد خرید</strong> اضافه کنید.']]],
-            'items.*.question' => ['description' => 'FAQ question.', 'example' => 'چگونه ثبت‌نام کنم؟'],
-            'items.*.answer'   => ['description' => 'FAQ answer. Inline HTML is sanitized on save.', 'example' => 'دوره را به <strong>سبد خرید</strong> اضافه کنید.'],
+            'categories'                    => ['description' => 'Ordered FAQ categories. An empty list clears the page.', 'example' => [['title' => 'ثبت‌نام', 'items' => [['question' => 'چگونه ثبت‌نام کنم؟', 'answer' => 'دوره را به <strong>سبد خرید</strong> اضافه کنید.']]]]],
+            'categories.*.title'            => ['description' => 'Category title.', 'example' => 'ثبت‌نام'],
+            'categories.*.items'            => ['description' => 'Ordered questions in the category.', 'example' => [['question' => 'چگونه ثبت‌نام کنم؟', 'answer' => 'دوره را به سبد خرید اضافه کنید.']]],
+            'categories.*.items.*.question' => ['description' => 'FAQ question.', 'example' => 'چگونه ثبت‌نام کنم؟'],
+            'categories.*.items.*.answer'   => ['description' => 'FAQ answer. Inline HTML is sanitized on save.', 'example' => 'دوره را به <strong>سبد خرید</strong> اضافه کنید.'],
         ];
     }
 }
