@@ -8,6 +8,7 @@ enum SettingKeyEnum: string
 {
     case ABOUT_US          = 'about_us';
     case CONTACT_INFO      = 'contact_info';
+    case FAQ               = 'faq';
     case COLLABORATION     = 'collaboration';
     case HEADER            = 'header';
     case FOOTER            = 'footer';
@@ -73,6 +74,7 @@ enum SettingKeyEnum: string
             self::SITE_IDENTITY => [StorefrontTag::SettingsSite],
             self::ABOUT_US      => [StorefrontTag::CmsAboutUs],
             self::CONTACT_INFO  => [StorefrontTag::CmsContactUs],
+            self::FAQ           => [StorefrontTag::CmsFaq],
             self::COLLABORATION => [StorefrontTag::CmsCollaboration],
             default             => [],
         };

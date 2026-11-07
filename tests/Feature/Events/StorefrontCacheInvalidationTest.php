@@ -165,6 +165,7 @@ describe('storefront revalidation from settings writes', function (): void {
         'identity' => [SettingKeyEnum::SITE_IDENTITY, StorefrontTag::SettingsSite],
         'about us' => [SettingKeyEnum::ABOUT_US, StorefrontTag::CmsAboutUs],
         'contact'  => [SettingKeyEnum::CONTACT_INFO, StorefrontTag::CmsContactUs],
+        'faq'      => [SettingKeyEnum::FAQ, StorefrontTag::CmsFaq],
         'collab'   => [SettingKeyEnum::COLLABORATION, StorefrontTag::CmsCollaboration],
     ]);
 

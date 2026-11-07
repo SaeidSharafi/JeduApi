@@ -41,6 +41,7 @@ enum StorefrontTag: string
 
     case CmsAboutUs       = 'cms:about-us';
     case CmsContactUs     = 'cms:contact-us';
+    case CmsFaq           = 'cms:faq';
     case CmsCollaboration = 'cms:collaboration';
 
     /**

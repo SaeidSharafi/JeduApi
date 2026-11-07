@@ -5,11 +5,12 @@ declare(strict_types=1);
 use App\Enums\System\StorefrontTag;
 
 /**
- * The storefront's allowlist, copied verbatim from REVALIDATE_TAGS in
+ * The storefront's allowlist, based on REVALIDATE_TAGS in
  * `/home/kuro/www/JeduFront/shop/src/lib/revalidateRequest.js` (see
  * `docs/caching-plan.md` §5 there). An unlisted tag makes the storefront answer
  * `400` and clear nothing, so the copy is the drift alarm: if the storefront
  * widens or narrows its list, this test fails until the enum is updated.
+ * The FAQ tag is pending coordination with the storefront before deployment.
  *
  * @return list<string>
  */
@@ -34,6 +35,7 @@ function storefrontAllowlist(): array
         'blog:categories',
         'cms:about-us',
         'cms:contact-us',
+        'cms:faq',
         'cms:collaboration',
     ];
 }
@@ -207,7 +209,7 @@ function storefrontCollectionCases(): array
 
 function storefrontSettingsMapTags(): array
 {
-    return ['SettingsHeader', 'SettingsFooter', 'SettingsSite', 'CmsAboutUs', 'CmsContactUs', 'CmsCollaboration'];
+    return ['SettingsHeader', 'SettingsFooter', 'SettingsSite', 'CmsAboutUs', 'CmsContactUs', 'CmsCollaboration', 'CmsFaq'];
 }
 
 it('dispatches from every write path that changes public content', function (): void {

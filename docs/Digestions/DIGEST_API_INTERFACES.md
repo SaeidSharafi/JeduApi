@@ -340,6 +340,9 @@ Five read-only blocks for the admin home, each its own endpoint, cache entry, pe
 - `show()`: **Route:** `GET /api/v1/admin/settings/contact-info` - **Response DTO:** ContactInfoData sourced from the cache-gateway-backed SettingsService
 - `update(ContactInfoData $request)`: **Route:** `PUT /api/v1/admin/settings/contact-info` - **Request DTO:** ContactInfoData, including optional string `title` (max 255) and `subtitle` (inline HTML sanitized on save), addresses, working hours, support email and social links. Omitted title defaults to an empty string; subtitle defaults to `برای مشاوره دوره‌ها، پیگیری سفارش یا پرسش‌های آموزشی با ما در تماس باشید.` **Response DTO:** ContactInfoData after cache invalidation.
 
+#### FAQ settings
+- `GET /api/v1/admin/settings/faq` requires the settings view permission; `PUT /api/v1/admin/settings/faq` requires the update permission. The request and response contain `items`, an ordered array of `{question, answer}` objects; PUT replaces the entire list and accepts an empty list. Questions are required strings of at most 255 characters; answers are required strings with inline HTML sanitized on save. When no setting exists, the initial eight storefront FAQ entries are returned. Updates dispatch `cms:faq` storefront cache invalidation; the storefront must accept and use this tag before integration.
+
 #### AboutUsInfoController (`app/Http/Controllers/Api/Admin/Content/AboutUsInfoController.php`)
 - `show()`: **Route:** `GET /api/v1/admin/settings/about-us` - **Response DTO:** AboutUsInfoData
 - `update(AboutUsInfoUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/about-us` - **Request DTO:** AboutUsInfoUpdateData - **Response DTO:** AboutUsInfoData
@@ -833,6 +836,9 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 
 #### ContactPageController (`app/Http/Controllers/Api/Shop/CMS/ContactPageController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/contact-page` - **Response DTO:** ContactPageData with `title`, `subtitle`, support and address details. Missing title and subtitle in older settings use the admin contact-info defaults described above.
+
+#### FAQ page
+- `GET /api/v1/shop/faq` is public and returns `data.items`, the ordered FAQ entries configured through admin FAQ settings; answers contain sanitized HTML. Missing settings return the initial FAQ entries.
 
 #### CollaborationPageController (`app/Http/Controllers/Api/Shop/CMS/CollaborationPageController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/collaboration` - **Response DTO:** CollaborationPageData providing collaboration content sections

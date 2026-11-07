@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\Admin\Content\AboutUsInfoController;
 use App\Http\Controllers\Api\Admin\Content\CollaborationInfoController;
 use App\Http\Controllers\Api\Admin\Content\ContactInfoController;
+use App\Http\Controllers\Api\Admin\Content\FaqSettingsController;
 use App\Http\Controllers\Api\Admin\Content\FooterController;
 use App\Http\Controllers\Api\Admin\Content\HeaderController;
 use App\Http\Controllers\Api\Admin\Content\HomePageBlockController;
@@ -26,6 +27,8 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
         ->name('contact-info.show');
     Route::put('contact-info', [ContactInfoController::class, 'update'])
         ->name('contact-info.update');
+    Route::get('faq', [FaqSettingsController::class, 'show'])->name('faq.show');
+    Route::put('faq', [FaqSettingsController::class, 'update'])->name('faq.update');
     Route::get('about-us', [AboutUsInfoController::class, 'show'])
         ->name('about-us.show');
     Route::put('about-us', [AboutUsInfoController::class, 'update'])
