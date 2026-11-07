@@ -338,7 +338,7 @@ Five read-only blocks for the admin home, each its own endpoint, cache entry, pe
 
 #### ContactInfoController (`app/Http/Controllers/Api/Admin/Content/ContactInfoController.php`)
 - `show()`: **Route:** `GET /api/v1/admin/settings/contact-info` - **Response DTO:** ContactInfoData sourced from the cache-gateway-backed SettingsService
-- `update(ContactInfoUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/contact-info` - **Request DTO:** ContactInfoUpdateData - **Response DTO:** ContactInfoData after cache invalidation
+- `update(ContactInfoData $request)`: **Route:** `PUT /api/v1/admin/settings/contact-info` - **Request DTO:** ContactInfoData, including optional string `title` (max 255) and `subtitle` (inline HTML sanitized on save), addresses, working hours, support email and social links. Omitted title defaults to an empty string; subtitle defaults to `برای مشاوره دوره‌ها، پیگیری سفارش یا پرسش‌های آموزشی با ما در تماس باشید.` **Response DTO:** ContactInfoData after cache invalidation.
 
 #### AboutUsInfoController (`app/Http/Controllers/Api/Admin/Content/AboutUsInfoController.php`)
 - `show()`: **Route:** `GET /api/v1/admin/settings/about-us` - **Response DTO:** AboutUsInfoData
@@ -832,7 +832,7 @@ All teacher endpoints require a `auth:user` account linked to a `Teacher` profil
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/aboutus` - **Response DTO:** AboutUsData transformed from SettingsService
 
 #### ContactPageController (`app/Http/Controllers/Api/Shop/CMS/ContactPageController.php`)
-- `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/contact-page` - **Response DTO:** ContactPageData with support and address details
+- `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/contact-page` - **Response DTO:** ContactPageData with `title`, `subtitle`, support and address details. Missing title and subtitle in older settings use the admin contact-info defaults described above.
 
 #### CollaborationPageController (`app/Http/Controllers/Api/Shop/CMS/CollaborationPageController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/collaboration` - **Response DTO:** CollaborationPageData providing collaboration content sections

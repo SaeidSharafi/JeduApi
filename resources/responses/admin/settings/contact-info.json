@@ -1,6 +1,8 @@
 {
     "message": "Operation successful.",
     "data": {
+        "title": "تماس با ما",
+        "subtitle": "خط اول<br>خط دوم<br>خط سوم",
         "addresses": [
             {
                 "name": "دفتر مرکزی",

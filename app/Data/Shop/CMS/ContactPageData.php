@@ -13,6 +13,8 @@ final class ContactPageData extends Data
         public string $working_hours,
         public string $support_email,
         public array $social_media_links,
+        public string $title,
+        public string $subtitle,
     ) {}
 
     /**
@@ -21,10 +23,12 @@ final class ContactPageData extends Data
     public static function fromSetting(array $setting): self
     {
         return new self(
-            addresses: $setting['addresses'] ?? [],
-            working_hours: $setting['working_hours'] ?? '',
-            support_email: $setting['support_email'] ?? '',
+            addresses: $setting['addresses']                   ?? [],
+            working_hours: $setting['working_hours']           ?? '',
+            support_email: $setting['support_email']           ?? '',
             social_media_links: $setting['social_media_links'] ?? [],
+            title: $setting['title']                           ?? '',
+            subtitle: $setting['subtitle']                     ?? 'برای مشاوره دوره‌ها، پیگیری سفارش یا پرسش‌های آموزشی با ما در تماس باشید.',
         );
     }
 }

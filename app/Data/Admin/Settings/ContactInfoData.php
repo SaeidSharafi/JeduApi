@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings;
 
+use App\Data\Casts\SanitizeRichText;
+use App\Enums\Content\RichTextLevelEnum;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -18,11 +21,16 @@ final class ContactInfoData extends Data
         public string $support_email,
         #[DataCollectionOf(SocialMediaLinkData::class)]
         public DataCollection $social_media_links,
+        public string $title = '',
+        #[WithCast(SanitizeRichText::class, RichTextLevelEnum::INLINE)]
+        public string $subtitle = 'برای مشاوره دوره‌ها، پیگیری سفارش یا پرسش‌های آموزشی با ما در تماس باشید.',
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
         return [
+            'title'                         => ['sometimes', 'string', 'max:255'],
+            'subtitle'                      => ['sometimes', 'string'],
             'addresses'                     => ['required', 'array', 'min:1'],
             'addresses.*'                   => ['required', 'array'],
             'addresses.*.name'              => ['required', 'string', 'max:255'],
@@ -57,6 +65,8 @@ final class ContactInfoData extends Data
     public static function getDefaults(): array
     {
         return [
+            'title'     => '',
+            'subtitle'  => 'برای مشاوره دوره‌ها، پیگیری سفارش یا پرسش‌های آموزشی با ما در تماس باشید.',
             'addresses' => [
                 [
                     'name'         => 'دفتر مرکزی',
@@ -107,6 +117,14 @@ final class ContactInfoData extends Data
     public function bodyParameters(): array
     {
         return [
+            'title' => [
+                'description' => 'Contact page title.',
+                'example'     => 'تماس با ما',
+            ],
+            'subtitle' => [
+                'description' => 'Contact page subtitle. Inline HTML; sanitized on save.',
+                'example'     => 'خط اول<br>خط دوم<br>خط سوم',
+            ],
             'addresses' => [
                 'description' => 'Array of address objects.',
                 'example'     => [

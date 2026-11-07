@@ -22,13 +22,15 @@ describe('ContactPageController', function (): void {
                     ],
                 ],
                 'working_hours',
+                'title',
+                'subtitle',
                 'support_email',
                 'social_media_links' => [
                     '*' => [
                         'platform',
                         'link',
                     ],
-                ]
+                ],
             ],
         ]);
     });
