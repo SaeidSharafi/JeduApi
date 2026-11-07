@@ -4,10 +4,25 @@
 ARG PHP_BASE_IMAGE=dunglas/frankenphp:1-php8.4
 ARG COMPOSER_IMAGE=composer:2
 
+# Build containers have no direct internet access (deb.debian.org is not
+# routable from CI, only nexus.jedu.ir is), so Debian packages and Composer
+# metadata are pulled through the Nexus proxies instead.
+ARG DEBIAN_MIRROR=https://nexus.jedu.ir/repository/apt-debian-proxy/
+ARG DEBIAN_SECURITY_MIRROR=https://nexus.jedu.ir/repository/apt-debian-security-proxy/
+ARG COMPOSER_REPOSITORY=https://nexus.jedu.ir/repository/composer-proxy/
+
 FROM ${PHP_BASE_IMAGE} AS php-base
 
+ARG DEBIAN_MIRROR
+ARG DEBIAN_SECURITY_MIRROR
+
 # 1. Install required system build libraries
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN sed -i \
+        -e "s|^URIs: http://deb.debian.org/debian$|URIs: ${DEBIAN_MIRROR}|" \
+        -e "s|^URIs: http://deb.debian.org/debian-security$|URIs: ${DEBIAN_SECURITY_MIRROR}|" \
+        /etc/apt/sources.list.d/debian.sources \
+    && apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update \
+    && apt-get install -y --no-install-recommends \
     bash \
     supervisor \
     curl \
@@ -51,11 +66,14 @@ FROM ${COMPOSER_IMAGE} AS composer
 FROM php-base AS vendor-builder
 WORKDIR /app
 
+ARG COMPOSER_REPOSITORY
+
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 COPY composer.json composer.lock* ./
 RUN --mount=type=cache,target=/root/.composer \
-    composer install --no-dev --no-interaction --no-autoloader --no-scripts
+    composer config --global repos.packagist composer "${COMPOSER_REPOSITORY}" \
+    && composer install --no-dev --no-interaction --no-autoloader --no-scripts
 
 COPY . /app
 
