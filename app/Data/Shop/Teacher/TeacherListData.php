@@ -17,7 +17,7 @@ final class TeacherListData extends Data
         public string $uuid,
         public string $first_name,
         public string $last_name,
-        public string $avatar_url,
+        public ?string $avatar_url,
         public float $rate,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public GenderEnum $gender,

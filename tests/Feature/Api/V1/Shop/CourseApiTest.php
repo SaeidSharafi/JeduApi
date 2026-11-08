@@ -11,11 +11,23 @@ use App\Models\Course;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
+use App\Models\Teacher;
 use Hekmatinasser\Verta\Verta;
 use Tests\Support\Traits\ProductTestTrait;
 
 describe('Course API', function (): void {
     uses(ProductTestTrait::class);
+
+    it('lists a course whose teacher has no avatar', function (): void {
+        $product = Product::factory()->withDeliveryOptions(1)->withCourse()->create();
+        $teacher = Teacher::factory()->create(['avatar_url' => null]);
+        $product->productDeliveryOptions()->firstOrFail()->teachers()->sync([$teacher->id]);
+
+        $this->getJson(route('api.v1.shop.courses.index'))
+            ->assertOk()
+            ->assertJsonPath('data.data.0.teachers.0.uuid', (string) $teacher->uuid)
+            ->assertJsonPath('data.data.0.teachers.0.avatar_url', null);
+    });
     it('get a list of courses', function (): void {
         $product = Product::factory()
             ->withDeliveryOptions(1)
