@@ -16,16 +16,18 @@ final class ChangePasswordAction
     {
         $user->refresh();
 
-        if (! $data->current_password && $user->password) {
-            throw ValidationException::withMessages([
-                'current_password' => __('validation.password.current_password_required'),
-            ]);
-        }
+        if ($user->hasSetPassword()) {
+            if (! $data->current_password) {
+                throw ValidationException::withMessages([
+                    'current_password' => __('validation.password.current_password_required'),
+                ]);
+            }
 
-        if ($data->current_password && ! password_verify($data->current_password, $user->password)) {
-            throw ValidationException::withMessages([
-                'current_password' => __('validation.password.current_password_does_not_match'),
-            ]);
+            if (! Hash::check($data->current_password, $user->password)) {
+                throw ValidationException::withMessages([
+                    'current_password' => __('validation.password.current_password_does_not_match'),
+                ]);
+            }
         }
 
         $user->password = Hash::make($data->password);

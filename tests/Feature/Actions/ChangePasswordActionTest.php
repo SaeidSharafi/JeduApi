@@ -7,6 +7,8 @@ use App\Data\Auth\ChagePasswordData;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
+mutates(ChangePasswordAction::class);
+
 it('change password validation checks', function (): void {
     $user = User::factory()->create(
         [
@@ -61,6 +63,24 @@ it('change password when user does not have password', function (): void {
 
     $action = new ChangePasswordAction();
     $action->handle($user, ChagePasswordData::from([
+        'password'              => 'newpassword',
+        'password_confirmation' => 'newpassword',
+    ]));
+
+    $user->refresh();
+    expect(Hash::check('newpassword', $user->password))->toBeTrue();
+});
+
+it('change password when user does not have password and sends current password', function (): void {
+    $user = User::factory()->create(
+        [
+            'password' => null,
+        ]
+    );
+
+    $action = new ChangePasswordAction();
+    $action->handle($user, ChagePasswordData::from([
+        'current_password'      => 'anything',
         'password'              => 'newpassword',
         'password_confirmation' => 'newpassword',
     ]));

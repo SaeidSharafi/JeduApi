@@ -558,7 +558,7 @@ Administrative status and access-date changes reconcile deliberately with applic
 - **AuthAction** (`app/Actions/Auth/AuthAction.php`)
   - `handle(AuthData $data): AuthResultData`: Generic authentication action wrapper
 - **ChangePasswordAction** (`app/Actions/Auth/ChangePasswordAction.php`)
-  - `handle(Staff|User $authenticatable, ChangePasswordRequest $request): Staff|User`: Validates `current_password` (required when the account has a password set) and updates the hash. Mismatched current password surfaces the `validation.password.current_password_does_not_match` message. Shared by the staff and customer change-password endpoints.
+  - `handle(Staff|User $authenticatable, ChangePasswordRequest $request): Staff|User`: Validates `current_password` (required when the account has a password set, surfaces `validation.password.current_password_required`) and updates the hash. Mismatched current password surfaces the `validation.password.current_password_does_not_match` message. When the account has no password set (null), any supplied `current_password` is ignored and no verification happens. Shared by the staff and customer change-password endpoints.
 
 ### Admin Profile Actions (`app/Actions/Admin/`)
 - **UpdateStaffProfileAction** (`app/Actions/Admin/UpdateStaffProfileAction.php`)
