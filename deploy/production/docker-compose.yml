@@ -199,6 +199,11 @@ services:
       # start, which is what lets one image serve every environment. It must not
       # be baked in at build time — see the admin panel's .env.example.
       VITE_API_URL: ${PUBLIC_SCHEME}://${API_DOMAIN}/api/v1/admin
+      # Storefront host behind the panel's «فروشگاه» shortcut. Same entrypoint
+      # reads it at start and pairs it with PUBLIC_SCHEME, so the link follows the
+      # deployment rather than a domain baked into the image.
+      SHOP_DOMAIN: ${SHOP_DOMAIN:?SHOP_DOMAIN is missing - run install.sh}
+      PUBLIC_SCHEME: ${PUBLIC_SCHEME:?PUBLIC_SCHEME is missing - run install.sh}
     ports:
       - "127.0.0.1:${ADMIN_LOOPBACK_PORT:-8082}:80"
     networks:
