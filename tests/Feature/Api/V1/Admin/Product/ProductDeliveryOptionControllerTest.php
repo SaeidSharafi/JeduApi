@@ -142,6 +142,83 @@ describe('User with permissions', function (): void {
         ]);
     });
 
+    it('defaults new Course PDOs to a required survey and exposes its settings', function (): void {
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE]);
+        $product = App\Models\Product::factory()->withCourse()->create();
+        $data    = ProductDeliveryOption::factory()->make([
+            'product_id'       => $product->id,
+            'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
+        ])->toArray();
+        unset($data['survey_required']);
+        $data['teachers'] = [Teacher::factory()->create()->id];
+        $data['details']  = ['moodle_course_id' => 123];
+
+        $response = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.survey_required', true)
+            ->assertJsonPath('data.survey_url', null);
+        $this->assertDatabaseHas('product_delivery_options', [
+            'id'              => $response->json('data.id'),
+            'survey_required' => true,
+            'survey_url'      => null,
+        ]);
+    });
+
+    it('defaults new Seminar PDOs to a required survey', function (): void {
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE]);
+        $product = App\Models\Product::factory()->withSeminar()->create();
+        $data    = ProductDeliveryOption::factory()->make([
+            'product_id'       => $product->id,
+            'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+        ])->toArray();
+        unset($data['survey_required']);
+        $data['teachers'] = [Teacher::factory()->create()->id];
+        $data['details']  = ['nili_room_id' => 'demo-room'];
+
+        $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data)
+            ->assertCreated()
+            ->assertJsonPath('data.survey_required', true)
+            ->assertJsonPath('data.survey_url', null);
+    });
+
+    it('updates the survey requirement and URL independently on a PDO', function (): void {
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_UPDATE]);
+        $product        = App\Models\Product::factory()->withCourse()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'       => $product->id,
+            'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
+            'survey_required'  => false,
+            'survey_url'       => null,
+            'details_json'     => ['moodle_course_id' => 123],
+        ]);
+        $data                    = $deliveryOption->toArray();
+        $data['details']         = ['moodle_course_id' => 123];
+        $data['teachers']        = [Teacher::factory()->create()->id];
+        $data['survey_required'] = true;
+        $data['survey_url']      = 'https://survey.example.test/course';
+
+        $this->putJson(route('api.v1.admin.delivery-options.update', [
+            'product'         => $product->id,
+            'delivery_option' => $deliveryOption->id,
+        ]), $data)
+            ->assertOk()
+            ->assertJsonPath('data.survey_required', true)
+            ->assertJsonPath('data.survey_url', 'https://survey.example.test/course');
+
+        $data['survey_url'] = null;
+        $this->putJson(route('api.v1.admin.delivery-options.update', [
+            'product'         => $product->id,
+            'delivery_option' => $deliveryOption->id,
+        ]), $data)
+            ->assertOk()
+            ->assertJsonPath('data.survey_required', true)
+            ->assertJsonPath('data.survey_url', null);
+    });
+
     it('should store the Niliroom room id on a BBB seminar delivery option', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,

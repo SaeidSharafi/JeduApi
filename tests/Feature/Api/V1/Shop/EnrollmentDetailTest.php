@@ -37,6 +37,112 @@ it('returns enrollment detail for owner', function (): void {
         ->assertJsonPath('data.uuid', $enrollment->uuid);
 });
 
+it('locks course results while a required survey is still being prepared', function (): void {
+    $course         = Course::factory()->create(['provides_certificate' => true]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->create([
+            'productable_type' => $course->getMorphClass(),
+            'productable_id'   => $course->id,
+        ])->id,
+        'survey_required' => true,
+        'survey_url'      => null,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill(['provisioning_data' => ['providers' => ['moodle' => ['sync' => [
+        'course_grade' => 'A',
+        'activities'   => [['cmid' => 7, 'name' => 'Quiz', 'type' => 'quiz', 'url' => '/quiz', 'state' => 1, 'score' => '95']],
+    ]]]]])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'awaiting_survey')
+        ->assertJsonPath('data.survey_block.results_locked', true)
+        ->assertJsonPath('data.survey_block.message', __('messages.enrollments.survey_awaiting'))
+        ->assertJsonPath('data.delivery_access.course_grade', null)
+        ->assertJsonPath('data.quizzes.0.score', null)
+        ->assertJsonPath('data.certificate_info.is_available', false)
+        ->assertJsonPath('data.certificate_info.certificate_url', null);
+});
+
+it('returns the exact delivery option survey state and unlocks stored results after completion', function (): void {
+    $course         = Course::factory()->create(['provides_certificate' => true]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->create([
+            'productable_type' => $course->getMorphClass(),
+            'productable_id'   => $course->id,
+        ])->id,
+        'survey_required' => true,
+        'survey_url'      => null,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'survey_completed_at' => now(),
+        'provisioning_data'   => ['providers' => ['moodle' => ['sync' => [
+            'course_grade' => 'A',
+            'activities'   => [['cmid' => 7, 'name' => 'Quiz', 'type' => 'quiz', 'url' => '/quiz', 'state' => 1, 'score' => '95']],
+        ]]]],
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'completed')
+        ->assertJsonPath('data.survey_block.results_locked', false)
+        ->assertJsonPath('data.delivery_access.course_grade', 'A')
+        ->assertJsonPath('data.quizzes.0.score', '95')
+        ->assertJsonPath('data.certificate_info.is_available', true);
+});
+
+it('resolves survey state and URL independently for sibling delivery options', function (): void {
+    $product        = Product::factory()->withCourse()->create();
+    $awaitingOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => $product->id,
+        'survey_required'  => true,
+        'survey_url'       => null,
+    ]);
+    $pendingOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => $product->id,
+        'survey_required'  => true,
+        'survey_url'       => 'https://survey.example.test/online',
+    ]);
+    $awaiting = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $awaitingOption);
+    $pending  = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $pendingOption);
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $awaiting->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'awaiting_survey')
+        ->assertJsonPath('data.survey_block.url', null);
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $pending->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'pending')
+        ->assertJsonPath('data.survey_block.results_locked', true)
+        ->assertJsonPath('data.survey_block.url', 'https://survey.example.test/online');
+});
+
+it('treats an optional survey as not required even when it has no URL or completion', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => false,
+        'survey_url'       => null,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'not_required')
+        ->assertJsonPath('data.survey_block.results_locked', false)
+        ->assertJsonPath('data.survey_block.url', null);
+});
+
 // ─── Delivery access ─────────────────────────────────────────────────────────
 
 it('show returns moodle delivery_access for lms_moodle enrollment', function (): void {

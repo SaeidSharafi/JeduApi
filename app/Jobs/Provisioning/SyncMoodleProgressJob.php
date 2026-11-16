@@ -54,14 +54,12 @@ final class SyncMoodleProgressJob implements ShouldQueue
         foreach ($courseInfo->activities as $activity) {
             $cmid         = $activity->cid;
             $activities[] = [
-                'cmid'  => $cmid,
-                'name'  => $activity->name,
-                'type'  => $activity->type,
-                'url'   => $activity->url,
-                'state' => (int) data_get($activityStatuses, "{$cmid}.state", 0),
-                'score' => $enrollment->survey_completed_at
-                    ? data_get($grades, "activities.{$cmid}")
-                    : null,
+                'cmid'          => $cmid,
+                'name'          => $activity->name,
+                'type'          => $activity->type,
+                'url'           => $activity->url,
+                'state'         => (int) data_get($activityStatuses, "{$cmid}.state", 0),
+                'score'         => data_get($grades, "activities.{$cmid}"),
                 'timecompleted' => data_get($activityStatuses, "{$cmid}.timecompleted"),
             ];
         }
@@ -69,10 +67,8 @@ final class SyncMoodleProgressJob implements ShouldQueue
         $syncData = [
             'synced_at'    => now()->toIso8601String(),
             'completed'    => $isCompleted,
-            'course_grade' => $enrollment->survey_completed_at
-                ? data_get($grades, 'course_grade')
-                : null,
-            'activities' => $activities,
+            'course_grade' => data_get($grades, 'course_grade'),
+            'activities'   => $activities,
         ];
 
         $enrollment->forceFill([

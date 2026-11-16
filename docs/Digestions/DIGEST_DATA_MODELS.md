@@ -114,7 +114,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### ProductDeliveryOption (`app/Models/ProductDeliveryOption.php`)
 - **Purpose:** Specific purchase/delivery methods per product with pricing
-- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `enrolled_count`, `reserved_count`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `access_days` (access duration from enrollment date), `details_json`
+- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `enrolled_count`, `reserved_count`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `access_days` (access duration from enrollment date), `survey_required`, nullable `survey_url`, `details_json`
 - **Relationships:**
   - `belongsTo(Product::class)` - product
   - `hasMany(ProductDeliveryOptionDiscountPrice::class)` - discountPrices
@@ -124,6 +124,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
   - `belongsToMany(ProductDeliveryOption::class, 'bundle_components')` - bundleComponents (pivot: allocation)
   - `belongsToMany(ProductDeliveryOption::class, 'bundle_components')` - bundleParents (inverse pivot)
 - **Special Features:** UUID for external references, SKU auto-generation via `SkuGeneratorService` when not provided, and monotonic `composition_version` for Bundle PDO composition changes. Bundle PDOs use `fulfillment_type=composite`, `delivery_method=bundle`, empty details, `is_prepayment_available=false`, and `prepayment_amount=null`; create/update normalizes these structural invariants server-side. They atomically persist component allocations. Capacity tracking is backed by the persisted `enrolled_count` column (no more runtime `withCount`), and `discountPrice` evaluates active discount windows. **Capacity reservations:** `reserved_count` holds seats held by PENDING orders; committed seats = `enrolled_count + reserved_count`, and capacity validity checks compare `capacity > (enrolled_count + reserved_count)`. Reservations are managed by `ProductReservationService` (`reserve`/`consume`/`release`).
+  Course/Seminar PDOs default to required surveys through the administrative create flow; pre-existing rows migrate as optional. Requirement and URL are independent per PDO. Bundle and Digital Asset survey gating are unsupported.
   Bundle PDOs also carry `bundle_review_required_at` and stable `bundle_review_reasons`. Material component changes archive containing Bundle PDOs and require the explicit staff review action before the review flag can be cleared. Bundle availability uses the least remaining finite component capacity; unlimited components do not cap the offer. Reservations for Bundle purchases are stored on component PDOs, never on the parent.
 
 ### Bundle (`app/Models/Bundle.php`)
@@ -198,7 +199,7 @@ Reference for uploaded-doc chat: model purpose, relationships, casts, and helper
 
 ### Enrollment (`app/Models/Enrollment.php`)
 - **Purpose:** Student access records linking customers to purchased delivery options
-- **Key Fields:** `uuid`, `order_id`, `order_item_id`, `customer_id`, `product_delivery_option_id`, `enrollment_status` (`awaiting_payment | active | suspended | expired | cancelled`), `access_start_date`, `access_end_date`, `provisioning_data` (JSONB per-provider execution data), `provisioning_plan` (non-null versioned JSONB provider applicability/readiness snapshot), `provisioning_status` (aggregate provisioning health), `revocation_status` (`pending | failed | manual_action_required | revoked`, nullable — set by the refund/revocation flow for any refunded Enrollment)
+- **Key Fields:** `uuid`, `order_id`, `order_item_id`, `customer_id`, `product_delivery_option_id`, `enrollment_status` (`awaiting_payment | active | suspended | expired | cancelled`), `access_start_date`, `access_end_date`, `survey_completed_at` (nullable verified completion timestamp), `provisioning_data` (JSONB per-provider execution data), `provisioning_plan` (non-null versioned JSONB provider applicability/readiness snapshot), `provisioning_status` (aggregate provisioning health), `revocation_status` (`pending | failed | manual_action_required | revoked`, nullable — set by the refund/revocation flow for any refunded Enrollment)
 - **Relationships:**
   - `belongsTo(User::class, 'customer_id')` - customer
   - `belongsTo(Order::class)` - order

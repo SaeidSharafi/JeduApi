@@ -10,6 +10,7 @@ use App\Rules\ValidNormalizedJalaliDateRule;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class ProductDeliveryOptionUpdateData extends Data
@@ -35,6 +36,8 @@ final class ProductDeliveryOptionUpdateData extends Data
         public array $teachers = [],
         public bool $is_prepayment_available = false,
         public ?int $prepayment_amount = null,
+        public bool|Optional $survey_required = new Optional(),
+        public string|null|Optional $survey_url = new Optional(),
     ) {}
 
     public static function prepareForPipeline(array $properties): array
@@ -74,7 +77,9 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
                 'after_or_equal:available_from',
             ],
-            'access_days' => ['nullable', 'integer', 'min:1'],
+            'access_days'     => ['nullable', 'integer', 'min:1'],
+            'survey_required' => ['sometimes', 'boolean'],
+            'survey_url'      => ['sometimes', 'nullable', 'url', 'max:2048'],
         ];
 
         if ($isBundle) {
@@ -137,6 +142,8 @@ final class ProductDeliveryOptionUpdateData extends Data
             'available_from'            => __('validation.attributes.product_delivery_option.available_from'),
             'available_to'              => __('validation.attributes.product_delivery_option.available_to'),
             'access_days'               => __('validation.attributes.product_delivery_option.access_days'),
+            'survey_required'           => __('validation.attributes.product_delivery_option.survey_required'),
+            'survey_url'                => __('validation.attributes.product_delivery_option.survey_url'),
             'teachers'                  => __('validation.attributes.product_delivery_option.teachers'),
             'teachers.*'                => __('validation.attributes.product_delivery_option.teacher_id'),
         ];
@@ -176,6 +183,16 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'description' => 'Maximum number of enrollments allowed. Null means unlimited.',
                 'required'    => false,
                 'example'     => 50,
+            ],
+            'survey_required' => [
+                'description' => 'Whether Course and Seminar enrollments on this delivery option must complete the enrollment survey before viewing results.',
+                'required'    => false,
+                'example'     => true,
+            ],
+            'survey_url' => [
+                'description' => 'Optional survey URL for this delivery option. A required survey without a URL keeps course results locked while it is being prepared.',
+                'required'    => false,
+                'example'     => 'https://survey.example.com/course-feedback',
             ],
             'status' => [
                 'description' => 'Publication status controlling visibility in the shop. Allowed: `draft`, `published`, `archived`.',

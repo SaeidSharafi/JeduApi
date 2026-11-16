@@ -32,7 +32,13 @@ final readonly class CreateProductDeliveryOptionAction
     public function handle(ProductDeliveryOptionCreateData $data, Product $product): ProductDeliveryOption
     {
         $pdo = DB::transaction(function () use ($data, $product): ProductDeliveryOption {
-            $pdoData = $data->except('teachers', 'components')->toArray();
+            $pdoData        = $data->except('teachers', 'components')->toArray();
+            $surveyEligible = in_array($product->productable_type, [
+                ProductableEnum::COURSE->value,
+                ProductableEnum::SEMINAR->value,
+            ], true);
+            $pdoData['survey_required'] = $surveyEligible && $data->survey_required;
+            $pdoData['survey_url']      = $surveyEligible ? $data->survey_url : null;
             if ($product->productable_type === ProductableEnum::BUNDLE->value) {
                 $pdoData['fulfillment_type'] = 'composite';
                 $pdoData['delivery_method']  = 'bundle';

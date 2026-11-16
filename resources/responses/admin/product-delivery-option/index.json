@@ -54,6 +54,8 @@
       "available_from": null,
       "available_to": null,
       "access_days": 90,
+      "survey_required": true,
+      "survey_url": "https://survey.example.test/course-feedback",
       "teachers": [
         {
           "id": 1,
@@ -198,6 +200,8 @@
       "available_from": "1404-07-01 00:00:00",
       "available_to": "1404-11-01 00:00:00",
       "access_days": 90,
+      "survey_required": true,
+      "survey_url": "https://survey.example.test/course-feedback",
       "teachers": [
         {
           "id": 2,
@@ -344,6 +348,8 @@
       "available_from": null,
       "available_to": null,
       "access_days": 180,
+      "survey_required": true,
+      "survey_url": "https://survey.example.test/course-feedback",
       "teachers": [
         {
           "id": 3,

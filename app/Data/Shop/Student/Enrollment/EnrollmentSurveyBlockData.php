@@ -9,6 +9,8 @@ use Spatie\LaravelData\Data;
 final class EnrollmentSurveyBlockData extends Data
 {
     public function __construct(
+        public string $state,
+        public bool $results_locked,
         public ?string $url,
         public ?string $message,
     ) {}

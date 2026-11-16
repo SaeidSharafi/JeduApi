@@ -39,6 +39,8 @@ final class ProductDeliveryOptionCreateData extends Data
         public ?string $available_from = null,
         public ?string $available_to = null,
         public ?int $access_days = null,
+        public bool $survey_required = true,
+        public ?string $survey_url = null,
         public ?string $sku = null,
         public array $components = [],
     ) {}
@@ -124,7 +126,9 @@ final class ProductDeliveryOptionCreateData extends Data
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
                 'after_or_equal:available_from',
             ],
-            'access_days' => ['nullable', 'integer', 'min:1'],
+            'access_days'     => ['nullable', 'integer', 'min:1'],
+            'survey_required' => ['sometimes', 'boolean'],
+            'survey_url'      => ['nullable', 'url', 'max:2048'],
         ];
 
         if ($isBundle) {
@@ -206,6 +210,8 @@ final class ProductDeliveryOptionCreateData extends Data
             'available_from'            => __('validation.attributes.product_delivery_option.available_from'),
             'available_to'              => __('validation.attributes.product_delivery_option.available_to'),
             'access_days'               => __('validation.attributes.product_delivery_option.access_days'),
+            'survey_required'           => __('validation.attributes.product_delivery_option.survey_required'),
+            'survey_url'                => __('validation.attributes.product_delivery_option.survey_url'),
             'teachers'                  => __('validation.attributes.product_delivery_option.teachers'),
             'teachers.*'                => __('validation.attributes.product_delivery_option.teacher_id'),
         ];
@@ -321,6 +327,16 @@ Each value determines which `details.*` fields are required.',
                 'description' => 'Rolling access window in days starting from the enrollment date. Overrides `available_to` for per-student expiry. E.g. 90 means access for 90 days after purchase.',
                 'required'    => false,
                 'example'     => 90,
+            ],
+            'survey_required' => [
+                'description' => 'Whether Course and Seminar enrollments on this delivery option must complete the enrollment survey before viewing results. Defaults to true for eligible products.',
+                'required'    => false,
+                'example'     => true,
+            ],
+            'survey_url' => [
+                'description' => 'Optional survey URL for this delivery option. A required survey without a URL keeps course results locked while it is being prepared.',
+                'required'    => false,
+                'example'     => 'https://survey.example.com/course-feedback',
             ],
             'teachers' => [
                 'description' => 'Array of teacher IDs to associate with this delivery option. Send an empty array if no teachers.',

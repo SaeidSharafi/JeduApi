@@ -49,6 +49,8 @@ final class ProductDeliveryOptionShowData extends Data
         public ?Verta $available_from,
         public ?Verta $available_to,
         public ?int $access_days,
+        public bool $survey_required,
+        public ?string $survey_url,
         #[DataCollectionOf(TeacherListItemData::class)]
         public ?DataCollection $teachers,
         public ?ProductData $product,

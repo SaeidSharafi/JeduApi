@@ -240,6 +240,8 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - available_from (DATE nullable)
   - available_to (DATE nullable)
   - access_days (INT unsigned nullable, default null) — Number of days user has access to content from enrollment date; null means unlimited
+  - survey_required (BOOLEAN default false) — Per-PDO Course/Seminar enrollment-survey result gate; existing rows migrate to optional, and the admin create flow defaults new eligible PDOs to required
+  - survey_url (TEXT nullable) — Optional survey URL for this exact PDO; existing rows have no URL
   - composition_version (INT unsigned default 1) — Monotonic Bundle composition revision
   - bundle_review_required_at (TIMESTAMP nullable)
   - bundle_review_reasons (JSON nullable) — Stable material-change reason values

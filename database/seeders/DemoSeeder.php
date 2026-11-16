@@ -851,9 +851,19 @@ final class DemoSeeder extends Seeder
             });
         })->all();
 
-        $preparedData = $collection->map(function (array $item) use ($modifier, $table) {
+        $hasSurveyConfiguration = $modelClass === ProductDeliveryOption::class
+            && Schema::hasColumn($table, 'survey_required');
+        $isEnrollment = $modelClass === Enrollment::class;
+        $preparedData = $collection->map(function (array $item) use ($modifier, $table, $hasSurveyConfiguration, $isEnrollment) {
             if ($modifier) {
                 $item = $modifier($item);
+            }
+
+            if ($hasSurveyConfiguration) {
+                $item = array_merge(['survey_required' => false, 'survey_url' => null], $item);
+            }
+            if ($isEnrollment) {
+                $item = array_merge(['survey_completed_at' => null], $item);
             }
 
             if (Schema::hasColumn($table, 'uuid') && empty($item['uuid'])) {

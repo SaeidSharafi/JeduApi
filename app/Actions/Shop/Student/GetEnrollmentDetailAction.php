@@ -42,14 +42,15 @@ final readonly class GetEnrollmentDetailAction
         }
 
         $deliveryOption = $enrollment->productDeliveryOption;
+        $surveyBlock    = $this->buildSurveyBlock($enrollment);
+        $resultsLocked  = $surveyBlock->results_locked;
         $product        = ProductDeliveryOptionCardData::fromModel($deliveryOption);
         $teachers       = $this->buildTeachers($enrollment);
         $reviewInfo     = $this->buildReviewInfo($enrollment);
-        $certInfo       = $this->buildCertificateInfo($enrollment);
-        $surveyBlock    = $this->buildSurveyBlock($enrollment);
+        $certInfo       = $this->buildCertificateInfo($enrollment, $resultsLocked);
         $files          = $this->buildFiles($enrollment);
-        $quizzes        = $this->buildQuizzes($enrollment);
-        $deliveryAccess = $this->buildDeliveryAccess($enrollment);
+        $quizzes        = $this->buildQuizzes($enrollment, $resultsLocked);
+        $deliveryAccess = $this->buildDeliveryAccess($enrollment, $resultsLocked);
 
         return new EnrollmentDetailData(
             uuid: $enrollment->uuid,
@@ -113,7 +114,7 @@ final readonly class GetEnrollmentDetailAction
         );
     }
 
-    private function buildCertificateInfo(Enrollment $enrollment): EnrollmentCertificateInfoData
+    private function buildCertificateInfo(Enrollment $enrollment, bool $resultsLocked): EnrollmentCertificateInfoData
     {
         $productable = $enrollment->productDeliveryOption->product->productable;
 
@@ -126,7 +127,7 @@ final readonly class GetEnrollmentDetailAction
             );
         }
 
-        $isAvailable = $enrollment->survey_completed_at !== null;
+        $isAvailable = $enrollment->survey_completed_at !== null && ! $resultsLocked;
 
         return new EnrollmentCertificateInfoData(
             is_available: $isAvailable,
@@ -136,10 +137,28 @@ final readonly class GetEnrollmentDetailAction
 
     private function buildSurveyBlock(Enrollment $enrollment): EnrollmentSurveyBlockData
     {
-        // TODO: integrate with survey provider (Rouyesh or similar) to supply url and message
+        $productable = $enrollment->productDeliveryOption->product->productable;
+        $isEligible  = in_array($productable->getMorphClass(), [
+            ProductableEnum::COURSE->value,
+            ProductableEnum::SEMINAR->value,
+        ], true);
+        $isRequired  = $isEligible && $enrollment->productDeliveryOption->survey_required;
+        $isCompleted = $enrollment->survey_completed_at !== null;
+        $url         = $isRequired ? $enrollment->productDeliveryOption->survey_url : null;
+        $state       = match (true) {
+            ! $isRequired => 'not_required',
+            $isCompleted  => 'completed',
+            blank($url)   => 'awaiting_survey',
+            default       => 'pending',
+        };
+
         return new EnrollmentSurveyBlockData(
-            url: null,
-            message: null,
+            state: $state,
+            results_locked: in_array($state, ['awaiting_survey', 'pending'], true),
+            url: $url,
+            message: $state === 'awaiting_survey'
+                ? __('messages.enrollments.survey_awaiting')
+                : null,
         );
     }
 
@@ -177,7 +196,7 @@ final readonly class GetEnrollmentDetailAction
     /**
      * @return DataCollection<int, EnrollmentQuizData>
      */
-    private function buildQuizzes(Enrollment $enrollment): DataCollection
+    private function buildQuizzes(Enrollment $enrollment, bool $resultsLocked): DataCollection
     {
         $provisioning = $enrollment->provisioning_data['providers'] ?? [];
 
@@ -196,7 +215,7 @@ final readonly class GetEnrollmentDetailAction
                 type: (string) data_get($activity, 'type', ''),
                 url: (string) data_get($activity, 'url', ''),
                 state: (int) data_get($activity, 'state', 0),
-                score: data_get($activity, 'score') ?? data_get($activity, 'grade'),
+                score: $resultsLocked ? null : (data_get($activity, 'score') ?? data_get($activity, 'grade')),
                 timecompleted: data_get($activity, 'timecompleted') !== null
                     ? (int) data_get($activity, 'timecompleted')
                     : null,
@@ -206,7 +225,7 @@ final readonly class GetEnrollmentDetailAction
         return new DataCollection(EnrollmentQuizData::class, $items);
     }
 
-    private function buildDeliveryAccess(Enrollment $enrollment): DeliveryAccessData
+    private function buildDeliveryAccess(Enrollment $enrollment, bool $resultsLocked): DeliveryAccessData
     {
         $deliveryOption = $enrollment->productDeliveryOption;
         $deliveryMethod = $deliveryOption->delivery_method;
@@ -230,7 +249,7 @@ final readonly class GetEnrollmentDetailAction
                 type: $deliveryMethod->value,
                 course_url: data_get($provisioning, 'moodle.data.course_url'),
                 completed: (bool) data_get($provisioning, 'moodle.sync.completed', false),
-                course_grade: data_get($provisioning, 'moodle.sync.course_grade'),
+                course_grade: $resultsLocked ? null : data_get($provisioning, 'moodle.sync.course_grade'),
                 is_ready: data_get($provisioning, 'moodle.status') === ProvisioningOutcomeStatusEnum::SUCCESS->value,
             ),
             DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => new DeliveryAccessData(
