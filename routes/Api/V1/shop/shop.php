@@ -34,8 +34,14 @@ use App\Http\Controllers\Api\Shop\Settings\HeaderController;
 use App\Http\Controllers\Api\Shop\Settings\SiteIdentityController;
 use App\Http\Controllers\Api\Shop\SuggestSearchController;
 use App\Http\Controllers\Api\Shop\TeacherController;
+use App\Http\Controllers\Api\Shop\Webhooks\PorslineSurveyWebhookController;
+use App\Http\Middleware\AuthenticatePorslineSurveyWebhook;
 
 require __DIR__.'/rate-limited.php';
+
+Route::post('webhooks/porsline-surveys', PorslineSurveyWebhookController::class)
+    ->middleware(AuthenticatePorslineSurveyWebhook::class)
+    ->name('webhooks.porsline-surveys');
 
 // Home Page Blocks
 Route::get('home-page-blocks', [HomePageContentController::class, 'index'])->name('home-page-blocks.index');

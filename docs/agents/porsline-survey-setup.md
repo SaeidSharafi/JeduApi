@@ -17,3 +17,29 @@ The student detail link appends those values to the exact Product Delivery Optio
 Example variable names in a shared Porsline form: `enrollment_token`, `product_slug`, `product_name`, `course_name`, `product_type`.
 
 Opening or returning from a survey does not complete an Enrollment. A copied complete link remains a bearer link: the opaque token prevents guessing from public identifiers, but anyone who receives the full link can submit against that Enrollment.
+
+## Submission webhook
+
+Configure a Porsline webhook to send each completed submission as `POST` JSON to:
+
+```text
+https://<api-host>/api/v1/shop/webhooks/porsline-surveys
+```
+
+Add the static header `X-Survey-Webhook-Secret` in Porsline. Set the matching application deployment variable `PORSLINE_WEBHOOK_SECRET` to a private value, then rebuild the Laravel configuration cache using the deployment's normal process. The application rejects submissions when the variable or header is missing, or when the values do not match. Do not put this secret in the survey URL or commit it to source control.
+
+The JSON body must contain a `variables` list of `{ "name": ..., "value": ... }` entries with exactly one nonempty, 64-character lowercase hexadecimal `enrollment_token`. The other four reporting variables may also be included. Porsline's optional `questions`, `computational_variables`, and `respondent_data` fields are accepted when present but are not stored by Jedu API.
+
+```json
+{
+  "variables": [
+    { "name": "enrollment_token", "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+    { "name": "product_slug", "value": "example-course" },
+    { "name": "product_name", "value": "Example course" },
+    { "name": "course_name", "value": "Example course name" },
+    { "name": "product_type", "value": "course" }
+  ]
+}
+```
+
+The endpoint has no student-session authentication; the static header authenticates Porsline independently from the enrollment token. A successful response uses the standard API envelope with `data: null`. Missing, malformed, duplicate, or unknown tokens are rejected. The first accepted submission records completion for only the matching Enrollment; retries succeed without changing the first completion timestamp. Completion does not change enrollment access, status, survey configuration, or Moodle progress.

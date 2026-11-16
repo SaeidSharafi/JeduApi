@@ -222,6 +222,7 @@ return [
     'enrollments' => [
         'not_found'                       => 'Enrollment not found.',
         'survey_awaiting'                 => 'Your results will be available after the enrollment survey is prepared and completed.',
+        'survey_token_invalid'            => 'The survey enrollment token is invalid.',
         'not_moodle'                      => 'This enrollment is not a Moodle LMS enrollment.',
         'not_seminar'                     => 'This is not an online seminar (live class).',
         'moodle_provisioning_incomplete'  => 'Moodle provisioning is incomplete for this enrollment.',

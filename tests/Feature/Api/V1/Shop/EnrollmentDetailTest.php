@@ -81,6 +81,9 @@ it('returns the exact delivery option survey state and unlocks stored results af
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
     $enrollment->forceFill([
         'survey_completed_at' => now(),
+        'enrollment_status'   => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date'   => null,
+        'revocation_status'   => null,
         'provisioning_data'   => ['providers' => ['moodle' => ['sync' => [
             'course_grade' => 'A',
             'activities'   => [['cmid' => 7, 'name' => 'Quiz', 'type' => 'quiz', 'url' => '/quiz', 'state' => 1, 'score' => '95']],
@@ -391,8 +394,9 @@ it('certificate_info is null when productable does not provide certificate', fun
 });
 
 it('certificate_info is_available false when survey_completed_at is null', function (): void {
-    $course                          = Course::factory()->create(['provides_certificate' => true]);
-    $enrollment                      = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+    $course     = Course::factory()->create(['provides_certificate' => true]);
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+    $enrollment->productDeliveryOption->forceFill(['survey_required' => true, 'survey_url' => null])->save();
     $enrollment->survey_completed_at = null;
     $enrollment->save();
 
@@ -403,15 +407,62 @@ it('certificate_info is_available false when survey_completed_at is null', funct
 });
 
 it('certificate_info is_available true when survey_completed_at is set', function (): void {
-    $course                          = Course::factory()->create(['provides_certificate' => true]);
-    $enrollment                      = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
-    $enrollment->survey_completed_at = now();
-    $enrollment->save();
+    $course     = Course::factory()->create(['provides_certificate' => true]);
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+    $enrollment->forceFill([
+        'survey_completed_at' => now(),
+        'enrollment_status'   => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date'   => null,
+        'revocation_status'   => null,
+    ])->saveQuietly();
 
     $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]));
 
     $response->assertOk();
     expect($response->json('data.certificate_info.is_available'))->toBeTrue();
+});
+
+it('keeps certificate information unavailable after survey completion when the enrollment is not eligible', function (array $state): void {
+    $course     = Course::factory()->create(['provides_certificate' => true]);
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+    $enrollment->forceFill([
+        'survey_completed_at' => now(),
+        ...$state,
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.certificate_info.is_available', false)
+        ->assertJsonPath('data.certificate_info.certificate_url', null);
+})->with([
+    'future access'      => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->addDay(), 'revocation_status' => null]],
+    'awaiting payment'   => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::AWAITING_PAYMENT, 'access_start_date' => null, 'revocation_status' => null]],
+    'suspended'          => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::SUSPENDED, 'access_start_date' => today()->subDay(), 'revocation_status' => null]],
+    'refunded'           => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::CANCELLED, 'access_start_date' => today()->subDay(), 'revocation_status' => null]],
+    'revocation pending' => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->subDay(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::PENDING]],
+    'revoked'            => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::EXPIRED, 'access_start_date' => today()->subDay(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::REVOKED]],
+]);
+
+it('keeps certificate availability for an active enrollment with no start date when its survey is optional', function (): void {
+    $course         = Course::factory()->create(['provides_certificate' => true]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'product_id'      => Product::factory()->for($course, 'productable')->create()->id,
+        'survey_required' => false,
+        'survey_url'      => null,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status'   => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date'   => null,
+        'survey_completed_at' => null,
+        'revocation_status'   => null,
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'not_required')
+        ->assertJsonPath('data.certificate_info.is_available', true)
+        ->assertJsonPath('data.certificate_info.certificate_url', null);
 });
 
 // ─── SWR dispatch ────────────────────────────────────────────────────────────

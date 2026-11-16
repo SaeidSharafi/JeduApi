@@ -15,6 +15,7 @@ use App\Data\Shop\Student\Enrollment\EnrollmentSurveyBlockData;
 use App\Data\Shop\Student\Review\ReviewData;
 use App\Data\Shop\Teacher\TeacherDetailData;
 use App\Enums\Content\ReviewStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\ProvisioningOutcomeStatusEnum;
@@ -129,7 +130,14 @@ final readonly class GetEnrollmentDetailAction
             );
         }
 
-        $isAvailable = $enrollment->survey_completed_at !== null && ! $resultsLocked;
+        $isEligible = in_array($enrollment->enrollment_status, [
+            EnrollmentStatusEnum::ACTIVE,
+            EnrollmentStatusEnum::EXPIRED,
+        ], true)
+            && ($enrollment->access_start_date === null
+                || $enrollment->access_start_date->lessThanOrEqualTo(today()))
+                                   && $enrollment->revocation_status === null;
+        $isAvailable = $isEligible && ! $resultsLocked;
 
         return new EnrollmentCertificateInfoData(
             is_available: $isAvailable,
