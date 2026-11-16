@@ -127,8 +127,8 @@ A customer's purchased access to a specific product delivery option, bounded by 
 _Avoid_: Order item, registration, subscription
 
 **Enrollment Survey**:
-A feedback survey configured for a Course or Seminar and answered in the context of an individual Enrollment.
-_Avoid_: Product Delivery Option survey, review
+A feedback survey for the delivery experience of a Course or Seminar's Product Delivery Option, answered in the context of an individual Enrollment.
+_Avoid_: Review
 
 **Course Results**:
 The outcomes presented to a student for an Enrollment, including course grades, quiz scores, and certificate information or access. Learning content is separate from Course Results.
