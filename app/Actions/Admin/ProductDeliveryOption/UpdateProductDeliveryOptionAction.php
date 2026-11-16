@@ -42,22 +42,13 @@ final readonly class UpdateProductDeliveryOptionAction
             ->all();
 
         DB::transaction(function () use ($data, $deliveryOption): void {
-            $pdoData         = $data->except('teachers', 'components')->toArray();
+            $pdoData         = $data->except('teachers', 'components', 'survey_required', 'survey_url')->toArray();
             $productableType = $deliveryOption->product?->productable_type;
-            $surveyEligible  = in_array($productableType, [
-                ProductableEnum::COURSE->value,
-                ProductableEnum::SEMINAR->value,
-            ], true);
-            if (! $surveyEligible) {
-                $pdoData['survey_required'] = false;
-                $pdoData['survey_url']      = null;
-            } else {
-                if (! $data->survey_required instanceof Optional) {
-                    $pdoData['survey_required'] = $data->survey_required;
-                }
-                if (! $data->survey_url instanceof Optional) {
-                    $pdoData['survey_url'] = $data->survey_url;
-                }
+            if (! $data->survey_required instanceof Optional) {
+                $pdoData['survey_required'] = $data->survey_required;
+            }
+            if (! $data->survey_url instanceof Optional) {
+                $pdoData['survey_url'] = $data->survey_url;
             }
             if ($productableType === ProductableEnum::BUNDLE->value) {
                 $pdoData['fulfillment_type'] = 'composite';

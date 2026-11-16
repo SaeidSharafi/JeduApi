@@ -58,7 +58,9 @@
             "certificate_url": null
         },
         "survey_block": {
-            "url": null,
+            "state": "pending",
+            "results_locked": true,
+            "url": "https://survey.example.test/course-feedback?enrollment_token=opaque-token&product_slug=course-slug&product_name=Course%20Product&course_name=Course%20Name&product_type=course",
             "message": null
         }
     },

@@ -58,7 +58,9 @@
             "certificate_url": null
         },
         "survey_block": {
-            "url": null,
+            "state": "pending",
+            "results_locked": true,
+            "url": "https://survey.example.test/seminar-feedback?enrollment_token=opaque-token&product_slug=seminar-slug&product_name=Seminar%20Product&course_name=Seminar%20Name&product_type=seminar",
             "message": null
         }
     },

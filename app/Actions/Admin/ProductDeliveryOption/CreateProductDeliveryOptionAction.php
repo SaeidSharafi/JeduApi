@@ -37,8 +37,9 @@ final readonly class CreateProductDeliveryOptionAction
                 ProductableEnum::COURSE->value,
                 ProductableEnum::SEMINAR->value,
             ], true);
-            $pdoData['survey_required'] = $surveyEligible && $data->survey_required;
-            $pdoData['survey_url']      = $surveyEligible ? $data->survey_url : null;
+            if (! $surveyEligible) {
+                unset($pdoData['survey_required'], $pdoData['survey_url']);
+            }
             if ($product->productable_type === ProductableEnum::BUNDLE->value) {
                 $pdoData['fulfillment_type'] = 'composite';
                 $pdoData['delivery_method']  = 'bundle';

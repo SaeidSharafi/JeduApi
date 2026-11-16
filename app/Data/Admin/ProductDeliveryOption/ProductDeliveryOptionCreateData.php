@@ -101,7 +101,11 @@ final class ProductDeliveryOptionCreateData extends Data
      */
     public static function rules(?ValidationContext $context = null): array
     {
-        $isBundle = self::isBundleProduct();
+        $isBundle     = self::isBundleProduct();
+        $routeProduct = request()->route('product');
+        $surveyRules  = self::surveyConfigurationRules(
+            $routeProduct instanceof Product ? $routeProduct->productable_type : null,
+        );
 
         $baseRules = [
             'name'                      => ['required', 'string', 'max:255'],
@@ -126,9 +130,7 @@ final class ProductDeliveryOptionCreateData extends Data
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
                 'after_or_equal:available_from',
             ],
-            'access_days'     => ['nullable', 'integer', 'min:1'],
-            'survey_required' => ['sometimes', 'boolean'],
-            'survey_url'      => ['nullable', 'url', 'max:2048'],
+            'access_days' => ['nullable', 'integer', 'min:1'],
         ];
 
         if ($isBundle) {
@@ -137,7 +139,7 @@ final class ProductDeliveryOptionCreateData extends Data
                 'delivery_method'  => ['prohibited'],
             ]);
 
-            return array_merge($baseRules, $bundleRules, ProductDeliveryOptionDateNormalizer::rules());
+            return array_merge($baseRules, $surveyRules, $bundleRules, ProductDeliveryOptionDateNormalizer::rules());
         }
 
         $nonBundleRules = [
@@ -164,7 +166,7 @@ final class ProductDeliveryOptionCreateData extends Data
             $context?->payload['details']          ?? null
         );
 
-        $rules = array_merge($baseRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
+        $rules = array_merge($baseRules, $surveyRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
 
         if (isGeneratingScribeDocs()) {
             // Scribe extracts the docs without a bound route, so the Bundle
@@ -186,6 +188,24 @@ final class ProductDeliveryOptionCreateData extends Data
         $product = request()->route('product');
 
         return $product instanceof Product && $product->productable_type === 'bundle';
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public static function surveyConfigurationRules(?string $productableType): array
+    {
+        if ($productableType !== null && ! in_array($productableType, ['course', 'seminar'], true)) {
+            return [
+                'survey_required' => ['missing'],
+                'survey_url'      => ['missing'],
+            ];
+        }
+
+        return [
+            'survey_required' => ['sometimes', 'boolean'],
+            'survey_url'      => ['nullable', 'url', 'max:2048'],
+        ];
     }
 
     public static function attributes(...$args): array
@@ -329,12 +349,12 @@ Each value determines which `details.*` fields are required.',
                 'example'     => 90,
             ],
             'survey_required' => [
-                'description' => 'Whether Course and Seminar enrollments on this delivery option must complete the enrollment survey before viewing results. Defaults to true for eligible products.',
+                'description' => 'Whether Course and Seminar enrollments on this delivery option must complete the enrollment survey before viewing results. Defaults to true for eligible products. Omit both survey fields for Bundle and Digital Asset products; explicitly sending either field is rejected.',
                 'required'    => false,
                 'example'     => true,
             ],
             'survey_url' => [
-                'description' => 'Optional survey URL for this delivery option. A required survey without a URL keeps course results locked while it is being prepared.',
+                'description' => 'Optional survey URL for this delivery option. A required survey without a URL keeps course results locked while it is being prepared. Omit both survey fields for Bundle and Digital Asset products; explicitly sending either field is rejected.',
                 'required'    => false,
                 'example'     => 'https://survey.example.com/course-feedback',
             ],

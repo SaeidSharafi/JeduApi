@@ -6,6 +6,7 @@ namespace App\Data\Admin\ProductDeliveryOption;
 
 use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Models\ProductDeliveryOption;
 use App\Rules\ValidNormalizedJalaliDateRule;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -52,7 +53,12 @@ final class ProductDeliveryOptionUpdateData extends Data
      */
     public static function rules(?ValidationContext $context = null): array
     {
-        $isBundle = ProductDeliveryOptionCreateData::isBundleProduct();
+        $isBundle        = ProductDeliveryOptionCreateData::isBundleProduct();
+        $routeOption     = request()->route('delivery_option');
+        $productableType = $routeOption instanceof ProductDeliveryOption
+            ? $routeOption->product?->productable_type
+            : null;
+        $surveyRules = ProductDeliveryOptionCreateData::surveyConfigurationRules($productableType);
 
         $baseRules = [
             'name'                      => ['required', 'string', 'max:255'],
@@ -77,13 +83,11 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'bail', 'nullable', new ValidNormalizedJalaliDateRule, 'date_format:Y-m-d',
                 'after_or_equal:available_from',
             ],
-            'access_days'     => ['nullable', 'integer', 'min:1'],
-            'survey_required' => ['sometimes', 'boolean'],
-            'survey_url'      => ['sometimes', 'nullable', 'url', 'max:2048'],
+            'access_days' => ['nullable', 'integer', 'min:1'],
         ];
 
         if ($isBundle) {
-            return array_merge($baseRules, ProductDeliveryOptionCreateData::bundleRules(), ProductDeliveryOptionDateNormalizer::rules());
+            return array_merge($baseRules, $surveyRules, ProductDeliveryOptionCreateData::bundleRules(), ProductDeliveryOptionDateNormalizer::rules());
         }
 
         $nonBundleRules = [
@@ -110,7 +114,7 @@ final class ProductDeliveryOptionUpdateData extends Data
             'details'
         );
 
-        $rules = array_merge($baseRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
+        $rules = array_merge($baseRules, $surveyRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
 
         if (isGeneratingScribeDocs()) {
             // Scribe extracts the docs without a bound route, so the Bundle
@@ -185,12 +189,12 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'example'     => 50,
             ],
             'survey_required' => [
-                'description' => 'Whether Course and Seminar enrollments on this delivery option must complete the enrollment survey before viewing results.',
+                'description' => 'Whether Course and Seminar enrollments on this delivery option must complete the enrollment survey before viewing results. Omit both survey fields for Bundle and Digital Asset products; explicitly sending either field is rejected.',
                 'required'    => false,
                 'example'     => true,
             ],
             'survey_url' => [
-                'description' => 'Optional survey URL for this delivery option. A required survey without a URL keeps course results locked while it is being prepared.',
+                'description' => 'Optional survey URL for this delivery option. A required survey without a URL keeps course results locked while it is being prepared. Omit both survey fields for Bundle and Digital Asset products; explicitly sending either field is rejected.',
                 'required'    => false,
                 'example'     => 'https://survey.example.com/course-feedback',
             ],

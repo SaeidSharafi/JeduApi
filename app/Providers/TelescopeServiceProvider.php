@@ -19,6 +19,7 @@ final class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     {
         // Telescope::night();
 
+        Telescope::hideResponseParameters(['data.survey_block.url']);
         $this->hideSensitiveRequestDetails();
 
         $isLocal = $this->app->environment('local');

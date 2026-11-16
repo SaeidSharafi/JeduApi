@@ -413,13 +413,16 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - enrollment_status (VARCHAR default active)
   - access_start_date (DATE nullable)
   - access_end_date (DATE nullable)
+  - survey_completed_at (TIMESTAMP nullable) — verified survey completion time
+  - survey_token (TEXT nullable) — Laravel-encrypted enrollment bearer token; omitted from model serialization
+  - survey_token_digest (VARCHAR(64) nullable, UNIQUE) — SHA-256 lookup digest for the random token
   - provisioning_data (JSONB nullable) — per-provider execution payload with canonical references
   - provisioning_plan (JSONB not null, default version 1 empty provider plan) — canonical versioned applicability/readiness snapshot
   - provisioning_status (VARCHAR, default `healthy`, indexed) — aggregate provisioning health (`ready`, `in_progress`, `healthy`, `degraded`, `manual_action_required`)
   - revocation_status (VARCHAR nullable, indexed) — external access revocation lifecycle (`pending`, `failed`, `manual_action_required`, `revoked`); null when no revocation was ever required
   - notes (TEXT nullable)
   - created_at/updated_at (TIMESTAMPS)
-- Indexes: UNIQUE(uuid), INDEX(uuid)
+- Indexes: UNIQUE(uuid), INDEX(uuid), UNIQUE(survey_token_digest)
 
 ---
 ### Table: `provisioning_attempts`

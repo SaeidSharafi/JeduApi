@@ -253,6 +253,12 @@ describe('User with permissions', function (): void {
         $data             = $deliveryOption->toArray();
         $data['details']  = ['nili_room_id' => 'nili-room-new'];
         $data['teachers'] = $this->teachers->pluck('id')->toArray();
+        if (in_array($deliveryOption->product->productable_type, [
+            App\Enums\Product\ProductableEnum::BUNDLE->value,
+            App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
+        ], true)) {
+            unset($data['survey_required'], $data['survey_url']);
+        }
 
         $response = $this->putJson(route('api.v1.admin.delivery-options.update', [
             'product'         => $deliveryOption->product_id,
@@ -304,6 +310,31 @@ describe('User with permissions', function (): void {
             'component_product_delivery_option_id' => $component->id,
             'allocation'                           => $component->price,
         ]);
+    });
+
+    it('rejects survey settings when creating a Bundle delivery option', function (): void {
+        $bundle        = Bundle::factory()->create();
+        $bundleProduct = App\Models\Product::factory()->create([
+            'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+        ]);
+        $component = ProductDeliveryOption::factory()->create();
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE]);
+
+        $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $bundleProduct->id]), [
+            'name'       => 'Invalid Bundle survey option',
+            'price'      => $component->price,
+            'status'     => 'published',
+            'details'    => [],
+            'components' => [[
+                'product_delivery_option_id' => $component->id,
+                'allocation'                 => $component->price,
+            ]],
+            'survey_required' => true,
+            'survey_url'      => null,
+        ])->assertUnprocessable()->assertJsonValidationErrors(['survey_required', 'survey_url']);
+
+        expect(ProductDeliveryOption::query()->where('product_id', $bundleProduct->id)->exists())->toBeFalse();
     });
 
     it('should reject fulfilment fields on a Bundle delivery option', function (): void {
@@ -526,6 +557,12 @@ describe('User with permissions', function (): void {
             'ims_course_code'  => 'course-id-123',
             'activity_id'      => null,
         ];
+        if (in_array($deliveryOption->product->productable_type, [
+            App\Enums\Product\ProductableEnum::BUNDLE->value,
+            App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
+        ], true)) {
+            unset($data['survey_required'], $data['survey_url']);
+        }
         $newTeachers      = Teacher::factory(2)->create();
         $data['teachers'] = $newTeachers->pluck('id')->toArray();
 
@@ -608,6 +645,83 @@ describe('User with permissions', function (): void {
             'prepayment_amount'       => null,
         ]);
     });
+
+    it('rejects survey settings when updating a Bundle delivery option without changing it', function (): void {
+        $bundle        = Bundle::factory()->create();
+        $bundleProduct = App\Models\Product::factory()->create([
+            'productable_type' => App\Enums\Product\ProductableEnum::BUNDLE->value,
+            'productable_id'   => $bundle->id,
+        ]);
+        $component      = ProductDeliveryOption::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $bundleProduct->id,
+            'fulfillment_type'        => App\Enums\Product\FulfillmentTypeEnum::COMPOSITE,
+            'delivery_method'         => App\Enums\Product\DeliveryMethodEnum::BUNDLE,
+            'is_prepayment_available' => false,
+            'prepayment_amount'       => null,
+            'details_json'            => [],
+            'survey_required'         => true,
+            'survey_url'              => 'https://survey.example.test/existing',
+        ]);
+        $deliveryOption->bundleComponents()->attach($component->id, ['allocation' => $component->price]);
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_UPDATE]);
+
+        $this->putJson(route('api.v1.admin.delivery-options.update', [
+            'product'         => $bundleProduct->id,
+            'delivery_option' => $deliveryOption->id,
+        ]), [
+            'name'       => 'Bundle option',
+            'sku'        => $deliveryOption->sku,
+            'price'      => $component->price,
+            'status'     => 'published',
+            'details'    => [],
+            'capacity'   => null,
+            'components' => [[
+                'product_delivery_option_id' => $component->id,
+                'allocation'                 => $component->price,
+            ]],
+            'survey_required' => false,
+            'survey_url'      => null,
+        ])->assertUnprocessable()->assertJsonValidationErrors(['survey_required', 'survey_url']);
+
+        $this->assertDatabaseHas('product_delivery_options', [
+            'id'              => $deliveryOption->id,
+            'name'            => $deliveryOption->name,
+            'survey_required' => true,
+            'survey_url'      => 'https://survey.example.test/existing',
+        ]);
+    });
+
+    it('rejects survey settings when updating a Digital Asset delivery option without changing it', function (): void {
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_UPDATE]);
+        $product        = App\Models\Product::factory()->withDigitalAsset()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'       => $product->id,
+            'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::DIGITAL,
+            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD,
+            'details_json'     => ['max_downloads' => 5],
+            'survey_required'  => true,
+            'survey_url'       => 'https://survey.example.test/existing-digital',
+        ]);
+        $data                    = $deliveryOption->toArray();
+        $data['details']         = ['max_downloads' => 5];
+        $data['teachers']        = [$this->teachers[0]->id];
+        $data['survey_required'] = false;
+        $data['survey_url']      = null;
+
+        $this->putJson(route('api.v1.admin.delivery-options.update', [
+            'product'         => $product->id,
+            'delivery_option' => $deliveryOption->id,
+        ]), $data)->assertUnprocessable()->assertJsonValidationErrors(['survey_required', 'survey_url']);
+
+        $this->assertDatabaseHas('product_delivery_options', [
+            'id'              => $deliveryOption->id,
+            'name'            => $deliveryOption->name,
+            'survey_required' => true,
+            'survey_url'      => 'https://survey.example.test/existing-digital',
+        ]);
+    });
+
     it('should reject is_featured on Bundle delivery option update requests', function (): void {
         $bundle        = Bundle::factory()->create();
         $bundleProduct = App\Models\Product::factory()->create([
@@ -775,6 +889,27 @@ describe('User without permissions', function (): void {
 });
 
 describe('validation', function (): void {
+    it('rejects survey settings when creating a Digital Asset delivery option', function (): void {
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE]);
+        $product = App\Models\Product::factory()->withDigitalAsset()->create();
+        $teacher = Teacher::factory()->create();
+        $data    = ProductDeliveryOption::factory()->make([
+            'product_id'       => $product->id,
+            'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::DIGITAL->value,
+            'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
+        ])->toArray();
+        $data['teachers']        = [$teacher->id];
+        $data['details']         = ['max_downloads' => 5];
+        $data['survey_required'] = true;
+        $data['survey_url']      = 'https://survey.example.test/digital-asset';
+
+        $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['survey_required', 'survey_url']);
+
+        expect(ProductDeliveryOption::query()->where('product_id', $product->id)->exists())->toBeFalse();
+    });
+
     it('distinguishes an invalid Jalali date from an invalid date format', function (): void {
         $this->app->setLocale('fa');
         $this->authorized_user([

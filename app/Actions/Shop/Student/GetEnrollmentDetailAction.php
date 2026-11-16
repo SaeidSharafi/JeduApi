@@ -28,6 +28,8 @@ use Spatie\LaravelData\DataCollection;
 
 final readonly class GetEnrollmentDetailAction
 {
+    public function __construct(private GenerateEnrollmentSurveyUrlAction $surveyUrl) {}
+
     public function handle(Enrollment $enrollment): EnrollmentDetailData
     {
         $enrollment->loadMissing([
@@ -144,7 +146,7 @@ final readonly class GetEnrollmentDetailAction
         ], true);
         $isRequired  = $isEligible && $enrollment->productDeliveryOption->survey_required;
         $isCompleted = $enrollment->survey_completed_at !== null;
-        $url         = $isRequired ? $enrollment->productDeliveryOption->survey_url : null;
+        $url         = $this->surveyUrl->handle($enrollment);
         $state       = match (true) {
             ! $isRequired => 'not_required',
             $isCompleted  => 'completed',

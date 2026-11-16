@@ -114,6 +114,10 @@ it('resolves survey state and URL independently for sibling delivery options', f
     ]);
     $awaiting = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $awaitingOption);
     $pending  = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $pendingOption);
+    $pending->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date' => today(),
+    ])->saveQuietly();
 
     $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $awaiting->uuid]))
         ->assertOk()
@@ -123,8 +127,179 @@ it('resolves survey state and URL independently for sibling delivery options', f
         ->assertOk()
         ->assertJsonPath('data.survey_block.state', 'pending')
         ->assertJsonPath('data.survey_block.results_locked', true)
-        ->assertJsonPath('data.survey_block.url', 'https://survey.example.test/online');
+        ->assertJsonPath('data.survey_block.url', fn (?string $url): bool => str_starts_with($url ?? '', 'https://survey.example.test/online?'));
 });
+
+it('returns a stable encoded bearer link for the exact PDO after access starts', function (): void {
+    $course = Course::factory()->create([
+        'full_name' => 'دوره & پیشرفته',
+    ]);
+    $product = Product::factory()->create([
+        'name'             => 'نام محصول + سطح دو',
+        'slug'             => 'product-canonical-slug',
+        'productable_type' => $course->getMorphClass(),
+        'productable_id'   => $course->id,
+    ]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'product_id'      => $product->id,
+        'survey_required' => true,
+        'survey_url'      => 'https://survey.example.test/form?utm_source=mail&enrollment_token=forged&product_slug=wrong-slug&product_name=wrong&course_name=wrong&product_type=seminar#finish',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::EXPIRED,
+        'access_start_date' => today()->subDays(3),
+        'access_end_date'   => today()->subDay(),
+        'revocation_status' => null,
+    ])->saveQuietly();
+    expect(filled($enrollment->fresh()->survey_token))->toBeTrue();
+    $enrollment->forceFill(['survey_token' => null, 'survey_token_digest' => null])->saveQuietly();
+
+    $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'pending');
+    $url   = $response->json('data.survey_block.url');
+    $parts = parse_url($url);
+    parse_str($parts['query'] ?? '', $query);
+    $stored = $enrollment->fresh();
+
+    expect($parts['fragment'] ?? null)->toBe('finish')
+        ->and($query['utm_source'] ?? null)->toBe('mail')
+        ->and($query['product_slug'] ?? null)->toBe('product-canonical-slug')
+        ->and($query['product_name'] ?? null)->toBe('نام محصول + سطح دو')
+        ->and($query['course_name'] ?? null)->toBe('دوره & پیشرفته')
+        ->and($query['product_type'] ?? null)->toBe('course')
+        ->and($query['enrollment_token'] ?? null)->not->toBe('forged')
+        ->and($query['enrollment_token'] ?? '')->toMatch('/^[a-f0-9]{64}$/')
+        ->and(array_values($query))->not->toContain((string) $enrollment->id)
+        ->and($url)->not->toContain($enrollment->uuid)
+        ->and(array_values($query))->not->toContain((string) $deliveryOption->id)
+        ->and(array_values($query))->not->toContain((string) $product->id);
+    expect(hash_equals((string) $stored->survey_token, (string) ($query['enrollment_token'] ?? '')))->toBeTrue()
+        ->and($stored->survey_token_digest === hash('sha256', (string) $stored->survey_token))->toBeTrue()
+        ->and($stored->toArray())->not->toHaveKey('survey_token')
+        ->and($stored->toArray())->not->toHaveKey('survey_token_digest');
+
+    $enrollment->productDeliveryOption->product->update(['name' => 'renamed product', 'slug' => 'renamed-slug']);
+    $enrollment->productDeliveryOption->update(['survey_url' => 'https://survey.example.test/replaced?source=latest']);
+    $again = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()->json('data.survey_block.url');
+    parse_str(parse_url($again, PHP_URL_QUERY) ?: '', $againQuery);
+
+    expect($againQuery['enrollment_token'] ?? null)->toBe($query['enrollment_token'])
+        ->and($againQuery['product_slug'] ?? null)->toBe('renamed-slug')
+        ->and($againQuery['product_name'] ?? null)->toBe('renamed product')
+        ->and($againQuery['source'] ?? null)->toBe('latest')
+        ->and(parse_url($again, PHP_URL_PATH))->toBe('/replaced');
+});
+
+it('supports a shared survey URL across PDOs with distinct enrollment tokens', function (): void {
+    $product         = Product::factory()->withCourse()->create();
+    $deliveryOptions = collect([DeliveryMethodEnum::IN_PERSON, DeliveryMethodEnum::LMS_MOODLE])
+        ->map(fn (DeliveryMethodEnum $method): App\Models\ProductDeliveryOption => App\Models\ProductDeliveryOption::factory()->create([
+            'product_id'       => $product->id,
+            'delivery_method'  => $method,
+            'fulfillment_type' => $method->getFulfillmentType(),
+            'survey_required'  => true,
+            'survey_url'       => 'https://survey.example.test/shared?utm_campaign=fall',
+        ]));
+    $enrollments = $deliveryOptions->map(function (App\Models\ProductDeliveryOption $deliveryOption): Enrollment {
+        $enrollment = createEnrollment($this->user, $deliveryOption->delivery_method, deliveryOption: $deliveryOption);
+        $enrollment->forceFill([
+            'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+            'access_start_date' => today(),
+        ])->saveQuietly();
+
+        return $enrollment;
+    });
+
+    $tokens = $enrollments->map(function (Enrollment $enrollment): string {
+        $url = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+            ->assertOk()->json('data.survey_block.url');
+        parse_str(parse_url($url, PHP_URL_QUERY) ?: '', $query);
+
+        expect(parse_url($url, PHP_URL_PATH))->toBe('/shared')
+            ->and($query['utm_campaign'] ?? null)->toBe('fall');
+
+        return (string) ($query['enrollment_token'] ?? '');
+    });
+
+    expect($tokens->unique()->count())->toBe(2);
+});
+
+it('provides an optional survey link without applying the results gate', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => false,
+        'survey_url'       => 'https://survey.example.test/optional?source=demo',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date' => today(),
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'not_required')
+        ->assertJsonPath('data.survey_block.results_locked', false)
+        ->assertJsonPath('data.survey_block.url', fn (?string $url): bool => str_starts_with($url ?? '', 'https://survey.example.test/optional?source=demo&'));
+});
+
+it('uses the Seminar product and readable name in its survey link', function (): void {
+    $seminar = App\Models\Seminar::factory()->create(['full_name' => 'Seminar readable name']);
+    $product = Product::factory()->create([
+        'name'             => 'Seminar catalog product',
+        'slug'             => 'seminar-product-slug',
+        'productable_type' => $seminar->getMorphClass(),
+        'productable_id'   => $seminar->id,
+    ]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'product_id'      => $product->id,
+        'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+        'survey_required' => true,
+        'survey_url'      => 'https://survey.example.test/seminar',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date' => today(),
+    ])->saveQuietly();
+
+    $response = $this->getJson(route('api.v1.shop.student.seminars.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+    parse_str(parse_url($response->json('data.survey_block.url'), PHP_URL_QUERY) ?: '', $query);
+
+    expect($query['product_slug'] ?? null)->toBe('seminar-product-slug')
+        ->and($query['product_name'] ?? null)->toBe('Seminar catalog product')
+        ->and($query['course_name'] ?? null)->toBe('Seminar readable name')
+        ->and($query['product_type'] ?? null)->toBe('seminar');
+});
+
+it('does not provide a survey link before access starts or for restricted enrollments', function (array $attributes): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => true,
+        'survey_url'       => 'https://survey.example.test/form',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill($attributes)->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.url', null);
+})->with([
+    'future access'      => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->addDay()]],
+    'awaiting payment'   => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::AWAITING_PAYMENT, 'access_start_date' => today()->subDay()]],
+    'suspended'          => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::SUSPENDED, 'access_start_date' => today()->subDay()]],
+    'cancelled'          => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::CANCELLED, 'access_start_date' => today()->subDay()]],
+    'revoked'            => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::EXPIRED, 'access_start_date' => today()->subDay(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::REVOKED]],
+    'revocation pending' => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->subDay(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::PENDING]],
+]);
 
 it('treats an optional survey as not required even when it has no URL or completion', function (): void {
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([

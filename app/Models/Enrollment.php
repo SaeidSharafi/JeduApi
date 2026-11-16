@@ -23,6 +23,11 @@ final class Enrollment extends Model
     /** @use HasFactory<EnrollmentFactory> */
     use HasFactory;
 
+    protected $hidden = [
+        'survey_token',
+        'survey_token_digest',
+    ];
+
     protected $attributes
         = [
             'provisioning_plan'   => '{"version":1,"providers":[],"status":"healthy"}',
@@ -164,6 +169,16 @@ final class Enrollment extends Model
     {
         parent::boot();
 
+        self::creating(function (Enrollment $enrollment): void {
+            if (filled($enrollment->survey_token) && filled($enrollment->survey_token_digest)) {
+                return;
+            }
+
+            $token                           = bin2hex(random_bytes(32));
+            $enrollment->survey_token        = $token;
+            $enrollment->survey_token_digest = hash('sha256', $token);
+        });
+
         self::saved(function (Enrollment $enrollment): void {
             // Only dispatch when occupancy-relevant data changed. Access dates,
             // notes, provisioning_data and other metadata updates do NOT affect
@@ -197,6 +212,7 @@ final class Enrollment extends Model
             'provisioning_plan'   => 'array',
             'provisioning_status' => ProvisioningStatusEnum::class,
             'revocation_status'   => EnrollmentRevocationStatusEnum::class,
+            'survey_token'        => 'encrypted',
             'created_at'          => 'datetime',
             'updated_at'          => 'datetime',
         ];
