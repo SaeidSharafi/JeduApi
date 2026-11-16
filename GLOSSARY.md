@@ -126,6 +126,13 @@ _Avoid_: File, attachment, download
 A customer's purchased access to a specific product delivery option, bounded by an access window and enrollment status. Links customer, order item, and delivery option.
 _Avoid_: Order item, registration, subscription
 
+**Enrollment Survey**:
+A feedback survey configured for a Course or Seminar and answered in the context of an individual Enrollment.
+_Avoid_: Product Delivery Option survey, review
+
+**Course Results**:
+The outcomes presented to a student for an Enrollment, including course grades, quiz scores, and certificate information or access. Learning content is separate from Course Results.
+
 **Teacher**:
 An instructor profile record linked to at most one customer account. Existence of the link grants the teacher dashboard. A Teacher may exist unlinked (public course-page profile) without granting any account access.
 _Avoid_: instructor, professor
