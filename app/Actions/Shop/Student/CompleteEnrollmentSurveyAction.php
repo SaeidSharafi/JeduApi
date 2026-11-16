@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Actions\Shop\Student;
 
 use App\Data\Shop\Webhooks\PorslineSurveySubmissionData;
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Enrollment;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,7 +13,10 @@ use Illuminate\Validation\ValidationException;
 
 final readonly class CompleteEnrollmentSurveyAction
 {
-    public function __construct(private ForgetStudentQuizCacheAction $forgetStudentQuizCache) {}
+    public function __construct(
+        private ForgetStudentQuizCacheAction $forgetStudentQuizCache,
+        private EnrollmentSurveyPolicyAction $surveyPolicy,
+    ) {}
 
     public function handle(PorslineSurveySubmissionData $submission): void
     {
@@ -51,15 +53,7 @@ final readonly class CompleteEnrollmentSurveyAction
                 return false;
             }
 
-            $canComplete = in_array($enrollment->enrollment_status, [
-                EnrollmentStatusEnum::ACTIVE,
-                EnrollmentStatusEnum::EXPIRED,
-            ], true)
-                && ($enrollment->access_start_date === null
-                    || $enrollment->access_start_date->lessThanOrEqualTo(today()))
-                && $enrollment->revocation_status === null;
-
-            if (! $canComplete) {
+            if (! $this->surveyPolicy->allowsSurveyCompletion($enrollment)) {
                 throw ValidationException::withMessages([
                     'variables' => __('messages.enrollments.survey_token_invalid'),
                 ]);

@@ -133,6 +133,30 @@ it('resolves survey state and URL independently for sibling delivery options', f
         ->assertJsonPath('data.survey_block.url', fn (?string $url): bool => str_starts_with($url ?? '', 'https://survey.example.test/online?'));
 });
 
+it('keeps configured survey state pending when access suppresses the link', function (array $accessState): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => true,
+        'survey_url'       => 'https://survey.example.test/restricted',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill($accessState)->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'pending')
+        ->assertJsonPath('data.survey_block.results_locked', true)
+        ->assertJsonPath('data.survey_block.url', null)
+        ->assertJsonPath('data.survey_block.message', null);
+})->with([
+    'future access'    => ['accessState' => ['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->addDay()]],
+    'awaiting payment' => ['accessState' => ['enrollment_status' => App\Enums\EnrollmentStatusEnum::AWAITING_PAYMENT, 'access_start_date' => today()]],
+    'suspended'        => ['accessState' => ['enrollment_status' => App\Enums\EnrollmentStatusEnum::SUSPENDED, 'access_start_date' => today()]],
+    'revoked'          => ['accessState' => ['enrollment_status' => App\Enums\EnrollmentStatusEnum::CANCELLED, 'access_start_date' => today(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::REVOKED]],
+]);
+
 it('returns a stable encoded bearer link for the exact PDO after access starts', function (): void {
     $course = Course::factory()->create([
         'full_name' => 'دوره & پیشرفته',

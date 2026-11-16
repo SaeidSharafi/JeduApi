@@ -15,7 +15,6 @@ use App\Data\Shop\Student\Enrollment\EnrollmentSurveyBlockData;
 use App\Data\Shop\Student\Review\ReviewData;
 use App\Data\Shop\Teacher\TeacherDetailData;
 use App\Enums\Content\ReviewStatusEnum;
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\ProvisioningOutcomeStatusEnum;
@@ -29,7 +28,10 @@ use Spatie\LaravelData\DataCollection;
 
 final readonly class GetEnrollmentDetailAction
 {
-    public function __construct(private GenerateEnrollmentSurveyUrlAction $surveyUrl) {}
+    public function __construct(
+        private GenerateEnrollmentSurveyUrlAction $surveyUrl,
+        private EnrollmentSurveyPolicyAction $surveyPolicy,
+    ) {}
 
     public function handle(Enrollment $enrollment): EnrollmentDetailData
     {
@@ -130,13 +132,7 @@ final readonly class GetEnrollmentDetailAction
             );
         }
 
-        $isEligible = in_array($enrollment->enrollment_status, [
-            EnrollmentStatusEnum::ACTIVE,
-            EnrollmentStatusEnum::EXPIRED,
-        ], true)
-            && ($enrollment->access_start_date === null
-                || $enrollment->access_start_date->lessThanOrEqualTo(today()))
-                                   && $enrollment->revocation_status === null;
+        $isEligible  = $this->surveyPolicy->allowsSurveyCompletion($enrollment);
         $isAvailable = $isEligible && ! $resultsLocked;
 
         return new EnrollmentCertificateInfoData(
@@ -147,19 +143,16 @@ final readonly class GetEnrollmentDetailAction
 
     private function buildSurveyBlock(Enrollment $enrollment): EnrollmentSurveyBlockData
     {
-        $productable = $enrollment->productDeliveryOption->product->productable;
-        $isEligible  = in_array($productable->getMorphClass(), [
-            ProductableEnum::COURSE->value,
-            ProductableEnum::SEMINAR->value,
-        ], true);
-        $isRequired  = $isEligible && $enrollment->productDeliveryOption->survey_required;
-        $isCompleted = $enrollment->survey_completed_at !== null;
-        $url         = $this->surveyUrl->handle($enrollment);
-        $state       = match (true) {
-            ! $isRequired => 'not_required',
-            $isCompleted  => 'completed',
-            blank($url)   => 'awaiting_survey',
-            default       => 'pending',
+        $isRequired = $this->surveyPolicy->supportsSurvey($enrollment)
+            && $enrollment->productDeliveryOption->survey_required;
+        $isCompleted      = $enrollment->survey_completed_at !== null;
+        $url              = $this->surveyUrl->handle($enrollment);
+        $hasConfiguredUrl = filled($enrollment->productDeliveryOption->survey_url);
+        $state            = match (true) {
+            ! $isRequired       => 'not_required',
+            $isCompleted        => 'completed',
+            ! $hasConfiguredUrl => 'awaiting_survey',
+            default             => 'pending',
         };
 
         return new EnrollmentSurveyBlockData(

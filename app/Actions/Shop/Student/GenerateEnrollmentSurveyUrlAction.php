@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\Student;
 
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Enrollment;
 use Illuminate\Support\Facades\DB;
 
 final readonly class GenerateEnrollmentSurveyUrlAction
 {
+    public function __construct(private EnrollmentSurveyPolicyAction $surveyPolicy) {}
+
     /**
      * Return the exact PDO survey URL populated with stable enrollment reporting values.
      */
@@ -28,10 +29,7 @@ final readonly class GenerateEnrollmentSurveyUrlAction
             return null;
         }
 
-        if (! in_array($enrollment->enrollment_status, [EnrollmentStatusEnum::ACTIVE, EnrollmentStatusEnum::EXPIRED], true)
-            || ($enrollment->access_start_date !== null && $enrollment->access_start_date->isFuture())
-            || $enrollment->revocation_status !== null
-        ) {
+        if (! $this->surveyPolicy->allowsSurveyCompletion($enrollment)) {
             return null;
         }
 

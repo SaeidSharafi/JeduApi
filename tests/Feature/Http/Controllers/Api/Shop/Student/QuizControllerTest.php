@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
+use App\Data\Shop\Student\Blocks\MoodleActivityData;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
@@ -125,6 +127,51 @@ it('applies a changed survey requirement to the next read of cached quizzes', fu
     $this->getJson($route)
         ->assertOk()
         ->assertJsonPath('data.0.activities.0.grade', null);
+});
+
+it('redacts real Moodle DTO results without mutating the cached DTO', function (): void {
+    $this->customer();
+    $deliveryOption = ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'details_json'     => ['moodle_course_id' => 303],
+        'survey_required'  => true,
+        'product_id'       => Product::factory()->withCourse(),
+    ]);
+    createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $quizzes = [new LmsMoodleBlockData(
+        visible: true,
+        name: 'Course DTO',
+        course_url: 'https://moodle.example.test/course/view.php?id=303',
+        completed: false,
+        course_grade: 'A',
+        activities: [MoodleActivityData::from([
+            'url'   => '/mod/quiz/view.php?id=17',
+            'cid'   => 17,
+            'name'  => 'Quiz',
+            'type'  => 'quiz',
+            'state' => 1,
+            'grade' => '95',
+        ])],
+    )];
+    $this->mock(MoodleService::class, function ($mock) use ($quizzes): void {
+        $mock->shouldReceive('findOrCreateUser')->once()->andReturn([55, 'student']);
+        $mock->shouldReceive('getAllQuizzes')->once()->andReturn($quizzes);
+    });
+    $route = route('api.v1.shop.student.quizzes');
+
+    $this->getJson($route)
+        ->assertOk()
+        ->assertJsonPath('data.0.course_grade', null)
+        ->assertJsonPath('data.0.activities.0.grade', null)
+        ->assertJsonPath('data.0.activities.0.score', null);
+
+    $deliveryOption->update(['survey_required' => false]);
+
+    $this->getJson($route)
+        ->assertOk()
+        ->assertJsonPath('data.0.course_grade', 'A')
+        ->assertJsonPath('data.0.activities.0.grade', '95');
 });
 
 it('returns 401 for unauthenticated request', function (): void {
