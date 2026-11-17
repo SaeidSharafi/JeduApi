@@ -4,27 +4,35 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\Student;
 
+use App\Contracts\Integrations\ImsClientContract;
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
 use App\Data\Shop\Student\Blocks\DigitalAssetFileData;
 use App\Data\Shop\Student\Enrollment\DeliveryAccessData;
 use App\Data\Shop\Student\Enrollment\EnrollmentCertificateInfoData;
 use App\Data\Shop\Student\Enrollment\EnrollmentDetailData;
+use App\Data\Shop\Student\Enrollment\EnrollmentGradeInfoData;
+use App\Data\Shop\Student\Enrollment\EnrollmentGradeReportData;
+use App\Data\Shop\Student\Enrollment\EnrollmentGradeReportItemData;
 use App\Data\Shop\Student\Enrollment\EnrollmentQuizData;
 use App\Data\Shop\Student\Enrollment\EnrollmentReviewInfoData;
 use App\Data\Shop\Student\Enrollment\EnrollmentSurveyBlockData;
 use App\Data\Shop\Student\Review\ReviewData;
 use App\Data\Shop\Teacher\TeacherDetailData;
 use App\Enums\Content\ReviewStatusEnum;
+use App\Enums\EnrollmentGradeStateEnum;
 use App\Enums\EnrollmentSurveyStateEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\ProvisioningOutcomeStatusEnum;
+use App\Enums\User\CivilIdTypeEnum;
 use App\Enums\User\GenderEnum;
 use App\Exceptions\BundleStructuralInvariantException;
+use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Models\DigitalAsset;
 use App\Models\Enrollment;
 use App\Models\Review;
 use Hekmatinasser\Verta\Verta;
+use Illuminate\Http\Client\ConnectionException;
 use Spatie\LaravelData\DataCollection;
 
 final readonly class GetEnrollmentDetailAction
@@ -32,6 +40,7 @@ final readonly class GetEnrollmentDetailAction
     public function __construct(
         private GenerateEnrollmentSurveyUrlAction $surveyUrl,
         private EnrollmentSurveyPolicyAction $surveyPolicy,
+        private ImsClientContract $ims,
     ) {}
 
     public function handle(Enrollment $enrollment): EnrollmentDetailData
@@ -57,6 +66,7 @@ final readonly class GetEnrollmentDetailAction
         $files          = $this->buildFiles($enrollment);
         $quizzes        = $this->buildQuizzes($enrollment, $resultsLocked);
         $deliveryAccess = $this->buildDeliveryAccess($enrollment, $resultsLocked);
+        $gradeInfo      = $this->buildGradeInfo($enrollment, $resultsLocked);
 
         return new EnrollmentDetailData(
             uuid: $enrollment->uuid,
@@ -76,6 +86,113 @@ final readonly class GetEnrollmentDetailAction
             review_info: $reviewInfo,
             certificate_info: $certInfo,
             survey_block: $surveyBlock,
+            grade_info: $gradeInfo,
+        );
+    }
+
+    private function buildGradeInfo(Enrollment $enrollment, bool $resultsLocked): EnrollmentGradeInfoData
+    {
+        $details          = $enrollment->productDeliveryOption->details_json ?? [];
+        $courseCode       = data_get($details, 'ims_course_code');
+        $provisioning     = data_get($enrollment->provisioning_data, 'providers.ims.data', []);
+        $imsEnrollmentId  = data_get($provisioning, 'ims_enrollment_id');
+        $hasImsCourse     = is_string($courseCode)   && $courseCode !== '';
+        $hasImsEnrollment = is_int($imsEnrollmentId) && $imsEnrollmentId > 0;
+
+        if (! $hasImsCourse && ! $hasImsEnrollment) {
+            return new EnrollmentGradeInfoData(EnrollmentGradeStateEnum::NOT_SUPPORTED, null);
+        }
+
+        if ($resultsLocked || ! $this->surveyPolicy->allowsSurveyCompletion($enrollment)) {
+            return new EnrollmentGradeInfoData(EnrollmentGradeStateEnum::LOCKED, null);
+        }
+
+        $customer = $enrollment->customer;
+
+        if (! $hasImsEnrollment || ! filled($customer?->civil_id)
+                                || ! ($customer?->civil_id_type instanceof CivilIdTypeEnum)
+                                || ! $this->ims->isReady()
+        ) {
+            return new EnrollmentGradeInfoData(EnrollmentGradeStateEnum::UNAVAILABLE, null);
+        }
+
+        try {
+            $response = $this->ims->getEnrollmentGradeReport(
+                $imsEnrollmentId,
+                $customer->civil_id,
+                $customer->civil_id_type,
+            );
+        } catch (ExternalProvisioningException|ConnectionException) {
+            return new EnrollmentGradeInfoData(EnrollmentGradeStateEnum::UNAVAILABLE, null);
+        }
+
+        $report = $this->parseGradeReport($response);
+
+        if ($report === null) {
+            return new EnrollmentGradeInfoData(EnrollmentGradeStateEnum::UNAVAILABLE, null);
+        }
+
+        if ($report->status === 'none') {
+            return new EnrollmentGradeInfoData(EnrollmentGradeStateEnum::PENDING, null);
+        }
+
+        return new EnrollmentGradeInfoData(EnrollmentGradeStateEnum::AVAILABLE, $report);
+    }
+
+    /** @param array<string, mixed> $response */
+    private function parseGradeReport(array $response): ?EnrollmentGradeReportData
+    {
+        $payload          = data_get($response, 'data');
+        $status           = data_get($payload, 'status');
+        $translatedStatus = data_get($payload, 'status_translated');
+        $items            = data_get($payload, 'items');
+
+        if (! is_array($payload)
+            || ! in_array($status, ['passed', 'rejected', 'none', 'incomplete'], true)
+            || ! is_string($translatedStatus)
+            || ! is_array($items)
+            || ! array_is_list($items)
+        ) {
+            return null;
+        }
+
+        $reportItems = [];
+
+        foreach ($items as $item) {
+            if (! is_array($item)
+                || ! is_string($item['name'] ?? null)
+                || ! is_string($item['label'] ?? null)
+                || ! array_key_exists('value', $item)
+                || ! array_key_exists('pass_grade', $item)
+                || ! array_key_exists('is_passed', $item)
+            ) {
+                return null;
+            }
+
+            $value     = $item['value'];
+            $passGrade = $item['pass_grade'];
+            $isPassed  = $item['is_passed'];
+
+            if (($value !== null && ! is_int($value) && ! is_float($value))
+                || ($passGrade !== null && ! is_int($passGrade) && ! is_float($passGrade))
+                || ($isPassed !== null && ! is_bool($isPassed))
+            ) {
+                return null;
+            }
+
+            $reportItems[] = new EnrollmentGradeReportItemData(
+                name: $item['name'],
+                label: $item['label'],
+                value: $value          === null ? null : (float) $value,
+                pass_grade: $passGrade === null ? null : (float) $passGrade,
+                is_passed: $isPassed,
+            );
+        }
+
+        return new EnrollmentGradeReportData(
+            status: $status,
+            status_translated: $translatedStatus,
+            items: new DataCollection(EnrollmentGradeReportItemData::class, $reportItems),
         );
     }
 

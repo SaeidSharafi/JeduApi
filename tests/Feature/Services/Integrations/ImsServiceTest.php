@@ -366,6 +366,25 @@ it('getGrades and storeBulkGrades succeed', function (): void {
     expect($postRes['message'])->toBe('ok');
 });
 
+it('fetches a single enrollment grade report with the IMS student identity', function (): void {
+    Http::fake([
+        'https://ims.test/api/v2/enrollment/713/grade*' => Http::response([
+            'data' => ['status' => 'passed', 'status_translated' => 'Passed', 'items' => []],
+        ]),
+    ]);
+
+    $response = $this->imsService->getEnrollmentGradeReport(
+        713,
+        '1234567890',
+        CivilIdTypeEnum::NATIONAL_CODE,
+    );
+
+    expect(data_get($response, 'data.status'))->toBe('passed');
+    Http::assertSent(fn ($request): bool => $request->method() === 'GET'
+        && $request->url()                                     === 'https://ims.test/api/v2/enrollment/713/grade?civil_id=1234567890&civil_id_type=national_code'
+        && $request->hasHeader('Authorization', 'Bearer ims-key'));
+});
+
 it('getTeacherCourses returns course list', function (): void {
     Http::fake([
         'https://ims.test/api/v2/teacher/courses*' => Http::response([

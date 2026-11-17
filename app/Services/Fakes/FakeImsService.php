@@ -39,6 +39,16 @@ final class FakeImsService implements ImsClientContract
         ]];
     }
 
+    /** @return array<string, mixed> */
+    public function getEnrollmentGradeReport(int $enrollmentId, string $civilId, CivilIdTypeEnum $civilIdType): array
+    {
+        return ['data' => [
+            'status'            => 'none',
+            'status_translated' => 'No grade',
+            'items'             => [],
+        ]];
+    }
+
     /** @param array<string, mixed> $queryParams @return array<string, mixed> */
     public function getAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdType, array $queryParams = []): array
     {

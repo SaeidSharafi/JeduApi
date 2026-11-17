@@ -55,14 +55,30 @@
         },
         "certificate_info": {
             "provides_certificate": true,
-            "is_available": false,
+            "is_available": true,
             "certificate_url": null
         },
         "survey_block": {
-            "state": "pending",
-            "results_locked": true,
+            "state": "completed",
+            "results_locked": false,
             "url": "https://survey.example.test/course-feedback?enrollment_token=opaque-token&product_slug=course-slug&product_name=Course%20Product&course_name=Course%20Name&product_type=course",
             "message": null
+        },
+        "grade_info": {
+            "state": "available",
+            "report": {
+                "status": "passed",
+                "status_translated": "Passed",
+                "items": [
+                    {
+                        "name": "final",
+                        "label": "Final",
+                        "value": 80,
+                        "pass_grade": 60,
+                        "is_passed": true
+                    }
+                ]
+            }
         }
     },
     "metadata": []

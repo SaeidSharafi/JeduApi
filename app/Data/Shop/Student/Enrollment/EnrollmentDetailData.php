@@ -43,5 +43,6 @@ final class EnrollmentDetailData extends Data
         public EnrollmentReviewInfoData $review_info,
         public ?EnrollmentCertificateInfoData $certificate_info,
         public ?EnrollmentSurveyBlockData $survey_block,
+        public EnrollmentGradeInfoData $grade_info,
     ) {}
 }

@@ -3,12 +3,17 @@
 declare(strict_types=1);
 
 use App\Actions\Shop\Student\GetEnrollmentDetailAction;
+use App\Contracts\Integrations\ImsClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\User\CivilIdTypeEnum;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Http\Controllers\Api\Shop\Student\CourseController;
 use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Product;
+use Illuminate\Http\Client\ConnectionException;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
@@ -35,6 +40,221 @@ it('returns enrollment detail for owner', function (): void {
     $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.uuid', $enrollment->uuid);
+});
+
+it('reports IMS course grade values only when an eligible grade report is available', function (array $case): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => false,
+        'details_json'     => $case['course_code'] === null ? [] : ['ims_course_code' => $case['course_code']],
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date' => null,
+        'revocation_status' => null,
+        'provisioning_data' => $case['ims_enrollment_id'] === null ? [] : ['providers' => ['ims' => ['data' => [
+            'ims_enrollment_id' => $case['ims_enrollment_id'],
+        ]]]],
+    ])->saveQuietly();
+    $this->user->forceFill([
+        'civil_id'      => '1234567890',
+        'civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE,
+    ])->save();
+
+    $this->mock(ImsClientContract::class, function ($mock) use ($case): void {
+        if ($case['check_ready']) {
+            $mock->shouldReceive('isReady')->once()->andReturn($case['service_ready']);
+        }
+
+        if ($case['service_ready'] && $case['ims_enrollment_id'] !== null) {
+            $gradeCheck = $mock->shouldReceive('getEnrollmentGradeReport')
+                ->once()
+                ->with($case['ims_enrollment_id'], '1234567890', CivilIdTypeEnum::NATIONAL_CODE);
+
+            if ($case['response'] instanceof Throwable) {
+                $gradeCheck->andThrow($case['response']);
+            } else {
+                $gradeCheck->andReturn($case['response']);
+            }
+        } else {
+            $mock->shouldNotReceive('getEnrollmentGradeReport');
+        }
+    });
+
+    $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+
+    expect($response->json('data.grade_info.state'))->toBe($case['state'])
+        ->and($response->json('data.grade_info.report'))->toBe($case['report'])
+        ->and($response->json('data.delivery_access.course_grade'))->toBeNull();
+})->with([
+    'grade available' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 80, 'pass_grade' => 60, 'is_passed' => true,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 80.0, 'pass_grade' => 60.0, 'is_passed' => true,
+            ]],
+        ],
+    ]],
+    'persisted IMS enrollment after config cleared' => [[
+        'course_code'   => null, 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 0, 'pass_grade' => 0, 'is_passed' => true,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 0.0, 'pass_grade' => 0.0, 'is_passed' => true,
+            ]],
+        ],
+    ]],
+    'grade pending' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'none', 'status_translated' => 'No grade', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => null, 'pass_grade' => 60, 'is_passed' => null,
+            ]],
+        ]], 'state' => 'pending', 'report' => null,
+    ]],
+    'failed grade is still available to review' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'rejected', 'status_translated' => 'Rejected', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 40, 'pass_grade' => 60, 'is_passed' => false,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'rejected', 'status_translated' => 'Rejected', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 40.0, 'pass_grade' => 60.0, 'is_passed' => false,
+            ]],
+        ],
+    ]],
+    'decimal grade and pass threshold are preserved' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 87.5, 'pass_grade' => 82.25, 'is_passed' => true,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 87.5, 'pass_grade' => 82.25, 'is_passed' => true,
+            ]],
+        ],
+    ]],
+    'grade without a pass threshold is preserved' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'participation', 'label' => 'Participation', 'value' => 72.5, 'pass_grade' => null, 'is_passed' => null,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'participation', 'label' => 'Participation', 'value' => 72.5, 'pass_grade' => null, 'is_passed' => null,
+            ]],
+        ],
+    ]],
+    'partial report is available' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'incomplete', 'status_translated' => 'Incomplete', 'items' => [
+                ['name' => 'midterm', 'label' => 'Midterm', 'value' => 80, 'pass_grade' => 60, 'is_passed' => true],
+                ['name' => 'final', 'label' => 'Final', 'value' => null, 'pass_grade' => 60, 'is_passed' => null],
+            ],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'incomplete', 'status_translated' => 'Incomplete', 'items' => [
+                ['name' => 'midterm', 'label' => 'Midterm', 'value' => 80.0, 'pass_grade' => 60.0, 'is_passed' => true],
+                ['name' => 'final', 'label' => 'Final', 'value' => null, 'pass_grade' => 60.0, 'is_passed' => null],
+            ],
+        ],
+    ]],
+    'upstream malformed' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => ['status' => 'unknown', 'status_translated' => 'Unknown', 'items' => []]],
+        'state'         => 'unavailable', 'report' => null,
+    ]],
+    'upstream malformed item value' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => '80', 'pass_grade' => 60, 'is_passed' => true,
+            ]],
+        ]], 'state' => 'unavailable', 'report' => null,
+    ]],
+    'upstream failure' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => new RecoverableProvisioningException('IMS unavailable.'), 'state' => 'unavailable', 'report' => null,
+    ]],
+    'upstream enrollment not found' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => new UnrecoverableProvisioningException('IMS enrollment not found.'), 'state' => 'unavailable', 'report' => null,
+    ]],
+    'upstream connection failure' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => new ConnectionException('IMS connection failed.'), 'state' => 'unavailable', 'report' => null,
+    ]],
+    'configured course without persisted enrollment' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => null, 'check_ready' => false,
+        'service_ready' => false, 'response' => null, 'state' => 'unavailable', 'report' => null,
+    ]],
+    'no IMS course configured' => [[
+        'course_code'   => null, 'ims_enrollment_id' => null, 'check_ready' => false,
+        'service_ready' => false, 'response' => null, 'state' => 'not_supported', 'report' => null,
+    ]],
+    'IMS service not ready' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => false, 'response' => null, 'state' => 'unavailable', 'report' => null,
+    ]],
+]);
+
+it('does not check IMS grade availability when enrollment access is ineligible', function (array $accessState): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'details_json'     => ['ims_course_code' => 'IMS-COURSE-1'],
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+    $enrollment->forceFill(array_merge($accessState, [
+        'provisioning_data' => ['providers' => ['ims' => ['data' => ['ims_enrollment_id' => 713]]]],
+    ]))->saveQuietly();
+    $this->mock(ImsClientContract::class, function ($mock): void {
+        $mock->shouldNotReceive('isReady');
+        $mock->shouldNotReceive('getEnrollmentGradeReport');
+    });
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.grade_info.state', 'locked');
+})->with([
+    'future access'  => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->addDay()]],
+    'revoked access' => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::REVOKED]],
+]);
+
+it('locks IMS grade availability while survey results are locked without calling IMS', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => true,
+        'survey_url'       => null,
+        'details_json'     => ['ims_course_code' => 'IMS-COURSE-1'],
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+    $this->mock(ImsClientContract::class, function ($mock): void {
+        $mock->shouldNotReceive('getEnrollmentGradeReport');
+    });
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.results_locked', true)
+        ->assertJsonPath('data.grade_info.state', 'locked')
+        ->assertJsonPath('data.grade_info.report', null);
 });
 
 it('locks course results while a required survey is still being prepared', function (): void {
@@ -421,6 +641,7 @@ it('certificate_info is null when productable does not provide certificate', fun
 it('reports seminar certificate capability independently of availability', function (bool $providesCertificate): void {
     $seminar    = App\Models\Seminar::factory()->create(['provides_certificate' => $providesCertificate]);
     $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, $seminar);
+    $enrollment->productDeliveryOption->forceFill(['survey_required' => true, 'survey_url' => null])->save();
 
     $this->getJson(route('api.v1.shop.student.seminars.show', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
