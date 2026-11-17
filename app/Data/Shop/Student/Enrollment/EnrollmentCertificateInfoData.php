@@ -9,6 +9,7 @@ use Spatie\LaravelData\Data;
 final class EnrollmentCertificateInfoData extends Data
 {
     public function __construct(
+        public bool $provides_certificate,
         public bool $is_available,
         public ?string $certificate_url,
     ) {}

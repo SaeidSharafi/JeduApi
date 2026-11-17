@@ -128,6 +128,7 @@ final readonly class GetEnrollmentDetailAction
 
         if (! $providesCertificate) {
             return new EnrollmentCertificateInfoData(
+                provides_certificate: false,
                 is_available: false,
                 certificate_url: null, // TODO: generate certificate URL when certificate generation is implemented
             );
@@ -137,6 +138,7 @@ final readonly class GetEnrollmentDetailAction
         $isAvailable = $isEligible && ! $resultsLocked;
 
         return new EnrollmentCertificateInfoData(
+            provides_certificate: true,
             is_available: $isAvailable,
             certificate_url: null, // TODO: generate certificate URL when certificate generation is implemented
         );

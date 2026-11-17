@@ -414,8 +414,22 @@ it('certificate_info is null when productable does not provide certificate', fun
 
     $response->assertOk();
     expect($response->json('data.certificate_info.is_available'))->toBeFalse()
+        ->and($response->json('data.certificate_info.provides_certificate'))->toBeFalse()
         ->and($response->json('data.certificate_info.certificate_url'))->toBeNull();
 });
+
+it('reports seminar certificate capability independently of availability', function (bool $providesCertificate): void {
+    $seminar    = App\Models\Seminar::factory()->create(['provides_certificate' => $providesCertificate]);
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, $seminar);
+
+    $this->getJson(route('api.v1.shop.student.seminars.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.certificate_info.provides_certificate', $providesCertificate)
+        ->assertJsonPath('data.certificate_info.is_available', false);
+})->with([
+    'supports certificates'         => [true],
+    'does not support certificates' => [false],
+]);
 
 it('certificate_info is_available false when survey_completed_at is null', function (): void {
     $course     = Course::factory()->create(['provides_certificate' => true]);
@@ -427,7 +441,8 @@ it('certificate_info is_available false when survey_completed_at is null', funct
     $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]));
 
     $response->assertOk();
-    expect($response->json('data.certificate_info.is_available'))->toBeFalse();
+    expect($response->json('data.certificate_info.provides_certificate'))->toBeTrue()
+        ->and($response->json('data.certificate_info.is_available'))->toBeFalse();
 });
 
 it('certificate_info is_available true when survey_completed_at is set', function (): void {
@@ -443,7 +458,8 @@ it('certificate_info is_available true when survey_completed_at is set', functio
     $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]));
 
     $response->assertOk();
-    expect($response->json('data.certificate_info.is_available'))->toBeTrue();
+    expect($response->json('data.certificate_info.provides_certificate'))->toBeTrue()
+        ->and($response->json('data.certificate_info.is_available'))->toBeTrue();
 });
 
 it('keeps certificate information unavailable after survey completion when the enrollment is not eligible', function (array $state): void {
@@ -457,6 +473,7 @@ it('keeps certificate information unavailable after survey completion when the e
     $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.certificate_info.is_available', false)
+        ->assertJsonPath('data.certificate_info.provides_certificate', true)
         ->assertJsonPath('data.certificate_info.certificate_url', null);
 })->with([
     'future access'      => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->addDay(), 'revocation_status' => null]],

@@ -54,6 +54,7 @@
             "review": null
         },
         "certificate_info": {
+            "provides_certificate": true,
             "is_available": false,
             "certificate_url": null
         },
