@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Student;
 
+use App\Actions\Shop\Student\RedactStudentQuizResultsAction;
 use App\Contracts\Cache\CacheStore;
 use App\Contracts\Integrations\MoodleClientContract;
 use App\Enums\System\CacheKey;
@@ -26,8 +27,10 @@ final class QuizController extends Controller
      *
      * @responseFile 200 resources/responses/shop/student/quizzes.json
      */
-    public function __invoke(MoodleClientContract $moodleService): \App\Contracts\ApiResponseInterface
-    {
+    public function __invoke(
+        MoodleClientContract $moodleService,
+        RedactStudentQuizResultsAction $redactResults,
+    ): \App\Contracts\ApiResponseInterface {
         $user = auth()->user();
 
         $quizzes = $this->cache->flexible(
@@ -39,6 +42,6 @@ final class QuizController extends Controller
                 return $moodleService->getAllQuizzes($moodleUserId);
             });
 
-        return apiResponse()->success($quizzes);
+        return apiResponse()->success($redactResults->handle($user, $quizzes));
     }
 }

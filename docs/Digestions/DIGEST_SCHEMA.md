@@ -240,6 +240,8 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - available_from (DATE nullable)
   - available_to (DATE nullable)
   - access_days (INT unsigned nullable, default null) — Number of days user has access to content from enrollment date; null means unlimited
+  - survey_required (BOOLEAN default false) — Per-PDO Course/Seminar enrollment-survey result gate; existing rows migrate to optional, and the admin create flow defaults new eligible PDOs to required
+  - survey_url (TEXT nullable) — Optional survey URL for this exact PDO; existing rows have no URL
   - composition_version (INT unsigned default 1) — Monotonic Bundle composition revision
   - bundle_review_required_at (TIMESTAMP nullable)
   - bundle_review_reasons (JSON nullable) — Stable material-change reason values
@@ -411,13 +413,16 @@ Reference for uploaded-doc chat: tables, columns, indexes, and constraints. Read
   - enrollment_status (VARCHAR default active)
   - access_start_date (DATE nullable)
   - access_end_date (DATE nullable)
+  - survey_completed_at (TIMESTAMP nullable) — verified survey completion time
+  - survey_token (TEXT nullable) — Laravel-encrypted enrollment bearer token; omitted from model serialization
+  - survey_token_digest (VARCHAR(64) nullable, UNIQUE) — SHA-256 lookup digest for the random token
   - provisioning_data (JSONB nullable) — per-provider execution payload with canonical references
   - provisioning_plan (JSONB not null, default version 1 empty provider plan) — canonical versioned applicability/readiness snapshot
   - provisioning_status (VARCHAR, default `healthy`, indexed) — aggregate provisioning health (`ready`, `in_progress`, `healthy`, `degraded`, `manual_action_required`)
   - revocation_status (VARCHAR nullable, indexed) — external access revocation lifecycle (`pending`, `failed`, `manual_action_required`, `revoked`); null when no revocation was ever required
   - notes (TEXT nullable)
   - created_at/updated_at (TIMESTAMPS)
-- Indexes: UNIQUE(uuid), INDEX(uuid)
+- Indexes: UNIQUE(uuid), INDEX(uuid), UNIQUE(survey_token_digest)
 
 ---
 ### Table: `provisioning_attempts`

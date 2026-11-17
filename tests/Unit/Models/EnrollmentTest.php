@@ -26,6 +26,8 @@ it('to array', function (): void {
             'created_at',
             'updated_at',
         ]);
+    expect($array)->not->toHaveKey('survey_token')
+        ->and($array)->not->toHaveKey('survey_token_digest');
 });
 
 test('order relationship', function (): void {

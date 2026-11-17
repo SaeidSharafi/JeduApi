@@ -15,6 +15,9 @@ interface ImsClientContract
     /** @param array<string, mixed> $payload @return array<string, mixed> */
     public function storeEnrollment(User $user, array $payload): array;
 
+    /** @return array<string, mixed> */
+    public function getEnrollmentGradeReport(int $enrollmentId, string $civilId, CivilIdTypeEnum $civilIdType): array;
+
     /** @param array<string, mixed> $queryParams @return array<string, mixed> */
     public function getAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdType, array $queryParams = []): array;
 

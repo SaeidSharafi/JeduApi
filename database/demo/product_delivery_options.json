@@ -23,6 +23,8 @@
   },
   {
     "id": 1,
+    "survey_required": false,
+    "survey_url": "https://survey.example.test/spotplayer-feedback",
     "product_id": 1,
     "name": "دسترسی آنلاین به محتوای دوره پایتون",
     "sku": "offline_service_1001",
@@ -46,6 +48,8 @@
   },
   {
     "id": 2,
+    "survey_required": true,
+    "survey_url": "https://survey.example.test/classroom-feedback",
     "product_id": 1,
     "name": "شرکت در کلاس حضوری دوره پایتون (IMS)",
     "sku": "in_person_service_1002",
@@ -207,6 +211,8 @@
   },
   {
     "id": 9,
+    "survey_required": true,
+    "survey_url": "https://survey.example.test/seminar-feedback",
     "product_id": 7,
     "name": "شرکت در سمینار آنلاین نجوم (IMS)",
     "sku": "online_service_1009",
@@ -230,6 +236,8 @@
   },
   {
     "id": 10,
+    "survey_required": true,
+    "survey_url": null,
     "product_id": 8,
     "name": "دسترسی آنلاین به دوره آواز سنتی",
     "sku": "offline_service_1010",

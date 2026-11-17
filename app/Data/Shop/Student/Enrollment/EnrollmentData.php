@@ -31,6 +31,7 @@ final class EnrollmentData extends Data
         public ?Verta $access_end_date,
         public ?string $notes,
         public ?array $provisioning_data,
+        public ?string $survey_completed_at,
         public ProductDeliveryOption $productDeliveryOption,
         public OrderItem $orderItem,
         public bool $is_virtual = false,
@@ -45,6 +46,7 @@ final class EnrollmentData extends Data
         return [
             'productDeliveryOption',
             'orderItem',
+            'survey_completed_at',
         ];
     }
 }

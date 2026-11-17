@@ -8,6 +8,7 @@ use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAct
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Product;
 use App\Rules\ProductDeliveryOptionCheckRule;
 use App\Rules\ValidNormalizedJalaliDateRule;
@@ -39,6 +40,8 @@ final class ProductDeliveryOptionCreateData extends Data
         public ?string $available_from = null,
         public ?string $available_to = null,
         public ?int $access_days = null,
+        public bool $survey_required = true,
+        public ?string $survey_url = null,
         public ?string $sku = null,
         public array $components = [],
     ) {}
@@ -99,7 +102,11 @@ final class ProductDeliveryOptionCreateData extends Data
      */
     public static function rules(?ValidationContext $context = null): array
     {
-        $isBundle = self::isBundleProduct();
+        $isBundle     = self::isBundleProduct();
+        $routeProduct = request()->route('product');
+        $surveyRules  = self::surveyConfigurationRules(
+            $routeProduct instanceof Product ? $routeProduct->productable_type : null,
+        );
 
         $baseRules = [
             'name'                      => ['required', 'string', 'max:255'],
@@ -133,7 +140,7 @@ final class ProductDeliveryOptionCreateData extends Data
                 'delivery_method'  => ['prohibited'],
             ]);
 
-            return array_merge($baseRules, $bundleRules, ProductDeliveryOptionDateNormalizer::rules());
+            return array_merge($baseRules, $surveyRules, $bundleRules, ProductDeliveryOptionDateNormalizer::rules());
         }
 
         $nonBundleRules = [
@@ -160,7 +167,7 @@ final class ProductDeliveryOptionCreateData extends Data
             $context?->payload['details']          ?? null
         );
 
-        $rules = array_merge($baseRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
+        $rules = array_merge($baseRules, $surveyRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
 
         if (isGeneratingScribeDocs()) {
             // Scribe extracts the docs without a bound route, so the Bundle
@@ -182,6 +189,24 @@ final class ProductDeliveryOptionCreateData extends Data
         $product = request()->route('product');
 
         return $product instanceof Product && $product->productable_type === 'bundle';
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public static function surveyConfigurationRules(?string $productableType): array
+    {
+        if ($productableType !== null && ! (ProductableEnum::tryFrom($productableType)?->supportsEnrollmentSurvey() ?? false)) {
+            return [
+                'survey_required' => ['missing'],
+                'survey_url'      => ['missing'],
+            ];
+        }
+
+        return [
+            'survey_required' => ['sometimes', 'boolean'],
+            'survey_url'      => ['nullable', 'url', 'max:2048'],
+        ];
     }
 
     public static function attributes(...$args): array
@@ -206,6 +231,8 @@ final class ProductDeliveryOptionCreateData extends Data
             'available_from'            => __('validation.attributes.product_delivery_option.available_from'),
             'available_to'              => __('validation.attributes.product_delivery_option.available_to'),
             'access_days'               => __('validation.attributes.product_delivery_option.access_days'),
+            'survey_required'           => __('validation.attributes.product_delivery_option.survey_required'),
+            'survey_url'                => __('validation.attributes.product_delivery_option.survey_url'),
             'teachers'                  => __('validation.attributes.product_delivery_option.teachers'),
             'teachers.*'                => __('validation.attributes.product_delivery_option.teacher_id'),
         ];
@@ -321,6 +348,16 @@ Each value determines which `details.*` fields are required.',
                 'description' => 'Rolling access window in days starting from the enrollment date. Overrides `available_to` for per-student expiry. E.g. 90 means access for 90 days after purchase.',
                 'required'    => false,
                 'example'     => 90,
+            ],
+            'survey_required' => [
+                'description' => 'Whether Course and Seminar enrollments on this delivery option must complete the enrollment survey before viewing results. Defaults to true for eligible products. Omit both survey fields for Bundle and Digital Asset products; explicitly sending either field is rejected.',
+                'required'    => false,
+                'example'     => true,
+            ],
+            'survey_url' => [
+                'description' => 'Optional survey URL for this delivery option. A required survey without a URL keeps course results locked while it is being prepared. Omit both survey fields for Bundle and Digital Asset products; explicitly sending either field is rejected.',
+                'required'    => false,
+                'example'     => 'https://survey.example.com/course-feedback',
             ],
             'teachers' => [
                 'description' => 'Array of teacher IDs to associate with this delivery option. Send an empty array if no teachers.',

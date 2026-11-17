@@ -41,8 +41,9 @@ final readonly class UpdateProductDeliveryOptionAction
             ->all();
 
         DB::transaction(function () use ($data, $deliveryOption): void {
-            $pdoData = $data->except('teachers', 'components')->toArray();
-            if ($deliveryOption->product?->productable_type === ProductableEnum::BUNDLE->value) {
+            $pdoData         = $data->except('teachers', 'components')->toArray();
+            $productableType = $deliveryOption->product?->productable_type;
+            if ($productableType === ProductableEnum::BUNDLE->value) {
                 $pdoData['fulfillment_type'] = 'composite';
                 $pdoData['delivery_method']  = 'bundle';
                 $pdoData['details_json']     = [];

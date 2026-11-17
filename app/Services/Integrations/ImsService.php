@@ -64,6 +64,26 @@ final class ImsService extends AbstractIntegrationService implements ImsClientCo
         return $result;
     }
 
+    /** @return array<string, mixed> */
+    public function getEnrollmentGradeReport(int $enrollmentId, string $civilId, CivilIdTypeEnum $civilIdType): array
+    {
+        $this->assertConfigured();
+
+        $endpoint = "/api/v2/enrollment/{$enrollmentId}/grade";
+        $response = Http::baseUrl($this->config['base_url'])
+            ->timeout((int) ($this->config['timeout'] ?? 15))
+            ->acceptJson()
+            ->withToken($this->config['api_key'])
+            ->get($endpoint, [
+                'civil_id'      => $civilId,
+                'civil_id_type' => $civilIdType->value,
+            ]);
+
+        $this->handleHttpErrors($response, $endpoint);
+
+        return (array) ($response->json() ?? []);
+    }
+
     /**
      * @param  array<string, mixed>  $queryParams
      * @return array<string, mixed>

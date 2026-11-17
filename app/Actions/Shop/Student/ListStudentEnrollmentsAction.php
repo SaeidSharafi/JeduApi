@@ -11,6 +11,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 final readonly class ListStudentEnrollmentsAction
 {
+    public function __construct(private RedactStudentEnrollmentResultsAction $redactResults) {}
+
     /**
      * Paginate the given customer's enrollments of a single productable type.
      *
@@ -23,7 +25,7 @@ final readonly class ListStudentEnrollmentsAction
         array $filters,
         int $perPage,
     ): LengthAwarePaginator {
-        return $user->enrollments()
+        $enrollments = $user->enrollments()
             ->withWhereHas(
                 'productDeliveryOption', function ($query) use ($filters, $productableType): void {
                     $query->when(data_get($filters, 'fulfillment_type'), function ($query, $fulfillmentType): void {
@@ -42,5 +44,11 @@ final readonly class ListStudentEnrollmentsAction
             ->with(['orderItem.vendor'])
             ->paginate($perPage)
             ->withQueryString();
+
+        $enrollments->setCollection($enrollments->getCollection()->map(
+            fn (Enrollment $enrollment): Enrollment => $this->redactResults->handle($enrollment)
+        ));
+
+        return $enrollments;
     }
 }

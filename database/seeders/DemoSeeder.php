@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Actions\Shop\Student\GenerateEnrollmentSurveyUrlAction;
 use App\Enums\Content\HomePageBlockTypeEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\PermissionEnum;
@@ -226,7 +227,15 @@ final class DemoSeeder extends Seeder
         $this->seedModel(Payment::class, 'payments.json');
         $this->seedModel(PaymentTransaction::class, 'payment_transactions.json');
         $this->seedModel(Refund::class, 'refunds.json');
-        $this->seedModel(Enrollment::class, 'enrollments.json');
+        $this->seedModel(Enrollment::class, 'enrollments.json', null, function (array $collection): void {
+            $enrollments = Enrollment::query()
+                ->whereIn('id', collect($collection)->pluck('id'))
+                ->get();
+
+            foreach ($enrollments as $enrollment) {
+                app(GenerateEnrollmentSurveyUrlAction::class)->handle($enrollment);
+            }
+        });
 
         // ─── Wallet System ─────────────────────────────────────────────────
 
@@ -851,9 +860,19 @@ final class DemoSeeder extends Seeder
             });
         })->all();
 
-        $preparedData = $collection->map(function (array $item) use ($modifier, $table) {
+        $hasSurveyConfiguration = $modelClass === ProductDeliveryOption::class
+            && Schema::hasColumn($table, 'survey_required');
+        $isEnrollment = $modelClass === Enrollment::class;
+        $preparedData = $collection->map(function (array $item) use ($modifier, $table, $hasSurveyConfiguration, $isEnrollment) {
             if ($modifier) {
                 $item = $modifier($item);
+            }
+
+            if ($hasSurveyConfiguration) {
+                $item = array_merge(['survey_required' => false, 'survey_url' => null], $item);
+            }
+            if ($isEnrollment) {
+                $item = array_merge(['survey_completed_at' => null], $item);
             }
 
             if (Schema::hasColumn($table, 'uuid') && empty($item['uuid'])) {

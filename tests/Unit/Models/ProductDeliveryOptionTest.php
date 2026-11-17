@@ -25,6 +25,8 @@ test('to array', function (): void {
             'is_prepayment_available'   => $productDeliveryOption->is_prepayment_available,
             'prepayment_amount'         => $productDeliveryOption->prepayment_amount,
             'details_json'              => $productDeliveryOption->details_json,
+            'survey_required'           => false,
+            'survey_url'                => null,
             'is_featured'               => $productDeliveryOption->is_featured,
             'featured_price'            => $productDeliveryOption->featured_price,
             'featured_price_start_date' => $productDeliveryOption->featured_price_start_date?->utc()

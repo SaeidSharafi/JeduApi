@@ -30,6 +30,29 @@ it('lists only course enrollments', function (): void {
         ->assertJsonPath('data.data.0.uuid', $courseEnrollment->uuid);
 });
 
+it('redacts stored Moodle grades from course enrollment lists while survey results are locked', function (): void {
+    $deliveryOption = ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'survey_required'  => true,
+        'product_id'       => Product::factory()->withCourse(),
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill(['provisioning_data' => ['providers' => [
+        'moodle'      => ['sync' => ['course_grade' => 'A', 'activities' => [['score' => '95', 'grade' => '95']]]],
+        'moodle_quiz' => ['sync' => ['course_grade' => 'B', 'activities' => [['score' => '80', 'grade' => '80']]]],
+    ]]])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.index'))
+        ->assertOk()
+        ->assertJsonPath('data.data.0.provisioning_data.providers.moodle.sync.course_grade', null)
+        ->assertJsonPath('data.data.0.provisioning_data.providers.moodle.sync.activities.0.score', null)
+        ->assertJsonPath('data.data.0.provisioning_data.providers.moodle.sync.activities.0.grade', null)
+        ->assertJsonPath('data.data.0.provisioning_data.providers.moodle_quiz.sync.course_grade', null)
+        ->assertJsonPath('data.data.0.provisioning_data.providers.moodle_quiz.sync.activities.0.score', null)
+        ->assertJsonPath('data.data.0.provisioning_data.providers.moodle_quiz.sync.activities.0.grade', null);
+});
+
 it('should filter by fulfillment type', function (): void {
     createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, 2);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);

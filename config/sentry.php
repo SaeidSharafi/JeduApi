@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Services\Integrations\Sentry\ScrubSurveyWebhookEvent;
+
 /**
  * Sentry Laravel SDK configuration file.
  *
@@ -51,6 +53,10 @@ return [
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#send_default_pii
     'send_default_pii' => env('SENTRY_SEND_DEFAULT_PII', false),
+
+    'before_send' => [ScrubSurveyWebhookEvent::class, 'beforeSend'],
+
+    'before_send_transaction' => [ScrubSurveyWebhookEvent::class, 'beforeSendTransaction'],
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#ignore_exceptions
     'ignore_exceptions' => [

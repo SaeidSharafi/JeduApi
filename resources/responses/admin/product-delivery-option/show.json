@@ -53,6 +53,8 @@
     "available_from": null,
     "available_to": null,
     "access_days": 90,
+    "survey_required": true,
+    "survey_url": "https://survey.example.test/course-feedback",
     "teachers": [
       {
         "id": 1,

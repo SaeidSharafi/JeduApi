@@ -51,6 +51,11 @@ enum ProductableEnum: string
         };
     }
 
+    public function supportsEnrollmentSurvey(): bool
+    {
+        return $this === self::COURSE || $this === self::SEMINAR;
+    }
+
     // allow more than 1 quantity
     public function allowsMultipleQuantity(): bool
     {

@@ -6,10 +6,12 @@ namespace App\Data\Admin\ProductDeliveryOption;
 
 use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Models\ProductDeliveryOption;
 use App\Rules\ValidNormalizedJalaliDateRule;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class ProductDeliveryOptionUpdateData extends Data
@@ -35,6 +37,8 @@ final class ProductDeliveryOptionUpdateData extends Data
         public array $teachers = [],
         public bool $is_prepayment_available = false,
         public ?int $prepayment_amount = null,
+        public bool|Optional $survey_required = new Optional(),
+        public string|null|Optional $survey_url = new Optional(),
     ) {}
 
     public static function prepareForPipeline(array $properties): array
@@ -49,7 +53,12 @@ final class ProductDeliveryOptionUpdateData extends Data
      */
     public static function rules(?ValidationContext $context = null): array
     {
-        $isBundle = ProductDeliveryOptionCreateData::isBundleProduct();
+        $isBundle        = ProductDeliveryOptionCreateData::isBundleProduct();
+        $routeOption     = request()->route('delivery_option');
+        $productableType = $routeOption instanceof ProductDeliveryOption
+            ? $routeOption->product?->productable_type
+            : null;
+        $surveyRules = ProductDeliveryOptionCreateData::surveyConfigurationRules($productableType);
 
         $baseRules = [
             'name'                      => ['required', 'string', 'max:255'],
@@ -78,7 +87,7 @@ final class ProductDeliveryOptionUpdateData extends Data
         ];
 
         if ($isBundle) {
-            return array_merge($baseRules, ProductDeliveryOptionCreateData::bundleRules(), ProductDeliveryOptionDateNormalizer::rules());
+            return array_merge($baseRules, $surveyRules, ProductDeliveryOptionCreateData::bundleRules(), ProductDeliveryOptionDateNormalizer::rules());
         }
 
         $nonBundleRules = [
@@ -105,7 +114,7 @@ final class ProductDeliveryOptionUpdateData extends Data
             'details'
         );
 
-        $rules = array_merge($baseRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
+        $rules = array_merge($baseRules, $surveyRules, $nonBundleRules, $detailsRules, ProductDeliveryOptionDateNormalizer::rules());
 
         if (isGeneratingScribeDocs()) {
             // Scribe extracts the docs without a bound route, so the Bundle
@@ -137,6 +146,8 @@ final class ProductDeliveryOptionUpdateData extends Data
             'available_from'            => __('validation.attributes.product_delivery_option.available_from'),
             'available_to'              => __('validation.attributes.product_delivery_option.available_to'),
             'access_days'               => __('validation.attributes.product_delivery_option.access_days'),
+            'survey_required'           => __('validation.attributes.product_delivery_option.survey_required'),
+            'survey_url'                => __('validation.attributes.product_delivery_option.survey_url'),
             'teachers'                  => __('validation.attributes.product_delivery_option.teachers'),
             'teachers.*'                => __('validation.attributes.product_delivery_option.teacher_id'),
         ];
@@ -176,6 +187,16 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'description' => 'Maximum number of enrollments allowed. Null means unlimited.',
                 'required'    => false,
                 'example'     => 50,
+            ],
+            'survey_required' => [
+                'description' => 'Whether Course and Seminar enrollments on this delivery option must complete the enrollment survey before viewing results. Omit both survey fields for Bundle and Digital Asset products; explicitly sending either field is rejected.',
+                'required'    => false,
+                'example'     => true,
+            ],
+            'survey_url' => [
+                'description' => 'Optional survey URL for this delivery option. A required survey without a URL keeps course results locked while it is being prepared. Omit both survey fields for Bundle and Digital Asset products; explicitly sending either field is rejected.',
+                'required'    => false,
+                'example'     => 'https://survey.example.com/course-feedback',
             ],
             'status' => [
                 'description' => 'Publication status controlling visibility in the shop. Allowed: `draft`, `published`, `archived`.',

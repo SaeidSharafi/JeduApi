@@ -49,6 +49,8 @@ final class ProductDeliveryOption extends Model
             'available_from',
             'available_to',
             'access_days',
+            'survey_required',
+            'survey_url',
             'composition_version',
             'bundle_review_required_at',
             'bundle_review_reasons',
@@ -287,6 +289,7 @@ final class ProductDeliveryOption extends Model
     {
         return [
             'is_prepayment_available'   => 'boolean',
+            'survey_required'           => 'boolean',
             'details_json'              => 'array',
             'is_featured'               => 'boolean',
             'status'                    => PublicationStatusEnum::class,

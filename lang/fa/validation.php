@@ -749,6 +749,8 @@ return [
             'available_from'            => 'تاریخ انتشار',
             'available_to'              => 'تاریخ پایان انتشار',
             'access_days'               => 'مدت دسترسی (روز)',
+            'survey_required'           => 'الزام نظرسنجی',
+            'survey_url'                => 'پیوند نظرسنجی',
             'teacher_id'                => 'شناسه مدرس',
             'teachers'                  => 'مدرسین',
         ],

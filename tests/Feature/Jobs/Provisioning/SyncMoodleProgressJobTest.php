@@ -47,7 +47,7 @@ it('returns when moodle is not ready', function (): void {
     expect(data_get($enrollment->provisioning_data, 'providers.moodle.sync'))->toBeNull();
 });
 
-it('syncs course progress into enrollment provisioning_data', function (): void {
+it('syncs course progress and grades for either Moodle provider key', function (string $providerKey): void {
     $enrollment     = createEnrollmentForSync();
     $moodleCourseId = 100;
     $moodleUserId   = 200;
@@ -90,22 +90,25 @@ it('syncs course progress into enrollment provisioning_data', function (): void 
         ->with($moodleCourseId, $moodleUserId)
         ->andReturn(['activities' => ['10' => '85.5'], 'course_grade' => 'B']);
 
-    $job = new SyncMoodleProgressJob($enrollment->id, $moodleCourseId, $moodleUserId);
+    $job = new SyncMoodleProgressJob($enrollment->id, $moodleCourseId, $moodleUserId, $providerKey);
     $job->handle(app(MoodleService::class));
 
     $enrollment->refresh();
-    $sync = data_get($enrollment->provisioning_data, 'providers.moodle.sync');
+    $sync = data_get($enrollment->provisioning_data, "providers.{$providerKey}.sync");
 
     expect($sync)->not->toBeNull()
         ->and($sync['completed'])->toBeFalse()
-        ->and($sync['course_grade'])->toBeNull() // survey_completed_at is null
+        ->and($sync['course_grade'])->toBe('B')
         ->and($sync['activities'])->toHaveCount(1)
         ->and($sync['activities'][0]['cmid'])->toBe(10)
         ->and($sync['activities'][0]['name'])->toBe('Activity One')
         ->and($sync['activities'][0]['state'])->toBe(2)
-        ->and($sync['activities'][0]['score'])->toBeNull() // survey_completed_at is null
+        ->and($sync['activities'][0]['score'])->toBe('85.5')
         ->and($sync['synced_at'])->not->toBeNull();
-});
+})->with([
+    'moodle provider'      => ['moodle'],
+    'moodle quiz provider' => ['moodle_quiz'],
+]);
 
 it('includes score and course_grade when survey is completed', function (): void {
     $enrollment     = createEnrollmentForSync(['survey_completed_at' => now()]);

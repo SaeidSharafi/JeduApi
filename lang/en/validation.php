@@ -234,6 +234,10 @@ return [
     ],
 
     'attributes' => [
+        'product_delivery_option' => [
+            'survey_required' => 'survey requirement',
+            'survey_url' => 'survey URL',
+        ],
         'contact_info' => [
             'addresses'          => 'Addresses',
             'working_hours'      => 'Working Hours',

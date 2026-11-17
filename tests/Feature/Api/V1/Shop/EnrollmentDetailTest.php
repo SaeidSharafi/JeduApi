@@ -3,12 +3,17 @@
 declare(strict_types=1);
 
 use App\Actions\Shop\Student\GetEnrollmentDetailAction;
+use App\Contracts\Integrations\ImsClientContract;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\User\CivilIdTypeEnum;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Http\Controllers\Api\Shop\Student\CourseController;
 use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Product;
+use Illuminate\Http\Client\ConnectionException;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
@@ -35,6 +40,529 @@ it('returns enrollment detail for owner', function (): void {
     $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.uuid', $enrollment->uuid);
+});
+
+it('reports IMS course grade values only when an eligible grade report is available', function (array $case): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => false,
+        'details_json'     => $case['course_code'] === null ? [] : ['ims_course_code' => $case['course_code']],
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date' => null,
+        'revocation_status' => null,
+        'provisioning_data' => $case['ims_enrollment_id'] === null ? [] : ['providers' => ['ims' => ['data' => [
+            'ims_enrollment_id' => $case['ims_enrollment_id'],
+        ]]]],
+    ])->saveQuietly();
+    $this->user->forceFill([
+        'civil_id'      => '1234567890',
+        'civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE,
+    ])->save();
+
+    $this->mock(ImsClientContract::class, function ($mock) use ($case): void {
+        if ($case['check_ready']) {
+            $mock->shouldReceive('isReady')->once()->andReturn($case['service_ready']);
+        }
+
+        if ($case['service_ready'] && $case['ims_enrollment_id'] !== null) {
+            $gradeCheck = $mock->shouldReceive('getEnrollmentGradeReport')
+                ->once()
+                ->with($case['ims_enrollment_id'], '1234567890', CivilIdTypeEnum::NATIONAL_CODE);
+
+            if ($case['response'] instanceof Throwable) {
+                $gradeCheck->andThrow($case['response']);
+            } else {
+                $gradeCheck->andReturn($case['response']);
+            }
+        } else {
+            $mock->shouldNotReceive('getEnrollmentGradeReport');
+        }
+    });
+
+    $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+
+    expect($response->json('data.grade_info.state'))->toBe($case['state'])
+        ->and($response->json('data.grade_info.report'))->toBe($case['report'])
+        ->and($response->json('data.delivery_access.course_grade'))->toBeNull();
+})->with([
+    'grade available' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 80, 'pass_grade' => 60, 'is_passed' => true,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 80.0, 'pass_grade' => 60.0, 'is_passed' => true,
+            ]],
+        ],
+    ]],
+    'persisted IMS enrollment after config cleared' => [[
+        'course_code'   => null, 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 0, 'pass_grade' => 0, 'is_passed' => true,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 0.0, 'pass_grade' => 0.0, 'is_passed' => true,
+            ]],
+        ],
+    ]],
+    'grade pending' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'none', 'status_translated' => 'No grade', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => null, 'pass_grade' => 60, 'is_passed' => null,
+            ]],
+        ]], 'state' => 'pending', 'report' => null,
+    ]],
+    'failed grade is still available to review' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'rejected', 'status_translated' => 'Rejected', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 40, 'pass_grade' => 60, 'is_passed' => false,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'rejected', 'status_translated' => 'Rejected', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 40.0, 'pass_grade' => 60.0, 'is_passed' => false,
+            ]],
+        ],
+    ]],
+    'decimal grade and pass threshold are preserved' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 87.5, 'pass_grade' => 82.25, 'is_passed' => true,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => 87.5, 'pass_grade' => 82.25, 'is_passed' => true,
+            ]],
+        ],
+    ]],
+    'grade without a pass threshold is preserved' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'participation', 'label' => 'Participation', 'value' => 72.5, 'pass_grade' => null, 'is_passed' => null,
+            ]],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'participation', 'label' => 'Participation', 'value' => 72.5, 'pass_grade' => null, 'is_passed' => null,
+            ]],
+        ],
+    ]],
+    'partial report is available' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'incomplete', 'status_translated' => 'Incomplete', 'items' => [
+                ['name' => 'midterm', 'label' => 'Midterm', 'value' => 80, 'pass_grade' => 60, 'is_passed' => true],
+                ['name' => 'final', 'label' => 'Final', 'value' => null, 'pass_grade' => 60, 'is_passed' => null],
+            ],
+        ]], 'state' => 'available', 'report' => [
+            'status' => 'incomplete', 'status_translated' => 'Incomplete', 'items' => [
+                ['name' => 'midterm', 'label' => 'Midterm', 'value' => 80.0, 'pass_grade' => 60.0, 'is_passed' => true],
+                ['name' => 'final', 'label' => 'Final', 'value' => null, 'pass_grade' => 60.0, 'is_passed' => null],
+            ],
+        ],
+    ]],
+    'upstream malformed' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => ['status' => 'unknown', 'status_translated' => 'Unknown', 'items' => []]],
+        'state'         => 'unavailable', 'report' => null,
+    ]],
+    'upstream malformed item value' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => ['data' => [
+            'status' => 'passed', 'status_translated' => 'Passed', 'items' => [[
+                'name' => 'final', 'label' => 'Final', 'value' => '80', 'pass_grade' => 60, 'is_passed' => true,
+            ]],
+        ]], 'state' => 'unavailable', 'report' => null,
+    ]],
+    'upstream failure' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => new RecoverableProvisioningException('IMS unavailable.'), 'state' => 'unavailable', 'report' => null,
+    ]],
+    'upstream enrollment not found' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => new UnrecoverableProvisioningException('IMS enrollment not found.'), 'state' => 'unavailable', 'report' => null,
+    ]],
+    'upstream connection failure' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => true, 'response' => new ConnectionException('IMS connection failed.'), 'state' => 'unavailable', 'report' => null,
+    ]],
+    'configured course without persisted enrollment' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => null, 'check_ready' => false,
+        'service_ready' => false, 'response' => null, 'state' => 'unavailable', 'report' => null,
+    ]],
+    'no IMS course configured' => [[
+        'course_code'   => null, 'ims_enrollment_id' => null, 'check_ready' => false,
+        'service_ready' => false, 'response' => null, 'state' => 'not_supported', 'report' => null,
+    ]],
+    'IMS service not ready' => [[
+        'course_code'   => 'IMS-COURSE-1', 'ims_enrollment_id' => 713, 'check_ready' => true,
+        'service_ready' => false, 'response' => null, 'state' => 'unavailable', 'report' => null,
+    ]],
+]);
+
+it('does not check IMS grade availability when enrollment access is ineligible', function (array $accessState): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'details_json'     => ['ims_course_code' => 'IMS-COURSE-1'],
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+    $enrollment->forceFill(array_merge($accessState, [
+        'provisioning_data' => ['providers' => ['ims' => ['data' => ['ims_enrollment_id' => 713]]]],
+    ]))->saveQuietly();
+    $this->mock(ImsClientContract::class, function ($mock): void {
+        $mock->shouldNotReceive('isReady');
+        $mock->shouldNotReceive('getEnrollmentGradeReport');
+    });
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.grade_info.state', 'locked');
+})->with([
+    'future access'  => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->addDay()]],
+    'revoked access' => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::REVOKED]],
+]);
+
+it('locks IMS grade availability while survey results are locked without calling IMS', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => true,
+        'survey_url'       => null,
+        'details_json'     => ['ims_course_code' => 'IMS-COURSE-1'],
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+    $this->mock(ImsClientContract::class, function ($mock): void {
+        $mock->shouldNotReceive('getEnrollmentGradeReport');
+    });
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.results_locked', true)
+        ->assertJsonPath('data.grade_info.state', 'locked')
+        ->assertJsonPath('data.grade_info.report', null);
+});
+
+it('locks course results while a required survey is still being prepared', function (): void {
+    $course         = Course::factory()->create(['provides_certificate' => true]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->create([
+            'productable_type' => $course->getMorphClass(),
+            'productable_id'   => $course->id,
+        ])->id,
+        'survey_required' => true,
+        'survey_url'      => null,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill(['provisioning_data' => ['providers' => ['moodle' => ['sync' => [
+        'course_grade' => 'A',
+        'activities'   => [['cmid' => 7, 'name' => 'Quiz', 'type' => 'quiz', 'url' => '/quiz', 'state' => 1, 'score' => '95']],
+    ]]]]])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'awaiting_survey')
+        ->assertJsonPath('data.survey_block.results_locked', true)
+        ->assertJsonPath('data.survey_block.message', __('messages.enrollments.survey_awaiting'))
+        ->assertJsonPath('data.delivery_access.course_grade', null)
+        ->assertJsonPath('data.quizzes.0.score', null)
+        ->assertJsonPath('data.certificate_info.is_available', false)
+        ->assertJsonPath('data.certificate_info.certificate_url', null);
+});
+
+it('returns the exact delivery option survey state and unlocks stored results after completion', function (): void {
+    $course         = Course::factory()->create(['provides_certificate' => true]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->create([
+            'productable_type' => $course->getMorphClass(),
+            'productable_id'   => $course->id,
+        ])->id,
+        'survey_required' => true,
+        'survey_url'      => null,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'survey_completed_at' => now(),
+        'enrollment_status'   => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date'   => null,
+        'revocation_status'   => null,
+        'provisioning_data'   => ['providers' => ['moodle' => ['sync' => [
+            'course_grade' => 'A',
+            'activities'   => [['cmid' => 7, 'name' => 'Quiz', 'type' => 'quiz', 'url' => '/quiz', 'state' => 1, 'score' => '95']],
+        ]]]],
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'completed')
+        ->assertJsonPath('data.survey_block.results_locked', false)
+        ->assertJsonPath('data.delivery_access.course_grade', 'A')
+        ->assertJsonPath('data.quizzes.0.score', '95')
+        ->assertJsonPath('data.certificate_info.is_available', true);
+});
+
+it('resolves survey state and URL independently for sibling delivery options', function (): void {
+    $product        = Product::factory()->withCourse()->create();
+    $awaitingOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => $product->id,
+        'survey_required'  => true,
+        'survey_url'       => null,
+    ]);
+    $pendingOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => $product->id,
+        'survey_required'  => true,
+        'survey_url'       => 'https://survey.example.test/online',
+    ]);
+    $awaiting = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $awaitingOption);
+    $pending  = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $pendingOption);
+    $pending->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date' => today(),
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $awaiting->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'awaiting_survey')
+        ->assertJsonPath('data.survey_block.url', null);
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $pending->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'pending')
+        ->assertJsonPath('data.survey_block.results_locked', true)
+        ->assertJsonPath('data.survey_block.url', fn (?string $url): bool => str_starts_with($url ?? '', 'https://survey.example.test/online?'));
+});
+
+it('keeps configured survey state pending when access suppresses the link', function (array $accessState): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => true,
+        'survey_url'       => 'https://survey.example.test/restricted',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill($accessState)->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'pending')
+        ->assertJsonPath('data.survey_block.results_locked', true)
+        ->assertJsonPath('data.survey_block.url', null)
+        ->assertJsonPath('data.survey_block.message', null);
+})->with([
+    'future access'    => ['accessState' => ['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->addDay()]],
+    'awaiting payment' => ['accessState' => ['enrollment_status' => App\Enums\EnrollmentStatusEnum::AWAITING_PAYMENT, 'access_start_date' => today()]],
+    'suspended'        => ['accessState' => ['enrollment_status' => App\Enums\EnrollmentStatusEnum::SUSPENDED, 'access_start_date' => today()]],
+    'revoked'          => ['accessState' => ['enrollment_status' => App\Enums\EnrollmentStatusEnum::CANCELLED, 'access_start_date' => today(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::REVOKED]],
+]);
+
+it('returns a stable encoded bearer link for the exact PDO after access starts', function (): void {
+    $course = Course::factory()->create([
+        'full_name' => 'دوره & پیشرفته',
+    ]);
+    $product = Product::factory()->create([
+        'name'             => 'نام محصول + سطح دو',
+        'slug'             => 'product-canonical-slug',
+        'productable_type' => $course->getMorphClass(),
+        'productable_id'   => $course->id,
+    ]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'product_id'      => $product->id,
+        'survey_required' => true,
+        'survey_url'      => 'https://survey.example.test/form?utm_source=mail&enrollment_token=forged&product_slug=wrong-slug&product_name=wrong&course_name=wrong&product_type=seminar#finish',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::EXPIRED,
+        'access_start_date' => today()->subDays(3),
+        'access_end_date'   => today()->subDay(),
+        'revocation_status' => null,
+    ])->saveQuietly();
+    expect(filled($enrollment->fresh()->survey_token))->toBeTrue();
+    $enrollment->forceFill(['survey_token' => null, 'survey_token_digest' => null])->saveQuietly();
+
+    $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'pending');
+    $url   = $response->json('data.survey_block.url');
+    $parts = parse_url($url);
+    parse_str($parts['query'] ?? '', $query);
+    $stored = $enrollment->fresh();
+
+    expect($parts['fragment'] ?? null)->toBe('finish')
+        ->and($query['utm_source'] ?? null)->toBe('mail')
+        ->and($query['product_slug'] ?? null)->toBe('product-canonical-slug')
+        ->and($query['product_name'] ?? null)->toBe('نام محصول + سطح دو')
+        ->and($query['course_name'] ?? null)->toBe('دوره & پیشرفته')
+        ->and($query['product_type'] ?? null)->toBe('course')
+        ->and($query['enrollment_token'] ?? null)->not->toBe('forged')
+        ->and($query['enrollment_token'] ?? '')->toMatch('/^[a-f0-9]{64}$/')
+        ->and(array_values($query))->not->toContain((string) $enrollment->id)
+        ->and($url)->not->toContain($enrollment->uuid)
+        ->and(array_values($query))->not->toContain((string) $deliveryOption->id)
+        ->and(array_values($query))->not->toContain((string) $product->id);
+    expect(hash_equals((string) $stored->survey_token, (string) ($query['enrollment_token'] ?? '')))->toBeTrue()
+        ->and($stored->survey_token_digest === hash('sha256', (string) $stored->survey_token))->toBeTrue()
+        ->and($stored->toArray())->not->toHaveKey('survey_token')
+        ->and($stored->toArray())->not->toHaveKey('survey_token_digest');
+
+    $enrollment->productDeliveryOption->product->update(['name' => 'renamed product', 'slug' => 'renamed-slug']);
+    $enrollment->productDeliveryOption->update(['survey_url' => 'https://survey.example.test/replaced?source=latest']);
+    $again = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()->json('data.survey_block.url');
+    parse_str(parse_url($again, PHP_URL_QUERY) ?: '', $againQuery);
+
+    expect($againQuery['enrollment_token'] ?? null)->toBe($query['enrollment_token'])
+        ->and($againQuery['product_slug'] ?? null)->toBe('renamed-slug')
+        ->and($againQuery['product_name'] ?? null)->toBe('renamed product')
+        ->and($againQuery['source'] ?? null)->toBe('latest')
+        ->and(parse_url($again, PHP_URL_PATH))->toBe('/replaced');
+});
+
+it('supports a shared survey URL across PDOs with distinct enrollment tokens', function (): void {
+    $product         = Product::factory()->withCourse()->create();
+    $deliveryOptions = collect([DeliveryMethodEnum::IN_PERSON, DeliveryMethodEnum::LMS_MOODLE])
+        ->map(fn (DeliveryMethodEnum $method): App\Models\ProductDeliveryOption => App\Models\ProductDeliveryOption::factory()->create([
+            'product_id'       => $product->id,
+            'delivery_method'  => $method,
+            'fulfillment_type' => $method->getFulfillmentType(),
+            'survey_required'  => true,
+            'survey_url'       => 'https://survey.example.test/shared?utm_campaign=fall',
+        ]));
+    $enrollments = $deliveryOptions->map(function (App\Models\ProductDeliveryOption $deliveryOption): Enrollment {
+        $enrollment = createEnrollment($this->user, $deliveryOption->delivery_method, deliveryOption: $deliveryOption);
+        $enrollment->forceFill([
+            'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+            'access_start_date' => today(),
+        ])->saveQuietly();
+
+        return $enrollment;
+    });
+
+    $tokens = $enrollments->map(function (Enrollment $enrollment): string {
+        $url = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+            ->assertOk()->json('data.survey_block.url');
+        parse_str(parse_url($url, PHP_URL_QUERY) ?: '', $query);
+
+        expect(parse_url($url, PHP_URL_PATH))->toBe('/shared')
+            ->and($query['utm_campaign'] ?? null)->toBe('fall');
+
+        return (string) ($query['enrollment_token'] ?? '');
+    });
+
+    expect($tokens->unique()->count())->toBe(2);
+});
+
+it('provides an optional survey link without applying the results gate', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => false,
+        'survey_url'       => 'https://survey.example.test/optional?source=demo',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date' => today(),
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'not_required')
+        ->assertJsonPath('data.survey_block.results_locked', false)
+        ->assertJsonPath('data.survey_block.url', fn (?string $url): bool => str_starts_with($url ?? '', 'https://survey.example.test/optional?source=demo&'));
+});
+
+it('uses the Seminar product and readable name in its survey link', function (): void {
+    $seminar = App\Models\Seminar::factory()->create(['full_name' => 'Seminar readable name']);
+    $product = Product::factory()->create([
+        'name'             => 'Seminar catalog product',
+        'slug'             => 'seminar-product-slug',
+        'productable_type' => $seminar->getMorphClass(),
+        'productable_id'   => $seminar->id,
+    ]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'product_id'      => $product->id,
+        'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_NILIROOM,
+        'survey_required' => true,
+        'survey_url'      => 'https://survey.example.test/seminar',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date' => today(),
+    ])->saveQuietly();
+
+    $response = $this->getJson(route('api.v1.shop.student.seminars.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+    parse_str(parse_url($response->json('data.survey_block.url'), PHP_URL_QUERY) ?: '', $query);
+
+    expect($query['product_slug'] ?? null)->toBe('seminar-product-slug')
+        ->and($query['product_name'] ?? null)->toBe('Seminar catalog product')
+        ->and($query['course_name'] ?? null)->toBe('Seminar readable name')
+        ->and($query['product_type'] ?? null)->toBe('seminar');
+});
+
+it('does not provide a survey link before access starts or for restricted enrollments', function (array $attributes): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => true,
+        'survey_url'       => 'https://survey.example.test/form',
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill($attributes)->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.url', null);
+})->with([
+    'future access'      => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->addDay()]],
+    'awaiting payment'   => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::AWAITING_PAYMENT, 'access_start_date' => today()->subDay()]],
+    'suspended'          => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::SUSPENDED, 'access_start_date' => today()->subDay()]],
+    'cancelled'          => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::CANCELLED, 'access_start_date' => today()->subDay()]],
+    'revoked'            => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::EXPIRED, 'access_start_date' => today()->subDay(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::REVOKED]],
+    'revocation pending' => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->subDay(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::PENDING]],
+]);
+
+it('treats an optional survey as not required even when it has no URL or completion', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'product_id'       => Product::factory()->withCourse(),
+        'survey_required'  => false,
+        'survey_url'       => null,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'not_required')
+        ->assertJsonPath('data.survey_block.results_locked', false)
+        ->assertJsonPath('data.survey_block.url', null);
 });
 
 // ─── Delivery access ─────────────────────────────────────────────────────────
@@ -106,31 +634,97 @@ it('certificate_info is null when productable does not provide certificate', fun
 
     $response->assertOk();
     expect($response->json('data.certificate_info.is_available'))->toBeFalse()
+        ->and($response->json('data.certificate_info.provides_certificate'))->toBeFalse()
         ->and($response->json('data.certificate_info.certificate_url'))->toBeNull();
 });
 
+it('reports seminar certificate capability independently of availability', function (bool $providesCertificate): void {
+    $seminar    = App\Models\Seminar::factory()->create(['provides_certificate' => $providesCertificate]);
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LIVE_SESSION_NILIROOM, $seminar);
+    $enrollment->productDeliveryOption->forceFill(['survey_required' => true, 'survey_url' => null])->save();
+
+    $this->getJson(route('api.v1.shop.student.seminars.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.certificate_info.provides_certificate', $providesCertificate)
+        ->assertJsonPath('data.certificate_info.is_available', false);
+})->with([
+    'supports certificates'         => [true],
+    'does not support certificates' => [false],
+]);
+
 it('certificate_info is_available false when survey_completed_at is null', function (): void {
-    $course                          = Course::factory()->create(['provides_certificate' => true]);
-    $enrollment                      = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+    $course     = Course::factory()->create(['provides_certificate' => true]);
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+    $enrollment->productDeliveryOption->forceFill(['survey_required' => true, 'survey_url' => null])->save();
     $enrollment->survey_completed_at = null;
     $enrollment->save();
 
     $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]));
 
     $response->assertOk();
-    expect($response->json('data.certificate_info.is_available'))->toBeFalse();
+    expect($response->json('data.certificate_info.provides_certificate'))->toBeTrue()
+        ->and($response->json('data.certificate_info.is_available'))->toBeFalse();
 });
 
 it('certificate_info is_available true when survey_completed_at is set', function (): void {
-    $course                          = Course::factory()->create(['provides_certificate' => true]);
-    $enrollment                      = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
-    $enrollment->survey_completed_at = now();
-    $enrollment->save();
+    $course     = Course::factory()->create(['provides_certificate' => true]);
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+    $enrollment->forceFill([
+        'survey_completed_at' => now(),
+        'enrollment_status'   => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date'   => null,
+        'revocation_status'   => null,
+    ])->saveQuietly();
 
     $response = $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]));
 
     $response->assertOk();
-    expect($response->json('data.certificate_info.is_available'))->toBeTrue();
+    expect($response->json('data.certificate_info.provides_certificate'))->toBeTrue()
+        ->and($response->json('data.certificate_info.is_available'))->toBeTrue();
+});
+
+it('keeps certificate information unavailable after survey completion when the enrollment is not eligible', function (array $state): void {
+    $course     = Course::factory()->create(['provides_certificate' => true]);
+    $enrollment = createEnrollmentForProductable($this->user, DeliveryMethodEnum::LMS_MOODLE, $course);
+    $enrollment->forceFill([
+        'survey_completed_at' => now(),
+        ...$state,
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.certificate_info.is_available', false)
+        ->assertJsonPath('data.certificate_info.provides_certificate', true)
+        ->assertJsonPath('data.certificate_info.certificate_url', null);
+})->with([
+    'future access'      => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->addDay(), 'revocation_status' => null]],
+    'awaiting payment'   => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::AWAITING_PAYMENT, 'access_start_date' => null, 'revocation_status' => null]],
+    'suspended'          => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::SUSPENDED, 'access_start_date' => today()->subDay(), 'revocation_status' => null]],
+    'refunded'           => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::CANCELLED, 'access_start_date' => today()->subDay(), 'revocation_status' => null]],
+    'revocation pending' => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::ACTIVE, 'access_start_date' => today()->subDay(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::PENDING]],
+    'revoked'            => [['enrollment_status' => App\Enums\EnrollmentStatusEnum::EXPIRED, 'access_start_date' => today()->subDay(), 'revocation_status' => App\Enums\EnrollmentRevocationStatusEnum::REVOKED]],
+]);
+
+it('keeps certificate availability for an active enrollment with no start date when its survey is optional', function (): void {
+    $course         = Course::factory()->create(['provides_certificate' => true]);
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'product_id'      => Product::factory()->for($course, 'productable')->create()->id,
+        'survey_required' => false,
+        'survey_url'      => null,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'enrollment_status'   => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        'access_start_date'   => null,
+        'survey_completed_at' => null,
+        'revocation_status'   => null,
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.student.courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.survey_block.state', 'not_required')
+        ->assertJsonPath('data.certificate_info.is_available', true)
+        ->assertJsonPath('data.certificate_info.certificate_url', null);
 });
 
 // ─── SWR dispatch ────────────────────────────────────────────────────────────
