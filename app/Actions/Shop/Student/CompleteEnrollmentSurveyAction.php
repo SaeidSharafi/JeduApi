@@ -36,10 +36,10 @@ final readonly class CompleteEnrollmentSurveyAction
             $enrollment = Enrollment::query()
                 ->where('survey_token_digest', $digest)
                 ->whereHas('productDeliveryOption.product', fn (Builder $query): Builder => $query
-                    ->whereIn('productable_type', [
-                        ProductableEnum::COURSE->value,
-                        ProductableEnum::SEMINAR->value,
-                    ]))
+                    ->whereIn('productable_type', array_map(
+                        static fn (ProductableEnum $type): string => $type->value,
+                        array_filter(ProductableEnum::cases(), static fn (ProductableEnum $type): bool => $type->supportsEnrollmentSurvey())
+                    )))
                 ->lockForUpdate()
                 ->first();
 

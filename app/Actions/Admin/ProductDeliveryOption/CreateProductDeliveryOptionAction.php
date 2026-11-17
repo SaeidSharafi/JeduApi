@@ -33,10 +33,7 @@ final readonly class CreateProductDeliveryOptionAction
     {
         $pdo = DB::transaction(function () use ($data, $product): ProductDeliveryOption {
             $pdoData        = $data->except('teachers', 'components')->toArray();
-            $surveyEligible = in_array($product->productable_type, [
-                ProductableEnum::COURSE->value,
-                ProductableEnum::SEMINAR->value,
-            ], true);
+            $surveyEligible = ProductableEnum::tryFrom($product->productable_type)?->supportsEnrollmentSurvey() ?? false;
             if (! $surveyEligible) {
                 unset($pdoData['survey_required'], $pdoData['survey_url']);
             }

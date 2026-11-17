@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Helpers;
+namespace App\Services\Integrations\Sentry;
 
 use Sentry\Event;
 use Sentry\EventHint;

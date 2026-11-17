@@ -192,7 +192,7 @@ describe('User with permissions', function (): void {
             'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
             'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
             'survey_required'  => false,
-            'survey_url'       => null,
+            'survey_url'       => 'https://survey.example.test/existing-course',
             'details_json'     => ['moodle_course_id' => 123],
         ]);
         $data                    = $deliveryOption->toArray();
@@ -200,6 +200,17 @@ describe('User with permissions', function (): void {
         $data['teachers']        = [Teacher::factory()->create()->id];
         $data['survey_required'] = true;
         $data['survey_url']      = 'https://survey.example.test/course';
+
+        $omittedSurveySettings = $data;
+        unset($omittedSurveySettings['survey_required'], $omittedSurveySettings['survey_url']);
+
+        $this->putJson(route('api.v1.admin.delivery-options.update', [
+            'product'         => $product->id,
+            'delivery_option' => $deliveryOption->id,
+        ]), $omittedSurveySettings)
+            ->assertOk()
+            ->assertJsonPath('data.survey_required', false)
+            ->assertJsonPath('data.survey_url', 'https://survey.example.test/existing-course');
 
         $this->putJson(route('api.v1.admin.delivery-options.update', [
             'product'         => $product->id,
@@ -209,7 +220,17 @@ describe('User with permissions', function (): void {
             ->assertJsonPath('data.survey_required', true)
             ->assertJsonPath('data.survey_url', 'https://survey.example.test/course');
 
-        $data['survey_url'] = null;
+        $data['survey_required'] = false;
+        $this->putJson(route('api.v1.admin.delivery-options.update', [
+            'product'         => $product->id,
+            'delivery_option' => $deliveryOption->id,
+        ]), $data)
+            ->assertOk()
+            ->assertJsonPath('data.survey_required', false)
+            ->assertJsonPath('data.survey_url', 'https://survey.example.test/course');
+
+        $data['survey_required'] = true;
+        $data['survey_url']      = null;
         $this->putJson(route('api.v1.admin.delivery-options.update', [
             'product'         => $product->id,
             'delivery_option' => $deliveryOption->id,

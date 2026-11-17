@@ -16,7 +16,6 @@ use App\Models\ProductDeliveryOption;
 use App\Services\BundleAvailabilityPropagationService;
 use App\Services\BundleAvailabilityService;
 use Illuminate\Support\Facades\DB;
-use Spatie\LaravelData\Optional;
 
 final readonly class UpdateProductDeliveryOptionAction
 {
@@ -42,14 +41,8 @@ final readonly class UpdateProductDeliveryOptionAction
             ->all();
 
         DB::transaction(function () use ($data, $deliveryOption): void {
-            $pdoData         = $data->except('teachers', 'components', 'survey_required', 'survey_url')->toArray();
+            $pdoData         = $data->except('teachers', 'components')->toArray();
             $productableType = $deliveryOption->product?->productable_type;
-            if (! $data->survey_required instanceof Optional) {
-                $pdoData['survey_required'] = $data->survey_required;
-            }
-            if (! $data->survey_url instanceof Optional) {
-                $pdoData['survey_url'] = $data->survey_url;
-            }
             if ($productableType === ProductableEnum::BUNDLE->value) {
                 $pdoData['fulfillment_type'] = 'composite';
                 $pdoData['delivery_method']  = 'bundle';

@@ -8,6 +8,7 @@ use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAct
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Product;
 use App\Rules\ProductDeliveryOptionCheckRule;
 use App\Rules\ValidNormalizedJalaliDateRule;
@@ -195,7 +196,7 @@ final class ProductDeliveryOptionCreateData extends Data
      */
     public static function surveyConfigurationRules(?string $productableType): array
     {
-        if ($productableType !== null && ! in_array($productableType, ['course', 'seminar'], true)) {
+        if ($productableType !== null && ! (ProductableEnum::tryFrom($productableType)?->supportsEnrollmentSurvey() ?? false)) {
             return [
                 'survey_required' => ['missing'],
                 'survey_url'      => ['missing'],

@@ -15,6 +15,7 @@ use App\Data\Shop\Student\Enrollment\EnrollmentSurveyBlockData;
 use App\Data\Shop\Student\Review\ReviewData;
 use App\Data\Shop\Teacher\TeacherDetailData;
 use App\Enums\Content\ReviewStatusEnum;
+use App\Enums\EnrollmentSurveyStateEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\ProvisioningOutcomeStatusEnum;
@@ -143,23 +144,13 @@ final readonly class GetEnrollmentDetailAction
 
     private function buildSurveyBlock(Enrollment $enrollment): EnrollmentSurveyBlockData
     {
-        $isRequired = $this->surveyPolicy->supportsSurvey($enrollment)
-            && $enrollment->productDeliveryOption->survey_required;
-        $isCompleted      = $enrollment->survey_completed_at !== null;
-        $url              = $this->surveyUrl->handle($enrollment);
-        $hasConfiguredUrl = filled($enrollment->productDeliveryOption->survey_url);
-        $state            = match (true) {
-            ! $isRequired       => 'not_required',
-            $isCompleted        => 'completed',
-            ! $hasConfiguredUrl => 'awaiting_survey',
-            default             => 'pending',
-        };
+        $state = $this->surveyPolicy->surveyState($enrollment);
 
         return new EnrollmentSurveyBlockData(
             state: $state,
-            results_locked: in_array($state, ['awaiting_survey', 'pending'], true),
-            url: $url,
-            message: $state === 'awaiting_survey'
+            results_locked: $state->locksResults(),
+            url: $this->surveyUrl->handle($enrollment),
+            message: $state === EnrollmentSurveyStateEnum::AWAITING_SURVEY
                 ? __('messages.enrollments.survey_awaiting')
                 : null,
         );

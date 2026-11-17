@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\Student;
 
-use App\Enums\Product\ProductableEnum;
 use App\Models\Enrollment;
 use Illuminate\Support\Facades\DB;
 
@@ -22,10 +21,7 @@ final readonly class GenerateEnrollmentSurveyUrlAction
         $product        = $deliveryOption?->product;
         $productable    = $product?->productable;
 
-        if (! $product || ! in_array($product->productable_type, [
-            ProductableEnum::COURSE->value,
-            ProductableEnum::SEMINAR->value,
-        ], true) || ! $productable || blank($deliveryOption->survey_url)) {
+        if (! $product || ! $this->surveyPolicy->supportsSurvey($enrollment) || ! $productable || blank($deliveryOption->survey_url)) {
             return null;
         }
 

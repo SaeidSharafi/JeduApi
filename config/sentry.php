@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Helpers\ScrubSurveyWebhookEvent;
+use App\Services\Integrations\Sentry\ScrubSurveyWebhookEvent;
 
 /**
  * Sentry Laravel SDK configuration file.
