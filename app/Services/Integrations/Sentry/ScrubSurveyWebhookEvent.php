@@ -9,12 +9,12 @@ use Sentry\EventHint;
 
 final class ScrubSurveyWebhookEvent
 {
-    public static function beforeSend(Event $event, ?EventHint $hint = null): ?Event
+    public static function beforeSend(Event $event, ?EventHint $hint = null): Event
     {
         return self::scrubRequest($event);
     }
 
-    public static function beforeSendTransaction(Event $event, ?EventHint $hint = null): ?Event
+    public static function beforeSendTransaction(Event $event, ?EventHint $hint = null): Event
     {
         return self::scrubRequest($event);
     }
