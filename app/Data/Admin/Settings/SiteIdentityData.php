@@ -7,16 +7,16 @@ namespace App\Data\Admin\Settings;
 use App\Data\Admin\MediaData;
 use Spatie\LaravelData\Data;
 
-/**
- * The site identity rendered in page metadata (browser tab title, Open Graph
- * `site_name`, favicon) and not in the page body.
- */
 final class SiteIdentityData extends Data
 {
     public function __construct(
         public string $site_title,
         public ?MediaData $favicon = null,
         public ?string $favicon_url = null,
+        public ?string $home_h1 = null,
+        public ?string $home_description = null,
+        public ?string $home_meta_title = null,
+        public ?string $home_meta_description = null,
     ) {}
 
     /**
@@ -28,6 +28,10 @@ final class SiteIdentityData extends Data
             'site_title'  => 'Jedu',
             'favicon'     => null,
             'favicon_url' => null,
+            'home_h1' => null,
+            'home_description' => null,
+            'home_meta_title' => null,
+            'home_meta_description' => null,
         ];
     }
 }

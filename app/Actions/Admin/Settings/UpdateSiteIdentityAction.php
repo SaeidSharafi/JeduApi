@@ -10,6 +10,7 @@ use App\Enums\System\SettingKeyEnum;
 use App\Services\SettingsService;
 use Illuminate\Validation\ValidationException;
 use Plank\Mediable\Media;
+use Spatie\LaravelData\Optional;
 
 final class UpdateSiteIdentityAction
 {
@@ -26,11 +27,16 @@ final class UpdateSiteIdentityAction
             ]);
         }
 
+        $existing = $this->settingsService->get(SettingKeyEnum::SITE_IDENTITY, SiteIdentityData::getDefaults());
         $identity = [
             'site_title'  => mb_trim($data->site_title),
             'favicon'     => $favicon?->id,
             'favicon_url' => $favicon?->getUrl(),
         ];
+
+        foreach (['home_h1', 'home_description', 'home_meta_title', 'home_meta_description'] as $field) {
+            $identity[$field] = $data->{$field} instanceof Optional ? ($existing[$field] ?? null) : $data->{$field};
+        }
 
         $setting = $this->settingsService->set(SettingKeyEnum::SITE_IDENTITY, $identity, 'json', 'site');
         $setting->syncMedia($favicon, 'favicon');

@@ -21,8 +21,8 @@ final class SiteIdentityController extends Controller
     /**
      * Get Site Identity
      *
-     * Returns the title and favicon used for page metadata (tab title, Open Graph
-     * name). The admin panel reads the same payload before a staff session exists.
+     * Returns the site title, favicon and homepage content and metadata. The admin
+     * panel reads the same payload before a staff session exists.
      *
      * @responseFile 200 resources/responses/shop/settings/site-identity.json
      */
@@ -35,6 +35,10 @@ final class SiteIdentityController extends Controller
         return apiResponse()->success(new SiteIdentityData(
             site_title: $identity->site_title,
             favicon_url: $identity->favicon_url,
+            home_h1: $identity->home_h1,
+            home_description: $identity->home_description,
+            home_meta_title: $identity->home_meta_title,
+            home_meta_description: $identity->home_meta_description,
         ));
     }
 }

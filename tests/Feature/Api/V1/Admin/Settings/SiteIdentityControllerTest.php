@@ -76,6 +76,26 @@ it('clears the stored favicon when none is sent', function (): void {
     expect(Setting::where('key', 'site_identity')->first()->media()->count())->toBe(0);
 });
 
+it('saves homepage content and metadata while preserving omitted fields', function (): void {
+    $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
+
+    $fields = [
+        'home_h1' => 'Learn with us',
+        'home_description' => 'Explore our courses.',
+        'home_meta_title' => 'Courses | Jedu',
+        'home_meta_description' => 'Find your next course.',
+    ];
+
+    $this->putJson(route('api.v1.admin.settings.site-identity.update'), ['site_title' => 'Jedu', ...$fields])
+        ->assertOk()->assertJsonPath('data.home_h1', $fields['home_h1']);
+
+    $this->putJson(route('api.v1.admin.settings.site-identity.update'), ['site_title' => 'Jedu', 'home_h1' => null])
+        ->assertOk()->assertJsonPath('data.home_h1', null)
+        ->assertJsonPath('data.home_description', $fields['home_description'])
+        ->assertJsonPath('data.home_meta_title', $fields['home_meta_title'])
+        ->assertJsonPath('data.home_meta_description', $fields['home_meta_description']);
+});
+
 it('rejects a favicon that is not an image', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_UPDATE->value]);
 
