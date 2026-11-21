@@ -52,10 +52,10 @@ final class ProductDeliveryOptionData extends Data
             delivery_method: $deliveryOption->delivery_method,
             is_available: $isAvailable,
             is_purchasable: $isPurchasable,
-            available_from: $deliveryOption->available_from ? verta($deliveryOption->available_from) : null,
-            available_to: $deliveryOption->available_to ? verta($deliveryOption->available_to) : null,
-            registration_start_date: $deliveryOption->registration_start_date ? verta($deliveryOption->registration_start_date) : null,
-            registration_end_date: $deliveryOption->registration_end_date ? verta($deliveryOption->registration_end_date) : null,
+            available_from: $deliveryOption->available_from ? verta($deliveryOption->available_from->toDateTime()) : null,
+            available_to: $deliveryOption->available_to ? verta($deliveryOption->available_to->toDateTime()) : null,
+            registration_start_date: $deliveryOption->registration_start_date ? verta($deliveryOption->registration_start_date->toDateTime()) : null,
+            registration_end_date: $deliveryOption->registration_end_date ? verta($deliveryOption->registration_end_date->toDateTime()) : null,
         );
     }
 

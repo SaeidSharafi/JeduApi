@@ -17,7 +17,7 @@ trait DateUtilTestTrait
             return null;
         }
 
-        return verta($value)->format($format ?: config('data.date_output_format'));
+        return verta($value instanceof CarbonInterface ? $value->toDateTime() : $value)->format($format ?: config('data.date_output_format'));
     }
 
     public function parseJalaliDate(?string $value, ?string $format = null): ?string

@@ -3,82 +3,45 @@
 declare(strict_types=1);
 
 use App\Enums\Operators\MatchPolicyEnum;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
 use App\Services\Discounts\Product\Conditions\ProductCategoryCondition;
-use Illuminate\Support\Facades\DB;
 
 describe('ProductCategoryCondition', function (): void {
 
     test('it passes when product is in specified category', function (): void {
-        // Arrange
         $condition = new ProductCategoryCondition();
+        $category  = Category::factory()->create();
         $config    = new ProductCategoryConditionConfigData(
-            category_ids: [1, 2, 3],
+            category_ids: [$category->id],
             match_policy: MatchPolicyEnum::ANY
         );
 
         $product = Product::factory()->create();
-        $option  = ProductDeliveryOption::factory()->make(['id' => 999]);
+        $product->categories()->attach($category);
+
+        $option = ProductDeliveryOption::factory()->make(['id' => 999]);
         $option->setRelation('product', $product);
 
-        // Mock the database query for categorizables
-        DB::shouldReceive('table')
-            ->with('categorizables')
-            ->andReturnSelf();
-        DB::shouldReceive('where')
-            ->with('categorizable_type', 'product')
-            ->andReturnSelf();
-        DB::shouldReceive('where')
-            ->with('categorizable_id', $product->id)
-            ->andReturnSelf();
-        DB::shouldReceive('whereIn')
-            ->with('category_id', [1, 2, 3])
-            ->andReturnSelf();
-        DB::shouldReceive('count')
-            ->andReturn(1); // Product is in at least one category
-
-        // Act
-        $result = $condition->passes($option, $config);
-
-        // Assert
-        expect($result)->toBeTrue();
+        expect($condition->passes($option, $config))->toBeTrue();
     });
 
     test('it fails when product is not in any specified category', function (): void {
-        // Arrange
         $condition = new ProductCategoryCondition();
+        $category  = Category::factory()->create();
         $config    = new ProductCategoryConditionConfigData(
-            category_ids: [1, 2, 3],
+            category_ids: [$category->id],
             match_policy: MatchPolicyEnum::ANY
         );
 
         $product = Product::factory()->create();
-        $option  = ProductDeliveryOption::factory()->make(['id' => 999]);
+
+        $option = ProductDeliveryOption::factory()->make(['id' => 999]);
         $option->setRelation('product', $product);
 
-        // Mock the database query for categorizables
-        DB::shouldReceive('table')
-            ->with('categorizables')
-            ->andReturnSelf();
-        DB::shouldReceive('where')
-            ->with('categorizable_type', 'product')
-            ->andReturnSelf();
-        DB::shouldReceive('where')
-            ->with('categorizable_id', $product->id)
-            ->andReturnSelf();
-        DB::shouldReceive('whereIn')
-            ->with('category_id', [1, 2, 3])
-            ->andReturnSelf();
-        DB::shouldReceive('count')
-            ->andReturn(0); // Product is not in any category
-
-        // Act
-        $result = $condition->passes($option, $config);
-
-        // Assert
-        expect($result)->toBeFalse();
+        expect($condition->passes($option, $config))->toBeFalse();
     });
 
     test('it passes when no categories are specified', function (): void {

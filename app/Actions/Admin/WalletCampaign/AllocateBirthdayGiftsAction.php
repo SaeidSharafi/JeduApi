@@ -46,7 +46,7 @@ final readonly class AllocateBirthdayGiftsAction
             return ['allocated' => 0, 'skipped' => 0];
         }
 
-        $occurrence = Verta::instance(now())->format('Y');
+        $occurrence = Verta::instance(now()->toDateTime())->format('Y');
 
         $users = User::query()
             ->with('wallet')

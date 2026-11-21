@@ -64,9 +64,9 @@ describe('Digital Asset API', function (): void {
 
         $deliveryOption = $response->json('data.delivery_options.0');
 
-        expect($deliveryOption['registration_start_date'])->toBe(verta($registrationStart)->format('Y-m-d H:i:s'))
-            ->and($deliveryOption['registration_end_date'])->toBe(verta($registrationEnd)->format('Y-m-d H:i:s'))
-            ->and($deliveryOption['available_from'])->toBe(verta($availableFrom)->format('Y-m-d H:i:s'))
+        expect($deliveryOption['registration_start_date'])->toBe(verta($registrationStart->toDateTime())->format('Y-m-d H:i:s'))
+            ->and($deliveryOption['registration_end_date'])->toBe(verta($registrationEnd->toDateTime())->format('Y-m-d H:i:s'))
+            ->and($deliveryOption['available_from'])->toBe(verta($availableFrom->toDateTime())->format('Y-m-d H:i:s'))
             ->and($deliveryOption['is_available'])->toBeTrue()
             ->and($deliveryOption['is_purchasable'])->toBeTrue();
     });

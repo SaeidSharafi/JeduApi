@@ -58,8 +58,8 @@ final class OrganizationTrainingRequestData extends Data
                     'organizationTrainingRequest' => $request,
                 ]),
             ) : null,
-            created_at: $request->created_at ? Verta::instance($request->created_at) : null,
-            updated_at: $request->updated_at ? Verta::instance($request->updated_at) : null,
+            created_at: $request->created_at ? Verta::instance($request->created_at->toDateTime()) : null,
+            updated_at: $request->updated_at ? Verta::instance($request->updated_at->toDateTime()) : null,
         );
     }
 }

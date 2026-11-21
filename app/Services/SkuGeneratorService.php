@@ -76,7 +76,7 @@ final class SkuGeneratorService
     private function generateTermCode(Term $term): string
     {
 
-        $month  = $term->start_date ? verta($term->start_date)->month : null;
+        $month  = $term->start_date ? verta($term->start_date->toDateTime())->month : null;
         $season = match ($month) {
             1, 2, 3    => 'S',  // Spring
             4, 5, 6    => 'SU',  // Summer

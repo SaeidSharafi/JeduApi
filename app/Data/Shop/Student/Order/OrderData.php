@@ -93,8 +93,8 @@ final class OrderData extends Data implements WalletTransactionSourceableDataCon
             currency_code: $order->currency_code,
             payment_status: OrderPaymentStatusEnum::from($order->payment_status),
             applied_coupon_code: $order->applied_coupon_code,
-            created_at: $order->created_at ? Verta::instance($order->created_at) : null,
-            updated_at: $order->updated_at ? Verta::instance($order->updated_at) : null,
+            created_at: $order->created_at ? Verta::instance($order->created_at->toDateTime()) : null,
+            updated_at: $order->updated_at ? Verta::instance($order->updated_at->toDateTime()) : null,
             items: self::lineItems($order),
             payments: PaymentData::collect($order->payments),
         );

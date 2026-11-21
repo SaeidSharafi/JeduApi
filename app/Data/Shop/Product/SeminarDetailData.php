@@ -151,8 +151,8 @@ final class SeminarDetailData extends Data
                 'event_ended_at'           => $product->event_ended_at?->toDateString(),
                 'media'                    => $product->productable->getAllMedia(urlOnly: true),
                 'teachers'                 => array_values($teachers),
-                'event_start_datetime'     => $product->event_start_at ? Verta::instance($product->event_start_at) : null,
-                'event_end_datetime'       => $product->event_ended_at ? Verta::instance($product->event_ended_at) : null,
+                'event_start_datetime'     => $product->event_start_at ? Verta::instance($product->event_start_at->toDateTime()) : null,
+                'event_end_datetime'       => $product->event_ended_at ? Verta::instance($product->event_ended_at->toDateTime()) : null,
             ]
         );
     }

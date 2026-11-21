@@ -433,7 +433,7 @@ describe('Course Lsiting filters', function (): void {
     it('filter by registration start date', function (): void {
         $now = now();
         // Convert to Jalali date for the filter
-        $futureDate = Verta::instance($now->clone()->addDays(10))->format('Y-m-d');
+        $futureDate = Verta::instance($now->clone()->addDays(10)->toDateTime())->format('Y-m-d');
 
         // Registration starts in the future - available NOW so it passes base filter
         $futureCourse = Product::factory()

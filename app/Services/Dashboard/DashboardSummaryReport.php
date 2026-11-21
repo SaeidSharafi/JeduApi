@@ -358,6 +358,6 @@ final class DashboardSummaryReport
      */
     private function toJalaliDay(string $gregorianDay): string
     {
-        return Verta::instance(CarbonImmutable::parse($gregorianDay, DashboardPeriod::TIMEZONE))->format('Y-m-d');
+        return Verta::instance(CarbonImmutable::parse($gregorianDay, DashboardPeriod::TIMEZONE)->toDateTime())->format('Y-m-d');
     }
 }

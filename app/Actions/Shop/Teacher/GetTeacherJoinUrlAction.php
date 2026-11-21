@@ -74,7 +74,7 @@ final readonly class GetTeacherJoinUrlAction
         return new JoinUrlData(
             url: $loginUrl,
             type: 'skyroom',
-            expires_at: verta(now()->addSeconds(self::SKYROOM_LOGIN_URL_TTL_SECONDS)), // @phpstan-ignore argument.type (verta stub types $datetime as null)
+            expires_at: verta(now()->addSeconds(self::SKYROOM_LOGIN_URL_TTL_SECONDS)->toDateTime()), // @phpstan-ignore argument.type (verta stub types $datetime as null)
         );
     }
 
@@ -99,7 +99,7 @@ final readonly class GetTeacherJoinUrlAction
         return new JoinUrlData(
             url: $grant['url'],
             type: 'niliroom',
-            expires_at: verta($grant['expires_at']), // @phpstan-ignore argument.type (verta stub types $datetime as null)
+            expires_at: verta($grant['expires_at']->toDateTime()), // @phpstan-ignore argument.type (verta stub types $datetime as null)
         );
     }
 

@@ -29,7 +29,7 @@ function dashboardWindowBounds(DashboardPeriodWindow $window): array
 
 function dashboardJalali(CarbonImmutable $date): string
 {
-    return Verta::instance($date)->format('Y-m-d');
+    return Verta::instance($date->toDateTime())->format('Y-m-d');
 }
 
 function dashboardPeriodNow(string $dateTime): CarbonImmutable

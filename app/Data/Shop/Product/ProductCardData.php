@@ -102,13 +102,13 @@ final class ProductCardData extends Data
             provides_certificate: $productable?->provides_certificate ?? false,
             product_type: ProductableEnum::from($product->productable_type),
             thumbnail_url: $productable?->thumbnail_url,
-            available_from: $delivery['available_from'] ? Verta::instance($delivery['available_from']) : null,
-            available_to: $delivery['available_to'] ? Verta::instance($delivery['available_to']) : null,
+            available_from: $delivery['available_from'] ? Verta::instance($delivery['available_from']->toDateTime()) : null,
+            available_to: $delivery['available_to'] ? Verta::instance($delivery['available_to']->toDateTime()) : null,
             registration_start_date: $delivery['registration_start_date']
-                ? Verta::instance($delivery['registration_start_date'])
+                ? Verta::instance($delivery['registration_start_date']->toDateTime())
                 : null,
             registration_end_date: $delivery['registration_end_date']
-                ? Verta::instance($delivery['registration_end_date'])
+                ? Verta::instance($delivery['registration_end_date']->toDateTime())
                 : null,
             teachers: $delivery['teachers'],
             reviews_count: $productable->review_count ?? 0,
@@ -118,8 +118,8 @@ final class ProductCardData extends Data
             price_data: $withFullPriceData ? $priceData : null,
             event_start_at: $product->event_start_at?->toDateString(),
             event_ended_at: $product->event_ended_at?->toDateString(),
-            event_start_datetime: $product->event_start_at ? Verta::instance($product->event_start_at) : null,
-            event_end_datetime: $product->event_ended_at ? Verta::instance($product->event_ended_at) : null,
+            event_start_datetime: $product->event_start_at ? Verta::instance($product->event_start_at->toDateTime()) : null,
+            event_end_datetime: $product->event_ended_at ? Verta::instance($product->event_ended_at->toDateTime()) : null,
             duration: $typePresentation['duration'],
             duration_seconds: $typePresentation['duration_seconds'],
             page_count: $typePresentation['page_count'],
@@ -173,13 +173,13 @@ final class ProductCardData extends Data
             provides_certificate: (bool) $course->provides_certificate,
             product_type: ProductableEnum::COURSE,
             thumbnail_url: $course->thumbnail_url,
-            available_from: $delivery['available_from'] ? Verta::instance($delivery['available_from']) : null,
-            available_to: $delivery['available_to'] ? Verta::instance($delivery['available_to']) : null,
+            available_from: $delivery['available_from'] ? Verta::instance($delivery['available_from']->toDateTime()) : null,
+            available_to: $delivery['available_to'] ? Verta::instance($delivery['available_to']->toDateTime()) : null,
             registration_start_date: $delivery['registration_start_date']
-                ? Verta::instance($delivery['registration_start_date'])
+                ? Verta::instance($delivery['registration_start_date']->toDateTime())
                 : null,
             registration_end_date: $delivery['registration_end_date']
-                ? Verta::instance($delivery['registration_end_date'])
+                ? Verta::instance($delivery['registration_end_date']->toDateTime())
                 : null,
             teachers: $delivery['teachers'],
             reviews_count: (int) $course->review_count,
@@ -189,8 +189,8 @@ final class ProductCardData extends Data
             price_data: $withFullPriceData ? $priceData : null,
             event_start_at: $product?->event_start_at?->toDateString(),
             event_ended_at: $product?->event_ended_at?->toDateString(),
-            event_start_datetime: $product?->event_start_at ? Verta::instance($product->event_start_at) : null,
-            event_end_datetime: $product?->event_ended_at ? Verta::instance($product->event_ended_at) : null,
+            event_start_datetime: $product?->event_start_at ? Verta::instance($product->event_start_at->toDateTime()) : null,
+            event_end_datetime: $product?->event_ended_at ? Verta::instance($product->event_ended_at->toDateTime()) : null,
             duration: $course->duration,
             difficulty_level: $course->difficulty_level,
         );

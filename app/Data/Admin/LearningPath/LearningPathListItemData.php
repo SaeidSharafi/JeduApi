@@ -27,8 +27,8 @@ final class LearningPathListItemData extends Data
         return self::factory()->withoutMagicalCreation()->from([
             ...$learningPath->toArray(),
             'steps_count' => (int) ($learningPath->steps_count ?? $learningPath->steps()->count()),
-            'created_at'  => $learningPath->created_at ? Verta::instance($learningPath->created_at) : null,
-            'updated_at'  => $learningPath->updated_at ? Verta::instance($learningPath->updated_at) : null,
+            'created_at'  => $learningPath->created_at ? Verta::instance($learningPath->created_at->toDateTime()) : null,
+            'updated_at'  => $learningPath->updated_at ? Verta::instance($learningPath->updated_at->toDateTime()) : null,
         ]);
     }
 }

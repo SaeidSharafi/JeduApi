@@ -32,7 +32,7 @@ final readonly class DashboardPeriodWindow
         $days = [];
 
         for ($day = $this->start; $day->lessThanOrEqualTo($this->end); $day = $day->addDay()) {
-            $days[] = Verta::instance($day)->format('Y-m-d');
+            $days[] = Verta::instance($day->toDateTime())->format('Y-m-d');
         }
 
         return $days;

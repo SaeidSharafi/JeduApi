@@ -31,7 +31,7 @@ final class ReviewData extends Data
             title: $review->title,
             comment: $review->comment,
             status: $review->status,
-            created_at: $review->created_at ? Verta::instance($review->created_at) : null,
+            created_at: $review->created_at ? Verta::instance($review->created_at->toDateTime()) : null,
         );
     }
 }

@@ -529,7 +529,7 @@ describe('GenerateComplianceReportAction', function (): void {
 
             expect($dailyBreakdown)->toBeArray();
 
-            $dateKey = verta($specificDate)->format('Y-m-d');
+            $dateKey = verta($specificDate->toDateTime())->format('Y-m-d');
 
             expect($dailyBreakdown)->toHaveKey($dateKey);
             expect($dailyBreakdown[$dateKey]['total_transactions'])->toBe(1);
@@ -943,7 +943,7 @@ describe('GenerateComplianceReportAction', function (): void {
 
             expect($result['report_sections']['daily_breakdown'])->toHaveCount(1);
             // The key in the breakdown will be in Gregorian format
-            $jalaliDate = verta($singleCarbon)->format('Y-m-d');
+            $jalaliDate = verta($singleCarbon->toDateTime())->format('Y-m-d');
             expect($result['report_sections']['daily_breakdown'])->toHaveKey($jalaliDate);
         });
     });

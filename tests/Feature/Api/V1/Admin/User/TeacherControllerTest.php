@@ -78,7 +78,7 @@ describe('TeacherController Test', function (): void {
         $data['media'] = [
             'avatar' => $this->avatar->id,
         ];
-        $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
+        $data['birth_date'] = verta($data->birth_date->toDateTime())->format('Y-m-d');
         $response           = $this->postJson(route('api.v1.admin.teachers.store'), $data->toArray());
         $response->assertCreated();
         $this->assertDatabaseHas('teachers', [
@@ -109,7 +109,7 @@ describe('TeacherController Test', function (): void {
         $data['media'] = [
             'avatar' => $this->avatar->id,
         ];
-        $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
+        $data['birth_date'] = verta($data->birth_date->toDateTime())->format('Y-m-d');
         $response           = $this->putJson(route('api.v1.admin.teachers.update', ['teacher' => $teacher]), $data->toArray());
         $response->assertOk();
         $this->assertDatabaseHas('teachers', [
@@ -134,7 +134,7 @@ describe('TeacherController Test', function (): void {
             'bio' => '<p>پاراگراف اول</p><p>پاراگراف دوم</p><script>alert(1)</script>',
         ]);
         $data['media']      = ['avatar' => $this->avatar->id];
-        $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
+        $data['birth_date'] = verta($data->birth_date->toDateTime())->format('Y-m-d');
 
         $response = $this->postJson(route('api.v1.admin.teachers.store'), $data->toArray());
         $response->assertCreated();
@@ -164,7 +164,7 @@ describe('TeacherController Test', function (): void {
         $data['media'] = [
             'avatar' => null,
         ];
-        $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
+        $data['birth_date'] = verta($data->birth_date->toDateTime())->format('Y-m-d');
         $response           = $this->putJson(route('api.v1.admin.teachers.update', ['teacher' => $teacher]), $data->toArray());
         $response->assertOk();
         $this->assertDatabaseHas('teachers', [

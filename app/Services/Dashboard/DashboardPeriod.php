@@ -124,7 +124,7 @@ final readonly class DashboardPeriod
      */
     private static function monthToDateWindows(CarbonImmutable $today): array
     {
-        $jalaliToday  = Verta::instance($today);
+        $jalaliToday  = Verta::instance($today->toDateTime());
         $previousFrom = $jalaliToday->copy()->startMonth()->subMonths(1);
 
         $previousEnd = $previousFrom->copy()

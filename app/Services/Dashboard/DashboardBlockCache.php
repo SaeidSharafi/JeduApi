@@ -87,7 +87,7 @@ final class DashboardBlockCache
     private function metadata(CacheKey $key, string $generatedAt, bool $cached): array
     {
         return [
-            'generated_at' => Verta::instance(CarbonImmutable::parse($generatedAt))->format('Y-m-d H:i:s'),
+            'generated_at' => Verta::instance(CarbonImmutable::parse($generatedAt)->toDateTime())->format('Y-m-d H:i:s'),
             'cached'       => $cached,
             'cache_ttl'    => (int) $key->ttl(),
             'timezone'     => DashboardPeriod::TIMEZONE,

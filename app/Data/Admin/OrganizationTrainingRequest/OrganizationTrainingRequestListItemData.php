@@ -46,7 +46,7 @@ final class OrganizationTrainingRequestListItemData extends Data
             status: $request->status,
             assignee: $request->assignee ? StaffData::from($request->assignee) : null,
             has_attachment: $request->hasMedia('attachment'),
-            created_at: $request->created_at ? Verta::instance($request->created_at) : null,
+            created_at: $request->created_at ? Verta::instance($request->created_at->toDateTime()) : null,
         );
     }
 }

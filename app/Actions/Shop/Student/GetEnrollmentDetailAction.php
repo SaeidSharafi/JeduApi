@@ -72,10 +72,10 @@ final readonly class GetEnrollmentDetailAction
             uuid: $enrollment->uuid,
             enrollment_status: $enrollment->enrollment_status,
             access_start_date: $enrollment->access_start_date
-                ? Verta::instance($enrollment->access_start_date)
+                ? Verta::instance($enrollment->access_start_date->toDateTime())
                 : null,
             access_end_date: $enrollment->access_end_date
-                ? Verta::instance($enrollment->access_end_date)
+                ? Verta::instance($enrollment->access_end_date->toDateTime())
                 : null,
             notes: $enrollment->notes,
             product: $product,

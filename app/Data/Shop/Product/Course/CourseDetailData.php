@@ -129,7 +129,7 @@ final class CourseDetailData extends Data
                 'reviews_count'           => $product->productable->review_count,
                 'average_rating'          => $product->productable->average_rating,
                 'registration_deadline'   => $registrationDeadline
-                    ? Verta::instance($registrationDeadline)
+                    ? Verta::instance($registrationDeadline->toDateTime())
                     : null,
                 'faq'              => $product->productable->faq,
                 'additional_info'  => $product->productable->additional_info,

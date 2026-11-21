@@ -255,7 +255,7 @@ describe('CRUD Autherized', function (): void {
         $user     = User::factory()->withPassport()->make();
         $userData = [
             ...$user->toArray(),
-            'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
+            'date_of_birth' => verta($user->date_of_birth->toDateTime())->format('Y-m-d'),
             'media'         => [],
         ];
         $response = $this->postJson(route('api.v1.admin.users.store'), $userData);
@@ -352,7 +352,7 @@ describe('CRUD Autherized', function (): void {
         $token->tokenable;
         $updateUserData = [
             ...$user->toArray(),
-            'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
+            'date_of_birth' => verta($user->date_of_birth->toDateTime())->format('Y-m-d'),
             'first_name'    => 'Updated name',
             'last_name'     => 'Updated last name',
             'media'         => [],

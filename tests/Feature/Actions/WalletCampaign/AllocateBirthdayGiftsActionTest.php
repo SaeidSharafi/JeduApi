@@ -53,7 +53,7 @@ describe('AllocateBirthdayGiftsAction', function (): void {
         expect($gift)->not->toBeNull()
             ->and($gift->amount)->toBe($this->campaign->amount)
             ->and($gift->metadata['trigger_event'])->toBe('birthday_sweep')
-            ->and($gift->metadata['occurrence'])->toBe(Hekmatinasser\Verta\Verta::instance(now())->format('Y'))
+            ->and($gift->metadata['occurrence'])->toBe(Hekmatinasser\Verta\Verta::instance(now()->toDateTime())->format('Y'))
             ->and($this->user->wallet->fresh()->gift_balance)->toBe($this->campaign->amount);
     });
 

@@ -59,7 +59,7 @@ final readonly class UserExportResource implements ExportResourceContract
             }
 
             if ($value !== null && in_array($column, ['date_of_birth', 'created_at', 'updated_at'], true)) {
-                return Verta::instance($value)->format($column === 'date_of_birth' ? 'Y-m-d' : 'Y-m-d H:i:s');
+                return Verta::instance($value->toDateTime())->format($column === 'date_of_birth' ? 'Y-m-d' : 'Y-m-d H:i:s');
             }
 
             return $value;

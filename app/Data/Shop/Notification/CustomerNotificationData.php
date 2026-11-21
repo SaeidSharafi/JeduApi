@@ -43,8 +43,8 @@ final class CustomerNotificationData extends Data
             (string) ($data['message'] ?? ''),
             isset($data['resource_type']) ? (string) $data['resource_type'] : null,
             $data['resource_id'] ?? null,
-            $notification->read_at    !== null ? Verta::instance($notification->read_at) : null,
-            $notification->created_at !== null ? Verta::instance($notification->created_at) : null,
+            $notification->read_at    !== null ? Verta::instance($notification->read_at->toDateTime()) : null,
+            $notification->created_at !== null ? Verta::instance($notification->created_at->toDateTime()) : null,
         );
     }
 }

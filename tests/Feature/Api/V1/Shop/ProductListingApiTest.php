@@ -491,7 +491,7 @@ describe('Product Listing Filters - :dataset', function (): void {
 
     it('filter by registration start date', function (string $factoryMethod, string $routePrefix): void {
         $now        = now();
-        $futureDate = Verta::instance($now->clone()->addDays(10))->format('Y-m-d');
+        $futureDate = Verta::instance($now->clone()->addDays(10)->toDateTime())->format('Y-m-d');
 
         // Registration starts in the future
         $futureProduct = Product::factory()

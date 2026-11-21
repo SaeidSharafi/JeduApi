@@ -133,8 +133,8 @@ it('returns the staff list and detail contract', function (): void {
         ->assertJsonPath('data.notes', 'Call before noon.')
         ->assertJsonPath('data.status.value', InboundRequestStatusEnum::CONTACTED->value)
         ->assertJsonPath('data.assignee.id', $assignee->id)
-        ->assertJsonPath('data.created_at', Verta::instance($request->created_at)->format('Y-m-d H:i:s'))
-        ->assertJsonPath('data.updated_at', Verta::instance($request->updated_at)->format('Y-m-d H:i:s'));
+        ->assertJsonPath('data.created_at', Verta::instance($request->created_at->toDateTime())->format('Y-m-d H:i:s'))
+        ->assertJsonPath('data.updated_at', Verta::instance($request->updated_at->toDateTime())->format('Y-m-d H:i:s'));
 });
 
 it('finds a request by its tracking code', function (): void {
